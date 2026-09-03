@@ -1,0 +1,4 @@
+EDITOR_PASSWORD=change-me
+SESSION_SECRET=generate-a-long-random-secret
+# Optional. You can connect a fine-grained GitHub token from the app instead.
+GITHUB_TOKEN=

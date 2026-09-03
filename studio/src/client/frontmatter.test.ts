@@ -1,0 +1,16 @@
+import { describe, expect, it } from "vitest";
+import { makePostPath, parseDocument, serializeDocument } from "./frontmatter";
+
+describe("frontmatter documents", () => {
+  it("round-trips pin state and priority", () => {
+    const parsed = parseDocument("---\ntitle: Test\npublished: 2026-09-03\npinned: true\npriority: 2\ntags: [one, two]\n---\n\nHello");
+    expect(parsed.fields.pinned).toBe(true);
+    expect(parsed.fields.priority).toBe(2);
+    expect(parsed.fields.tags).toEqual(["one", "two"]);
+    expect(serializeDocument(parsed.fields, parsed.body)).toContain("pinned: true");
+  });
+
+  it("creates a safe path while keeping Chinese titles", () => {
+    expect(makePostPath("  我的 / 新文章  ")).toBe("content/posts/我的-新文章.md");
+  });
+});

@@ -1,0 +1,25 @@
+{
+  "$schema": "./node_modules/wrangler/config-schema.json",
+  "name": "astro-blog-studio",
+  "main": "src/worker/index.ts",
+  "compatibility_date": "2026-09-03",
+  "workers_dev": true,
+  "preview_urls": true,
+  "assets": {
+    "directory": "./dist",
+    "binding": "ASSETS",
+    "not_found_handling": "single-page-application",
+    "run_worker_first": true
+  },
+  "r2_buckets": [
+    {
+      "binding": "DRAFTS",
+      "bucket_name": "astro-blog-studio"
+    }
+  ],
+  "vars": {
+    "GITHUB_OWNER": "mumuhaha487",
+    "GITHUB_REPO": "astro",
+    "GITHUB_BRANCH": "main"
+  }
+}
