@@ -87,7 +87,7 @@ importers:
         specifier: ^7.0.2
         version: 7.1.0
       oddmisc:
-        specifier: ^1.1.4
+        specifier: 1.1.5
         version: 1.1.5
       overlayscrollbars:
         specifier: ^2.14.0
