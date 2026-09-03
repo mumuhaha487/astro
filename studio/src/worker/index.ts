@@ -4,6 +4,7 @@ import type {
   DraftSummary,
   PostDocument,
   PostMeta,
+  ScheduledPost,
   SessionInfo,
 } from "../shared/types";
 
@@ -101,6 +102,9 @@ export default {
       return secureResponse(json({ error: message, ...(code ? { code } : {}) }, status), true);
     }
   },
+  async scheduled(_controller: ScheduledController, env: Env, context: ExecutionContext): Promise<void> {
+    context.waitUntil(publishScheduledPosts(env));
+  },
 };
 
 async function routeApi(request: Request, env: Env, url: URL): Promise<Response> {
@@ -150,6 +154,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
     const body = await readJson<{ key?: string }>(request);
     await deleteDraft(env, body.key);
     return new Response(null, { status: 204 });
+  }
+  if (url.pathname === "/api/schedule" && request.method === "PUT") {
+    return json(await saveScheduledPost(env, await readJson(request)));
   }
   if (url.pathname === "/api/image" && request.method === "POST") {
     return json(await uploadImage(env, request));
@@ -355,6 +362,50 @@ async function saveDraft(env: Env, input: unknown): Promise<DraftSummary> {
 
 async function deleteDraft(env: Env, key: string | undefined): Promise<void> {
   await env.DRAFTS.delete(`drafts/${assertDraftKey(key ?? null)}`);
+}
+
+async function saveScheduledPost(env: Env, input: unknown): Promise<ScheduledPost> {
+  const body = input as Partial<ScheduledPost>;
+  const path = assertPostPath(body.path);
+  if (typeof body.content !== "string") throw new HttpError(400, "定时发布内容无效");
+  assertByteLength(body.content, MAX_DOCUMENT_BYTES, "文章内容不能超过 2 MB");
+  const publishAt = typeof body.publishAt === "string" ? new Date(body.publishAt) : new Date(Number.NaN);
+  if (Number.isNaN(publishAt.getTime()) || publishAt.getTime() < Date.now() + 60_000) {
+    throw new HttpError(400, "定时发布时间至少需要晚于当前时间 1 分钟");
+  }
+  if (publishAt.getTime() > Date.now() + 366 * 24 * 60 * 60 * 1000) {
+    throw new HttpError(400, "定时发布时间不能超过一年");
+  }
+  await requireGitHubToken(env);
+  const schedule: ScheduledPost = {
+    key: crypto.randomUUID().replaceAll("-", ""),
+    path,
+    sha: typeof body.sha === "string" ? body.sha : "",
+    title: typeof body.title === "string" ? body.title.slice(0, 200) : "未命名文章",
+    publishAt: publishAt.toISOString(),
+    content: body.content,
+    createdAt: new Date().toISOString(),
+  };
+  await env.DRAFTS.put(`schedules/${schedule.key}`, JSON.stringify(schedule), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  return schedule;
+}
+
+async function publishScheduledPosts(env: Env): Promise<void> {
+  const listing = await env.DRAFTS.list({ prefix: "schedules/", limit: 1000 });
+  const now = Date.now();
+  await mapConcurrent(listing.objects, 3, async (entry) => {
+    const schedule = await readJsonObject<ScheduledPost>(env.DRAFTS, entry.key);
+    if (!schedule || new Date(schedule.publishAt).getTime() > now) return;
+    await savePost(env, {
+      path: schedule.path,
+      sha: schedule.sha,
+      content: schedule.content,
+      message: `定时发布文章：${schedule.title}`,
+    });
+    await env.DRAFTS.delete(entry.key);
+  });
 }
 
 async function uploadImage(env: Env, request: Request): Promise<{ path: string; url: string }> {

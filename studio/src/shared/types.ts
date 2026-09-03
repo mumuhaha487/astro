@@ -36,6 +36,16 @@ export interface DraftDocument extends DraftSummary {
   content: string;
 }
 
+export interface ScheduledPost {
+  key: string;
+  path: string;
+  sha: string;
+  title: string;
+  publishAt: string;
+  content: string;
+  createdAt: string;
+}
+
 export interface SessionInfo {
   authenticated: boolean;
   github: {

@@ -3,6 +3,7 @@ import type {
   DraftSummary,
   PostDocument,
   PostMeta,
+  ScheduledPost,
   SessionInfo,
 } from "../shared/types";
 
@@ -76,6 +77,11 @@ export const api = {
     request<void>("/api/draft", {
       method: "DELETE",
       body: JSON.stringify({ key }),
+    }),
+  schedulePost: (schedule: Omit<ScheduledPost, "key" | "createdAt">) =>
+    request<ScheduledPost>("/api/schedule", {
+      method: "PUT",
+      body: JSON.stringify(schedule),
     }),
   uploadImage: async (file: File) => {
     const form = new FormData();

@@ -1,7 +1,10 @@
 import DOMPurify from "dompurify";
 import {
   AlertCircle,
+  Bell,
+  BookOpenText,
   Check,
+  ChevronDown,
   ChevronLeft,
   Cloud,
   Code2,
@@ -13,23 +16,23 @@ import {
   ImagePlus,
   KeyRound,
   LoaderCircle,
-  LogOut,
-  Menu,
-  PanelRightOpen,
+  MessageSquareText,
   PencilLine,
   Pin,
   RefreshCw,
   Save,
   Search,
   Settings,
-  SlidersHorizontal,
+  Sparkles,
   Trash2,
+  UserRound,
   X,
 } from "lucide-react";
 import { marked } from "marked";
 import {
   type ClipboardEvent,
   type FormEvent,
+  type ReactNode,
   useCallback,
   useEffect,
   useMemo,
@@ -90,6 +93,9 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [outlineVisible, setOutlineVisible] = useState(true);
+  const [wideEditor, setWideEditor] = useState(false);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [syncLabel, setSyncLabel] = useState("未修改");
   const [revision, setRevision] = useState(0);
@@ -129,6 +135,8 @@ function App() {
 
   const isDirty = revision !== publishedRevision;
   const richModeBlocked = hasUnsafeRichContent(body);
+
+  const outlineItems = useMemo(() => extractOutline(body), [body]);
 
   useEffect(() => {
     if (!working || !fields || revision === 0) return;
@@ -207,6 +215,33 @@ function App() {
     setRevision((value) => value + 1);
     setSyncState("idle");
     setSyncLabel("等待同步");
+  }
+
+  async function saveDraftNow() {
+    if (!working || !fields) return;
+    setSyncState("saving");
+    setSyncLabel("正在保存草稿");
+    try {
+      const saved = await api.saveDraft({
+        key: working.draftKey,
+        path: working.path,
+        sha: working.sha,
+        title: fields.title || "未命名文章",
+        updatedAt: new Date().toISOString(),
+        isNew: working.isNew,
+        content: currentContent(),
+      });
+      setWorking((current) => current ? { ...current, draftKey: saved.key } : current);
+      setDraftSyncedRevision(revision);
+      setSyncState("saved");
+      setSyncLabel(`草稿已保存 ${formatTime(saved.updatedAt)}`);
+      setDrafts((current) => [saved, ...current.filter((draft) => draft.key !== saved.key)]);
+      showToast("草稿已保存到云端", "success");
+    } catch (error) {
+      setSyncState("error");
+      setSyncLabel(errorMessage(error));
+      showToast(errorMessage(error), "error");
+    }
   }
 
   function setField<K extends keyof FrontmatterFields>(
@@ -318,9 +353,12 @@ function App() {
     setRevision(1);
   }
 
-  async function publishPost() {
+  async function publishPost(draftOverride?: boolean) {
     if (!working || !fields) return;
-    const normalizedFields = currentFields();
+    const current = currentFields();
+    const normalizedFields = current && draftOverride !== undefined
+      ? { ...current, draft: draftOverride }
+      : current;
     if (!normalizedFields) return;
     if (!normalizedFields.title.trim()) {
       showToast("请填写文章标题", "error");
@@ -364,6 +402,39 @@ function App() {
       if (error instanceof ApiError && error.code === "GITHUB_NOT_CONNECTED") {
         setSettingsOpen(true);
       }
+    } finally {
+      setPublishing(false);
+    }
+  }
+
+  async function schedulePost(publishAt: string) {
+    if (!working || !fields) return;
+    const current = currentFields();
+    if (!current?.title.trim()) {
+      showToast("请填写文章标题", "error");
+      return;
+    }
+    const path = working.isNew ? makePostPath(current.title) : working.path;
+    const scheduledFields = { ...current, draft: false, scheduledAt: publishAt };
+    setPublishing(true);
+    setSyncState("saving");
+    setSyncLabel("正在设置定时发布");
+    try {
+      await api.schedulePost({
+        path,
+        sha: working.isNew ? "" : working.sha,
+        title: current.title,
+        publishAt,
+        content: serializeDocument(scheduledFields, body),
+      });
+      setScheduleOpen(false);
+      setSyncState("saved");
+      setSyncLabel(`定时发布 ${formatDateTime(publishAt)}`);
+      showToast(`已安排在 ${formatDateTime(publishAt)} 发布`, "success");
+    } catch (error) {
+      setSyncState("error");
+      setSyncLabel(errorMessage(error));
+      showToast(errorMessage(error), "error");
     } finally {
       setPublishing(false);
     }
@@ -486,17 +557,16 @@ function App() {
       <header className="topbar">
         <div className="topbar-brand">
           <button
-            className="icon-button mobile-only"
+            className="editor-back-button"
             onClick={() => setSidebarOpen((value) => !value)}
             title="文章列表"
           >
-            <Menu size={19} />
+            <ChevronLeft size={21} />
           </button>
-          <div className="brand-mark">A</div>
-          <div className="brand-copy">
-            <strong>Astro Studio</strong>
-            <span>{session.github.repository}</span>
-          </div>
+          <div className="astro-wordmark"><span>AS</span><strong>tro</strong></div>
+          <button className="editor-title-button" onClick={() => setSidebarOpen(true)}>
+            发布文章 <ChevronDown size={15} fill="currentColor" />
+          </button>
         </div>
 
         <div className={`sync-state ${syncState}`} aria-live="polite">
@@ -513,13 +583,16 @@ function App() {
             onClick={() => setSettingsOpen(true)}
           >
             <FolderGit2 size={15} />
-            <span>{session.github.connected ? session.github.login || "GitHub 已连接" : "连接 GitHub"}</span>
+            <span>{session.github.connected ? "GitHub 同步" : "连接 GitHub"}</span>
+            <ChevronDown size={13} />
           </button>
+          <button className="icon-button topbar-notification" title="同步消息"><Bell size={18} /></button>
+          <span className="topbar-separator" />
           <button className="icon-button" onClick={() => setSettingsOpen(true)} title="设置">
             <Settings size={18} />
           </button>
-          <button className="icon-button" onClick={() => void logout()} title="退出登录">
-            <LogOut size={18} />
+          <button className="user-menu-button" onClick={() => void logout()} title="退出登录">
+            <UserRound size={17} />
           </button>
         </div>
       </header>
@@ -624,144 +697,173 @@ function App() {
 
         {sidebarOpen ? <button className="sidebar-scrim" onClick={() => setSidebarOpen(false)} /> : null}
 
-        <main className={`editor-workspace mode-${mode}`}>
+        <main className={`editor-workspace mode-${mode} ${wideEditor ? "wide-editor" : ""} ${outlineVisible ? "outline-visible" : "outline-hidden"}`}>
           {!working || !fields ? (
             <EmptyEditor onCreate={createPost} />
           ) : (
             <>
+              <aside className="outline-pane">
+                <div className="outline-pane-head">
+                  <span>目录</span>
+                  <button onClick={() => setOutlineVisible(false)} title="收起目录"><ChevronLeft size={20} /></button>
+                </div>
+                {outlineItems.length ? (
+                  <nav className="outline-list" aria-label="文章目录">
+                    {outlineItems.map((item, index) => (
+                      <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }}>
+                        {item.text}
+                      </button>
+                    ))}
+                  </nav>
+                ) : (
+                  <p className="outline-empty">为文内增加标题，这里将生成目录</p>
+                )}
+              </aside>
+
               <section className="compose-pane">
-                <div className="document-head">
-                  <div className="document-title-row">
-                    <textarea
-                      className="title-input"
-                      value={fields.title}
-                      onChange={(event) => setField("title", event.target.value)}
-                      placeholder="请输入文章标题"
-                      rows={1}
-                    />
-                    <div className="document-actions">
-                      {!working.isNew ? (
-                        <button className="icon-button danger" onClick={() => void removePost()} title="删除文章">
-                          <Trash2 size={17} />
-                        </button>
+                <div className="document-scroll">
+                  <div className="draft-resume-banner">
+                    <span className="draft-badge">{working.isNew ? "草稿" : fields.draft ? "草稿" : "已发布"}</span>
+                    <span className="draft-resume-title">{fields.title || "未命名文章"}</span>
+                    <span className="draft-resume-action">{syncLabel}</span>
+                    <button onClick={() => setSidebarOpen(true)}>更多文章</button>
+                    <button className="draft-banner-close" onClick={() => setWorking(null)} title="关闭文章"><X size={15} /></button>
+                  </div>
+
+                  <div className="editor-paper">
+                    <div className="document-head">
+                      <div className="document-title-row">
+                        <textarea
+                          className="title-input"
+                          value={fields.title}
+                          onChange={(event) => setField("title", event.target.value)}
+                          placeholder="请输入文章标题（5～100个字）"
+                          maxLength={100}
+                          rows={1}
+                        />
+                        <div className="title-side-tools">
+                          <Sparkles size={17} />
+                          <span>{fields.title.length < 5 ? `还需输入${5 - fields.title.length}个字` : `${fields.title.length}/100`}</span>
+                        </div>
+                      </div>
+                    </div>
+
+                    {mode !== "rich" ? (
+                      <div className="alternate-mode-toolbar">
+                        <button onClick={() => changeMode("rich")} disabled={richModeBlocked}><PencilLine size={16} /> 富文本</button>
+                        <button className={mode === "source" ? "active" : ""} onClick={() => changeMode("source")}><Code2 size={16} /> 源码</button>
+                        <button className={mode === "preview" ? "active" : ""} onClick={() => changeMode("preview")}><Eye size={16} /> 预览</button>
+                      </div>
+                    ) : null}
+
+                    <div className="editor-surface">
+                      {mode === "rich" ? (
+                        <MdxEditorSlot
+                          key={`${working.path}:${editorEpoch}`}
+                          ref={editorRef}
+                          initialValue={body}
+                          onChange={updateBody}
+                          onUploadImage={uploadImage}
+                          onHistory={() => setSidebarOpen(true)}
+                          onSourceMode={() => changeMode("source")}
+                          onToggleOutline={() => setOutlineVisible((value) => !value)}
+                          onToggleWide={() => setWideEditor((value) => !value)}
+                          outlineVisible={outlineVisible}
+                          wide={wideEditor}
+                        />
                       ) : null}
-                      <button
-                        className="publish-button"
-                        onClick={() => void publishPost()}
-                        disabled={publishing}
-                      >
-                        {publishing ? <LoaderCircle className="spin" size={17} /> : <Save size={17} />}
-                        {fields.draft ? "保存到 GitHub" : "发布文章"}
-                      </button>
+                      {mode === "source" ? (
+                        <textarea
+                          className="source-editor"
+                          value={body}
+                          onChange={(event) => updateBody(event.target.value)}
+                          onPaste={(event) => void handleSourcePaste(event)}
+                          spellCheck={false}
+                          placeholder="使用 Markdown 编写文章正文"
+                        />
+                      ) : null}
+                      {mode === "preview" ? (
+                        <ArticlePreview fields={fields} html={previewHtml} />
+                      ) : null}
                     </div>
-                  </div>
-
-                  <div className="metadata-grid">
-                    <label>
-                      <span>发布日期</span>
-                      <input
-                        type="date"
-                        value={fields.published}
-                        onChange={(event) => setField("published", event.target.value)}
-                      />
-                    </label>
-                    <label>
-                      <span>分类</span>
-                      <input
-                        value={fields.category}
-                        onChange={(event) => setField("category", event.target.value)}
-                        placeholder="未分类"
-                      />
-                    </label>
-                    <label className="tags-field">
-                      <span>标签</span>
-                      <input
-                        value={tagsText}
-                        onChange={(event) => {
-                          const value = event.target.value;
-                          setTagsText(value);
-                          setFields((current) => current ? { ...current, tags: parseTags(value) } : current);
-                          markChanged();
-                        }}
-                        placeholder="使用逗号分隔"
-                      />
-                    </label>
-                    <div className="compact-toggles">
-                      <Toggle
-                        checked={!fields.draft}
-                        label="发布"
-                        onChange={(checked) => setField("draft", !checked)}
-                      />
-                      <Toggle
-                        checked={fields.pinned}
-                        label="置顶"
-                        accent="pin"
-                        onChange={(checked) => setField("pinned", checked)}
-                      />
-                    </div>
-                  </div>
-
-                  <div className="editor-controls">
-                    <div className="mode-switch" role="tablist" aria-label="编辑模式">
-                      <button className={mode === "rich" ? "active" : ""} onClick={() => changeMode("rich")} title={richModeBlocked ? "复杂 HTML 仅支持源码模式" : "富文本编辑"}>
-                        <PencilLine size={15} /> 富文本
-                      </button>
-                      <button className={mode === "source" ? "active" : ""} onClick={() => changeMode("source")}>
-                        <Code2 size={15} /> 源码
-                      </button>
-                      <button className={mode === "preview" ? "active" : ""} onClick={() => changeMode("preview")}>
-                        <Eye size={15} /> 预览
-                      </button>
-                    </div>
-                    <button
-                      className={`advanced-button ${advancedOpen ? "active" : ""}`}
-                      onClick={() => setAdvancedOpen((value) => !value)}
-                    >
-                      <SlidersHorizontal size={15} /> 更多字段
-                    </button>
                   </div>
 
                   {advancedOpen ? (
-                    <AdvancedFields fields={fields} setField={setField} />
-                  ) : null}
-                </div>
-
-                <div className="editor-surface">
-                  {mode === "rich" ? (
-                    <MdxEditorSlot
-                      key={`${working.path}:${editorEpoch}`}
-                      ref={editorRef}
-                      initialValue={body}
-                      onChange={updateBody}
+                    <AdvancedFields
+                      fields={fields}
+                      setField={setField}
+                      tagsText={tagsText}
+                      onTagsChange={(value) => {
+                        setTagsText(value);
+                        setFields((current) => current ? { ...current, tags: parseTags(value) } : current);
+                        markChanged();
+                      }}
                       onUploadImage={uploadImage}
+                      onExtractSummary={() => {
+                        const summary = plainText(body).slice(0, 256);
+                        setField("description", summary);
+                        showToast(summary ? "已从正文提取摘要" : "正文中还没有可提取的内容", summary ? "success" : "info");
+                      }}
                     />
-                  ) : null}
-                  {mode === "source" ? (
-                    <textarea
-                      className="source-editor"
-                      value={body}
-                      onChange={(event) => updateBody(event.target.value)}
-                      onPaste={(event) => void handleSourcePaste(event)}
-                      spellCheck={false}
-                    />
-                  ) : null}
-                  {mode === "preview" ? (
-                    <ArticlePreview fields={fields} html={previewHtml} />
                   ) : null}
                 </div>
               </section>
 
-              <aside className="preview-pane">
-                <div className="preview-pane-head">
-                  <span><PanelRightOpen size={15} /> 实时预览</span>
-                  <span>{countWords(body)} 字</span>
+              <aside className="assistant-pane">
+                <div className="assistant-card">
+                  <div className="assistant-title"><Sparkles size={22} /><strong>AI助手</strong><ChevronDown size={14} /></div>
+                  <button onClick={() => {
+                    if (outlineItems.length) {
+                      setOutlineVisible(true);
+                      showToast(`已识别 ${outlineItems.length} 个标题`, "success");
+                    } else {
+                      updateBody(`${body}${body ? "\n\n" : ""}## 背景\n\n## 实现过程\n\n## 总结\n`);
+                      showToast("已生成文章大纲", "success");
+                    }
+                  }}><BookOpenText size={16} /> 大纲生成</button>
+                  <button onClick={() => {
+                    updateBody(`${body}${body ? "\n\n" : ""}\`\`\`typescript\n// 在这里编写代码\n\`\`\`\n`);
+                    showToast("已插入代码块", "success");
+                  }}><Code2 size={16} /> 代码生成</button>
+                  <button onClick={() => {
+                    const summary = plainText(body).slice(0, 256);
+                    setField("description", summary);
+                    setAdvancedOpen(true);
+                    showToast(summary ? "摘要已生成" : "正文中还没有内容", summary ? "success" : "info");
+                  }}><MessageSquareText size={16} /> 摘要生成</button>
                 </div>
-                <ArticlePreview fields={fields} html={previewHtml} compact />
               </aside>
             </>
           )}
         </main>
       </div>
+
+      {working && fields ? (
+        <footer className="publish-bar">
+          <div className="publish-bar-meta">
+            <span>共 {countWords(body)} 字</span>
+            <button className={advancedOpen ? "active" : ""} onClick={() => setAdvancedOpen((value) => !value)}>
+              发文设置 <ChevronDown size={14} />
+            </button>
+          </div>
+          <div className={`publish-sync ${syncState}`}>
+            {syncState === "saving" ? <LoaderCircle className="spin" size={16} /> : syncState === "saved" ? <Check size={16} /> : <Cloud size={16} />}
+            <span>{syncLabel}</span>
+          </div>
+          <div className="publish-bar-actions">
+            {!working.isNew ? (
+              <button className="bottom-delete-button" onClick={() => void removePost()} title="删除文章"><Trash2 size={17} /></button>
+            ) : null}
+            <button className="draft-save-button" onClick={() => void saveDraftNow()} disabled={publishing}>
+              <Save size={16} /> 保存草稿 <ChevronDown size={14} />
+            </button>
+            <button className="schedule-button" onClick={() => setScheduleOpen(true)} disabled={publishing}>定时发布 <ChevronLeft size={15} className="arrow-right" /></button>
+            <button className="csdn-publish-button" onClick={() => void publishPost(false)} disabled={publishing}>
+              {publishing ? <LoaderCircle className="spin" size={17} /> : null} 发布博客
+            </button>
+          </div>
+        </footer>
+      ) : null}
 
       {settingsOpen ? (
         <SettingsDialog
@@ -769,6 +871,14 @@ function App() {
           onClose={() => setSettingsOpen(false)}
           onSessionChange={setSession}
           showToast={showToast}
+        />
+      ) : null}
+
+      {scheduleOpen && working && fields ? (
+        <ScheduleDialog
+          publishing={publishing}
+          onClose={() => setScheduleOpen(false)}
+          onSchedule={(value) => void schedulePost(value)}
         />
       ) : null}
 
@@ -862,69 +972,238 @@ function Toggle({
 function AdvancedFields({
   fields,
   setField,
+  tagsText,
+  onTagsChange,
+  onUploadImage,
+  onExtractSummary,
 }: {
   fields: FrontmatterFields;
   setField: <K extends keyof FrontmatterFields>(key: K, value: FrontmatterFields[K]) => void;
+  tagsText: string;
+  onTagsChange: (value: string) => void;
+  onUploadImage: (file: File) => Promise<string>;
+  onExtractSummary: () => void;
+}) {
+  const coverInputRef = useRef<HTMLInputElement>(null);
+  const [coverUploading, setCoverUploading] = useState(false);
+
+  async function uploadCover(file: File | undefined) {
+    if (!file) return;
+    setCoverUploading(true);
+    try {
+      setField("image", await onUploadImage(file));
+    } finally {
+      setCoverUploading(false);
+      if (coverInputRef.current) coverInputRef.current.value = "";
+    }
+  }
+
+  return (
+    <section className="advanced-fields" aria-label="发文设置">
+      <SettingRow label="文章标签" required>
+        <div className="setting-input-with-action">
+          <input value={tagsText} onChange={(event) => onTagsChange(event.target.value)} placeholder="请输入文章标签，使用逗号分隔" />
+          <span>{fields.tags.length}/10</span>
+        </div>
+      </SettingRow>
+
+      <SettingRow label="添加封面">
+        <div className="cover-setting">
+          <input
+            ref={coverInputRef}
+            className="visually-hidden"
+            type="file"
+            accept="image/png,image/jpeg,image/gif,image/webp,image/avif"
+            onChange={(event) => void uploadCover(event.target.files?.[0])}
+          />
+          <button className="cover-upload-button" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
+            {coverUploading ? <LoaderCircle className="spin" size={20} /> : <ImagePlus size={22} />}
+            <span>{coverUploading ? "正在上传" : "从本地上传"}</span>
+          </button>
+          <div className="cover-preview-box">
+            {fields.image ? <><BookOpenText size={24} /><span>{fields.image}</span></> : <span>暂无内容图片，请在正文中添加图片</span>}
+          </div>
+        </div>
+      </SettingRow>
+
+      <SettingRow label="文章摘要">
+        <div className="summary-setting">
+          <textarea
+            value={fields.description}
+            onChange={(event) => setField("description", event.target.value)}
+            rows={3}
+            maxLength={256}
+            placeholder="摘要：会在推荐、列表等场景外露，帮助读者快速了解内容"
+          />
+          <span>{fields.description.length} / 256</span>
+          <button onClick={onExtractSummary}><Sparkles size={15} /> AI提取摘要</button>
+        </div>
+      </SettingRow>
+
+      <SettingRow label="分类专栏">
+        <input value={fields.category} onChange={(event) => setField("category", event.target.value)} placeholder="请选择或输入分类" />
+      </SettingRow>
+
+      <SettingRow label="文章类型">
+        <RadioGroup
+          name="article-type"
+          value={(fields.articleType as string) || "original"}
+          options={[["original", "原创"], ["repost", "转载"], ["translation", "翻译"]]}
+          onChange={(value) => setField("articleType", value)}
+        />
+      </SettingRow>
+
+      <SettingRow label="创作声明">
+        <select value={(fields.creationStatement as string) || "none"} onChange={(event) => setField("creationStatement", event.target.value)}>
+          <option value="none">无声明</option>
+          <option value="original">本文为原创内容</option>
+          <option value="reprint">本文允许规范转载</option>
+          <option value="ai-assisted">本文包含 AI 辅助内容</option>
+        </select>
+      </SettingRow>
+
+      <SettingRow label="文章备份">
+        <label className="check-option">
+          <input type="checkbox" checked={fields.backup === true} onChange={(event) => setField("backup", event.target.checked)} />
+          <span>同时保留云端编辑草稿</span>
+        </label>
+      </SettingRow>
+
+      <SettingRow label="可见范围">
+        <RadioGroup
+          name="visibility"
+          value={(fields.visibility as string) || "public"}
+          options={[["public", "全部可见"], ["private", "仅我可见"], ["followers", "订阅读者可见"], ["password", "密码可见"]]}
+          onChange={(value) => setField("visibility", value)}
+        />
+      </SettingRow>
+
+      <SettingRow label="文章模板">
+        <RadioGroup
+          name="article-template"
+          value={(fields.articleTemplate as string) || "default"}
+          options={[["default", "默认模板"], ["compact", "简洁模板"]]}
+          onChange={(value) => setField("articleTemplate", value)}
+        />
+      </SettingRow>
+
+      <SettingRow label="多平台发布">
+        <RadioGroup
+          name="multi-platform"
+          value={fields.multiPlatform === true ? "yes" : "no"}
+          options={[["no", "否"], ["yes", "是"]]}
+          onChange={(value) => setField("multiPlatform", value === "yes")}
+        />
+      </SettingRow>
+
+      <SettingRow label="参与活动 /话题">
+        <div className="activity-fields">
+          <input value={(fields.activity as string) || ""} onChange={(event) => setField("activity", event.target.value)} placeholder="请选择创作活动" />
+          <input value={(fields.topic as string) || ""} onChange={(event) => setField("topic", event.target.value)} placeholder="请选择创作话题" />
+        </div>
+      </SettingRow>
+
+      <div className="astro-settings-divider"><span>博客属性</span></div>
+
+      <SettingRow label="发布日期" required>
+        <input type="date" value={fields.published} onChange={(event) => setField("published", event.target.value)} />
+      </SettingRow>
+
+      <SettingRow label="发布选项">
+        <div className="advanced-toggles">
+          <Toggle checked={!fields.draft} label="发布" onChange={(checked) => setField("draft", !checked)} />
+          <Toggle checked={fields.pinned} label="置顶" accent="pin" onChange={(checked) => setField("pinned", checked)} />
+          <Toggle checked={fields.comment} label="允许评论" onChange={(checked) => setField("comment", checked)} />
+          <Toggle checked={fields.encrypted} label="文章加密" onChange={(checked) => setField("encrypted", checked)} />
+        </div>
+      </SettingRow>
+
+      {fields.pinned ? (
+        <SettingRow label="置顶顺序">
+          <input type="number" min="0" value={fields.priority ?? ""} onChange={(event) => setField("priority", event.target.value ? Number(event.target.value) : undefined)} placeholder="数字越小越靠前" />
+        </SettingRow>
+      ) : null}
+
+      <SettingRow label="更多属性">
+        <div className="activity-fields three-columns">
+          <input type="date" value={fields.updated || ""} onChange={(event) => setField("updated", event.target.value || undefined)} aria-label="更新日期" />
+          <select value={fields.lang} onChange={(event) => setField("lang", event.target.value)} aria-label="语言">
+            <option value="zh-CN">简体中文</option>
+            <option value="zh-TW">繁体中文</option>
+            <option value="en">English</option>
+            <option value="ja">日本語</option>
+          </select>
+          <input value={fields.permalink || ""} onChange={(event) => setField("permalink", event.target.value || undefined)} placeholder="固定链接" />
+        </div>
+      </SettingRow>
+
+      {fields.encrypted ? (
+        <SettingRow label="加密设置">
+          <div className="activity-fields">
+            <input type="password" value={fields.password || ""} onChange={(event) => setField("password", event.target.value)} placeholder="文章密码" />
+            <input value={fields.passwordHint || ""} onChange={(event) => setField("passwordHint", event.target.value)} placeholder="密码提示" />
+          </div>
+        </SettingRow>
+      ) : null}
+    </section>
+  );
+}
+
+function SettingRow({ label, required, children }: { label: string; required?: boolean; children: ReactNode }) {
+  return (
+    <div className="setting-row">
+      <div className="setting-label">{label}{required ? <span>*</span> : null}</div>
+      <div className="setting-control">{children}</div>
+    </div>
+  );
+}
+
+function RadioGroup({
+  name,
+  value,
+  options,
+  onChange,
+}: {
+  name: string;
+  value: string;
+  options: Array<[string, string]>;
+  onChange: (value: string) => void;
 }) {
   return (
-    <div className="advanced-fields">
-      <label className="wide-field">
-        <span>摘要</span>
-        <textarea
-          value={fields.description}
-          onChange={(event) => setField("description", event.target.value)}
-          rows={2}
-          maxLength={320}
-        />
-      </label>
-      <label className="wide-field">
-        <span>封面路径</span>
-        <div className="input-with-icon"><ImagePlus size={15} /><input value={fields.image} onChange={(event) => setField("image", event.target.value)} placeholder="/image/cover.webp" /></div>
-      </label>
-      <label>
-        <span>更新日期</span>
-        <input type="date" value={fields.updated || ""} onChange={(event) => setField("updated", event.target.value || undefined)} />
-      </label>
-      <label>
-        <span>语言</span>
-        <select value={fields.lang} onChange={(event) => setField("lang", event.target.value)}>
-          <option value="zh-CN">简体中文</option>
-          <option value="zh-TW">繁体中文</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-        </select>
-      </label>
-      <label>
-        <span>置顶顺序</span>
-        <input
-          type="number"
-          min="0"
-          disabled={!fields.pinned}
-          value={fields.priority ?? ""}
-          onChange={(event) => setField("priority", event.target.value ? Number(event.target.value) : undefined)}
-          placeholder="数字越小越靠前"
-        />
-      </label>
-      <label>
-        <span>固定链接</span>
-        <input value={fields.permalink || ""} onChange={(event) => setField("permalink", event.target.value || undefined)} />
-      </label>
-      <div className="advanced-toggles wide-field">
-        <Toggle checked={fields.comment} label="允许评论" onChange={(checked) => setField("comment", checked)} />
-        <Toggle checked={fields.encrypted} label="文章加密" onChange={(checked) => setField("encrypted", checked)} />
-      </div>
-      {fields.encrypted ? (
-        <>
-          <label>
-            <span>文章密码</span>
-            <input type="password" value={fields.password || ""} onChange={(event) => setField("password", event.target.value)} />
-          </label>
-          <label>
-            <span>密码提示</span>
-            <input value={fields.passwordHint || ""} onChange={(event) => setField("passwordHint", event.target.value)} />
-          </label>
-        </>
-      ) : null}
+    <div className="radio-options" role="radiogroup" aria-label={name}>
+      {options.map(([optionValue, label]) => (
+        <label key={optionValue}>
+          <input type="radio" name={name} checked={value === optionValue} onChange={() => onChange(optionValue)} />
+          <span>{label}</span>
+        </label>
+      ))}
+    </div>
+  );
+}
+
+function ScheduleDialog({
+  publishing,
+  onClose,
+  onSchedule,
+}: {
+  publishing: boolean;
+  onClose: () => void;
+  onSchedule: (value: string) => void;
+}) {
+  const earliest = new Date(Date.now() + 5 * 60 * 1000);
+  const defaultValue = new Date(Date.now() + 60 * 60 * 1000);
+  const toLocalInput = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
+  const [value, setValue] = useState(toLocalInput(defaultValue));
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="schedule-dialog" role="dialog" aria-modal="true" aria-labelledby="schedule-title">
+        <header><h2 id="schedule-title">定时发布</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        <label><span>发布时间</span><input type="datetime-local" min={toLocalInput(earliest)} value={value} onChange={(event) => setValue(event.target.value)} /></label>
+        <div className="schedule-dialog-actions">
+          <button className="secondary-button" onClick={onClose}>取消</button>
+          <button className="csdn-publish-button" disabled={publishing || !value} onClick={() => onSchedule(new Date(value).toISOString())}>确认定时发布</button>
+        </div>
+      </section>
     </div>
   );
 }
@@ -1086,6 +1365,37 @@ function formatDate(value: string): string {
 function formatTime(value: string): string {
   const date = new Date(value);
   return new Intl.DateTimeFormat("zh-CN", { hour: "2-digit", minute: "2-digit" }).format(date);
+}
+
+function formatDateTime(value: string): string {
+  const date = new Date(value);
+  if (Number.isNaN(date.getTime())) return value;
+  return new Intl.DateTimeFormat("zh-CN", {
+    month: "numeric",
+    day: "numeric",
+    hour: "2-digit",
+    minute: "2-digit",
+  }).format(date);
+}
+
+function plainText(value: string): string {
+  return value
+    .replace(/```[\s\S]*?```/g, " ")
+    .replace(/<[^>]+>/g, " ")
+    .replace(/!\[[^\]]*\]\([^)]*\)/g, " ")
+    .replace(/\[([^\]]+)\]\([^)]*\)/g, "$1")
+    .replace(/[`#>*_~|\-]/g, " ")
+    .replace(/\s+/g, " ")
+    .trim();
+}
+
+function extractOutline(value: string): Array<{ depth: number; text: string }> {
+  return value
+    .split(/\r?\n/)
+    .map((line) => line.match(/^(#{1,6})\s+(.+?)\s*#*$/))
+    .filter((match): match is RegExpMatchArray => Boolean(match))
+    .map((match) => ({ depth: match[1].length, text: plainText(match[2]) }))
+    .filter((item) => item.text);
 }
 
 function countWords(value: string): number {
