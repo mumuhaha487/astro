@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import YAML from "yaml";
 import { makePostPath, parseDocument, serializeDocument } from "./frontmatter";
 
 describe("frontmatter documents", () => {
@@ -12,6 +13,34 @@ describe("frontmatter documents", () => {
 
   it("creates a safe path while keeping Chinese titles", () => {
     expect(makePostPath("  我的 / 新文章  ")).toBe("content/posts/我的-新文章.md");
+  });
+
+  it("serializes Astro date fields as plain YAML dates without weakening other strings", () => {
+    const fields = parseDocument("---\ntitle: Base\npublished: 2026-09-05\n---\n").fields;
+    const serialized = serializeDocument({
+      ...fields,
+      title: "true",
+      published: "2026-09-05",
+      updated: "2026-09-06",
+      description: "2026-09-07",
+      tags: ["null", "001", "2026-09-08"],
+    }, "Body");
+
+    expect(serialized).toMatch(/^published: 2026-09-05$/m);
+    expect(serialized).toMatch(/^updated: 2026-09-06$/m);
+    expect(serialized).toContain("title: 'true'");
+    expect(serialized).toContain("description: '2026-09-07'");
+    expect(serialized).toContain("  - 'null'");
+    expect(serialized).toContain("  - '001'");
+    expect(serialized).toContain("  - '2026-09-08'");
+
+    const yaml = serialized.match(/^---\n([\s\S]*?)\n---/)?.[1];
+    const astroCompatible = YAML.parse(yaml || "", { schema: "yaml-1.1" }) as Record<string, unknown>;
+    expect(astroCompatible.published).toBeInstanceOf(Date);
+    expect(astroCompatible.updated).toBeInstanceOf(Date);
+    expect(astroCompatible.title).toBe("true");
+    expect(astroCompatible.description).toBe("2026-09-07");
+    expect(astroCompatible.tags).toEqual(["null", "001", "2026-09-08"]);
   });
 
   it("preserves unsupported legacy publishing settings without data loss", () => {

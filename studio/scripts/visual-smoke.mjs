@@ -666,7 +666,24 @@ async function verifyDesktop() {
   await settingsDrawer.getByLabel("封面 URL 或路径").fill("/image/manual-cover.webp");
   assert.equal(await settingsDrawer.locator('.cover-preview-box img').getAttribute("src"), "/api/asset?path=%2Fimage%2Fmanual-cover.webp");
   await settingsDrawer.getByLabel("简介").fill("抽屉中的文章简介");
-  await settingsDrawer.getByLabel("标签").fill("Astro, Studio, 编辑器");
+  const articleTagInput = settingsDrawer.getByLabel("标签", { exact: true });
+  await articleTagInput.fill("Astro");
+  await articleTagInput.press("Enter");
+  assert.deepEqual(await settingsDrawer.locator(".tag-chip > span").allTextContents(), ["Astro"]);
+  await articleTagInput.fill("Studio, 编辑器, Astro");
+  await articleTagInput.press("Enter");
+  assert.deepEqual(await settingsDrawer.locator(".tag-chip > span").allTextContents(), ["Astro", "Studio", "编辑器"], "tag chips must support comma input and deduplication");
+  const tagColors = await settingsDrawer.locator(".tag-chip").evaluateAll((chips) => chips.map((chip) => getComputedStyle(chip).backgroundColor));
+  assert.equal(new Set(tagColors).size, tagColors.length, "different tag names must receive stable distinct colors");
+  await articleTagInput.press("Backspace");
+  assert.deepEqual(await settingsDrawer.locator(".tag-chip > span").allTextContents(), ["Astro", "Studio"], "Backspace must remove the last tag from an empty input");
+  await articleTagInput.fill("稍后提交");
+  await settingsDrawer.getByRole("button", { name: "删除标签 Studio" }).click();
+  assert.deepEqual(await settingsDrawer.locator(".tag-chip > span").allTextContents(), ["Astro"], "a tag must be individually removable");
+  assert.equal(await articleTagInput.inputValue(), "稍后提交", "removing a tag must preserve pending input");
+  await articleTagInput.fill("");
+  await articleTagInput.fill("Studio, 编辑器");
+  await articleTagInput.press("Enter");
   await settingsDrawer.getByLabel("分类").fill("工程实践");
   await settingsDrawer.getByLabel("发布日期").fill("2026-09-05");
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "草稿" }).locator("input").check({ force: true });
@@ -697,6 +714,7 @@ async function verifyDesktop() {
     "抽屉设置验证文章",
     "/image/editor/2026/09/visual-test.png",
     "抽屉中的文章简介",
+    "编辑器",
     "工程实践",
     "draft: true",
     "priority: 2",
@@ -1432,6 +1450,15 @@ async function verifyMobile(width) {
   });
   assert.deepEqual(firstSettingRowRect, { left: 14, width: width - 28 });
   assert.equal(await page.locator(".mobile-settings-head").isVisible(), true);
+  const mobileTagInput = page.getByLabel("标签", { exact: true });
+  await mobileTagInput.fill("移动端, Astro");
+  await mobileTagInput.press("Enter");
+  assert.deepEqual(await page.locator(".tag-chip > span").allTextContents(), ["移动端", "Astro"]);
+  const mobileTagRect = await page.locator(".tag-chip-list").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
+  });
+  assert(mobileTagRect.left >= 14 && mobileTagRect.right <= width - 14, `mobile tag input must fit the settings drawer: ${JSON.stringify(mobileTagRect)}`);
   const settingsPath = join(outputDirectory, `mobile-${width}-settings.png`);
   await page.screenshot({ path: settingsPath, animations: "disabled" });
   await page.locator(".mobile-settings-head button").click();
@@ -1920,7 +1947,7 @@ async function verifyScheduledPublish() {
   const { context, page, pageErrors, mutations } = await openEditor({ width: 1264, height: 720 });
   await page.locator(".title-input").fill("定时发布验证文章");
   await page.locator(".publish-bar-meta button").click();
-  await page.locator(".setting-input-with-action input").fill("Astro, 定时发布");
+  await page.getByLabel("标签", { exact: true }).fill("Astro, 定时发布");
   await page.locator(".publish-bar-meta button").click();
   await page.getByRole("button", { name: "定时发布" }).click();
   const scheduleLayout = await page.locator(".schedule-dialog").evaluate((dialog) => {
@@ -1975,7 +2002,7 @@ async function verifyScheduledPublish() {
   await page.locator(".toast", { hasText: "已安排在" }).waitFor();
   const scheduleMutation = mutations.find((mutation) => mutation.path === "/api/schedule");
   assert(scheduleMutation, "scheduled publish must call the schedule API");
-  assert.match(scheduleMutation.body.content, new RegExp(`published: '${target.date}'`));
+  assert.match(scheduleMutation.body.content, new RegExp(`published: ${target.date}`));
   assert.match(scheduleMutation.body.content, /draft: false/);
   assert.match(scheduleMutation.body.content, /scheduledAt:/);
   assert.deepEqual(pageErrors, [], `scheduled publish page errors: ${pageErrors.join("; ")}`);

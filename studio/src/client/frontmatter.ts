@@ -1,4 +1,4 @@
-import YAML from "yaml";
+import YAML, { Scalar } from "yaml";
 
 export interface FrontmatterFields {
   title: string;
@@ -126,6 +126,15 @@ const preferredOrder = [
   "passwordHint",
 ];
 
+function serializeFrontmatterValue(key: string, value: unknown): unknown {
+  if ((key === "published" || key === "updated") && typeof value === "string" && /^\d{4}-\d{2}-\d{2}$/.test(value)) {
+    const date = new Scalar(value);
+    date.type = Scalar.PLAIN;
+    return date;
+  }
+  return value;
+}
+
 export function serializeDocument(fields: FrontmatterFields, body: string): string {
   const ordered: Record<string, unknown> = {};
   for (const key of preferredOrder) {
@@ -134,7 +143,7 @@ export function serializeDocument(fields: FrontmatterFields, body: string): stri
     if (Array.isArray(value) && value.length === 0) continue;
     if (key === "priority" && fields.pinned !== true) continue;
     if ((key === "password" || key === "passwordHint") && fields.encrypted !== true) continue;
-    ordered[key] = value;
+    ordered[key] = serializeFrontmatterValue(key, value);
   }
   for (const [key, value] of Object.entries(fields)) {
     if (!(key in ordered) && !preferredOrder.includes(key) && value !== undefined) {

@@ -44,7 +44,9 @@ import {
 import { marked } from "marked";
 import {
   type ClipboardEvent,
+  type CSSProperties,
   type FormEvent,
+  type KeyboardEvent as ReactKeyboardEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -61,6 +63,13 @@ import {
   parseDocument,
   serializeDocument,
 } from "./frontmatter";
+import {
+  consumeTagInput,
+  MAX_ARTICLE_TAGS,
+  mergeTagText,
+  normalizeTags,
+  tagColorHue,
+} from "./tags";
 import {
   MdxEditorSlot,
   type MdxEditorSlotHandle,
@@ -212,7 +221,7 @@ function App() {
 
   const currentFields = useCallback((): FrontmatterFields | null => {
     if (!fields) return null;
-    return { ...fields, tags: parseTags(tagsText) };
+    return { ...fields, tags: mergeTagText(fields.tags, tagsText) };
   }, [fields, tagsText]);
 
   const currentContent = useCallback(() => {
@@ -455,7 +464,7 @@ function App() {
     setWorking(document);
     setFields(parsed.fields);
     setBody(parsed.body);
-    setTagsText(parsed.fields.tags.join(", "));
+    setTagsText("");
     const blocked = hasUnsafeRichContent(parsed.body);
     setMode(blocked ? "source" : "rich");
     setAdvancedOpen(false);
@@ -474,7 +483,7 @@ function App() {
     const parsed = parseDocument(content);
     setFields(parsed.fields);
     setBody(parsed.body);
-    setTagsText(parsed.fields.tags.join(", "));
+    setTagsText("");
     const blocked = hasUnsafeRichContent(parsed.body);
     setMode(blocked ? "source" : "rich");
     setEditorEpoch((value) => value + 1);
@@ -1184,9 +1193,9 @@ function App() {
                   fields={fields}
                   setField={setField}
                   tagsText={tagsText}
-                  onTagsChange={(value) => {
-                    setTagsText(value);
-                    setFields((current) => current ? { ...current, tags: parseTags(value) } : current);
+                  onTagsChange={(tags, pending) => {
+                    setTagsText(pending);
+                    setFields((current) => current ? { ...current, tags } : current);
                     markChanged();
                   }}
                   onUploadImage={uploadImage}
@@ -1448,7 +1457,7 @@ function AdvancedFields({
   fields: FrontmatterFields;
   setField: <K extends keyof FrontmatterFields>(key: K, value: FrontmatterFields[K]) => void;
   tagsText: string;
-  onTagsChange: (value: string) => void;
+  onTagsChange: (tags: string[], pending: string) => void;
   onUploadImage: (file: File) => Promise<string>;
   onExtractSummary: () => void;
   onClose: () => void;
@@ -1481,6 +1490,35 @@ function AdvancedFields({
       setCoverUploading(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
     }
+  }
+
+  function updateTagInput(value: string) {
+    const { committed, pending } = consumeTagInput(value);
+    onTagsChange(normalizeTags([...fields.tags, ...committed]), pending);
+  }
+
+  function commitTagInput() {
+    if (!tagsText.trim()) {
+      if (tagsText) onTagsChange(fields.tags, "");
+      return;
+    }
+    onTagsChange(mergeTagText(fields.tags, tagsText), "");
+  }
+
+  function handleTagKeyDown(event: ReactKeyboardEvent<HTMLInputElement>) {
+    if (event.key === "Enter") {
+      event.preventDefault();
+      commitTagInput();
+      return;
+    }
+    if (event.key === "Backspace" && !tagsText && fields.tags.length > 0) {
+      event.preventDefault();
+      onTagsChange(fields.tags.slice(0, -1), "");
+    }
+  }
+
+  function removeTag(index: number) {
+    onTagsChange(fields.tags.filter((_, tagIndex) => tagIndex !== index), tagsText);
   }
 
   return (
@@ -1551,9 +1589,39 @@ function AdvancedFields({
       </SettingRow>
 
       <SettingRow label="标签">
-        <div className="setting-input-with-action">
-          <input aria-label="标签" value={tagsText} onChange={(event) => onTagsChange(event.target.value)} placeholder="使用逗号分隔多个标签" />
-          <span>{fields.tags.length}/10</span>
+        <div className="tag-input-control">
+          <div className="tag-chip-list" role="list" aria-label="已添加标签">
+            {fields.tags.map((tag, index) => (
+              <span
+                className="tag-chip"
+                key={tag}
+                role="listitem"
+                style={{ "--tag-hue": tagColorHue(tag) } as CSSProperties}
+              >
+                <span>{tag}</span>
+                <button
+                  aria-label={`删除标签 ${tag}`}
+                  onMouseDown={(event) => event.preventDefault()}
+                  onClick={() => removeTag(index)}
+                  title={`删除标签 ${tag}`}
+                  type="button"
+                >
+                  <X size={12} />
+                </button>
+              </span>
+            ))}
+            <input
+              aria-label="标签"
+              value={tagsText}
+              onBlur={commitTagInput}
+              onChange={(event) => updateTagInput(event.target.value)}
+              onKeyDown={handleTagKeyDown}
+              placeholder={fields.tags.length ? "继续添加标签" : "输入标签，按 Enter 添加"}
+            />
+            <span className="tag-count" aria-label={`已添加 ${fields.tags.length} 个标签`}>
+              {fields.tags.length}/{MAX_ARTICLE_TAGS}
+            </span>
+          </div>
         </div>
       </SettingRow>
 
@@ -3076,10 +3144,6 @@ function SettingsDialog({
       </section>
     </div>
   );
-}
-
-function parseTags(value: string): string[] {
-  return [...new Set(value.split(/[,，\n]/).map((tag) => tag.trim()).filter(Boolean))];
 }
 
 function coverPreviewSource(value: string): string {

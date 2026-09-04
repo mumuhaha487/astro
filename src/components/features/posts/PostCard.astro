@@ -1,5 +1,4 @@
 ---
-import { render } from "astro:content";
 import { Icon } from "astro-icon/components";
 
 import { getFileDirFromPath, getPostUrl, getTagUrl } from "@/utils/url-utils";
@@ -31,7 +30,8 @@ const url = getPostUrl(entry);
 const hasCover = image !== undefined && image !== null && image !== "";
 const coverWidth = "28%";
 
-const { remarkPluginFrontmatter } = await render(entry);
+const { excerpt = "", words = 0 } = (entry.rendered?.metadata?.frontmatter ??
+	{}) as { excerpt?: string; words?: number };
 ---
 
 <div
@@ -96,7 +96,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 			hideUpdateDate={true}
 			className="mb-4"
 			showOnlyBasicMeta={true}
-			words={remarkPluginFrontmatter.words}
+			words={words}
 			showWordCount={true}
 		/>
 
@@ -106,7 +106,7 @@ const { remarkPluginFrontmatter } = await render(entry);
 				{ "line-clamp-2 md:line-clamp-1": !description },
 			]}
 		>
-			{description || remarkPluginFrontmatter.excerpt}
+			{description || excerpt}
 		</div>
 
 		<div class="flex flex-wrap gap-2 mt-2">
