@@ -346,6 +346,36 @@ async function layoutMetrics(page) {
       compose: rect(".compose-pane"),
       document: rect(".document-scroll"),
       draftBanner: rect(".draft-resume-banner"),
+      draftBannerItems: [...document.querySelectorAll(".draft-resume-banner > *")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        const icon = element.querySelector("svg");
+        const iconBounds = icon?.getBoundingClientRect();
+        return {
+          className: element.className,
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+          icon: iconBounds ? {
+            x: Math.round(iconBounds.x),
+            y: Math.round(iconBounds.y),
+            width: Math.round(iconBounds.width),
+            height: Math.round(iconBounds.height),
+          } : null,
+        };
+      }),
+      outlineHead: rect(".outline-pane-head"),
+      outlineHeadItems: [...document.querySelectorAll(".outline-pane-head > *")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          className: element.className,
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      }),
+      outlineEmpty: rect(".outline-empty"),
       titleInput: rect(".title-input"),
       publish: rect(".publish-bar"),
       publishMeta: rect(".publish-bar-meta"),
@@ -445,6 +475,33 @@ async function verifyDesktop() {
   assert.deepEqual(
     { x: metrics.draftBanner.x, y: metrics.draftBanner.y, width: metrics.draftBanner.width, height: metrics.draftBanner.height },
     { x: 288, y: 165, width: 688, height: 54 },
+  );
+  assert.deepEqual(
+    metrics.draftBannerItems,
+    [
+      { className: "draft-badge", x: 312, y: 182, width: 42, height: 20, icon: null },
+      { className: "draft-resume-title", x: 370, y: 181, width: 372, height: 22, icon: null },
+      { className: "draft-resume-action", x: 766, y: 182, width: 70, height: 20, icon: null },
+      { className: "", x: 860, y: 181, width: 56, height: 22, icon: null },
+      { className: "draft-banner-close", x: 940, y: 186, width: 12, height: 12, icon: { x: 940, y: 186, width: 12, height: 12 } },
+    ],
+    "desktop draft banner must match the CSDN internal geometry",
+  );
+  assert.deepEqual(
+    { x: metrics.outlineHead.x, y: metrics.outlineHead.y, width: metrics.outlineHead.width, height: metrics.outlineHead.height },
+    { x: 40, y: 132, width: 248, height: 49 },
+  );
+  assert.deepEqual(
+    metrics.outlineHeadItems,
+    [
+      { className: "", x: 40, y: 150, width: 28, height: 20 },
+      { className: "", x: 272, y: 148, width: 16, height: 24 },
+    ],
+    "desktop outline header must match the CSDN internal geometry",
+  );
+  assert.deepEqual(
+    { x: metrics.outlineEmpty.x, y: metrics.outlineEmpty.y, width: metrics.outlineEmpty.width, height: metrics.outlineEmpty.height },
+    { x: 40, y: 181, width: 248, height: 455 },
   );
   assert.deepEqual(
     { x: metrics.titleInput.x, y: metrics.titleInput.y, width: metrics.titleInput.width, height: metrics.titleInput.height },
@@ -881,6 +938,27 @@ async function verifyMobile(width) {
   return { path, drawerPath, settingsPath, metrics };
 }
 
+async function verifyCompactDropdownLayer() {
+  const width = 579;
+  const { context, page, pageErrors } = await openEditor({ width, height: 720 });
+  await page.locator(".csdn-editor-toolbar").evaluate((element) => { element.scrollLeft = 160; });
+  const moreStyleButton = page.getByRole("combobox", { name: "其他样式" });
+  await moreStyleButton.scrollIntoViewIfNeeded();
+  await moreStyleButton.click();
+  const moreStyleMenu = page.locator(".mdxeditor-select-content");
+  await moreStyleMenu.waitFor();
+  await assertEveryMenuItemIsTopLayer(
+    moreStyleMenu,
+    '[role="option"]',
+    "compact more-style menu must stay above the article title",
+  );
+  const path = join(outputDirectory, "compact-579-more-style-menu.png");
+  await page.screenshot({ path, animations: "disabled" });
+  assert.deepEqual(pageErrors, [], `579px page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { path };
+}
+
 async function verifyNarrowExistingArticle() {
   const width = 320;
   const height = 720;
@@ -1027,7 +1105,14 @@ async function verifyContentCrud() {
 }
 
 try {
-  const results = [await verifyDesktop(), await verifyMobile(390), await verifyMobile(360), await verifyNarrowExistingArticle(), await verifyContentCrud()];
+  const results = [
+    await verifyDesktop(),
+    await verifyMobile(390),
+    await verifyMobile(360),
+    await verifyCompactDropdownLayer(),
+    await verifyNarrowExistingArticle(),
+    await verifyContentCrud(),
+  ];
   console.log(JSON.stringify(results, null, 2));
 } finally {
   await browser.close();
