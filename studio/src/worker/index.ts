@@ -109,6 +109,10 @@ export default {
         const response = await routeApi(request, env, url);
         return secureResponse(response, true);
       }
+      const editorAssetPath = editorAssetRepositoryPath(url.pathname);
+      if (editorAssetPath && (request.method === "GET" || request.method === "HEAD")) {
+        return secureResponse(await proxyEditorAsset(request, env, editorAssetPath), false);
+      }
       const response = await env.ASSETS.fetch(request);
       return secureResponse(response, false);
     } catch (error) {
@@ -978,6 +982,46 @@ function normalizeDate(value: unknown): string {
 
 function rawGitHubUrl(env: Env, path: string): string {
   return `https://raw.githubusercontent.com/${encodeURIComponent(env.GITHUB_OWNER)}/${encodeURIComponent(env.GITHUB_REPO)}/${encodeURIComponent(env.GITHUB_BRANCH)}/${encodeGitHubPath(path)}`;
+}
+
+function editorAssetRepositoryPath(pathname: string): string | null {
+  let decoded: string;
+  try {
+    decoded = decodeURIComponent(pathname);
+  } catch {
+    return null;
+  }
+  if (decoded.length > 500 || decoded.includes("\\") || /[\u0000-\u001f\u007f]/.test(decoded)) return null;
+  const segments = decoded.split("/").filter(Boolean);
+  if (segments.length < 3 || !["image", "video"].includes(segments[0]) || segments[1] !== "editor") return null;
+  if (segments.some((segment) => segment === "." || segment === "..")) return null;
+  return `public/${segments.join("/")}`;
+}
+
+async function proxyEditorAsset(request: Request, env: Env, repositoryPath: string): Promise<Response> {
+  const headers = new Headers({
+    Accept: request.headers.get("Accept") || "*/*",
+    "User-Agent": "astro-blog-studio",
+  });
+  for (const name of ["Range", "If-None-Match", "If-Modified-Since"]) {
+    const value = request.headers.get(name);
+    if (value) headers.set(name, value);
+  }
+  const token = await getGitHubToken(env);
+  if (token) headers.set("Authorization", `Bearer ${token}`);
+  const response = await fetch(rawGitHubUrl(env, repositoryPath), {
+    method: request.method,
+    headers,
+    redirect: "follow",
+  });
+  const responseHeaders = new Headers(response.headers);
+  responseHeaders.delete("Set-Cookie");
+  if (response.ok) responseHeaders.set("Cache-Control", "public, max-age=300");
+  return new Response(request.method === "HEAD" ? null : response.body, {
+    status: response.status,
+    statusText: response.statusText,
+    headers: responseHeaders,
+  });
 }
 
 function encodeGitHubPath(path: string): string {
