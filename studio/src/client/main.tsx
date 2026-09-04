@@ -17,14 +17,12 @@ import {
   FileStack,
   FolderGit2,
   GitBranch,
-  GraduationCap,
   ImagePlus,
   KeyRound,
   Link2,
   ListTree,
   LoaderCircle,
   MessageSquareText,
-  MessageCircle,
   PencilLine,
   Pin,
   Play,
@@ -33,17 +31,14 @@ import {
   Redo2,
   Save,
   Search,
-  Send,
   Settings,
   Sigma,
-  Sparkles,
   Table2,
   Trash2,
   Undo2,
   Upload,
   UserRound,
   Video,
-  WandSparkles,
   X,
 } from "lucide-react";
 import { marked } from "marked";
@@ -71,7 +66,6 @@ import {
   type MdxEditorSlotHandle,
 } from "./MdxEditorSlot";
 import type {
-  AcademicWork,
   DraftDocument,
   DraftSummary,
   PostDocument,
@@ -84,16 +78,9 @@ import "./styles.css";
 type EditorMode = "rich" | "source" | "preview";
 type ListFilter = "all" | "published" | "draft" | "pinned";
 type SyncState = "idle" | "saving" | "saved" | "error";
-type MobilePanel = "outline" | "assistant" | null;
-type AssistantMode = "agent" | "chat";
+type MobilePanel = "outline" | null;
 type RunnableCodeTab = "html" | "css" | "javascript";
 type InsertPanel = "image" | "video" | "formula" | "link" | "template" | "resource" | "table" | null;
-
-interface AssistantMessage {
-  id: string;
-  role: "user" | "assistant";
-  text: string;
-}
 
 interface SavedTemplate {
   id: string;
@@ -162,17 +149,13 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
-  const [academicSearchOpen, setAcademicSearchOpen] = useState(false);
   const [runnableCodeOpen, setRunnableCodeOpen] = useState(false);
   const [insertPanel, setInsertPanel] = useState<InsertPanel>(null);
   const [linkSelection, setLinkSelection] = useState("");
   const [outlineVisible, setOutlineVisible] = useState(true);
   const [wideEditor, setWideEditor] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
-  const [assistantExpanded, setAssistantExpanded] = useState(true);
-  const [assistantMode, setAssistantMode] = useState<AssistantMode>("agent");
-  const [assistantPrompt, setAssistantPrompt] = useState("");
-  const [assistantMessages, setAssistantMessages] = useState<AssistantMessage[]>([]);
+  const [deletingKey, setDeletingKey] = useState<string | null>(null);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [syncLabel, setSyncLabel] = useState("未修改");
   const [revision, setRevision] = useState(0);
@@ -229,7 +212,7 @@ function App() {
   }, [body, currentContent, fields, revision, tagsText, working]);
 
   useEffect(() => {
-    if (!working || !fields || revision === 0 || revision === draftSyncedRevision) return;
+    if (!working || !fields || deletingKey || revision === 0 || revision === draftSyncedRevision) return;
     const targetRevision = revision;
     const timer = window.setTimeout(async () => {
       setSyncState("saving");
@@ -260,7 +243,7 @@ function App() {
       }
     }, 8_000);
     return () => window.clearTimeout(timer);
-  }, [currentContent, draftSyncedRevision, fields, revision, working]);
+  }, [currentContent, deletingKey, draftSyncedRevision, fields, revision, working]);
 
   async function loadPostsAndDrafts(force = false) {
     setLoadingPosts(true);
@@ -362,13 +345,6 @@ function App() {
     setHistoryOpen(true);
   }
 
-  function openAcademicSearch() {
-    setSidebarOpen(false);
-    setAdvancedOpen(false);
-    setMobilePanel(null);
-    setAcademicSearchOpen(true);
-  }
-
   function openRunnableCode() {
     setSidebarOpen(false);
     setAdvancedOpen(false);
@@ -412,12 +388,6 @@ function App() {
     setOutlineVisible((value) => !value);
   }
 
-  function openMobilePanel(panel: Exclude<MobilePanel, null>) {
-    setSidebarOpen(false);
-    setAdvancedOpen(false);
-    setMobilePanel((current) => current === panel ? null : panel);
-  }
-
   function toggleAdvancedFields() {
     setSidebarOpen(false);
     setMobilePanel(null);
@@ -440,102 +410,6 @@ function App() {
       heading?.scrollIntoView({ behavior: "smooth", block: "center" });
     }
     setMobilePanel(null);
-  }
-
-  function generateOutline() {
-    if (outlineItems.length) {
-      if (window.matchMedia("(max-width: 900px)").matches) setMobilePanel("outline");
-      else setOutlineVisible(true);
-      showToast(`已识别 ${outlineItems.length} 个标题`, "success");
-      return;
-    }
-    replaceEditorBody(`${body}${body ? "\n\n" : ""}## 背景\n\n## 实现过程\n\n## 总结\n`);
-    showToast("已生成文章大纲", "success");
-  }
-
-  function generateCodeBlock() {
-    replaceEditorBody(`${body}${body ? "\n\n" : ""}\`\`\`typescript\n// 在这里编写代码\n\`\`\`\n`);
-    showToast("已插入代码块", "success");
-  }
-
-  function generateSummary() {
-    const summary = plainText(body).slice(0, 256);
-    setField("description", summary);
-    setMobilePanel(null);
-    setAdvancedOpen(true);
-    showToast(summary ? "摘要已生成" : "正文中还没有内容", summary ? "success" : "info");
-  }
-
-  function smartFormat() {
-    const formatted = formatMarkdown(body);
-    if (formatted === body) {
-      showToast("正文排版已经很整齐", "info");
-      return;
-    }
-    replaceEditorBody(formatted);
-    showToast("已完成智能排版", "success");
-  }
-
-  function optimizeFullText() {
-    const optimized = optimizeMarkdown(body);
-    if (optimized === body) {
-      showToast("没有发现需要优化的格式问题", "info");
-      return;
-    }
-    replaceEditorBody(optimized);
-    showToast("已优化全文格式", "success");
-  }
-
-  function pushAssistantMessage(role: AssistantMessage["role"], text: string) {
-    setAssistantMessages((current) => [...current, { id: crypto.randomUUID(), role, text }]);
-  }
-
-  function runAssistantPrompt(request: string) {
-    const prompt = request.trim();
-    if (!prompt) return;
-    setAssistantPrompt("");
-    pushAssistantMessage("user", prompt);
-    const normalized = prompt.toLocaleLowerCase();
-    if (assistantMode === "agent") {
-      if (normalized.includes("大纲") || normalized.includes("结构")) {
-        generateOutline();
-        pushAssistantMessage("assistant", "已分析正文结构并处理文章大纲。你可以在目录中逐项跳转检查。");
-      } else if (normalized.includes("代码")) {
-        generateCodeBlock();
-        pushAssistantMessage("assistant", "已在正文末尾插入 TypeScript 代码块。");
-      } else if (normalized.includes("摘要")) {
-        generateSummary();
-        pushAssistantMessage("assistant", "已从正文提取摘要，并打开发文设置供你检查。");
-      } else if (normalized.includes("排版")) {
-        smartFormat();
-        pushAssistantMessage("assistant", "已统一标题、列表、空行与段落间距。");
-      } else if (normalized.includes("优化") || normalized.includes("润色")) {
-        optimizeFullText();
-        pushAssistantMessage("assistant", "已清理正文中的冗余空格和标点间距，代码块保持原样。");
-      } else if (normalized.includes("学术") || normalized.includes("论文") || normalized.includes("文献")) {
-        openAcademicSearch();
-        pushAssistantMessage("assistant", "已打开学术搜索，可以检索并把引用插入正文。");
-      } else {
-        pushAssistantMessage("assistant", "我可以直接执行：生成大纲、插入代码、智能排版、优化全文、提取摘要或学术搜索。请说明要处理的内容。");
-      }
-      return;
-    }
-    const headings = extractOutline(body).length;
-    const title = fields?.title.trim() || "当前文章";
-    pushAssistantMessage(
-      "assistant",
-      `${title}目前约 ${countWords(body)} 字、${headings} 个标题。${body.trim() ? "建议先确认主结论，再为每个章节补充示例、约束和验证结果。" : "正文还是空的，可以先在 Agent 模式生成三段式大纲。"}`,
-    );
-  }
-
-  function insertAcademicCitation(work: AcademicWork) {
-    const author = escapeMarkdownInline(work.authors.slice(0, 3).join(", "));
-    const details = [author, work.year, escapeMarkdownInline(work.venue || ""), work.doi ? `DOI: ${escapeMarkdownInline(work.doi)}` : ""].filter(Boolean).join(". ");
-    const title = escapeMarkdownInline(work.title);
-    const url = safeHttpUrl(work.url) || "https://openalex.org";
-    replaceEditorBody(`${body}${body ? "\n\n" : ""}> 参考文献：[${title}](${url})${details ? `，${details}` : ""}\n`);
-    setAcademicSearchOpen(false);
-    showToast("引用已插入正文", "success");
   }
 
   function insertRunnableCode(snippet: string) {
@@ -739,22 +613,84 @@ function App() {
     }
   }
 
-  async function removePost() {
-    if (!working || working.isNew) return;
-    const confirmed = window.confirm("确定要从 GitHub 删除这篇文章吗？此操作会产生一次删除提交。");
-    if (!confirmed) return;
+  function clearWorkingDocument() {
+    setWorking(null);
+    setFields(null);
+    setBody("");
+    setTagsText("");
+    setMode("rich");
+    setRevision(0);
+    setPublishedRevision(0);
+    setDraftSyncedRevision(0);
+    setSyncState("idle");
+    setSyncLabel("未修改");
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setHistoryOpen(false);
+    setEditorEpoch((value) => value + 1);
+    setSidebarOpen(true);
+  }
+
+  async function removeDraft(draft: DraftSummary) {
+    const title = draft.title || "未命名文章";
+    if (!window.confirm(`确定要删除草稿“${title}”吗？删除后无法恢复。`)) return;
+    setDeletingKey(`draft:${draft.key}`);
     try {
-      await api.deletePost(working.path, working.sha);
-      if (working.draftKey) await api.deleteDraft(working.draftKey).catch(() => undefined);
-      window.localStorage.removeItem(`astro-studio:${working.path}`);
-      setWorking(null);
-      setFields(null);
-      setBody("");
+      await api.deleteDraft(draft.key);
+      window.localStorage.removeItem(`astro-studio:${draft.path}`);
+      setDrafts((current) => current.filter((item) => item.key !== draft.key));
+      if (working?.draftKey === draft.key || (working?.isNew && working.path === draft.path)) {
+        clearWorkingDocument();
+      }
+      showToast("草稿已删除", "success");
+      await loadPostsAndDrafts(true);
+    } catch (error) {
+      showToast(errorMessage(error), "error");
+    } finally {
+      setDeletingKey(null);
+    }
+  }
+
+  async function removeArticle(article: Pick<PostMeta, "path" | "sha" | "title">) {
+    if (!window.confirm(`确定要从 GitHub 删除文章“${article.title || "未命名文章"}”吗？此操作会产生一次删除提交。`)) return;
+    setDeletingKey(`post:${article.path}`);
+    try {
+      await api.deletePost(article.path, article.sha);
+      const relatedDrafts = drafts.filter((draft) => draft.path === article.path);
+      await Promise.all(relatedDrafts.map((draft) => api.deleteDraft(draft.key).catch(() => undefined)));
+      window.localStorage.removeItem(`astro-studio:${article.path}`);
+      setPosts((current) => current.filter((post) => post.path !== article.path));
+      setDrafts((current) => current.filter((draft) => draft.path !== article.path));
+      if (working?.path === article.path) clearWorkingDocument();
       showToast("文章已从 GitHub 删除", "success");
       await loadPostsAndDrafts(true);
     } catch (error) {
       showToast(errorMessage(error), "error");
+    } finally {
+      setDeletingKey(null);
     }
+  }
+
+  async function removeCurrentDocument() {
+    if (!working || !fields) return;
+    if (!working.isNew) {
+      await removeArticle({ path: working.path, sha: working.sha, title: fields.title });
+      return;
+    }
+    if (working.draftKey) {
+      await removeDraft({
+        key: working.draftKey,
+        path: working.path,
+        title: fields.title,
+        updatedAt: new Date().toISOString(),
+        isNew: true,
+      });
+      return;
+    }
+    if (!window.confirm(`确定要放弃草稿“${fields.title || "未命名文章"}”吗？`)) return;
+    window.localStorage.removeItem(`astro-studio:${working.path}`);
+    clearWorkingDocument();
+    showToast("草稿已删除", "success");
   }
 
   function changeMode(nextMode: EditorMode) {
@@ -929,13 +865,6 @@ function App() {
           </button>
           <button className="icon-button topbar-notification" title="同步消息"><Bell size={18} /></button>
           <span className="topbar-separator" />
-          <button
-            className={`icon-button mobile-writing-tools-button ${mobilePanel ? "active" : ""}`}
-            onClick={() => openMobilePanel("assistant")}
-            title="目录与AI助手"
-          >
-            <Sparkles size={18} />
-          </button>
           <button className="icon-button" onClick={() => setSettingsOpen(true)} title="设置">
             <Settings size={18} />
           </button>
@@ -997,14 +926,24 @@ function App() {
               <div className="draft-section">
                 <div className="list-section-label">未发布草稿</div>
                 {orphanDrafts.map((draft) => (
-                  <button
-                    className={`post-row ${working?.draftKey === draft.key ? "selected" : ""}`}
-                    key={draft.key}
-                    onClick={() => void openDraft(draft)}
-                  >
-                    <span className="post-row-title">{draft.title || "未命名文章"}</span>
-                    <span className="post-row-meta">云端草稿 · {formatDate(draft.updatedAt)}</span>
-                  </button>
+                  <div className="post-row-wrap" key={draft.key}>
+                    <button
+                      className={`post-row ${working?.draftKey === draft.key ? "selected" : ""}`}
+                      onClick={() => void openDraft(draft)}
+                    >
+                      <span className="post-row-title">{draft.title || "未命名文章"}</span>
+                      <span className="post-row-meta">云端草稿 · {formatDate(draft.updatedAt)}</span>
+                    </button>
+                    <button
+                      aria-label={`删除草稿 ${draft.title || "未命名文章"}`}
+                      className="post-row-delete"
+                      disabled={deletingKey !== null}
+                      onClick={() => void removeDraft(draft)}
+                      title="删除草稿"
+                    >
+                      {deletingKey === `draft:${draft.key}` ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}
+                    </button>
+                  </div>
                 ))}
               </div>
             ) : null}
@@ -1016,21 +955,31 @@ function App() {
               <div className="list-empty">没有匹配的文章</div>
             ) : null}
             {filteredPosts.map((post) => (
-              <button
-                className={`post-row ${working?.path === post.path ? "selected" : ""}`}
-                key={post.path}
-                onClick={() => void openPost(post)}
-              >
-                <span className="post-row-title">
-                  {post.pinned ? <Pin size={13} fill="currentColor" /> : null}
-                  <span>{post.title}</span>
-                </span>
-                <span className="post-row-meta">
-                  <span className={post.draft ? "draft-dot" : "published-dot"} />
-                  {post.draft ? "草稿" : formatDate(post.published)}
-                  {post.category ? ` · ${post.category}` : ""}
-                </span>
-              </button>
+              <div className="post-row-wrap" key={post.path}>
+                <button
+                  className={`post-row ${working?.path === post.path ? "selected" : ""}`}
+                  onClick={() => void openPost(post)}
+                >
+                  <span className="post-row-title">
+                    {post.pinned ? <Pin size={13} fill="currentColor" /> : null}
+                    <span>{post.title}</span>
+                  </span>
+                  <span className="post-row-meta">
+                    <span className={post.draft ? "draft-dot" : "published-dot"} />
+                    {post.draft ? "草稿" : formatDate(post.published)}
+                    {post.category ? ` · ${post.category}` : ""}
+                  </span>
+                </button>
+                <button
+                  aria-label={`删除文章 ${post.title}`}
+                  className="post-row-delete"
+                  disabled={deletingKey !== null}
+                  onClick={() => void removeArticle(post)}
+                  title="删除文章"
+                >
+                  {deletingKey === `post:${post.path}` ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}
+                </button>
+              </div>
             ))}
           </div>
 
@@ -1090,7 +1039,6 @@ function App() {
                           rows={1}
                         />
                         <div className="title-side-tools">
-                          <Sparkles size={17} />
                           <span>{fields.title.length < 5 ? `还需输入${5 - fields.title.length}个字` : `${fields.title.length}/100`}</span>
                         </div>
                       </div>
@@ -1166,29 +1114,6 @@ function App() {
                 </div>
               </section>
 
-              <aside className="assistant-pane">
-                <div className="assistant-card">
-                  <button className="assistant-title" onClick={() => setAssistantExpanded(true)}><Sparkles size={22} /><strong>AI助手</strong><ChevronDown size={14} /></button>
-                  <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onAcademic={openAcademicSearch} />
-                </div>
-              </aside>
-
-              {assistantExpanded ? (
-                <AssistantWorkspace
-                  className="assistant-drawer"
-                  showHeader
-                  mode={assistantMode}
-                  prompt={assistantPrompt}
-                  messages={assistantMessages}
-                  onModeChange={setAssistantMode}
-                  onPromptChange={setAssistantPrompt}
-                  onSubmit={runAssistantPrompt}
-                  onClose={() => setAssistantExpanded(false)}
-                  onFormat={smartFormat}
-                  onOptimize={optimizeFullText}
-                  onSummary={generateSummary}
-                />
-              ) : null}
             </>
           )}
         </main>
@@ -1197,36 +1122,18 @@ function App() {
       {working && fields && mobilePanel ? (
         <>
           <button className="mobile-utility-scrim" onClick={() => setMobilePanel(null)} aria-label="关闭写作工具" />
-          <aside className={`mobile-utility-drawer ${mobilePanel === "assistant" ? "assistant-mode" : ""}`} aria-label="移动端写作工具">
+          <aside className="mobile-utility-drawer" aria-label="移动端文章目录">
             <header>
-              <div className="mobile-utility-tabs" role="tablist" aria-label="写作工具">
-                <button className={mobilePanel === "outline" ? "active" : ""} onClick={() => setMobilePanel("outline")} role="tab" aria-selected={mobilePanel === "outline"}><ListTree size={17} /> 目录</button>
-                <button className={mobilePanel === "assistant" ? "active" : ""} onClick={() => setMobilePanel("assistant")} role="tab" aria-selected={mobilePanel === "assistant"}><Sparkles size={17} /> AI助手</button>
-              </div>
+              <div className="mobile-utility-title"><ListTree size={17} /> 目录</div>
               <button className="mobile-utility-close" onClick={() => setMobilePanel(null)} title="关闭"><X size={19} /></button>
             </header>
-            {mobilePanel === "outline" ? (
-              outlineItems.length ? (
-                <nav className="mobile-outline-list" aria-label="移动端文章目录">
-                  {outlineItems.map((item, index) => (
-                    <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }} onClick={() => jumpToOutline(item, index)}>{item.text}</button>
-                  ))}
-                </nav>
-              ) : <p className="mobile-panel-empty">为正文添加标题后，将在这里自动生成目录</p>
-            ) : (
-              <AssistantWorkspace
-                className="mobile-assistant-workspace"
-                mode={assistantMode}
-                prompt={assistantPrompt}
-                messages={assistantMessages}
-                onModeChange={setAssistantMode}
-                onPromptChange={setAssistantPrompt}
-                onSubmit={runAssistantPrompt}
-                onFormat={smartFormat}
-                onOptimize={optimizeFullText}
-                onSummary={generateSummary}
-              />
-            )}
+            {outlineItems.length ? (
+              <nav className="mobile-outline-list" aria-label="移动端文章目录">
+                {outlineItems.map((item, index) => (
+                  <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }} onClick={() => jumpToOutline(item, index)}>{item.text}</button>
+                ))}
+              </nav>
+            ) : <p className="mobile-panel-empty">为正文添加标题后，将在这里自动生成目录</p>}
           </aside>
         </>
       ) : null}
@@ -1244,9 +1151,15 @@ function App() {
             <span>{syncLabel}</span>
           </div>
           <div className="publish-bar-actions">
-            {!working.isNew ? (
-              <button className="bottom-delete-button" onClick={() => void removePost()} title="删除文章"><Trash2 size={17} /></button>
-            ) : null}
+            <button
+              aria-label={working.isNew ? "删除当前草稿" : "删除当前文章"}
+              className="bottom-delete-button"
+              disabled={deletingKey !== null}
+              onClick={() => void removeCurrentDocument()}
+              title={working.isNew ? "删除草稿" : "删除文章"}
+            >
+              {deletingKey ? <LoaderCircle className="spin" size={17} /> : <Trash2 size={17} />}
+            </button>
             <button className="draft-save-button" onClick={() => void saveDraftNow()} disabled={publishing}>
               <Save size={16} /> 保存草稿 <ChevronDown size={14} />
             </button>
@@ -1281,13 +1194,6 @@ function App() {
           isNew={working.isNew}
           onClose={() => setHistoryOpen(false)}
           onRestore={restoreHistoryVersion}
-        />
-      ) : null}
-
-      {academicSearchOpen ? (
-        <AcademicSearchDialog
-          onClose={() => setAcademicSearchOpen(false)}
-          onInsert={insertAcademicCitation}
         />
       ) : null}
 
@@ -1412,103 +1318,6 @@ function Login({ onAuthenticated }: { onAuthenticated: (session: SessionInfo) =>
   );
 }
 
-function AssistantActions({
-  onOutline,
-  onCode,
-  onAcademic,
-}: {
-  onOutline: () => void;
-  onCode: () => void;
-  onAcademic: () => void;
-}) {
-  return (
-    <>
-      <button onClick={onOutline}><BookOpenText size={16} /> 大纲生成</button>
-      <button onClick={onCode}><Code2 size={16} /> 代码生成</button>
-      <button onClick={onAcademic}><GraduationCap size={16} /> 学术搜索</button>
-    </>
-  );
-}
-
-function AssistantWorkspace({
-  className,
-  showHeader = false,
-  mode,
-  prompt,
-  messages,
-  onModeChange,
-  onPromptChange,
-  onSubmit,
-  onClose,
-  onFormat,
-  onOptimize,
-  onSummary,
-}: {
-  className?: string;
-  showHeader?: boolean;
-  mode: AssistantMode;
-  prompt: string;
-  messages: AssistantMessage[];
-  onModeChange: (mode: AssistantMode) => void;
-  onPromptChange: (value: string) => void;
-  onSubmit: (value: string) => void;
-  onClose?: () => void;
-  onFormat: () => void;
-  onOptimize: () => void;
-  onSummary: () => void;
-}) {
-  const recommendations = ["把实践整理成教程", "为代码补充说明", "检查文章结构"];
-  return (
-    <section className={`assistant-workspace ${className || ""}`} aria-label="AI助手工作区">
-      {showHeader ? (
-        <header className="assistant-workspace-head">
-          <div className="assistant-brand"><Sparkles size={24} /><strong>AI助手</strong></div>
-          <div className="assistant-mode-switch" role="tablist" aria-label="AI助手模式">
-            <button className={mode === "agent" ? "active" : ""} onClick={() => onModeChange("agent")} role="tab" aria-selected={mode === "agent"}>Agent</button>
-            <button className={mode === "chat" ? "active" : ""} onClick={() => onModeChange("chat")} role="tab" aria-selected={mode === "chat"}>Chat</button>
-          </div>
-          <button className="assistant-close" onClick={onClose} title="收起AI助手"><X size={18} /></button>
-        </header>
-      ) : (
-        <div className="assistant-mobile-mode" role="tablist" aria-label="AI助手模式">
-          <button className={mode === "agent" ? "active" : ""} onClick={() => onModeChange("agent")} role="tab" aria-selected={mode === "agent"}><WandSparkles size={15} /> Agent</button>
-          <button className={mode === "chat" ? "active" : ""} onClick={() => onModeChange("chat")} role="tab" aria-selected={mode === "chat"}><MessageCircle size={15} /> Chat</button>
-        </div>
-      )}
-
-      <div className="assistant-conversation">
-        <p className="assistant-greeting">Hi！我是你的全能写作助手，只需一句话交代你的想法，我来帮你一键更新文章，开启丝滑的创作体验。</p>
-        {messages.length === 0 ? (
-          <div className="assistant-recommendations">
-            <div><span>创作热点推荐</span><button title="换一换"><RefreshCw size={14} /> 换一换</button></div>
-            {recommendations.map((item) => <button key={item} onClick={() => onPromptChange(item)}>{item}</button>)}
-          </div>
-        ) : (
-          <div className="assistant-messages" aria-live="polite">
-            {messages.map((message) => <p key={message.id} className={message.role}>{message.text}</p>)}
-          </div>
-        )}
-      </div>
-
-      <div className="assistant-quick-actions">
-        <button onClick={onFormat}><WandSparkles size={15} /> 智能排版</button>
-        <button onClick={onOptimize}><BookOpenText size={15} /> 优化全文</button>
-        <button onClick={onSummary}><MessageSquareText size={15} /> 提取摘要</button>
-      </div>
-
-      <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); onSubmit(prompt); }}>
-        <textarea value={prompt} onChange={(event) => onPromptChange(event.target.value)} placeholder="输入创作要求，AI帮你写" rows={3} />
-        <div>
-          <button type="button" className="assistant-add" title="添加内容"><Plus size={17} /></button>
-          <button type="button" className="assistant-model">Studio Agent <ChevronDown size={13} /></button>
-          <button className="assistant-send" disabled={!prompt.trim()} title="发送"><Send size={17} /></button>
-        </div>
-      </form>
-      <span className="assistant-disclaimer">内容由AI生成，仅供参考</span>
-    </section>
-  );
-}
-
 function EmptyEditor({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="empty-editor">
@@ -1613,7 +1422,7 @@ function AdvancedFields({
             placeholder="摘要：会在推荐、列表等场景外露，帮助读者快速了解内容"
           />
           <span>{fields.description.length} / 256</span>
-          <button onClick={onExtractSummary}><Sparkles size={15} /> AI提取摘要</button>
+          <button onClick={onExtractSummary}><MessageSquareText size={15} /> 提取摘要</button>
         </div>
       </SettingRow>
 
@@ -1911,70 +1720,6 @@ function HistoryDialog({
             <button className="csdn-publish-button history-restore-button" onClick={restore} disabled={!selectedContent || loadingContent}>恢复此版本</button>
           </div>
         </footer>
-      </section>
-    </div>
-  );
-}
-
-function AcademicSearchDialog({
-  onClose,
-  onInsert,
-}: {
-  onClose: () => void;
-  onInsert: (work: AcademicWork) => void;
-}) {
-  const [query, setQuery] = useState("");
-  const [works, setWorks] = useState<AcademicWork[]>([]);
-  const [loading, setLoading] = useState(false);
-  const [searched, setSearched] = useState(false);
-  const [error, setError] = useState("");
-
-  async function search(event: FormEvent) {
-    event.preventDefault();
-    const normalized = query.trim();
-    if (normalized.length < 2) return;
-    setLoading(true);
-    setSearched(true);
-    setError("");
-    try {
-      const result = await api.academicSearch(normalized);
-      setWorks(result.works);
-    } catch (reason) {
-      setWorks([]);
-      setError(errorMessage(reason));
-    } finally {
-      setLoading(false);
-    }
-  }
-
-  return (
-    <div className="modal-backdrop academic-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="academic-dialog" role="dialog" aria-modal="true" aria-labelledby="academic-title">
-        <header>
-          <div><GraduationCap size={20} /><h2 id="academic-title">学术搜索</h2></div>
-          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
-        </header>
-        <form className="academic-search-form" onSubmit={(event) => void search(event)}>
-          <div><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索论文、作者或研究主题" autoFocus /></div>
-          <button disabled={loading || query.trim().length < 2}>{loading ? <LoaderCircle className="spin" size={16} /> : null} 搜索</button>
-        </form>
-        <div className="academic-results">
-          {loading ? <div className="academic-status"><LoaderCircle className="spin" size={20} /> 正在检索 OpenAlex</div> : null}
-          {!loading && error ? <div className="academic-status error"><AlertCircle size={18} /> {error}</div> : null}
-          {!loading && !error && !searched ? <div className="academic-status">输入关键词，检索可引用的开放学术资料</div> : null}
-          {!loading && !error && searched && works.length === 0 ? <div className="academic-status">没有找到匹配的学术资料</div> : null}
-          {!loading && works.map((work) => (
-            <article className="academic-result" key={work.id}>
-              <div>
-                <h3>{work.title}</h3>
-                <p>{[work.authors.slice(0, 3).join(", "), work.year, work.venue].filter(Boolean).join(" · ") || "作者信息暂无"}</p>
-                {work.doi ? <code>DOI: {work.doi}</code> : null}
-              </div>
-              <button onClick={() => onInsert(work)}>插入引用</button>
-            </article>
-          ))}
-        </div>
-        <footer>数据来源 OpenAlex，插入前请核对作者、年份与链接</footer>
       </section>
     </div>
   );
@@ -2795,33 +2540,6 @@ function makeCodeFence(language: string, value: string): string {
   const longest = Math.max(0, ...Array.from(value.matchAll(/`+/g), (match) => match[0].length));
   const fence = "`".repeat(Math.max(3, longest + 1));
   return `${fence}${language}\n${value.trimEnd()}\n${fence}`;
-}
-
-function mapMarkdownProse(value: string, transform: (segment: string) => string): string {
-  return value
-    .split(/(```[\s\S]*?```)/g)
-    .map((segment, index) => index % 2 === 1 ? segment : transform(segment))
-    .join("");
-}
-
-function formatMarkdown(value: string): string {
-  return mapMarkdownProse(value, (segment) => segment
-    .split(/\r?\n/)
-    .map((line) => line
-      .replace(/^(#{1,6})([^#\s])/, "$1 $2")
-      .replace(/^(\s*)[-*+]([^\s-])/, "$1- $2")
-      .replace(/[ \t]+$/g, ""))
-    .join("\n")
-    .replace(/\n{3,}/g, "\n\n"))
-    .trimEnd();
-}
-
-function optimizeMarkdown(value: string): string {
-  return mapMarkdownProse(formatMarkdown(value), (segment) => segment
-    .replace(/[ \t]{2,}/g, " ")
-    .replace(/\s+([，。！？；：、])/g, "$1")
-    .replace(/([（【《])\s+/g, "$1")
-    .replace(/\s+([）】》])/g, "$1"));
 }
 
 function extractOutline(value: string): OutlineItem[] {

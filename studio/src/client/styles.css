@@ -484,11 +484,15 @@ button:disabled {
   text-transform: uppercase;
 }
 
+.post-row-wrap {
+  position: relative;
+}
+
 .post-row {
   display: block;
   width: 100%;
   margin: 1px 0;
-  padding: 10px 10px 9px;
+  padding: 10px 42px 9px 10px;
   overflow: hidden;
   border: 1px solid transparent;
   border-radius: 6px;
@@ -504,6 +508,35 @@ button:disabled {
 .post-row.selected {
   border-color: #bad7c8;
   background: var(--green-soft);
+}
+
+.post-row-delete {
+  position: absolute;
+  top: 50%;
+  right: 7px;
+  display: grid;
+  place-items: center;
+  width: 30px;
+  height: 30px;
+  padding: 0;
+  border: 0;
+  border-radius: 4px;
+  background: transparent;
+  color: #8a8b95;
+  cursor: pointer;
+  transform: translateY(-50%);
+}
+
+.post-row-delete:hover,
+.post-row-delete:focus-visible {
+  background: #fff0ec;
+  color: #fc5531;
+  outline: 0;
+}
+
+.post-row-delete:disabled {
+  cursor: wait;
+  opacity: 0.55;
 }
 
 .post-row-title {
@@ -2096,8 +2129,13 @@ button:disabled {
   min-width: 92px;
 }
 
+body > [data-radix-popper-content-wrapper],
+.mdxeditor-popup-container {
+  z-index: 1000 !important;
+}
+
 .mdxeditor-select-content {
-  z-index: 220 !important;
+  z-index: 1000 !important;
   box-sizing: border-box;
   width: 139px;
   min-width: 139px;
@@ -2133,7 +2171,7 @@ button:disabled {
 
 .csdn-format-menu-popup {
   position: fixed;
-  z-index: 220;
+  z-index: 1000;
   box-sizing: border-box;
   width: 139px;
   height: 257px;
@@ -2215,7 +2253,7 @@ button:disabled {
 
 .csdn-color-palette {
   position: fixed;
-  z-index: 220;
+  z-index: 1000;
   box-sizing: border-box;
   display: grid;
   grid-template-columns: repeat(9, 20px);
@@ -4636,6 +4674,15 @@ button:disabled {
     justify-content: space-between;
     padding: 0 12px 0 16px;
     border-bottom: 1px solid #ededf0;
+  }
+
+  .mobile-utility-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    color: #303138;
+    font-size: 14px;
+    font-weight: 600;
   }
 
   .mobile-utility-tabs {

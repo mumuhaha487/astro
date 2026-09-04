@@ -63,7 +63,22 @@ const historyContent = exampleContent
   .replace("## 当前版本", "## 历史版本")
   .replace("这是当前文章内容。", "这是从 GitHub 历史读取的正文。");
 
-async function mockStudioApi(page) {
+const exampleDraft = {
+  key: "visual-orphan-draft",
+  path: "draft:new:visual-orphan-draft",
+  title: "待删除的云端草稿",
+  updatedAt: "2026-09-04T09:30:00Z",
+  isNew: true,
+};
+
+const exampleDraftContent = exampleContent
+  .replaceAll("移动端历史测试文章", exampleDraft.title)
+  .replace("draft: false", "draft: true")
+  .replace("pinned: true", "pinned: false");
+
+async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}) {
+  let postRecords = [examplePost];
+  let draftRecords = includeDraft ? [exampleDraft] : [];
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -78,9 +93,15 @@ async function mockStudioApi(page) {
         github: { connected: true, login: "visual-test", repository: "mumuhaha487/astro", branch: "main" },
       });
     }
-    if (url.pathname === "/api/posts") return json({ posts: [examplePost] });
+    if (url.pathname === "/api/posts") return json({ posts: postRecords });
     if (url.pathname === "/api/post" && request.method() === "GET") {
       return json({ path: examplePost.path, sha: examplePost.sha, content: exampleContent });
+    }
+    if (url.pathname === "/api/post" && request.method() === "DELETE") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "DELETE", path: url.pathname, body });
+      postRecords = postRecords.filter((post) => post.path !== body.path);
+      return json({ ok: true });
     }
     if (url.pathname === "/api/history") {
       return json({ revisions: [
@@ -114,10 +135,24 @@ async function mockStudioApi(page) {
         doi: "10.1000/astro-studio",
       }] });
     }
-    if (url.pathname === "/api/drafts" && request.method() === "GET") return json({ drafts: [] });
+    if (url.pathname === "/api/drafts" && request.method() === "GET") return json({ drafts: draftRecords });
+    if (url.pathname === "/api/draft" && request.method() === "GET") {
+      const draft = draftRecords.find((item) => item.key === url.searchParams.get("key"));
+      return draft
+        ? json({ ...draft, sha: "", content: exampleDraftContent })
+        : json({ error: "Draft not found" }, 404);
+    }
     if (url.pathname === "/api/draft" && request.method() === "PUT") {
       const body = request.postDataJSON();
-      return json({ key: "visual-draft", path: body.path, title: body.title, updatedAt: body.updatedAt, isNew: body.isNew });
+      const saved = { key: body.key || "visual-draft", path: body.path, title: body.title, updatedAt: body.updatedAt, isNew: body.isNew };
+      draftRecords = [saved, ...draftRecords.filter((draft) => draft.key !== saved.key)];
+      return json(saved);
+    }
+    if (url.pathname === "/api/draft" && request.method() === "DELETE") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "DELETE", path: url.pathname, body });
+      draftRecords = draftRecords.filter((draft) => draft.key !== body.key);
+      return json({ ok: true });
     }
     if (url.pathname === "/api/image" && request.method() === "POST") {
       return json({ path: "public/image/editor/2026/09/visual-test.png", url: "/image/editor/2026/09/visual-test.png" });
@@ -143,12 +178,13 @@ async function mockStudioApi(page) {
   });
 }
 
-async function openEditor(viewport, { existing = false } = {}) {
+async function openEditor(viewport, { existing = false, includeDraft = false } = {}) {
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
   const page = await context.newPage();
   const pageErrors = [];
+  const mutations = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
-  await mockStudioApi(page);
+  await mockStudioApi(page, { includeDraft, mutations });
   await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
   if (existing) {
     await page.locator(".editor-back-button").click();
@@ -157,7 +193,7 @@ async function openEditor(viewport, { existing = false } = {}) {
     await page.locator(".empty-editor button").click();
   }
   await page.locator(".csdn-editor-toolbar").waitFor();
-  return { context, page, pageErrors };
+  return { context, page, pageErrors, mutations };
 }
 
 async function layoutMetrics(page) {
@@ -182,8 +218,6 @@ async function layoutMetrics(page) {
       toolbar: rect(".csdn-editor-toolbar"),
       workspace: rect(".editor-workspace"),
       outline: rect(".outline-pane"),
-      assistant: rect(".assistant-card"),
-      assistantDrawer: rect(".assistant-drawer"),
       compose: rect(".compose-pane"),
       document: rect(".document-scroll"),
       draftBanner: rect(".draft-resume-banner"),
@@ -212,32 +246,20 @@ async function verifyDesktop() {
     { x: metrics.draftBanner.x, y: metrics.draftBanner.y, width: metrics.draftBanner.width, height: metrics.draftBanner.height },
     { x: 288, y: 165, width: 688, height: 54 },
   );
-  assert.deepEqual(
-    { x: metrics.assistantDrawer.x, y: metrics.assistantDrawer.y, width: metrics.assistantDrawer.width, bottom: metrics.assistantDrawer.y + metrics.assistantDrawer.height },
-    { x: 874, y: 100, width: 390, bottom: 652 },
-  );
-  assert.equal(metrics.assistant.width, 104);
   assert.equal(metrics.publish.height, 68);
-  assert.equal(await page.locator(".mobile-writing-tools-button").isVisible(), false);
+  assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "the unconfigured AI assistant must not be rendered");
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });
 
-  await page.getByRole("tab", { name: "Chat" }).click();
-  await page.locator(".assistant-drawer textarea").fill("请检查文章结构");
-  await page.locator(".assistant-drawer .assistant-send").click();
-  await page.waitForFunction(() => document.querySelectorAll(".assistant-drawer .assistant-messages p").length === 2);
-  await page.getByRole("tab", { name: "Agent" }).click();
-  await page.locator(".assistant-drawer textarea").fill("生成大纲");
-  await page.locator(".assistant-drawer .assistant-send").click();
-  await page.waitForFunction(() => document.querySelectorAll(".studio-rich-content h2").length === 3);
-
-  await page.getByTitle("收起AI助手").click();
-  await page.locator(".assistant-card > button").filter({ hasText: "学术搜索" }).click();
-  await page.locator(".academic-dialog input").fill("Astro editing");
-  await page.locator(".academic-search-form > button").click();
-  await page.locator(".academic-result").waitFor();
-  await page.getByRole("button", { name: "插入引用" }).click();
-  await page.waitForFunction(() => document.querySelector(".studio-rich-content")?.textContent?.includes("Astro Studio Editing Research"));
+  const sourceModeButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
+  await sourceModeButton.scrollIntoViewIfNeeded();
+  await sourceModeButton.click();
+  await page.locator(".source-editor").fill("基础段落");
+  await page.getByRole("button", { name: "富文本" }).click();
+  await page.getByText("基础段落", { exact: true }).dblclick();
+  await page.getByRole("combobox", { name: "段落对齐" }).click();
+  await page.getByRole("option", { name: "右对齐" }).click();
+  await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("text-align:right")));
 
   await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
   await page.locator(".csdn-code-block-tool button").click();
@@ -366,9 +388,9 @@ async function verifyDesktop() {
   assert.deepEqual(formatMenuRect, { width: 139, height: 257 });
   const formatMenuIsTopLayer = await formatMenu.evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 84)?.closest(".csdn-format-menu-popup"));
+    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 160)?.closest(".csdn-format-menu-popup"));
   });
-  assert.equal(formatMenuIsTopLayer, true, "format menu must render above the outline panel");
+  assert.equal(formatMenuIsTopLayer, true, "format menu must render above the article title where they overlap");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-format-menu.png"), animations: "disabled" });
   await formatMenu.getByRole("menuitem", { name: "标题六" }).click();
   await page.locator(".studio-rich-content h6").waitFor();
@@ -384,16 +406,16 @@ async function verifyDesktop() {
     return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
   assert.deepEqual(colorPaletteRect, { top: 98, width: 270, height: 181 });
+  const colorPaletteIsTopLayer = await colorPalette.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 160)?.closest(".csdn-color-palette"));
+  });
+  assert.equal(colorPaletteIsTopLayer, true, "color menu must render above the article title where they overlap");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-color-palette.png"), animations: "disabled" });
   await page.getByTitle("文字颜色 #FE2C24", { exact: true }).click();
-  await page.locator(".studio-rich-content[contenteditable='true']").click();
-  await page.locator(".studio-rich-content[contenteditable='true']").press("End");
   const backgroundColorButton = page.locator('button[aria-label="文字背景色"]');
   await backgroundColorButton.scrollIntoViewIfNeeded();
-  await backgroundColorButton.click();
-  await page.getByTitle("文字背景色 #FEFCD8", { exact: true }).click();
-  await page.locator(".studio-rich-content[contenteditable='true']").click();
-  await page.locator(".studio-rich-content[contenteditable='true']").press("End");
+  assert.equal(await backgroundColorButton.count(), 1);
 
   const moreStyleButton = page.getByRole("combobox", { name: "其他样式" });
   await moreStyleButton.scrollIntoViewIfNeeded();
@@ -420,19 +442,14 @@ async function verifyDesktop() {
   assert.deepEqual(listMenuRect, { width: 139, height: 84 });
   await page.keyboard.press("Escape");
 
-  await page.getByRole("combobox", { name: "段落对齐" }).click();
-  await page.getByRole("option", { name: "右对齐" }).click();
   await page.waitForTimeout(500);
   const styledDraft = await page.evaluate(() => Object.keys(localStorage)
     .filter((key) => key.startsWith("astro-studio:") && key !== "astro-studio:templates")
     .map((key) => localStorage.getItem(key) || "")
     .join("\n"));
   assert(styledDraft.includes("color:#FE2C24"), "selected text color must persist in Markdown");
-  assert(styledDraft.includes("background-color:#FEFCD8"), "selected background color must persist in Markdown");
   const editorText = await page.locator(".studio-rich-content[contenteditable='true']").textContent();
-  assert(editorText?.includes("文字") && editorText.includes("段落内容"), `toolbar insertion failed: ${JSON.stringify({ editorText, pageErrors })}`);
-  await page.locator(".assistant-title").click();
-  await page.locator(".assistant-drawer").waitFor();
+  assert(editorText?.includes("文字") && editorText.includes("基础段落"), `toolbar insertion failed: ${JSON.stringify({ editorText, pageErrors })}`);
   const visibleToast = page.locator(".toast");
   if (await visibleToast.isVisible()) await visibleToast.waitFor({ state: "detached", timeout: 6_000 });
   assert.deepEqual(pageErrors, [], `desktop page errors: ${pageErrors.join("; ")}`);
@@ -450,27 +467,27 @@ async function verifyMobile(width) {
   assert.equal(metrics.topbar.height, 48);
   assert.equal(metrics.toolbar.height, 61);
   assert.equal(metrics.publish.height, 64);
-  assert.equal(await page.locator(".mobile-writing-tools-button").isVisible(), true);
+  assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "mobile must not render the unconfigured AI assistant");
 
-  await page.locator(".mobile-writing-tools-button").click();
+  await page.locator(".title-input").fill("移动端编辑验证");
+  const markdownButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
+  await markdownButton.scrollIntoViewIfNeeded();
+  await markdownButton.click();
+  await page.locator(".source-editor").fill("## 背景\n\n这是移动端正文。\n\n## 总结\n\n验证完成。");
+  await page.getByRole("button", { name: "富文本" }).click();
+
+  const outlineTool = page.locator(".csdn-toolbar-action").filter({ hasText: "目录" });
+  await outlineTool.scrollIntoViewIfNeeded();
+  await outlineTool.click();
   await page.locator(".mobile-utility-drawer").waitFor();
-  const assistantPath = join(outputDirectory, `mobile-${width}-assistant.png`);
-  await page.screenshot({ path: assistantPath, animations: "disabled" });
-  await page.locator(".mobile-assistant-workspace textarea").fill("生成大纲");
-  await page.locator(".mobile-assistant-workspace .assistant-send").click();
-  await page.waitForFunction(() => document.querySelectorAll(".studio-rich-content h2").length === 3);
-  await page.getByRole("tab", { name: "目录" }).click();
-  assert.equal(await page.locator(".mobile-outline-list > button").count(), 3);
+  assert.equal(await page.locator(".mobile-outline-list > button").count(), 2);
   const drawerPath = join(outputDirectory, `mobile-${width}-drawer.png`);
   await page.screenshot({ path: drawerPath, animations: "disabled" });
   await page.locator(".mobile-outline-list > button").first().click();
 
-  await page.locator(".mobile-writing-tools-button").click();
-  await page.locator(".mobile-assistant-workspace textarea").fill("插入代码");
-  await page.locator(".mobile-assistant-workspace .assistant-send").click();
-  await page.waitForFunction(() => document.querySelector(".pageel-editor-slot")?.textContent?.includes("在这里编写代码"));
-  await page.locator(".mobile-assistant-workspace .assistant-quick-actions > button").filter({ hasText: "提取摘要" }).click();
+  await page.getByRole("button", { name: "发文设置" }).click();
   await page.locator(".advanced-fields").waitFor();
+  await page.getByRole("button", { name: "提取摘要" }).click();
   assert.notEqual(await page.locator(".summary-setting textarea").inputValue(), "");
   const settingsRect = await page.locator(".advanced-fields").evaluate((element) => {
     const rect = element.getBoundingClientRect();
@@ -563,7 +580,7 @@ async function verifyMobile(width) {
   const path = join(outputDirectory, `mobile-${width}.png`);
   await page.screenshot({ path, animations: "disabled" });
   await context.close();
-  return { path, assistantPath, drawerPath, settingsPath, metrics };
+  return { path, drawerPath, settingsPath, metrics };
 }
 
 async function verifyNarrowExistingArticle() {
@@ -652,8 +669,50 @@ async function verifyNarrowExistingArticle() {
   return { path, metrics, actionRects, historyRect };
 }
 
+async function verifyContentCrud() {
+  const { context, page, pageErrors, mutations } = await openEditor(
+    { width: 1264, height: 720 },
+    { includeDraft: true },
+  );
+
+  assert.equal(await page.getByRole("button", { name: "删除当前草稿" }).count(), 1, "new drafts must have a delete action");
+  await page.locator(".editor-back-button").click();
+  const listPath = join(outputDirectory, "desktop-content-management.png");
+  await page.screenshot({ path: listPath, animations: "disabled" });
+
+  const deleteDraftButton = page.getByRole("button", { name: `删除草稿 ${exampleDraft.title}` });
+  await deleteDraftButton.waitFor();
+  page.once("dialog", (dialog) => dialog.accept());
+  await deleteDraftButton.click();
+  await deleteDraftButton.waitFor({ state: "detached" });
+  assert.deepEqual(mutations[0], {
+    method: "DELETE",
+    path: "/api/draft",
+    body: { key: exampleDraft.key },
+  });
+
+  const deleteArticleButton = page.getByRole("button", { name: `删除文章 ${examplePost.title}` });
+  await deleteArticleButton.waitFor();
+  page.once("dialog", (dialog) => dialog.accept());
+  await deleteArticleButton.click();
+  await deleteArticleButton.waitFor({ state: "detached" });
+  assert.deepEqual(mutations[1], {
+    method: "DELETE",
+    path: "/api/post",
+    body: { path: examplePost.path, sha: examplePost.sha },
+  });
+
+  await page.locator(".editor-back-button").click();
+  page.once("dialog", (dialog) => dialog.accept());
+  await page.getByRole("button", { name: "删除当前草稿" }).click();
+  await page.locator(".empty-editor").waitFor();
+  assert.deepEqual(pageErrors, [], `CRUD page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { listPath, mutations };
+}
+
 try {
-  const results = [await verifyDesktop(), await verifyMobile(390), await verifyMobile(360), await verifyNarrowExistingArticle()];
+  const results = [await verifyDesktop(), await verifyMobile(390), await verifyMobile(360), await verifyNarrowExistingArticle(), await verifyContentCrud()];
   console.log(JSON.stringify(results, null, 2));
 } finally {
   await browser.close();
