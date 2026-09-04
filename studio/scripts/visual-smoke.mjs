@@ -317,6 +317,27 @@ async function layoutMetrics(page) {
       draftBanner: rect(".draft-resume-banner"),
       titleInput: rect(".title-input"),
       publish: rect(".publish-bar"),
+      publishMeta: rect(".publish-bar-meta"),
+      publishMetaItems: [...document.querySelectorAll(".publish-bar-meta > *")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      }),
+      publishSync: rect(".publish-sync"),
+      publishActions: [...document.querySelectorAll(".publish-bar-actions > button")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          label: element.getAttribute("aria-label") || element.textContent?.trim() || "",
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      }),
     };
   });
 }
@@ -369,6 +390,24 @@ async function verifyDesktop() {
     { x: 288, y: 243, width: 688, height: 55 },
   );
   assert.equal(metrics.publish.height, 68);
+  assert.deepEqual(
+    metrics.publishMetaItems,
+    [
+      { x: 107, y: 669, width: 50, height: 32 },
+      { x: 165, y: 674, width: 86, height: 22 },
+    ],
+    "desktop publish metadata must match the CSDN geometry",
+  );
+  assert.deepEqual(
+    metrics.publishActions,
+    [
+      { label: "删除当前草稿", x: 741, y: 665, width: 40, height: 40 },
+      { label: "保存草稿", x: 797, y: 665, width: 116, height: 40 },
+      { label: "定时发布", x: 929, y: 665, width: 116, height: 40 },
+      { label: "发布博客", x: 1061, y: 665, width: 96, height: 40 },
+    ],
+    "desktop publish actions must match the CSDN geometry while retaining delete",
+  );
   await page.getByTitle("同步消息").click();
   await page.locator(".toast", { hasText: "等待同步" }).waitFor();
   await page.locator(".title-input").fill("短标题");
@@ -778,6 +817,12 @@ async function verifyNarrowExistingArticle() {
     return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
   }));
   assert.equal(actionRects.length, 4, "existing articles must keep delete, save, schedule, and publish actions");
+  assert.deepEqual(actionRects, [
+    { left: 44, right: 80, width: 36 },
+    { left: 87, right: 158, width: 71 },
+    { left: 165, right: 236, width: 71 },
+    { left: 243, right: 312, width: 69 },
+  ], "320px publish actions must retain stable, non-overlapping geometry");
   for (const rect of actionRects) {
     assert(rect.left >= 0 && rect.right <= width && rect.width > 0, `publish action is clipped: ${JSON.stringify(rect)}`);
   }

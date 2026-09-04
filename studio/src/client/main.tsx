@@ -29,7 +29,6 @@ import {
   Plus,
   RefreshCw,
   Redo2,
-  Save,
   Search,
   Settings,
   Sigma,
@@ -1188,7 +1187,7 @@ function App() {
               {deletingKey ? <LoaderCircle className="spin" size={17} /> : <Trash2 size={17} />}
             </button>
             <button className="draft-save-button" onClick={() => void saveDraftNow()} disabled={publishing}>
-              <Save size={16} /> 保存草稿 <ChevronDown size={14} />
+              保存草稿 <ChevronDown size={16} />
             </button>
             <button className="schedule-button" onClick={() => setScheduleOpen(true)} disabled={publishing}>定时发布 <ChevronLeft size={15} className="arrow-right" /></button>
             <button className="csdn-publish-button" onClick={() => void publishPost(false)} disabled={publishing}>
