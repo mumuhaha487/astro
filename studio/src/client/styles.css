@@ -1987,7 +1987,7 @@ button:disabled {
   align-items: center;
   justify-content: center;
   flex-direction: column;
-  gap: 2px;
+  gap: 1px;
   width: 48px;
   height: 60px;
   min-width: 48px;
@@ -1999,6 +1999,7 @@ button:disabled {
   font-size: 0;
   line-height: 1;
   cursor: pointer;
+  justify-content: flex-start;
 }
 
 .pageel-editor-slot [class*="toolbarRoot"] button:hover,
@@ -2011,9 +2012,9 @@ button:disabled {
 
 .pageel-editor-slot [class*="toolbarRoot"] button svg,
 .csdn-toolbar-action svg {
-  width: 19px;
-  height: 19px;
-  flex: 0 0 19px;
+  width: 24px;
+  height: 24px;
+  flex: 0 0 24px;
 }
 
 .pageel-editor-slot [class*="toolbarRoot"] button::after,
@@ -2047,40 +2048,42 @@ button:disabled {
 .pageel-editor-slot button[aria-label*="table" i]::after { content: "表格"; }
 
 .pageel-editor-slot .csdn-format-tool {
-  flex-basis: 62px;
-  width: 62px;
-  min-width: 62px;
+  flex-basis: 43px;
+  width: 43px;
+  min-width: 43px;
 }
 
 .csdn-format-menu {
   box-sizing: border-box;
   display: inline-flex;
-  flex: 0 0 62px;
+  flex: 0 0 43px;
   align-items: stretch;
-  width: 62px;
+  width: 43px;
   height: 60px;
-  padding: 0 4px;
+  padding: 0;
 }
 
 .pageel-editor-slot .csdn-format-menu > button {
-  flex-basis: 54px;
-  width: 54px;
-  min-width: 54px;
+  flex-basis: 43px;
+  width: 43px;
+  min-width: 43px;
 }
 
 .pageel-editor-slot .csdn-format-trigger-icon {
   display: block;
-  height: 19px;
+  width: 24px;
+  height: 24px;
   color: #3d3e45;
   font-size: 19px;
   font-weight: 500;
-  line-height: 19px;
+  line-height: 24px;
+  text-align: center;
 }
 
 .pageel-editor-slot .csdn-format-menu .csdn-format-caret {
   position: absolute;
   top: 11px;
-  right: 0;
+  right: 6px;
   display: block;
   width: 14px;
   height: 14px;
@@ -2090,8 +2093,23 @@ button:disabled {
 }
 
 .pageel-editor-slot .csdn-format-menu .csdn-format-caret svg {
-  width: 14px;
-  height: 14px;
+  display: none;
+}
+
+.pageel-editor-slot .csdn-format-menu .csdn-format-caret::after,
+.pageel-editor-slot button[aria-label="其他样式"] > span[aria-hidden]::after,
+.pageel-editor-slot button[aria-label="列表"] > span[aria-hidden]::after,
+.pageel-editor-slot button[aria-label="段落对齐"] > span[aria-hidden]::after,
+.pageel-editor-slot button[aria-label="文字颜色"] > span[aria-hidden]::after,
+.pageel-editor-slot button[aria-label="文字背景色"] > span[aria-hidden]::after {
+  position: absolute;
+  top: 5px;
+  left: 4px;
+  width: 0;
+  height: 0;
+  border: 3px solid transparent;
+  border-top-color: #555666;
+  content: "";
 }
 
 .pageel-editor-slot button[aria-label="其他样式"] > span:not([aria-hidden]),
@@ -2112,7 +2130,7 @@ button:disabled {
 .pageel-editor-slot button[aria-label="段落对齐"] > span[aria-hidden] {
   position: absolute;
   top: 11px;
-  right: 0;
+  right: 6px;
   width: 14px;
   height: 14px;
 }
@@ -2122,8 +2140,44 @@ button:disabled {
 .pageel-editor-slot button[aria-label="文字颜色"] > span[aria-hidden] svg,
 .pageel-editor-slot button[aria-label="文字背景色"] > span[aria-hidden] svg,
 .pageel-editor-slot button[aria-label="段落对齐"] > span[aria-hidden] svg {
-  width: 14px;
-  height: 14px;
+  display: none;
+}
+
+.pageel-editor-slot .csdn-history-tools button {
+  padding-top: 7px;
+}
+
+.pageel-editor-slot .csdn-format-menu button [class*="tooltipTrigger"] > .csdn-format-trigger-icon,
+.pageel-editor-slot button[aria-label="其他样式"] > svg:first-of-type,
+.pageel-editor-slot button[aria-label="列表"] > svg:first-of-type,
+.pageel-editor-slot button[aria-label="段落对齐"] > svg:first-of-type,
+.pageel-editor-slot button[aria-label="代码"] > svg:first-of-type {
+  position: absolute;
+  top: 5px;
+  left: 3px;
+}
+
+.pageel-editor-slot .csdn-format-menu button [class*="tooltipTrigger"] > span:not([aria-hidden]),
+.pageel-editor-slot button[aria-label="其他样式"] > span:not([aria-hidden]),
+.pageel-editor-slot button[aria-label="列表"] > span:not([aria-hidden]),
+.pageel-editor-slot button[aria-label="段落对齐"] > span:not([aria-hidden]),
+.pageel-editor-slot button[aria-label="代码"] > span:not([aria-hidden]) {
+  position: absolute;
+  top: 30px;
+  right: 0;
+  left: 0;
+  width: 100%;
+  text-align: center;
+}
+
+.pageel-editor-slot .csdn-history-tools button [class*="tooltipTrigger"] > span,
+.pageel-editor-slot .csdn-color-menu button [class*="tooltipTrigger"] > span:not([aria-hidden]),
+.pageel-editor-slot .csdn-otherstyle-tools > button [class*="tooltipTrigger"] > span {
+  transform: translateY(1px);
+}
+
+.pageel-editor-slot button::after {
+  transform: translateY(1px);
 }
 
 .csdn-align-option {
@@ -2249,7 +2303,7 @@ body > [data-radix-popper-content-wrapper],
 .pageel-editor-slot .csdn-color-menu .csdn-color-caret {
   position: absolute;
   top: 11px;
-  right: 0;
+  right: -1px;
   display: block;
   width: 14px;
   height: 14px;
@@ -2259,8 +2313,7 @@ body > [data-radix-popper-content-wrapper],
 }
 
 .pageel-editor-slot .csdn-color-menu .csdn-color-caret svg {
-  width: 14px;
-  height: 14px;
+  display: none;
 }
 
 .csdn-color-palette {
@@ -2317,17 +2370,211 @@ body > [data-radix-popper-content-wrapper],
 }
 
 .csdn-tool-group {
+  box-sizing: border-box;
   display: inline-flex;
   flex: 0 0 auto;
   align-items: stretch;
   height: 60px;
 }
 
+.pageel-editor-slot .csdn-editor-toolbar,
+.pageel-editor-slot [class*="toolbarRoot"] {
+  padding: 0 32px 0 0;
+}
+
+.csdn-history-tools {
+  flex-basis: 152px;
+  width: 152px;
+  margin-left: 31px;
+  padding-left: 5px;
+  gap: 10px;
+}
+
+.csdn-history-tools > [class*="toolbarGroupOfGroups"] {
+  display: flex;
+  flex: 0 0 82px;
+  gap: 10px;
+  width: 82px;
+  margin: 0;
+}
+
+.csdn-history-tools [class*="toolbarToggleSingleGroup"],
+.csdn-history-tools [class*="toolbarToggleItem"] {
+  flex: 0 0 36px;
+  width: 36px;
+  min-width: 36px;
+}
+
+.pageel-editor-slot .csdn-history-tools button {
+  flex-basis: 36px;
+  width: 36px;
+  min-width: 36px;
+}
+
+.pageel-editor-slot button.csdn-history-action {
+  flex-basis: 40px;
+  width: 40px;
+  min-width: 40px;
+}
+
+.csdn-basestyle-tools {
+  flex-basis: 249px;
+  width: 249px;
+  padding-left: 8px;
+}
+
+.csdn-format-tool,
+.csdn-basic-tools,
+.csdn-more-tools,
+.csdn-list-tools,
+.csdn-line-tool,
+.csdn-code-block-tool {
+  display: inline-flex;
+  flex: 0 0 auto;
+  height: 60px;
+}
+
+.pageel-editor-slot .csdn-format-tool,
+.csdn-more-tools,
+.csdn-list-tools,
+.csdn-code-block-tool,
+.csdn-alignment-menu {
+  flex-basis: 43px;
+  width: 43px;
+  min-width: 43px;
+}
+
+.csdn-format-menu {
+  flex-basis: 43px;
+  width: 43px;
+  padding: 0;
+}
+
+.pageel-editor-slot .csdn-format-menu button,
+.pageel-editor-slot .csdn-more-tools button,
+.pageel-editor-slot .csdn-list-tools button,
+.pageel-editor-slot .csdn-code-block-tool button,
+.pageel-editor-slot .csdn-alignment-menu button {
+  flex-basis: 43px;
+  width: 43px;
+  min-width: 43px;
+  margin-inline: 0;
+}
+
+.csdn-basic-tools {
+  flex-basis: 36px;
+  width: 36px;
+  margin-left: 7px;
+}
+
+.csdn-basic-tools > [class*="toolbarGroupOfGroups"] {
+  width: 36px;
+  margin: 0;
+}
+
+.pageel-editor-slot .csdn-basic-tools button {
+  flex-basis: 36px;
+  width: 36px;
+  min-width: 36px;
+}
+
+.csdn-basestyle-tools > .csdn-color-menu {
+  flex-basis: 36px;
+  width: 36px;
+  margin-left: 10px;
+}
+
+.pageel-editor-slot .csdn-basestyle-tools > .csdn-color-menu > button {
+  flex-basis: 36px;
+  width: 36px;
+  min-width: 36px;
+}
+
+.csdn-basestyle-tools > .csdn-more-tools {
+  margin-left: 5px;
+}
+
+.csdn-insert-tools {
+  flex-basis: 396px;
+  width: 396px;
+  margin-left: 1px;
+  padding-left: 8px;
+}
+
+.csdn-insert-tools > .csdn-alignment-menu,
+.csdn-insert-tools > .csdn-line-tool {
+  margin-left: 7px;
+}
+
+.csdn-line-tool {
+  flex-basis: 48px;
+  width: 48px;
+}
+
+.pageel-editor-slot .csdn-line-tool > button,
+.pageel-editor-slot .csdn-quote-action {
+  flex-basis: 48px;
+  width: 48px;
+  min-width: 48px;
+}
+
+.pageel-editor-slot .csdn-quote-action {
+  margin-left: 10px;
+}
+
+.csdn-insert-tools > .csdn-code-block-tool {
+  margin-left: 13px;
+}
+
+.pageel-editor-slot button.csdn-resource-action {
+  flex-basis: 60px;
+  width: 60px;
+  min-width: 60px;
+  margin-left: 6px;
+}
+
+.pageel-editor-slot button.csdn-table-action {
+  flex-basis: 36px;
+  width: 36px;
+  min-width: 36px;
+  margin-left: 10px;
+}
+
+.csdn-otherstyle-tools {
+  flex-basis: 464px;
+  width: 464px;
+  margin-left: -1px;
+  padding-left: 13px;
+}
+
+.pageel-editor-slot .csdn-otherstyle-tools > .csdn-toolbar-action {
+  flex-basis: 36px;
+  width: 36px;
+  min-width: 36px;
+}
+
+.pageel-editor-slot .csdn-otherstyle-tools > .csdn-toolbar-action + .csdn-toolbar-action {
+  margin-left: 10px;
+}
+
+.pageel-editor-slot .csdn-otherstyle-tools > .csdn-source-action {
+  flex-basis: 97px;
+  width: 97px;
+  min-width: 97px;
+}
+
+.pageel-editor-slot .csdn-source-action > [class*="tooltipTrigger"] {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  width: 85px;
+}
+
 .csdn-toolbar-divider {
   flex: 0 0 1px;
   width: 1px;
-  height: 34px;
-  margin: 13px 6px;
+  height: 18px;
+  margin: 17px 13px 0;
   background: #ececf0;
 }
 
@@ -4319,6 +4566,10 @@ body > [data-radix-popper-content-wrapper],
   .pageel-editor-slot [class*="toolbarRoot"],
   .alternate-mode-toolbar {
     padding-inline: 8px;
+  }
+
+  .csdn-history-tools {
+    margin-left: 0;
   }
 
   .pageel-editor-slot .csdn-editor-toolbar,

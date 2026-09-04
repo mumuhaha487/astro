@@ -250,6 +250,66 @@ async function layoutMetrics(page) {
       body: { scrollWidth: document.body.scrollWidth, clientWidth: document.body.clientWidth },
       topbar: rect(".topbar"),
       toolbar: rect(".csdn-editor-toolbar"),
+      toolbarButtons: [...document.querySelectorAll(".csdn-editor-toolbar button")]
+        .filter((element) => {
+          const bounds = element.getBoundingClientRect();
+          return bounds.width > 0 && bounds.height > 0;
+        })
+        .map((element) => {
+          const bounds = element.getBoundingClientRect();
+          return {
+            label: element.getAttribute("aria-label") || element.textContent?.trim() || "",
+            x: Math.round(bounds.x),
+            y: Math.round(bounds.y),
+            width: Math.round(bounds.width),
+            height: Math.round(bounds.height),
+          };
+        }),
+      toolbarGroups: [...document.querySelectorAll([
+        ".csdn-history-tools",
+        ".csdn-basestyle-tools",
+        ".csdn-insert-tools",
+        ".csdn-otherstyle-tools",
+      ].join(","))].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          className: element.className,
+          x: Math.round(bounds.x),
+          width: Math.round(bounds.width),
+        };
+      }),
+      toolbarVisuals: [
+        "Undo Ctrl+Z",
+        "查看文章和草稿历史",
+        "格式",
+        "Bold",
+        "文字颜色",
+        "其他样式",
+        "Insert thematic break",
+        "使用 Markdown 源码编辑器",
+      ].map((label) => {
+        const button = [...document.querySelectorAll(".csdn-editor-toolbar button")]
+          .find((element) => (element.getAttribute("aria-label") || element.textContent?.trim()) === label);
+        if (!button) return { label };
+        const bounds = (element) => {
+          const value = element?.getBoundingClientRect();
+          return value ? {
+            x: Math.round(value.x),
+            y: Math.round(value.y),
+            width: Math.round(value.width),
+            height: Math.round(value.height),
+          } : null;
+        };
+        const visibleLabel = [...button.querySelectorAll("span")]
+          .find((element) => element.children.length === 0 && element.textContent?.trim() && element.getAttribute("aria-hidden") !== "true");
+        return {
+          label,
+          button: bounds(button),
+          icon: bounds(button.querySelector("svg, b")),
+          visibleLabel: bounds(visibleLabel),
+          afterContent: getComputedStyle(button, "::after").content,
+        };
+      }),
       workspace: rect(".editor-workspace"),
       outline: rect(".outline-pane"),
       compose: rect(".compose-pane"),
@@ -268,6 +328,30 @@ async function verifyDesktop() {
   assert.equal(metrics.topbar.height, 48);
   assert.equal(metrics.toolbar.height, 61);
   assert.equal(metrics.toolbar.scrollWidth, 1324);
+  assert.deepEqual(
+    metrics.toolbarButtons.map(({ x, width }) => [x, width]),
+    [
+      [36, 36], [82, 36], [128, 40], [191, 43], [241, 36], [287, 36], [333, 36], [374, 43],
+      [441, 43], [491, 43], [541, 48], [599, 48], [660, 43], [709, 60], [779, 36], [841, 36],
+      [887, 36], [933, 36], [979, 36], [1025, 36], [1071, 36], [1117, 36], [1180, 97],
+    ],
+    "desktop toolbar controls must preserve the CSDN horizontal geometry",
+  );
+  assert.deepEqual(
+    metrics.toolbarGroups.map(({ x, width }) => [x, width]),
+    [[31, 152], [183, 249], [433, 396], [828, 464]],
+    "desktop toolbar groups must preserve the CSDN horizontal geometry",
+  );
+  const toolbarVisuals = Object.fromEntries(metrics.toolbarVisuals.map((item) => [item.label, item]));
+  assert.deepEqual(toolbarVisuals["Undo Ctrl+Z"].icon, { x: 42, y: 55, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["查看文章和草稿历史"].visibleLabel, { x: 136, y: 80, width: 24, height: 18 });
+  assert.deepEqual(toolbarVisuals["格式"].icon, { x: 194, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["Bold"].icon, { x: 247, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["文字颜色"].icon, { x: 293, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["其他样式"].icon, { x: 377, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["Insert thematic break"].icon, { x: 553, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].icon, { x: 1217, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].visibleLabel, { x: 1186, y: 78, width: 85, height: 18 });
   assert.deepEqual(
     { x: metrics.outline.x, y: metrics.outline.y, width: metrics.outline.width, bottom: metrics.outline.y + metrics.outline.height },
     { x: 24, y: 132, width: 280, bottom: 652 },

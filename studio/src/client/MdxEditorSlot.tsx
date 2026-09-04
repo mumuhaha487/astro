@@ -101,13 +101,14 @@ interface InsertActionProps {
   title: string;
   icon: ReactNode;
   buildMarkdown: () => string | null;
+  className?: string;
 }
 
-function InsertAction({ label, title, icon, buildMarkdown }: InsertActionProps) {
+function InsertAction({ label, title, icon, buildMarkdown, className = "" }: InsertActionProps) {
   const insertMarkdown = usePublisher(insertMarkdown$);
   return (
     <ButtonWithTooltip
-      className="csdn-toolbar-action"
+      className={`csdn-toolbar-action ${className}`.trim()}
       title={title}
       onClick={() => {
         const markdown = buildMarkdown();
@@ -126,16 +127,18 @@ function ToolbarAction({
   icon,
   active,
   onClick,
+  className = "",
 }: {
   label: string;
   title: string;
   icon: ReactNode;
   active?: boolean;
   onClick: () => void;
+  className?: string;
 }) {
   return (
     <ButtonWithTooltip
-      className={`csdn-toolbar-action ${active ? "active" : ""}`}
+      className={`csdn-toolbar-action ${active ? "active" : ""} ${className}`.trim()}
       title={title}
       onClick={onClick}
     >
@@ -542,51 +545,58 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           toolbarClassName: "csdn-editor-toolbar",
           toolbarContents: () => (
             <>
-              <span className="csdn-tool-group csdn-history-tools"><UndoRedo /></span>
-              <ToolbarAction label="历史" title="查看文章和草稿历史" icon={<History size={18} />} onClick={onHistory} />
-              <span className="csdn-tool-group csdn-format-tool"><FormatMenu /></span>
-              <span className="csdn-tool-group csdn-basic-tools"><BoldItalicUnderlineToggles options={["Bold"]} /></span>
-              <ColorMenu />
-              <ColorMenu background />
-              <span className="csdn-tool-group csdn-more-tools"><MoreStyleMenu /></span>
-              <span className="csdn-toolbar-divider" />
-              <span className="csdn-tool-group csdn-list-tools"><ListMenu /></span>
-              <AlignmentMenu />
-              <span className="csdn-tool-group csdn-line-tool"><InsertThematicBreak /></span>
-              <InsertAction
-                label="块引用"
-                title="插入块引用"
-                icon={<MessageSquareQuote size={18} />}
-                buildMarkdown={() => "\n> 引用内容\n"}
-              />
-              <span className="csdn-tool-group csdn-code-block-tool"><CodeMenu onRunnableCode={onRunnableCode} /></span>
-              <ToolbarAction label="资源绑定" title="上传并绑定资源" icon={<FolderSymlink size={18} />} onClick={onInsertResource} />
-              <ToolbarAction label="表格" title="插入表格" icon={<Table2 size={18} />} onClick={onInsertTable} />
-              <span className="csdn-toolbar-divider" />
-              <ToolbarAction label="图像" title="插入图片" icon={<ImagePlus size={18} />} onClick={onInsertImage} />
-              <ToolbarAction
-                label="视频"
-                title="插入视频"
-                icon={<PlaySquare size={18} />}
-                onClick={onInsertVideo}
-              />
-              <ToolbarAction
-                label="公式"
-                title="插入数学公式"
-                icon={<Sigma size={18} />}
-                onClick={onInsertFormula}
-              />
-              <ToolbarAction label="链接" title="插入链接" icon={<Link2 size={18} />} onClick={onInsertLink} />
-              <ToolbarAction
-                label="模版"
-                title="插入文章模板"
-                icon={<FileStack size={18} />}
-                onClick={onInsertTemplate}
-              />
-              <ToolbarAction label="目录" title="显示或隐藏文章目录" icon={<ListTree size={18} />} active={outlineVisible} onClick={onToggleOutline} />
-              <ToolbarAction label="宽屏" title="切换宽屏编辑" icon={<Maximize2 size={18} />} active={wide} onClick={onToggleWide} />
-              <span className="csdn-toolbar-divider" />
-              <ToolbarAction label="MD编辑器" title="使用 Markdown 源码编辑器" icon={<FileCode2 size={18} />} onClick={onSourceMode} />
+              <span className="csdn-tool-group csdn-history-tools">
+                <UndoRedo />
+                <ToolbarAction className="csdn-history-action" label="历史" title="查看文章和草稿历史" icon={<History size={18} />} onClick={onHistory} />
+              </span>
+              <span className="csdn-tool-group csdn-basestyle-tools">
+                <span className="csdn-format-tool"><FormatMenu /></span>
+                <span className="csdn-basic-tools"><BoldItalicUnderlineToggles options={["Bold"]} /></span>
+                <ColorMenu />
+                <ColorMenu background />
+                <span className="csdn-more-tools"><MoreStyleMenu /></span>
+              </span>
+              <span className="csdn-tool-group csdn-insert-tools">
+                <span className="csdn-list-tools"><ListMenu /></span>
+                <AlignmentMenu />
+                <span className="csdn-line-tool"><InsertThematicBreak /></span>
+                <InsertAction
+                  className="csdn-quote-action"
+                  label="块引用"
+                  title="插入块引用"
+                  icon={<MessageSquareQuote size={18} />}
+                  buildMarkdown={() => "\n> 引用内容\n"}
+                />
+                <span className="csdn-code-block-tool"><CodeMenu onRunnableCode={onRunnableCode} /></span>
+                <ToolbarAction className="csdn-resource-action" label="资源绑定" title="上传并绑定资源" icon={<FolderSymlink size={18} />} onClick={onInsertResource} />
+                <ToolbarAction className="csdn-table-action" label="表格" title="插入表格" icon={<Table2 size={18} />} onClick={onInsertTable} />
+              </span>
+              <span className="csdn-tool-group csdn-otherstyle-tools">
+                <ToolbarAction label="图像" title="插入图片" icon={<ImagePlus size={18} />} onClick={onInsertImage} />
+                <ToolbarAction
+                  label="视频"
+                  title="插入视频"
+                  icon={<PlaySquare size={18} />}
+                  onClick={onInsertVideo}
+                />
+                <ToolbarAction
+                  label="公式"
+                  title="插入数学公式"
+                  icon={<Sigma size={18} />}
+                  onClick={onInsertFormula}
+                />
+                <ToolbarAction label="链接" title="插入链接" icon={<Link2 size={18} />} onClick={onInsertLink} />
+                <ToolbarAction
+                  label="模版"
+                  title="插入文章模板"
+                  icon={<FileStack size={18} />}
+                  onClick={onInsertTemplate}
+                />
+                <ToolbarAction label="目录" title="显示或隐藏文章目录" icon={<ListTree size={18} />} active={outlineVisible} onClick={onToggleOutline} />
+                <ToolbarAction label="宽屏" title="切换宽屏编辑" icon={<Maximize2 size={18} />} active={wide} onClick={onToggleWide} />
+                <span className="csdn-toolbar-divider" />
+                <ToolbarAction className="csdn-source-action" label="使用 MD 编辑器" title="使用 Markdown 源码编辑器" icon={<FileCode2 size={18} />} onClick={onSourceMode} />
+              </span>
             </>
           ),
         }),
