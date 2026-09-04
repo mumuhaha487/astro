@@ -188,6 +188,11 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
       draftRecords = draftRecords.filter((draft) => draft.key !== body.key);
       return json({ ok: true });
     }
+    if (url.pathname === "/api/schedule" && request.method() === "PUT") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "PUT", path: url.pathname, body });
+      return json({ ...body, key: "visual-schedule", createdAt: new Date().toISOString() });
+    }
     if (url.pathname === "/api/image" && request.method() === "POST") {
       return json({ path: "public/image/editor/2026/09/visual-test.png", url: "/image/editor/2026/09/visual-test.png" });
     }
@@ -531,6 +536,9 @@ async function verifyDesktop() {
   await page.locator(".title-input").fill("短标题");
   await page.getByRole("button", { name: "发布博客" }).click();
   await page.locator(".toast", { hasText: "文章标题不能少于 5 个字" }).waitFor();
+  await page.locator(".title-input").fill("有效的文章标题");
+  await page.getByRole("button", { name: "发布博客" }).click();
+  await page.locator(".toast", { hasText: "请至少添加 1 个文章标签" }).waitFor();
   await page.locator(".title-input").focus();
   assert.equal(await page.locator(".title-input").evaluate((element) => getComputedStyle(element).outlineStyle), "none");
   await page.locator(".title-input").fill("");
@@ -550,6 +558,58 @@ async function verifyDesktop() {
 
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });
+
+  const publishingSettingsButton = page.locator(".publish-bar-meta button");
+  await publishingSettingsButton.click();
+  await page.locator(".advanced-fields").waitFor();
+  await page.waitForTimeout(500);
+  assert.match(await publishingSettingsButton.textContent(), /回到顶部/);
+  assert.equal(await page.getByRole("option", { name: "本文包含 AI 辅助内容" }).count(), 0);
+  const advancedLayout = await page.locator(".advanced-fields").evaluate((root) => {
+    const rootRect = root.getBoundingClientRect();
+    const rootStyle = getComputedStyle(root);
+    return {
+      root: {
+        width: Math.round(rootRect.width),
+        padding: rootStyle.padding,
+        marginTop: rootStyle.marginTop,
+      },
+      rows: [...root.querySelectorAll(":scope > .setting-row")].slice(0, 3).map((row) => {
+        const rowRect = row.getBoundingClientRect();
+        const labelRect = row.querySelector(".setting-label").getBoundingClientRect();
+        const controlRect = row.querySelector(".setting-control").getBoundingClientRect();
+        return {
+          x: Math.round(rowRect.x - rootRect.x),
+          width: Math.round(rowRect.width),
+          height: Math.round(rowRect.height),
+          labelX: Math.round(labelRect.x - rootRect.x),
+          labelWidth: Math.round(labelRect.width),
+          labelHeight: Math.round(labelRect.height),
+          controlX: Math.round(controlRect.x - rootRect.x),
+          controlWidth: Math.round(controlRect.width),
+          controlHeight: Math.round(controlRect.height),
+        };
+      }),
+    };
+  });
+  assert.deepEqual(
+    advancedLayout,
+    {
+      root: { width: 816, padding: "8px 32px 32px", marginTop: "24px" },
+      rows: [
+        { x: 32, width: 752, height: 48, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 32 },
+        { x: 32, width: 752, height: 106, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 90 },
+        { x: 32, width: 752, height: 164, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 148 },
+      ],
+    },
+    "desktop publishing settings must match the measured CSDN form geometry",
+  );
+  const advancedPath = join(outputDirectory, "desktop-1264-publishing-settings.png");
+  await page.screenshot({ path: advancedPath, animations: "disabled" });
+  await page.locator('.cover-setting input[type="file"]').setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: Buffer.from("visual-cover") });
+  await page.locator('.cover-preview-box img[alt="文章封面预览"]').waitFor();
+  await publishingSettingsButton.click();
+  await page.locator(".advanced-fields").waitFor({ state: "detached" });
 
   const sourceModeButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
   await sourceModeButton.scrollIntoViewIfNeeded();
@@ -803,7 +863,7 @@ async function verifyDesktop() {
   const path = join(outputDirectory, "desktop-1264-functional.png");
   await page.screenshot({ path, animations: "disabled" });
   await context.close();
-  return { path, baselinePath, metrics };
+  return { path, baselinePath, advancedPath, metrics };
 }
 
 async function verifyMobile(width) {
@@ -849,6 +909,11 @@ async function verifyMobile(width) {
     return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), width: Math.round(rect.width) };
   });
   assert.deepEqual(settingsRect, { top: 109, bottom: height - 64, width });
+  const firstSettingRowRect = await page.locator(".setting-row").first().evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), width: Math.round(rect.width) };
+  });
+  assert.deepEqual(firstSettingRowRect, { left: 14, width: width - 28 });
   assert.equal(await page.locator(".mobile-settings-head").isVisible(), true);
   const settingsPath = join(outputDirectory, `mobile-${width}-settings.png`);
   await page.screenshot({ path: settingsPath, animations: "disabled" });
@@ -1104,6 +1169,28 @@ async function verifyContentCrud() {
   return { listPath, mutations };
 }
 
+async function verifyScheduledPublish() {
+  const { context, page, pageErrors, mutations } = await openEditor({ width: 1264, height: 720 });
+  await page.locator(".title-input").fill("定时发布验证文章");
+  await page.locator(".publish-bar-meta button").click();
+  await page.locator(".setting-input-with-action input").fill("Astro, 定时发布");
+  await page.locator(".publish-bar-meta button").click();
+  await page.getByRole("button", { name: "定时发布" }).click();
+  const input = page.locator('.schedule-dialog input[type="datetime-local"]');
+  const localValue = await input.inputValue();
+  await page.getByRole("button", { name: "确认定时发布" }).click();
+  await page.locator(".schedule-dialog").waitFor({ state: "detached" });
+  await page.locator(".toast", { hasText: "已安排在" }).waitFor();
+  const scheduleMutation = mutations.find((mutation) => mutation.path === "/api/schedule");
+  assert(scheduleMutation, "scheduled publish must call the schedule API");
+  assert.match(scheduleMutation.body.content, new RegExp(`published: '${localValue.slice(0, 10)}'`));
+  assert.match(scheduleMutation.body.content, /draft: false/);
+  assert.match(scheduleMutation.body.content, /scheduledAt:/);
+  assert.deepEqual(pageErrors, [], `scheduled publish page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { scheduleMutation };
+}
+
 try {
   const results = [
     await verifyDesktop(),
@@ -1112,6 +1199,7 @@ try {
     await verifyCompactDropdownLayer(),
     await verifyNarrowExistingArticle(),
     await verifyContentCrud(),
+    await verifyScheduledPublish(),
   ];
   console.log(JSON.stringify(results, null, 2));
 } finally {

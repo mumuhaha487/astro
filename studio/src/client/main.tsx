@@ -4,7 +4,6 @@ import "katex/dist/katex.min.css";
 import {
   AlertCircle,
   Bell,
-  BookOpenText,
   Check,
   ChevronDown,
   ChevronLeft,
@@ -136,6 +135,19 @@ function validateTitle(title: string): string | null {
   return null;
 }
 
+function validatePublishingFields(fields: FrontmatterFields): string | null {
+  const titleError = validateTitle(fields.title);
+  if (titleError) return titleError;
+  if (!fields.published) return "请选择发布日期";
+  if (fields.tags.length === 0) return "请至少添加 1 个文章标签";
+  if (fields.tags.length > 10) return "文章标签不能超过 10 个";
+  return null;
+}
+
+function localDateValue(date: Date): string {
+  return new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 10);
+}
+
 marked.setOptions({ gfm: true, breaks: true });
 
 function App() {
@@ -189,6 +201,14 @@ function App() {
     const timer = window.setTimeout(() => setToast(null), 4200);
     return () => window.clearTimeout(timer);
   }, [toast]);
+
+  useEffect(() => {
+    if (!advancedOpen || window.matchMedia("(max-width: 900px)").matches) return;
+    const frame = window.requestAnimationFrame(() => {
+      document.querySelector(".advanced-fields")?.scrollIntoView({ behavior: "smooth", block: "start" });
+    });
+    return () => window.cancelAnimationFrame(frame);
+  }, [advancedOpen]);
 
   const currentFields = useCallback((): FrontmatterFields | null => {
     if (!fields) return null;
@@ -398,7 +418,12 @@ function App() {
   function toggleAdvancedFields() {
     setSidebarOpen(false);
     setMobilePanel(null);
-    setAdvancedOpen((value) => !value);
+    if (advancedOpen) {
+      setAdvancedOpen(false);
+      document.querySelector(".document-scroll")?.scrollTo({ top: 0, behavior: "smooth" });
+      return;
+    }
+    setAdvancedOpen(true);
   }
 
   function jumpToOutline(item: OutlineItem, index: number) {
@@ -541,13 +566,9 @@ function App() {
       ? { ...current, draft: draftOverride }
       : current;
     if (!normalizedFields) return;
-    const titleError = validateTitle(normalizedFields.title);
-    if (titleError) {
-      showToast(titleError, "error");
-      return;
-    }
-    if (!normalizedFields.published) {
-      showToast("请选择发布日期", "error");
+    const validationError = validatePublishingFields(normalizedFields);
+    if (validationError) {
+      showToast(validationError, "error");
       return;
     }
 
@@ -593,13 +614,18 @@ function App() {
     if (!working || !fields) return;
     const current = currentFields();
     if (!current) return;
-    const titleError = validateTitle(current.title);
-    if (titleError) {
-      showToast(titleError, "error");
+    const validationError = validatePublishingFields(current);
+    if (validationError) {
+      showToast(validationError, "error");
       return;
     }
     const path = working.isNew ? makePostPath(current.title) : working.path;
-    const scheduledFields = { ...current, draft: false, scheduledAt: publishAt };
+    const scheduledFields = {
+      ...current,
+      published: localDateValue(new Date(publishAt)),
+      draft: false,
+      scheduledAt: publishAt,
+    };
     setPublishing(true);
     setSyncState("saving");
     setSyncLabel("正在设置定时发布");
@@ -1169,7 +1195,7 @@ function App() {
           <div className="publish-bar-meta">
             <span>共 {countWords(body)} 字</span>
             <button className={advancedOpen ? "active" : ""} onClick={toggleAdvancedFields}>
-              发文设置 <ChevronDown size={14} />
+              {advancedOpen ? "回到顶部" : "发文设置"} <ChevronDown size={14} />
             </button>
           </div>
           <div className={`publish-sync ${syncState}`}>
@@ -1400,6 +1426,8 @@ function AdvancedFields({
     setCoverUploading(true);
     try {
       setField("image", await onUploadImage(file));
+    } catch {
+      // The shared uploader already reports the failure in the editor toast.
     } finally {
       setCoverUploading(false);
       if (coverInputRef.current) coverInputRef.current.value = "";
@@ -1433,7 +1461,7 @@ function AdvancedFields({
             <span>{coverUploading ? "正在上传" : "从本地上传"}</span>
           </button>
           <div className="cover-preview-box">
-            {fields.image ? <><BookOpenText size={24} /><span>{fields.image}</span></> : <span>暂无内容图片，请在正文中添加图片</span>}
+            {fields.image ? <img src={fields.image} alt="文章封面预览" /> : <span>暂无内容图片，请在正文中添加图片</span>}
           </div>
         </div>
       </SettingRow>
@@ -1470,7 +1498,6 @@ function AdvancedFields({
           <option value="none">无声明</option>
           <option value="original">本文为原创内容</option>
           <option value="reprint">本文允许规范转载</option>
-          <option value="ai-assisted">本文包含 AI 辅助内容</option>
         </select>
       </SettingRow>
 
