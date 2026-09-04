@@ -37,6 +37,16 @@ export interface PostRevisionDocument {
   content: string;
 }
 
+export interface AcademicWork {
+  id: string;
+  title: string;
+  year?: number;
+  authors: string[];
+  venue?: string;
+  url: string;
+  doi?: string;
+}
+
 export interface DraftSummary {
   key: string;
   path: string;

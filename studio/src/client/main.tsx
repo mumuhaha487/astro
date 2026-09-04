@@ -13,20 +13,26 @@ import {
   FilePlus2,
   FolderGit2,
   GitBranch,
+  GraduationCap,
   ImagePlus,
   KeyRound,
   ListTree,
   LoaderCircle,
   MessageSquareText,
+  MessageCircle,
   PencilLine,
   Pin,
+  Play,
+  Plus,
   RefreshCw,
   Save,
   Search,
+  Send,
   Settings,
   Sparkles,
   Trash2,
   UserRound,
+  WandSparkles,
   X,
 } from "lucide-react";
 import { marked } from "marked";
@@ -54,6 +60,7 @@ import {
   type MdxEditorSlotHandle,
 } from "./MdxEditorSlot";
 import type {
+  AcademicWork,
   DraftDocument,
   DraftSummary,
   PostDocument,
@@ -67,6 +74,14 @@ type EditorMode = "rich" | "source" | "preview";
 type ListFilter = "all" | "published" | "draft" | "pinned";
 type SyncState = "idle" | "saving" | "saved" | "error";
 type MobilePanel = "outline" | "assistant" | null;
+type AssistantMode = "agent" | "chat";
+type RunnableCodeTab = "html" | "css" | "javascript";
+
+interface AssistantMessage {
+  id: string;
+  role: "user" | "assistant";
+  text: string;
+}
 
 interface OutlineItem {
   depth: number;
@@ -104,9 +119,15 @@ function App() {
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
+  const [academicSearchOpen, setAcademicSearchOpen] = useState(false);
+  const [runnableCodeOpen, setRunnableCodeOpen] = useState(false);
   const [outlineVisible, setOutlineVisible] = useState(true);
   const [wideEditor, setWideEditor] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
+  const [assistantExpanded, setAssistantExpanded] = useState(true);
+  const [assistantMode, setAssistantMode] = useState<AssistantMode>("agent");
+  const [assistantPrompt, setAssistantPrompt] = useState("");
+  const [assistantMessages, setAssistantMessages] = useState<AssistantMessage[]>([]);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [syncLabel, setSyncLabel] = useState("未修改");
   const [revision, setRevision] = useState(0);
@@ -296,6 +317,20 @@ function App() {
     setHistoryOpen(true);
   }
 
+  function openAcademicSearch() {
+    setSidebarOpen(false);
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setAcademicSearchOpen(true);
+  }
+
+  function openRunnableCode() {
+    setSidebarOpen(false);
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setRunnableCodeOpen(true);
+  }
+
   function toggleOutlinePanel() {
     if (window.matchMedia("(max-width: 900px)").matches) {
       setAdvancedOpen(false);
@@ -357,6 +392,84 @@ function App() {
     setMobilePanel(null);
     setAdvancedOpen(true);
     showToast(summary ? "摘要已生成" : "正文中还没有内容", summary ? "success" : "info");
+  }
+
+  function smartFormat() {
+    const formatted = formatMarkdown(body);
+    if (formatted === body) {
+      showToast("正文排版已经很整齐", "info");
+      return;
+    }
+    replaceEditorBody(formatted);
+    showToast("已完成智能排版", "success");
+  }
+
+  function optimizeFullText() {
+    const optimized = optimizeMarkdown(body);
+    if (optimized === body) {
+      showToast("没有发现需要优化的格式问题", "info");
+      return;
+    }
+    replaceEditorBody(optimized);
+    showToast("已优化全文格式", "success");
+  }
+
+  function pushAssistantMessage(role: AssistantMessage["role"], text: string) {
+    setAssistantMessages((current) => [...current, { id: crypto.randomUUID(), role, text }]);
+  }
+
+  function runAssistantPrompt(request: string) {
+    const prompt = request.trim();
+    if (!prompt) return;
+    setAssistantPrompt("");
+    pushAssistantMessage("user", prompt);
+    const normalized = prompt.toLocaleLowerCase();
+    if (assistantMode === "agent") {
+      if (normalized.includes("大纲") || normalized.includes("结构")) {
+        generateOutline();
+        pushAssistantMessage("assistant", "已分析正文结构并处理文章大纲。你可以在目录中逐项跳转检查。");
+      } else if (normalized.includes("代码")) {
+        generateCodeBlock();
+        pushAssistantMessage("assistant", "已在正文末尾插入 TypeScript 代码块。");
+      } else if (normalized.includes("摘要")) {
+        generateSummary();
+        pushAssistantMessage("assistant", "已从正文提取摘要，并打开发文设置供你检查。");
+      } else if (normalized.includes("排版")) {
+        smartFormat();
+        pushAssistantMessage("assistant", "已统一标题、列表、空行与段落间距。");
+      } else if (normalized.includes("优化") || normalized.includes("润色")) {
+        optimizeFullText();
+        pushAssistantMessage("assistant", "已清理正文中的冗余空格和标点间距，代码块保持原样。");
+      } else if (normalized.includes("学术") || normalized.includes("论文") || normalized.includes("文献")) {
+        openAcademicSearch();
+        pushAssistantMessage("assistant", "已打开学术搜索，可以检索并把引用插入正文。");
+      } else {
+        pushAssistantMessage("assistant", "我可以直接执行：生成大纲、插入代码、智能排版、优化全文、提取摘要或学术搜索。请说明要处理的内容。");
+      }
+      return;
+    }
+    const headings = extractOutline(body).length;
+    const title = fields?.title.trim() || "当前文章";
+    pushAssistantMessage(
+      "assistant",
+      `${title}目前约 ${countWords(body)} 字、${headings} 个标题。${body.trim() ? "建议先确认主结论，再为每个章节补充示例、约束和验证结果。" : "正文还是空的，可以先在 Agent 模式生成三段式大纲。"}`,
+    );
+  }
+
+  function insertAcademicCitation(work: AcademicWork) {
+    const author = escapeMarkdownInline(work.authors.slice(0, 3).join(", "));
+    const details = [author, work.year, escapeMarkdownInline(work.venue || ""), work.doi ? `DOI: ${escapeMarkdownInline(work.doi)}` : ""].filter(Boolean).join(". ");
+    const title = escapeMarkdownInline(work.title);
+    const url = safeHttpUrl(work.url) || "https://openalex.org";
+    replaceEditorBody(`${body}${body ? "\n\n" : ""}> 参考文献：[${title}](${url})${details ? `，${details}` : ""}\n`);
+    setAcademicSearchOpen(false);
+    showToast("引用已插入正文", "success");
+  }
+
+  function insertRunnableCode(snippet: string) {
+    replaceEditorBody(`${body}${body ? "\n\n" : ""}${snippet}\n`);
+    setRunnableCodeOpen(false);
+    showToast("可运行代码已插入正文", "success");
   }
 
   function hydrateDocument(document: WorkingDocument, restored = false) {
@@ -886,6 +999,7 @@ function App() {
                           onChange={updateBody}
                           onUploadImage={uploadImage}
                           onHistory={openHistory}
+                          onRunnableCode={openRunnableCode}
                           onSourceMode={() => changeMode("source")}
                           onToggleOutline={toggleOutlinePanel}
                           onToggleWide={() => setWideEditor((value) => !value)}
@@ -933,10 +1047,27 @@ function App() {
 
               <aside className="assistant-pane">
                 <div className="assistant-card">
-                  <div className="assistant-title"><Sparkles size={22} /><strong>AI助手</strong><ChevronDown size={14} /></div>
-                  <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onSummary={generateSummary} />
+                  <button className="assistant-title" onClick={() => setAssistantExpanded(true)}><Sparkles size={22} /><strong>AI助手</strong><ChevronDown size={14} /></button>
+                  <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onAcademic={openAcademicSearch} />
                 </div>
               </aside>
+
+              {assistantExpanded ? (
+                <AssistantWorkspace
+                  className="assistant-drawer"
+                  showHeader
+                  mode={assistantMode}
+                  prompt={assistantPrompt}
+                  messages={assistantMessages}
+                  onModeChange={setAssistantMode}
+                  onPromptChange={setAssistantPrompt}
+                  onSubmit={runAssistantPrompt}
+                  onClose={() => setAssistantExpanded(false)}
+                  onFormat={smartFormat}
+                  onOptimize={optimizeFullText}
+                  onSummary={generateSummary}
+                />
+              ) : null}
             </>
           )}
         </main>
@@ -945,7 +1076,7 @@ function App() {
       {working && fields && mobilePanel ? (
         <>
           <button className="mobile-utility-scrim" onClick={() => setMobilePanel(null)} aria-label="关闭写作工具" />
-          <aside className="mobile-utility-drawer" aria-label="移动端写作工具">
+          <aside className={`mobile-utility-drawer ${mobilePanel === "assistant" ? "assistant-mode" : ""}`} aria-label="移动端写作工具">
             <header>
               <div className="mobile-utility-tabs" role="tablist" aria-label="写作工具">
                 <button className={mobilePanel === "outline" ? "active" : ""} onClick={() => setMobilePanel("outline")} role="tab" aria-selected={mobilePanel === "outline"}><ListTree size={17} /> 目录</button>
@@ -962,9 +1093,18 @@ function App() {
                 </nav>
               ) : <p className="mobile-panel-empty">为正文添加标题后，将在这里自动生成目录</p>
             ) : (
-              <div className="mobile-assistant-actions">
-                <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onSummary={generateSummary} />
-              </div>
+              <AssistantWorkspace
+                className="mobile-assistant-workspace"
+                mode={assistantMode}
+                prompt={assistantPrompt}
+                messages={assistantMessages}
+                onModeChange={setAssistantMode}
+                onPromptChange={setAssistantPrompt}
+                onSubmit={runAssistantPrompt}
+                onFormat={smartFormat}
+                onOptimize={optimizeFullText}
+                onSummary={generateSummary}
+              />
             )}
           </aside>
         </>
@@ -1020,6 +1160,20 @@ function App() {
           isNew={working.isNew}
           onClose={() => setHistoryOpen(false)}
           onRestore={restoreHistoryVersion}
+        />
+      ) : null}
+
+      {academicSearchOpen ? (
+        <AcademicSearchDialog
+          onClose={() => setAcademicSearchOpen(false)}
+          onInsert={insertAcademicCitation}
+        />
+      ) : null}
+
+      {runnableCodeOpen ? (
+        <RunnableCodeDialog
+          onClose={() => setRunnableCodeOpen(false)}
+          onInsert={insertRunnableCode}
         />
       ) : null}
 
@@ -1082,18 +1236,97 @@ function Login({ onAuthenticated }: { onAuthenticated: (session: SessionInfo) =>
 function AssistantActions({
   onOutline,
   onCode,
-  onSummary,
+  onAcademic,
 }: {
   onOutline: () => void;
   onCode: () => void;
-  onSummary: () => void;
+  onAcademic: () => void;
 }) {
   return (
     <>
       <button onClick={onOutline}><BookOpenText size={16} /> 大纲生成</button>
       <button onClick={onCode}><Code2 size={16} /> 代码生成</button>
-      <button onClick={onSummary}><MessageSquareText size={16} /> 摘要生成</button>
+      <button onClick={onAcademic}><GraduationCap size={16} /> 学术搜索</button>
     </>
+  );
+}
+
+function AssistantWorkspace({
+  className,
+  showHeader = false,
+  mode,
+  prompt,
+  messages,
+  onModeChange,
+  onPromptChange,
+  onSubmit,
+  onClose,
+  onFormat,
+  onOptimize,
+  onSummary,
+}: {
+  className?: string;
+  showHeader?: boolean;
+  mode: AssistantMode;
+  prompt: string;
+  messages: AssistantMessage[];
+  onModeChange: (mode: AssistantMode) => void;
+  onPromptChange: (value: string) => void;
+  onSubmit: (value: string) => void;
+  onClose?: () => void;
+  onFormat: () => void;
+  onOptimize: () => void;
+  onSummary: () => void;
+}) {
+  const recommendations = ["把实践整理成教程", "为代码补充说明", "检查文章结构"];
+  return (
+    <section className={`assistant-workspace ${className || ""}`} aria-label="AI助手工作区">
+      {showHeader ? (
+        <header className="assistant-workspace-head">
+          <div className="assistant-brand"><Sparkles size={24} /><strong>AI助手</strong></div>
+          <div className="assistant-mode-switch" role="tablist" aria-label="AI助手模式">
+            <button className={mode === "agent" ? "active" : ""} onClick={() => onModeChange("agent")} role="tab" aria-selected={mode === "agent"}>Agent</button>
+            <button className={mode === "chat" ? "active" : ""} onClick={() => onModeChange("chat")} role="tab" aria-selected={mode === "chat"}>Chat</button>
+          </div>
+          <button className="assistant-close" onClick={onClose} title="收起AI助手"><X size={18} /></button>
+        </header>
+      ) : (
+        <div className="assistant-mobile-mode" role="tablist" aria-label="AI助手模式">
+          <button className={mode === "agent" ? "active" : ""} onClick={() => onModeChange("agent")} role="tab" aria-selected={mode === "agent"}><WandSparkles size={15} /> Agent</button>
+          <button className={mode === "chat" ? "active" : ""} onClick={() => onModeChange("chat")} role="tab" aria-selected={mode === "chat"}><MessageCircle size={15} /> Chat</button>
+        </div>
+      )}
+
+      <div className="assistant-conversation">
+        <p className="assistant-greeting">Hi！我是你的全能写作助手，只需一句话交代你的想法，我来帮你一键更新文章，开启丝滑的创作体验。</p>
+        {messages.length === 0 ? (
+          <div className="assistant-recommendations">
+            <div><span>创作热点推荐</span><button title="换一换"><RefreshCw size={14} /> 换一换</button></div>
+            {recommendations.map((item) => <button key={item} onClick={() => onPromptChange(item)}>{item}</button>)}
+          </div>
+        ) : (
+          <div className="assistant-messages" aria-live="polite">
+            {messages.map((message) => <p key={message.id} className={message.role}>{message.text}</p>)}
+          </div>
+        )}
+      </div>
+
+      <div className="assistant-quick-actions">
+        <button onClick={onFormat}><WandSparkles size={15} /> 智能排版</button>
+        <button onClick={onOptimize}><BookOpenText size={15} /> 优化全文</button>
+        <button onClick={onSummary}><MessageSquareText size={15} /> 提取摘要</button>
+      </div>
+
+      <form className="assistant-composer" onSubmit={(event) => { event.preventDefault(); onSubmit(prompt); }}>
+        <textarea value={prompt} onChange={(event) => onPromptChange(event.target.value)} placeholder="输入创作要求，AI帮你写" rows={3} />
+        <div>
+          <button type="button" className="assistant-add" title="添加内容"><Plus size={17} /></button>
+          <button type="button" className="assistant-model">Studio Agent <ChevronDown size={13} /></button>
+          <button className="assistant-send" disabled={!prompt.trim()} title="发送"><Send size={17} /></button>
+        </div>
+      </form>
+      <span className="assistant-disclaimer">内容由AI生成，仅供参考</span>
+    </section>
   );
 }
 
@@ -1504,6 +1737,131 @@ function HistoryDialog({
   );
 }
 
+function AcademicSearchDialog({
+  onClose,
+  onInsert,
+}: {
+  onClose: () => void;
+  onInsert: (work: AcademicWork) => void;
+}) {
+  const [query, setQuery] = useState("");
+  const [works, setWorks] = useState<AcademicWork[]>([]);
+  const [loading, setLoading] = useState(false);
+  const [searched, setSearched] = useState(false);
+  const [error, setError] = useState("");
+
+  async function search(event: FormEvent) {
+    event.preventDefault();
+    const normalized = query.trim();
+    if (normalized.length < 2) return;
+    setLoading(true);
+    setSearched(true);
+    setError("");
+    try {
+      const result = await api.academicSearch(normalized);
+      setWorks(result.works);
+    } catch (reason) {
+      setWorks([]);
+      setError(errorMessage(reason));
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop academic-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="academic-dialog" role="dialog" aria-modal="true" aria-labelledby="academic-title">
+        <header>
+          <div><GraduationCap size={20} /><h2 id="academic-title">学术搜索</h2></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <form className="academic-search-form" onSubmit={(event) => void search(event)}>
+          <div><Search size={17} /><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="搜索论文、作者或研究主题" autoFocus /></div>
+          <button disabled={loading || query.trim().length < 2}>{loading ? <LoaderCircle className="spin" size={16} /> : null} 搜索</button>
+        </form>
+        <div className="academic-results">
+          {loading ? <div className="academic-status"><LoaderCircle className="spin" size={20} /> 正在检索 OpenAlex</div> : null}
+          {!loading && error ? <div className="academic-status error"><AlertCircle size={18} /> {error}</div> : null}
+          {!loading && !error && !searched ? <div className="academic-status">输入关键词，检索可引用的开放学术资料</div> : null}
+          {!loading && !error && searched && works.length === 0 ? <div className="academic-status">没有找到匹配的学术资料</div> : null}
+          {!loading && works.map((work) => (
+            <article className="academic-result" key={work.id}>
+              <div>
+                <h3>{work.title}</h3>
+                <p>{[work.authors.slice(0, 3).join(", "), work.year, work.venue].filter(Boolean).join(" · ") || "作者信息暂无"}</p>
+                {work.doi ? <code>DOI: {work.doi}</code> : null}
+              </div>
+              <button onClick={() => onInsert(work)}>插入引用</button>
+            </article>
+          ))}
+        </div>
+        <footer>数据来源 OpenAlex，插入前请核对作者、年份与链接</footer>
+      </section>
+    </div>
+  );
+}
+
+const runnableCodeDefaults: Record<RunnableCodeTab, string> = {
+  html: '<main class="demo-card">\n  <h1>Hello, Astro!</h1>\n  <button id="action">运行交互</button>\n  <p id="result">等待操作</p>\n</main>',
+  css: 'body {\n  margin: 0;\n  padding: 32px;\n  font-family: system-ui, sans-serif;\n  background: #f5f6f8;\n}\n\n.demo-card {\n  max-width: 420px;\n  padding: 24px;\n  border-radius: 6px;\n  background: white;\n}',
+  javascript: 'document.querySelector("#action").addEventListener("click", () => {\n  document.querySelector("#result").textContent = "代码运行成功";\n});',
+};
+
+function RunnableCodeDialog({
+  onClose,
+  onInsert,
+}: {
+  onClose: () => void;
+  onInsert: (snippet: string) => void;
+}) {
+  const [activeTab, setActiveTab] = useState<RunnableCodeTab>("html");
+  const [code, setCode] = useState(runnableCodeDefaults);
+  const [previewDocument, setPreviewDocument] = useState(() => buildRunnableDocument(runnableCodeDefaults));
+  const tabs: Array<[RunnableCodeTab, string]> = [["html", "HTML"], ["css", "CSS"], ["javascript", "JavaScript"]];
+
+  function runCode() {
+    setPreviewDocument(buildRunnableDocument(code));
+  }
+
+  return (
+    <div className="modal-backdrop code-runner-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="code-runner-dialog" role="dialog" aria-modal="true" aria-labelledby="code-runner-title">
+        <header>
+          <div><Code2 size={20} /><h2 id="code-runner-title">运行代码</h2></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <div className="code-runner-body">
+          <div className="code-runner-editor">
+            <div className="code-runner-tabs" role="tablist" aria-label="代码类型">
+              {tabs.map(([value, label]) => (
+                <button key={value} className={activeTab === value ? "active" : ""} onClick={() => setActiveTab(value)} role="tab" aria-selected={activeTab === value}>{label}</button>
+              ))}
+            </div>
+            <textarea
+              aria-label={`${tabs.find(([value]) => value === activeTab)?.[1]} 代码`}
+              value={code[activeTab]}
+              onChange={(event) => setCode((current) => ({ ...current, [activeTab]: event.target.value }))}
+              spellCheck={false}
+            />
+          </div>
+          <div className="code-runner-preview">
+            <div><strong>运行结果</strong><span>沙盒预览</span></div>
+            <iframe title="代码运行预览" sandbox="allow-scripts" srcDoc={previewDocument} />
+          </div>
+        </div>
+        <footer>
+          <span>HTML、CSS 与 JavaScript 会在隔离沙盒中运行</span>
+          <div>
+            <button className="secondary-button" onClick={onClose}>取消</button>
+            <button className="secondary-button code-run-button" onClick={runCode}><Play size={15} fill="currentColor" /> 运行</button>
+            <button className="csdn-publish-button" onClick={() => onInsert(buildRunnableMarkdown(code))}>插入文章</button>
+          </div>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function ArticlePreview({
   fields,
   html,
@@ -1683,6 +2041,64 @@ function plainText(value: string): string {
     .replace(/[`#>*_~|\-]/g, " ")
     .replace(/\s+/g, " ")
     .trim();
+}
+
+function safeHttpUrl(value: string): string | null {
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function escapeMarkdownInline(value: string): string {
+  return value.replace(/([\\`*{}[\]()#+.!_|<>~-])/g, "\\$1");
+}
+
+function buildRunnableDocument(code: Record<RunnableCodeTab, string>): string {
+  const css = code.css.replace(/<\/style/gi, "<\\/style");
+  const javascript = code.javascript.replace(/<\/script/gi, "<\\/script");
+  return `<!doctype html><html><head><meta charset="utf-8"><meta name="viewport" content="width=device-width,initial-scale=1"><meta http-equiv="Content-Security-Policy" content="default-src 'none'; img-src data: https:; media-src data: blob: https:; style-src 'unsafe-inline'; script-src 'unsafe-inline'; connect-src 'none'"><style>${css}</style></head><body>${code.html}<script>try {${javascript}} catch (error) { document.body.insertAdjacentHTML('beforeend', '<pre style="color:#b42318;white-space:pre-wrap"></pre>'); document.body.lastElementChild.textContent = String(error); }<\/script></body></html>`;
+}
+
+function buildRunnableMarkdown(code: Record<RunnableCodeTab, string>): string {
+  return (["html", "css", "javascript"] as RunnableCodeTab[])
+    .map((language) => makeCodeFence(language, code[language]))
+    .join("\n\n");
+}
+
+function makeCodeFence(language: string, value: string): string {
+  const longest = Math.max(0, ...Array.from(value.matchAll(/`+/g), (match) => match[0].length));
+  const fence = "`".repeat(Math.max(3, longest + 1));
+  return `${fence}${language}\n${value.trimEnd()}\n${fence}`;
+}
+
+function mapMarkdownProse(value: string, transform: (segment: string) => string): string {
+  return value
+    .split(/(```[\s\S]*?```)/g)
+    .map((segment, index) => index % 2 === 1 ? segment : transform(segment))
+    .join("");
+}
+
+function formatMarkdown(value: string): string {
+  return mapMarkdownProse(value, (segment) => segment
+    .split(/\r?\n/)
+    .map((line) => line
+      .replace(/^(#{1,6})([^#\s])/, "$1 $2")
+      .replace(/^(\s*)[-*+]([^\s-])/, "$1- $2")
+      .replace(/[ \t]+$/g, ""))
+    .join("\n")
+    .replace(/\n{3,}/g, "\n\n"))
+    .trimEnd();
+}
+
+function optimizeMarkdown(value: string): string {
+  return mapMarkdownProse(formatMarkdown(value), (segment) => segment
+    .replace(/[ \t]{2,}/g, " ")
+    .replace(/\s+([，。！？；：、])/g, "$1")
+    .replace(/([（【《])\s+/g, "$1")
+    .replace(/\s+([）】》])/g, "$1"));
 }
 
 function extractOutline(value: string): OutlineItem[] {

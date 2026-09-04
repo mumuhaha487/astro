@@ -103,6 +103,17 @@ async function mockStudioApi(page) {
     if (url.pathname === "/api/history/content") {
       return json({ path: examplePost.path, commitSha: url.searchParams.get("sha"), content: historyContent });
     }
+    if (url.pathname === "/api/academic-search") {
+      return json({ works: [{
+        id: "https://openalex.org/W123",
+        title: "Astro Studio Editing Research",
+        year: 2026,
+        authors: ["Ada Lovelace", "Alan Turing"],
+        venue: "Open Web Journal",
+        url: "https://doi.org/10.1000/astro-studio",
+        doi: "10.1000/astro-studio",
+      }] });
+    }
     if (url.pathname === "/api/drafts" && request.method() === "GET") return json({ drafts: [] });
     if (url.pathname === "/api/draft" && request.method() === "PUT") {
       const body = request.postDataJSON();
@@ -152,24 +163,74 @@ async function layoutMetrics(page) {
       workspace: rect(".editor-workspace"),
       outline: rect(".outline-pane"),
       assistant: rect(".assistant-card"),
+      assistantDrawer: rect(".assistant-drawer"),
+      compose: rect(".compose-pane"),
+      document: rect(".document-scroll"),
+      draftBanner: rect(".draft-resume-banner"),
+      titleInput: rect(".title-input"),
       publish: rect(".publish-bar"),
     };
   });
 }
 
 async function verifyDesktop() {
-  const { context, page, pageErrors } = await openEditor({ width: 1440, height: 900 });
+  const { context, page, pageErrors } = await openEditor({ width: 1264, height: 720 });
   const metrics = await layoutMetrics(page);
   assert.equal(metrics.body.scrollWidth, metrics.body.clientWidth, "desktop body must not overflow horizontally");
   assert.equal(metrics.topbar.height, 48);
   assert.equal(metrics.toolbar.height, 61);
-  assert.equal(metrics.toolbar.scrollWidth, metrics.toolbar.clientWidth, "all desktop toolbar items must fit");
-  assert.equal(metrics.outline.width, 278);
-  assert.equal(metrics.assistant.width, 106);
-  assert.equal(metrics.publish.height, 76);
+  assert.deepEqual(
+    { x: metrics.outline.x, y: metrics.outline.y, width: metrics.outline.width, bottom: metrics.outline.y + metrics.outline.height },
+    { x: 24, y: 132, width: 280, bottom: 652 },
+  );
+  assert.deepEqual(
+    { x: metrics.compose.x, width: metrics.compose.width, documentY: metrics.document.y },
+    { x: 224, width: 816, documentY: 133 },
+  );
+  assert.deepEqual(
+    { x: metrics.draftBanner.x, y: metrics.draftBanner.y, width: metrics.draftBanner.width, height: metrics.draftBanner.height },
+    { x: 288, y: 165, width: 688, height: 54 },
+  );
+  assert.deepEqual(
+    { x: metrics.assistantDrawer.x, y: metrics.assistantDrawer.y, width: metrics.assistantDrawer.width, bottom: metrics.assistantDrawer.y + metrics.assistantDrawer.height },
+    { x: 874, y: 100, width: 390, bottom: 652 },
+  );
+  assert.equal(metrics.assistant.width, 104);
+  assert.equal(metrics.publish.height, 68);
   assert.equal(await page.locator(".mobile-writing-tools-button").isVisible(), false);
+  const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
+  await page.screenshot({ path: baselinePath, animations: "disabled" });
 
-  await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 24, y: 24 } });
+  await page.getByRole("tab", { name: "Chat" }).click();
+  await page.locator(".assistant-drawer textarea").fill("请检查文章结构");
+  await page.locator(".assistant-drawer .assistant-send").click();
+  await page.waitForFunction(() => document.querySelectorAll(".assistant-drawer .assistant-messages p").length === 2);
+  await page.getByRole("tab", { name: "Agent" }).click();
+  await page.locator(".assistant-drawer textarea").fill("生成大纲");
+  await page.locator(".assistant-drawer .assistant-send").click();
+  await page.waitForFunction(() => document.querySelectorAll(".studio-rich-content h2").length === 3);
+
+  await page.getByTitle("收起AI助手").click();
+  await page.locator(".assistant-card > button").filter({ hasText: "学术搜索" }).click();
+  await page.locator(".academic-dialog input").fill("Astro editing");
+  await page.locator(".academic-search-form > button").click();
+  await page.locator(".academic-result").waitFor();
+  await page.getByRole("button", { name: "插入引用" }).click();
+  await page.waitForFunction(() => document.querySelector(".studio-rich-content")?.textContent?.includes("Astro Studio Editing Research"));
+
+  await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
+  await page.locator(".csdn-code-block-tool button").click();
+  await page.getByRole("option", { name: "运行代码" }).click();
+  await page.locator(".code-runner-dialog").waitFor();
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-code-runner.png"), animations: "disabled" });
+  const codePreview = page.frameLocator('iframe[title="代码运行预览"]');
+  await codePreview.getByRole("button", { name: "运行交互" }).click();
+  await codePreview.locator("#result", { hasText: "代码运行成功" }).waitFor();
+  await page.locator(".code-runner-dialog").getByRole("button", { name: "插入文章" }).click();
+  await page.locator(".code-runner-dialog").waitFor({ state: "detached" });
+  await page.waitForFunction(() => document.querySelector(".pageel-editor-slot")?.textContent?.includes("Hello, Astro!"));
+
+  await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 160, y: 24 } });
   await page.getByRole("combobox", { name: "文字颜色" }).click();
   await page.getByRole("option", { name: "CSDN 红" }).click();
   await page.locator(".studio-rich-content[contenteditable='true']").click();
@@ -183,11 +244,15 @@ async function verifyDesktop() {
   await page.waitForTimeout(500);
   const editorText = await page.locator(".studio-rich-content[contenteditable='true']").textContent();
   assert(editorText?.includes("文字") && editorText.includes("段落内容"), `toolbar insertion failed: ${JSON.stringify({ editorText, pageErrors })}`);
+  await page.locator(".assistant-title").click();
+  await page.locator(".assistant-drawer").waitFor();
+  const visibleToast = page.locator(".toast");
+  if (await visibleToast.isVisible()) await visibleToast.waitFor({ state: "detached", timeout: 6_000 });
   assert.deepEqual(pageErrors, [], `desktop page errors: ${pageErrors.join("; ")}`);
-  const path = join(outputDirectory, "desktop-1440.png");
+  const path = join(outputDirectory, "desktop-1264-functional.png");
   await page.screenshot({ path, animations: "disabled" });
   await context.close();
-  return { path, metrics };
+  return { path, baselinePath, metrics };
 }
 
 async function verifyMobile(width) {
@@ -202,7 +267,10 @@ async function verifyMobile(width) {
 
   await page.locator(".mobile-writing-tools-button").click();
   await page.locator(".mobile-utility-drawer").waitFor();
-  await page.locator(".mobile-assistant-actions > button").filter({ hasText: "大纲生成" }).click();
+  const assistantPath = join(outputDirectory, `mobile-${width}-assistant.png`);
+  await page.screenshot({ path: assistantPath, animations: "disabled" });
+  await page.locator(".mobile-assistant-workspace textarea").fill("生成大纲");
+  await page.locator(".mobile-assistant-workspace .assistant-send").click();
   await page.waitForFunction(() => document.querySelectorAll(".studio-rich-content h2").length === 3);
   await page.getByRole("tab", { name: "目录" }).click();
   assert.equal(await page.locator(".mobile-outline-list > button").count(), 3);
@@ -211,9 +279,10 @@ async function verifyMobile(width) {
   await page.locator(".mobile-outline-list > button").first().click();
 
   await page.locator(".mobile-writing-tools-button").click();
-  await page.locator(".mobile-assistant-actions > button").filter({ hasText: "代码生成" }).click();
+  await page.locator(".mobile-assistant-workspace textarea").fill("插入代码");
+  await page.locator(".mobile-assistant-workspace .assistant-send").click();
   await page.waitForFunction(() => document.querySelector(".pageel-editor-slot")?.textContent?.includes("在这里编写代码"));
-  await page.locator(".mobile-assistant-actions > button").filter({ hasText: "摘要生成" }).click();
+  await page.locator(".mobile-assistant-workspace .assistant-quick-actions > button").filter({ hasText: "提取摘要" }).click();
   await page.locator(".advanced-fields").waitFor();
   assert.notEqual(await page.locator(".summary-setting textarea").inputValue(), "");
   const settingsRect = await page.locator(".advanced-fields").evaluate((element) => {
@@ -226,6 +295,24 @@ async function verifyMobile(width) {
   await page.screenshot({ path: settingsPath, animations: "disabled" });
   await page.locator(".mobile-settings-head button").click();
 
+  if (width === 390) {
+    await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
+    await page.locator(".csdn-code-block-tool button").click();
+    await page.getByRole("option", { name: "运行代码" }).click();
+    await page.locator(".code-runner-dialog").waitFor();
+    const runnerRect = await page.locator(".code-runner-dialog").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(runnerRect, { top: 0, left: 0, width, height }, "mobile code runner must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-code-runner.png"), animations: "disabled" });
+    const codePreview = page.frameLocator('iframe[title="代码运行预览"]');
+    await codePreview.getByRole("button", { name: "运行交互" }).click();
+    await codePreview.locator("#result", { hasText: "代码运行成功" }).waitFor();
+    await page.locator(".code-runner-dialog").getByRole("button", { name: "取消" }).click();
+    await page.locator(".code-runner-dialog").waitFor({ state: "detached" });
+  }
+
   await page.locator(".csdn-editor-toolbar").evaluate((element) => { element.scrollLeft = element.scrollWidth; });
   const markdownVisible = await page.getByRole("button", { name: "使用 Markdown 源码编辑器" }).evaluate((element) => {
     const rect = element.getBoundingClientRect();
@@ -236,7 +323,7 @@ async function verifyMobile(width) {
   const path = join(outputDirectory, `mobile-${width}.png`);
   await page.screenshot({ path, animations: "disabled" });
   await context.close();
-  return { path, drawerPath, settingsPath, metrics };
+  return { path, assistantPath, drawerPath, settingsPath, metrics };
 }
 
 async function verifyNarrowExistingArticle() {

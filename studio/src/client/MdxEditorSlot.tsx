@@ -8,7 +8,6 @@ import {
   ButtonOrDropdownButton,
   ButtonWithTooltip,
   CreateLink,
-  InsertCodeBlock,
   InsertImage,
   InsertTable,
   InsertThematicBreak,
@@ -70,6 +69,7 @@ export interface MdxEditorSlotProps {
   onHistory: () => void;
   onToggleOutline: () => void;
   onToggleWide: () => void;
+  onRunnableCode: () => void;
   outlineVisible: boolean;
   wide: boolean;
   readOnly?: boolean;
@@ -253,6 +253,26 @@ function ListMenu() {
   );
 }
 
+function CodeMenu({ onRunnableCode }: { onRunnableCode: () => void }) {
+  const insertMarkdown = usePublisher(insertMarkdown$);
+  return (
+    <ButtonOrDropdownButton
+      title="代码"
+      items={[
+        { value: "code", label: "代码" },
+        { value: "run", label: "运行代码" },
+      ]}
+      onChoose={(value) => {
+        if (value === "run") onRunnableCode();
+        else insertMarkdown("\n```typescript\n// 在这里编写代码\n```\n");
+      }}
+    >
+      <FileCode2 size={18} />
+      <span>代码</span>
+    </ButtonOrDropdownButton>
+  );
+}
+
 function normalizeExternalUrl(value: string | null): string | null {
   if (!value) return null;
   try {
@@ -289,6 +309,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
     onHistory,
     onToggleOutline,
     onToggleWide,
+    onRunnableCode,
     outlineVisible,
     wide,
     readOnly,
@@ -354,7 +375,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
                 icon={<MessageSquareQuote size={18} />}
                 buildMarkdown={() => "\n> 引用内容\n"}
               />
-              <span className="csdn-tool-group csdn-code-block-tool"><InsertCodeBlock /></span>
+              <span className="csdn-tool-group csdn-code-block-tool"><CodeMenu onRunnableCode={onRunnableCode} /></span>
               <InsertAction
                 label="资源绑定"
                 title="插入资源链接"
@@ -400,7 +421,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           ),
         }),
       ],
-      [imageUploadHandler, onHistory, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
+      [imageUploadHandler, onHistory, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
     );
 
     return (

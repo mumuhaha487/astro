@@ -1,5 +1,6 @@
 import YAML from "yaml";
 import type {
+  AcademicWork,
   DraftDocument,
   DraftSummary,
   PostDocument,
@@ -45,6 +46,15 @@ interface GitHubCommitListItem {
     author?: { name?: string; date?: string } | null;
     committer?: { name?: string; date?: string } | null;
   };
+}
+
+interface OpenAlexWork {
+  id?: string;
+  display_name?: string;
+  publication_year?: number;
+  doi?: string | null;
+  authorships?: Array<{ author?: { display_name?: string } }>;
+  primary_location?: { source?: { display_name?: string } | null; landing_page_url?: string | null } | null;
 }
 
 interface StoredGitHubToken {
@@ -154,6 +164,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   if (url.pathname === "/api/history/content" && request.method === "GET") {
     const path = assertPostPath(url.searchParams.get("path"));
     return json(await getPostRevision(env, path, assertCommitSha(url.searchParams.get("sha"))));
+  }
+  if (url.pathname === "/api/academic-search" && request.method === "GET") {
+    return json({ works: await searchAcademicWorks(url.searchParams.get("q")) });
   }
   if (url.pathname === "/api/post" && request.method === "PUT") {
     return json(await savePost(env, await readJson(request)));
@@ -321,6 +334,57 @@ async function getPostRevision(env: Env, path: string, commitSha: string): Promi
     throw new HttpError(502, "GitHub 返回了不支持的文章编码");
   }
   return { path, commitSha, content: fromBase64(result.content) };
+}
+
+async function searchAcademicWorks(value: string | null): Promise<AcademicWork[]> {
+  const query = value?.trim() || "";
+  if (query.length < 2 || query.length > 160) {
+    throw new HttpError(400, "学术搜索关键词需要 2 到 160 个字符");
+  }
+  const endpoint = new URL("https://api.openalex.org/works");
+  endpoint.searchParams.set("search", query);
+  endpoint.searchParams.set("per-page", "8");
+  endpoint.searchParams.set("select", "id,display_name,publication_year,doi,authorships,primary_location");
+  const response = await fetch(endpoint, {
+    headers: { Accept: "application/json", "User-Agent": "astro-blog-studio/1.0" },
+  });
+  if (!response.ok) throw new HttpError(502, "学术资料服务暂时不可用");
+  const payload = (await response.json()) as { results?: OpenAlexWork[] };
+  return (payload.results || []).flatMap((work) => {
+    const title = cleanAcademicText(work.display_name, 400);
+    const id = cleanAcademicText(work.id, 240);
+    if (!title || !id) return [];
+    const doi = cleanAcademicText(work.doi?.replace(/^https?:\/\/doi\.org\//i, ""), 200) || undefined;
+    return [{
+      id,
+      title,
+      year: work.publication_year,
+      authors: (work.authorships || []).flatMap((item) => {
+        const author = cleanAcademicText(item.author?.display_name, 160);
+        return author ? [author] : [];
+      }).slice(0, 6),
+      venue: cleanAcademicText(work.primary_location?.source?.display_name, 240) || undefined,
+      url: safeAcademicUrl(work.primary_location?.landing_page_url)
+        || safeAcademicUrl(work.doi)
+        || safeAcademicUrl(id)
+        || "https://openalex.org",
+      doi,
+    }];
+  });
+}
+
+function cleanAcademicText(value: string | null | undefined, maxLength: number): string {
+  return (value || "").replace(/[\u0000-\u001f\u007f]/g, " ").replace(/\s+/g, " ").trim().slice(0, maxLength);
+}
+
+function safeAcademicUrl(value: string | null | undefined): string | null {
+  if (!value) return null;
+  try {
+    const url = new URL(value);
+    return url.protocol === "https:" || url.protocol === "http:" ? url.toString() : null;
+  } catch {
+    return null;
+  }
 }
 
 async function savePost(env: Env, input: unknown): Promise<PostDocument> {
