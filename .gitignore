@@ -8,6 +8,7 @@ env.txt
 .dev.vars
 studio/.dev.vars
 studio/.wrangler/
+studio/.edgeone/
 studio/public/post-index.json
 !.env.example
 

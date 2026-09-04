@@ -1,6 +1,7 @@
 # Astro Blog Studio
 
-Private Cloudflare Worker editor for the Astro blog in this repository.
+Private editor for the Astro blog in this repository. It can run on EdgeOne
+Makers or Cloudflare Workers.
 
 ## Local development
 
@@ -9,6 +10,25 @@ Private Cloudflare Worker editor for the Astro blog in this repository.
 3. Run `pnpm worker:dev` for the API and `pnpm dev` for the Vite client.
 
 ## Deployment
+
+### EdgeOne Makers
+
+Create a Git-connected Makers project with these settings:
+
+- Root directory: `studio`
+- Installation command: `pnpm install --frozen-lockfile`
+- Build command: `pnpm build`
+- Output directory: `dist`
+- Node.js: `22.11.0` or newer
+
+Configure `EDITOR_PASSWORD` and `SESSION_SECRET` for the production and preview
+environments. `GITHUB_OWNER`, `GITHUB_REPO`, and `GITHUB_BRANCH` default to this
+repository. EdgeOne Blob is created automatically on first use and replaces the
+Cloudflare R2 binding for drafts, settings, caches, and schedules. The backend
+runs in Node.js Cloud Functions so the existing 5 MB image upload limit remains
+supported.
+
+### Cloudflare Workers
 
 Create the R2 bucket once, configure Worker secrets, then deploy:
 

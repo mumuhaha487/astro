@@ -11,9 +11,16 @@ import type {
 } from "../shared/types";
 import { validateScheduleTime } from "../shared/schedule";
 
-interface Env {
-  ASSETS: Fetcher;
-  DRAFTS: R2Bucket;
+export interface ObjectBucket {
+  get(key: string): Promise<{ json<T>(): Promise<T> } | null>;
+  put(key: string, value: string | ArrayBuffer | ArrayBufferView | ReadableStream, options?: unknown): Promise<void>;
+  delete(key: string): Promise<void>;
+  list(options?: { prefix?: string; limit?: number }): Promise<{ objects: Array<{ key: string }> }>;
+}
+
+export interface BlogStudioEnv {
+  ASSETS: Pick<Fetcher, "fetch">;
+  DRAFTS: ObjectBucket;
   EDITOR_PASSWORD: string;
   SESSION_SECRET: string;
   GITHUB_TOKEN?: string;
@@ -21,6 +28,8 @@ interface Env {
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
 }
+
+type Env = BlogStudioEnv;
 
 interface GitHubTreeItem {
   path: string;
@@ -932,7 +941,7 @@ async function readJson<T = unknown>(request: Request): Promise<T> {
   }
 }
 
-async function readJsonObject<T>(bucket: R2Bucket, key: string): Promise<T | null> {
+async function readJsonObject<T>(bucket: ObjectBucket, key: string): Promise<T | null> {
   const object = await bucket.get(key);
   if (!object) return null;
   try {
