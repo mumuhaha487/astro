@@ -126,4 +126,21 @@ describe("EdgeOne Makers adapter", () => {
 
     expect(response.status).toBe(200);
   });
+
+  it("uses a browser-confirmed same-origin header behind an internal function host", async () => {
+    const response = await handleEdgeOneRequest(
+      context(new Request("https://internal-function.example/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Host: "internal-function.example",
+          Origin: "https://studio.example",
+          "Sec-Fetch-Site": "same-origin",
+        },
+        body: JSON.stringify({ password: "test-password" }),
+      }), runtimeEnv),
+    );
+
+    expect(response.status).toBe(200);
+  });
 });

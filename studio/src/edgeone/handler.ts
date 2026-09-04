@@ -97,6 +97,20 @@ export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Res
 
 function externalRequestUrl(request: Request): URL {
   const url = new URL(request.url);
+  const browserOrigin = request.headers.get("Origin");
+  if (browserOrigin && request.headers.get("Sec-Fetch-Site") === "same-origin") {
+    try {
+      const originUrl = new URL(browserOrigin);
+      if (originUrl.protocol === "http:" || originUrl.protocol === "https:") {
+        url.protocol = originUrl.protocol;
+        url.host = originUrl.host;
+        return url;
+      }
+    } catch {
+      // Fall through to trusted proxy headers when Origin is malformed.
+    }
+  }
+
   const forwardedHost = request.headers.get("X-Forwarded-Host")?.split(",", 1)[0]?.trim();
   const host = forwardedHost || request.headers.get("Host")?.trim();
   if (!host || !/^[a-z0-9.-]+(?::\d+)?$/i.test(host)) return url;
