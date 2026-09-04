@@ -853,9 +853,51 @@ async function verifyDesktop() {
   const videoTool = page.locator(".csdn-toolbar-action").filter({ hasText: "视频" });
   await videoTool.scrollIntoViewIfNeeded();
   await videoTool.click();
-  await page.locator(".video-insert-dialog").waitFor();
-  await page.locator('.video-insert-dialog input[type="file"]').setInputFiles({ name: "tutorial.mp4", mimeType: "video/mp4", buffer: Buffer.from("visual-video") });
-  await page.locator(".video-insert-dialog").waitFor({ state: "detached" });
+  const videoDialog = page.locator(".video-insert-dialog");
+  await videoDialog.waitFor();
+  assert.deepEqual(await videoDialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { top: 163, left: 332, width: 600, height: 394 });
+  assert.equal(
+    await page.locator(".media-dialog-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.25)",
+  );
+  assert.deepEqual(await videoDialog.locator("#video-dialog-title").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { text: element.textContent, x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { text: "插入视频", x: 356, y: 187, width: 64, height: 24 });
+  assert.deepEqual(await videoDialog.locator(".video-empty-illustration").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { x: 582, y: 286, width: 100, height: 100 });
+  assert.equal(await videoDialog.locator(".video-empty-state p").textContent(), "暂无视频内容，去上传");
+  const videoFooterRects = await videoDialog.locator(".video-dialog-footer button").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return { text: button.textContent, x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }));
+  assert.deepEqual(videoFooterRects, [
+    { text: "去上传", x: 356, y: 499, width: 39, height: 34 },
+    { text: "确定", x: 728, y: 499, width: 82, height: 34 },
+    { text: "取消", x: 826, y: 499, width: 82, height: 34 },
+  ]);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-video-dialog.png"), animations: "disabled" });
+  await videoDialog.locator(".dialog-primary-button").click();
+  await videoDialog.getByText("请先上传或添加一个视频").waitFor();
+  await videoDialog.locator(".video-dialog-footer > .video-upload-link").click();
+  await videoDialog.locator(".video-upload-view").waitFor();
+  await videoDialog.getByLabel("视频地址").fill("not-a-video-url");
+  await videoDialog.getByRole("button", { name: "添加地址" }).click();
+  await videoDialog.getByText("请输入有效的 HTTP 或 HTTPS 视频地址").waitFor();
+  await videoDialog.getByLabel("视频标题").fill("教程视频");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-video-upload.png"), animations: "disabled" });
+  await videoDialog.locator('input[type="file"]').setInputFiles({ name: "tutorial.mp4", mimeType: "video/mp4", buffer: Buffer.from("visual-video") });
+  const selectedVideo = videoDialog.locator(".video-library-card");
+  await selectedVideo.waitFor();
+  assert.match(await selectedVideo.textContent(), /教程视频.*\/video\/editor\/2026\/09\/visual-test\.mp4/s);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-video-selected.png"), animations: "disabled" });
+  await videoDialog.locator(".dialog-primary-button").click();
+  await videoDialog.waitFor({ state: "detached" });
 
   const templateTool = page.locator(".csdn-toolbar-action").filter({ hasText: "模版" });
   await templateTool.scrollIntoViewIfNeeded();
@@ -950,7 +992,7 @@ async function verifyDesktop() {
     .filter((key) => key.startsWith("astro-studio:") && key !== "astro-studio:templates")
     .map((key) => localStorage.getItem(key) || "")
     .join("\n"));
-  for (const expected of ["architecture.png", "frac{a}{b}", "docs.astro.build", "visual-test.mp4", "问题描述", "existing-pack.zip", "Astro 示例资源", "功能对比表", "编辑器功能验证"]) {
+  for (const expected of ["architecture.png", "frac{a}{b}", "docs.astro.build", "visual-test.mp4", "教程视频", "问题描述", "existing-pack.zip", "Astro 示例资源", "功能对比表", "编辑器功能验证"]) {
     assert(insertedDraft.includes(expected), `inserted content is missing ${expected}: ${insertedDraft.slice(-1200)}`);
   }
 
@@ -1286,6 +1328,50 @@ async function verifyMobile(width) {
     await page.screenshot({ path: join(outputDirectory, "mobile-390-link-dialog.png"), animations: "disabled" });
     await linkDialog.getByTitle("关闭").click();
     await linkDialog.waitFor({ state: "detached" });
+
+    const videoTool = page.locator(".csdn-toolbar-action").filter({ hasText: "视频" });
+    await videoTool.scrollIntoViewIfNeeded();
+    await videoTool.click();
+    const videoDialog = page.locator(".video-insert-dialog");
+    await videoDialog.waitFor();
+    assert.deepEqual(await videoDialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    }), { top: 0, left: 0, width, height }, "mobile video dialog must use the full viewport");
+    const mobileVideoFooter = await videoDialog.locator(".video-dialog-footer").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), bottom: Math.round(rect.bottom) };
+    });
+    assert.deepEqual(mobileVideoFooter, { left: 16, right: width - 16, bottom: height - 14 });
+    await page.screenshot({ path: join(outputDirectory, `mobile-${width}-video-dialog.png`), animations: "disabled" });
+    await videoDialog.locator(".video-dialog-footer > .video-upload-link").click();
+    await videoDialog.locator(".video-upload-view").waitFor();
+    const mobileVideoInputs = await videoDialog.locator(".video-address-fields input").evaluateAll((inputs) => inputs.map((input) => {
+      const rect = input.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), height: Math.round(rect.height) };
+    }));
+    assert.deepEqual(mobileVideoInputs, [
+      { left: 16, right: width - 16, height: 36 },
+      { left: 16, right: width - 16, height: 36 },
+    ]);
+    await page.keyboard.press("Escape");
+    await videoDialog.waitFor({ state: "detached" });
+
+    if (width === 390) {
+      await page.setViewportSize({ width, height: 360 });
+      await videoTool.scrollIntoViewIfNeeded();
+      await videoTool.click();
+      const shortVideoDialog = page.locator(".video-insert-dialog");
+      await shortVideoDialog.waitFor();
+      assert.equal(await shortVideoDialog.evaluate((element) => Math.round(element.getBoundingClientRect().height)), 394);
+      assert.deepEqual(await page.locator(".media-dialog-backdrop").evaluate((element) => ({ clientHeight: element.clientHeight, scrollHeight: element.scrollHeight })), { clientHeight: 360, scrollHeight: 394 });
+      const shortVideoContentBottom = await shortVideoDialog.locator(".video-empty-state p").evaluate((element) => Math.round(element.getBoundingClientRect().bottom));
+      const shortVideoFooterTop = await shortVideoDialog.locator(".video-dialog-footer").evaluate((element) => Math.round(element.getBoundingClientRect().top));
+      assert(shortVideoContentBottom < shortVideoFooterTop, "short mobile video content must not overlap the footer");
+      await shortVideoDialog.getByTitle("关闭").click();
+      await shortVideoDialog.waitFor({ state: "detached" });
+      await page.setViewportSize({ width, height });
+    }
 
     const resourceTool = page.locator(".csdn-toolbar-action").filter({ hasText: "资源绑定" });
     await resourceTool.scrollIntoViewIfNeeded();

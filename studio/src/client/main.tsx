@@ -1913,51 +1913,119 @@ function VideoInsertDialog({
   onUpload: (file: File) => Promise<string>;
   onInsert: (url: string, title: string) => void;
 }) {
+  const [view, setView] = useState<"library" | "upload">("library");
+  const [selectedVideo, setSelectedVideo] = useState<{ url: string; title: string } | null>(null);
   const [url, setUrl] = useState("");
   const [title, setTitle] = useState("");
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeRef = useRef(true);
+
+  useEffect(() => {
+    activeRef.current = true;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      activeRef.current = false;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, [onClose]);
 
   async function upload(file: File | undefined) {
     if (!file) return;
+    const requestedTitle = title.trim();
     setUploading(true);
     setError("");
     try {
       const uploadedUrl = await onUpload(file);
-      onInsert(uploadedUrl, file.name.replace(/\.[^.]+$/, "") || "视频");
+      if (!activeRef.current) return;
+      setSelectedVideo({ url: uploadedUrl, title: requestedTitle || file.name.replace(/\.[^.]+$/, "") || "视频" });
+      setView("library");
     } catch (reason) {
-      setError(errorMessage(reason));
+      if (activeRef.current) setError(errorMessage(reason));
     } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (activeRef.current) {
+        setUploading(false);
+        if (inputRef.current) inputRef.current.value = "";
+      }
     }
   }
 
-  function insert(event: FormEvent) {
+  function addVideoAddress(event: FormEvent) {
     event.preventDefault();
     const normalized = safeHttpUrl(url);
     if (!normalized) {
       setError("请输入有效的 HTTP 或 HTTPS 视频地址");
       return;
     }
-    onInsert(normalized, title.trim() || "视频");
+    setSelectedVideo({ url: normalized, title: title.trim() || "视频" });
+    setError("");
+    setView("library");
+  }
+
+  function insertSelectedVideo() {
+    if (!selectedVideo) {
+      setError("请先上传或添加一个视频");
+      return;
+    }
+    onInsert(selectedVideo.url, selectedVideo.title);
+  }
+
+  function openUploadView() {
+    setError("");
+    setView("upload");
   }
 
   return (
     <div className="modal-backdrop media-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="media-dialog video-insert-dialog" role="dialog" aria-modal="true" aria-labelledby="video-dialog-title">
-        <header><div><Video size={20} /><h2 id="video-dialog-title">插入视频</h2></div><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
-        <form className="video-insert-body" onSubmit={insert}>
-          <label><span>视频地址</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com/video.mp4" autoFocus /></label>
-          <label><span>视频标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="可选" /></label>
-          <input ref={inputRef} className="visually-hidden" type="file" accept="video/mp4,video/webm,video/ogg" onChange={(event) => void upload(event.target.files?.[0])} />
-          <button type="button" className="video-upload-link" onClick={() => inputRef.current?.click()} disabled={uploading}>
-            {uploading ? <LoaderCircle className="spin" size={15} /> : <Upload size={15} />} {uploading ? "正在上传到静态目录" : "从本地上传视频"}
-          </button>
-          {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
-          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={!url.trim()}>确定</button></footer>
-        </form>
+        <header><h2 id="video-dialog-title">插入视频</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        {view === "library" ? (
+          <div className="video-library-view">
+            <div className="video-library-content">
+              {selectedVideo ? (
+                <button aria-checked="true" className="video-library-card" onClick={() => setSelectedVideo(selectedVideo)} role="radio" type="button">
+                  <span className="video-card-preview"><Video aria-hidden="true" size={38} /></span>
+                  <span><b>{selectedVideo.title}</b><small>{selectedVideo.url}</small></span>
+                  <Check aria-hidden="true" size={18} />
+                </button>
+              ) : (
+                <div className="video-empty-state">
+                  <span className="video-empty-illustration" aria-hidden="true"><Video size={52} strokeWidth={1.25} /></span>
+                  <p>暂无视频内容，<button onClick={openUploadView} type="button">去上传</button></p>
+                </div>
+              )}
+            </div>
+            {error ? <span className="insert-dialog-error video-library-error"><AlertCircle size={15} /> {error}</span> : null}
+            <footer className="video-dialog-footer">
+              <button autoFocus className="video-upload-link" onClick={openUploadView} type="button">去上传</button>
+              <span>
+                <button className="dialog-primary-button" onClick={insertSelectedVideo} type="button">确定</button>
+                <button className="secondary-button" onClick={onClose} type="button">取消</button>
+              </span>
+            </footer>
+          </div>
+        ) : (
+          <form className="video-upload-view" onSubmit={addVideoAddress}>
+            <button className="video-upload-back" onClick={() => { setError(""); setView("library"); }} type="button"><ChevronLeft size={16} /> 插入已有视频</button>
+            <div className="video-upload-dropzone">
+              <input ref={inputRef} className="visually-hidden" type="file" accept="video/mp4,video/webm,video/ogg" onChange={(event) => void upload(event.target.files?.[0])} />
+              <button className="drawer-primary-button" onClick={() => inputRef.current?.click()} disabled={uploading} type="button">
+                {uploading ? <LoaderCircle className="spin" size={16} /> : <Upload size={16} />} {uploading ? "正在上传到静态目录" : "选择本地视频"}
+              </button>
+              <p>支持 MP4、WebM、Ogg，单个视频最大 25MB</p>
+            </div>
+            <div className="video-address-fields">
+              <label><span>视频地址</span><input aria-label="视频地址" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com/video.mp4" /></label>
+              <label><span>视频标题</span><input aria-label="视频标题" value={title} onChange={(event) => setTitle(event.target.value)} placeholder="可选" /></label>
+            </div>
+            {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+            <footer><button className="secondary-button" onClick={() => { setError(""); setView("library"); }} type="button">返回</button><button className="dialog-primary-button" disabled={!url.trim()}>添加地址</button></footer>
+          </form>
+        )}
       </section>
     </div>
   );

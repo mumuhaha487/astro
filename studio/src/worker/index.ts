@@ -86,6 +86,7 @@ const securityHeaders: Record<string, string> = {
     "script-src 'self'",
     "style-src 'self' 'unsafe-inline'",
     "img-src 'self' data: blob: https:",
+    "media-src 'self' blob: https:",
     "font-src 'self' data:",
     "connect-src 'self'",
     "object-src 'none'",
