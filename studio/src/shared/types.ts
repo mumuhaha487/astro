@@ -23,6 +23,20 @@ export interface PostDocument {
   content: string;
 }
 
+export interface PostRevision {
+  sha: string;
+  message: string;
+  author: string;
+  committedAt: string;
+  htmlUrl: string;
+}
+
+export interface PostRevisionDocument {
+  path: string;
+  commitSha: string;
+  content: string;
+}
+
 export interface DraftSummary {
   key: string;
   path: string;

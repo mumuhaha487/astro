@@ -4,6 +4,8 @@ import type {
   DraftSummary,
   PostDocument,
   PostMeta,
+  PostRevision,
+  PostRevisionDocument,
   ScheduledPost,
   SessionInfo,
 } from "../shared/types";
@@ -32,6 +34,17 @@ interface GitHubTreeResponse {
   sha: string;
   truncated: boolean;
   tree: GitHubTreeItem[];
+}
+
+interface GitHubCommitListItem {
+  sha: string;
+  html_url: string;
+  author?: { login?: string } | null;
+  commit: {
+    message: string;
+    author?: { name?: string; date?: string } | null;
+    committer?: { name?: string; date?: string } | null;
+  };
 }
 
 interface StoredGitHubToken {
@@ -133,6 +146,14 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   if (url.pathname === "/api/post" && request.method === "GET") {
     const path = assertPostPath(url.searchParams.get("path"));
     return json(await getPost(env, path));
+  }
+  if (url.pathname === "/api/history" && request.method === "GET") {
+    const path = assertPostPath(url.searchParams.get("path"));
+    return json({ revisions: await listPostHistory(env, path) });
+  }
+  if (url.pathname === "/api/history/content" && request.method === "GET") {
+    const path = assertPostPath(url.searchParams.get("path"));
+    return json(await getPostRevision(env, path, assertCommitSha(url.searchParams.get("sha"))));
   }
   if (url.pathname === "/api/post" && request.method === "PUT") {
     return json(await savePost(env, await readJson(request)));
@@ -269,6 +290,37 @@ async function getPost(env: Env, path: string): Promise<PostDocument> {
     throw new HttpError(502, "GitHub 返回了不支持的文章编码");
   }
   return { path, sha: result.sha, content: fromBase64(result.content) };
+}
+
+async function listPostHistory(env: Env, path: string): Promise<PostRevision[]> {
+  const token = await getGitHubToken(env);
+  const commits = await githubJson<GitHubCommitListItem[]>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/commits?sha=${encodeURIComponent(env.GITHUB_BRANCH)}&path=${encodeURIComponent(path)}&per_page=30`,
+    { method: "GET" },
+    token,
+  );
+  return commits.map((item) => ({
+    sha: item.sha,
+    message: item.commit.message.split("\n", 1)[0]?.slice(0, 240) || "更新文章",
+    author: item.author?.login || item.commit.author?.name || item.commit.committer?.name || "未知作者",
+    committedAt: item.commit.author?.date || item.commit.committer?.date || "",
+    htmlUrl: item.html_url,
+  }));
+}
+
+async function getPostRevision(env: Env, path: string, commitSha: string): Promise<PostRevisionDocument> {
+  const token = await getGitHubToken(env);
+  const result = await githubJson<{ content: string; encoding: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(path)}?ref=${commitSha}`,
+    { method: "GET" },
+    token,
+  );
+  if (result.encoding !== "base64") {
+    throw new HttpError(502, "GitHub 返回了不支持的文章编码");
+  }
+  return { path, commitSha, content: fromBase64(result.content) };
 }
 
 async function savePost(env: Env, input: unknown): Promise<PostDocument> {
@@ -741,6 +793,13 @@ function assertPostPath(value: unknown): string {
     throw new HttpError(400, "文章路径无效");
   }
   return value;
+}
+
+function assertCommitSha(value: string | null): string {
+  if (!value || !/^[0-9a-f]{40}$/i.test(value)) {
+    throw new HttpError(400, "文章版本无效");
+  }
+  return value.toLowerCase();
 }
 
 function isPostPath(value: string): boolean {

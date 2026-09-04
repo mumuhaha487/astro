@@ -3,6 +3,8 @@ import type {
   DraftSummary,
   PostDocument,
   PostMeta,
+  PostRevision,
+  PostRevisionDocument,
   ScheduledPost,
   SessionInfo,
 } from "../shared/types";
@@ -55,6 +57,10 @@ export const api = {
   posts: () => request<{ posts: PostMeta[]; stale?: boolean }>("/api/posts"),
   post: (path: string) =>
     request<PostDocument>(`/api/post?path=${encodeURIComponent(path)}`),
+  history: (path: string) =>
+    request<{ revisions: PostRevision[] }>(`/api/history?path=${encodeURIComponent(path)}`),
+  postRevision: (path: string, sha: string) =>
+    request<PostRevisionDocument>(`/api/history/content?path=${encodeURIComponent(path)}&sha=${encodeURIComponent(sha)}`),
   savePost: (document: PostDocument, message: string) =>
     request<PostDocument>("/api/post", {
       method: "PUT",

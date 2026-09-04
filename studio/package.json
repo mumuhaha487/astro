@@ -10,7 +10,8 @@
     "preview": "vite preview",
     "worker:dev": "wrangler dev",
     "deploy": "pnpm build && wrangler deploy",
-    "test": "vitest run"
+    "test": "vitest run",
+    "test:visual": "node scripts/visual-smoke.mjs"
   },
   "dependencies": {
     "@mdxeditor/editor": "^3.20.0",
@@ -25,6 +26,7 @@
     "@cloudflare/workers-types": "5.20260901.1",
     "@types/react": "^19.2.17",
     "@types/react-dom": "^19.2.3",
+    "playwright-core": "^1.62.1",
     "typescript": "^7.0.2",
     "vite": "7.3.1",
     "vitest": "4.1.11",

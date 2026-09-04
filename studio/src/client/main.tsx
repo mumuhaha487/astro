@@ -15,6 +15,7 @@ import {
   GitBranch,
   ImagePlus,
   KeyRound,
+  ListTree,
   LoaderCircle,
   MessageSquareText,
   PencilLine,
@@ -57,6 +58,7 @@ import type {
   DraftSummary,
   PostDocument,
   PostMeta,
+  PostRevision,
   SessionInfo,
 } from "../shared/types";
 import "./styles.css";
@@ -64,6 +66,13 @@ import "./styles.css";
 type EditorMode = "rich" | "source" | "preview";
 type ListFilter = "all" | "published" | "draft" | "pinned";
 type SyncState = "idle" | "saving" | "saved" | "error";
+type MobilePanel = "outline" | "assistant" | null;
+
+interface OutlineItem {
+  depth: number;
+  text: string;
+  line: number;
+}
 
 interface WorkingDocument extends PostDocument {
   draftKey?: string;
@@ -94,8 +103,10 @@ function App() {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
+  const [historyOpen, setHistoryOpen] = useState(false);
   const [outlineVisible, setOutlineVisible] = useState(true);
   const [wideEditor, setWideEditor] = useState(false);
+  const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
   const [syncState, setSyncState] = useState<SyncState>("idle");
   const [syncLabel, setSyncLabel] = useState("未修改");
   const [revision, setRevision] = useState(0);
@@ -260,6 +271,94 @@ function App() {
     });
   }
 
+  function replaceEditorBody(markdown: string) {
+    editorRef.current?.setMarkdown(markdown);
+    updateBody(markdown);
+  }
+
+  function togglePostSidebar() {
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setSidebarOpen((value) => !value);
+  }
+
+  function openPostSidebar() {
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setHistoryOpen(false);
+    setSidebarOpen(true);
+  }
+
+  function openHistory() {
+    setSidebarOpen(false);
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    setHistoryOpen(true);
+  }
+
+  function toggleOutlinePanel() {
+    if (window.matchMedia("(max-width: 900px)").matches) {
+      setAdvancedOpen(false);
+      setMobilePanel((current) => current === "outline" ? null : "outline");
+      return;
+    }
+    setOutlineVisible((value) => !value);
+  }
+
+  function openMobilePanel(panel: Exclude<MobilePanel, null>) {
+    setSidebarOpen(false);
+    setAdvancedOpen(false);
+    setMobilePanel((current) => current === panel ? null : panel);
+  }
+
+  function toggleAdvancedFields() {
+    setSidebarOpen(false);
+    setMobilePanel(null);
+    setAdvancedOpen((value) => !value);
+  }
+
+  function jumpToOutline(item: OutlineItem, index: number) {
+    if (mode === "source") {
+      const source = document.querySelector<HTMLTextAreaElement>(".source-editor");
+      if (source) {
+        const lines = body.split(/\r?\n/);
+        const position = lines.slice(0, item.line).reduce((total, line) => total + line.length + 1, 0);
+        source.focus();
+        source.setSelectionRange(position, position);
+        source.scrollTop = Math.max(0, item.line * 24 - source.clientHeight / 3);
+      }
+    } else {
+      const rootSelector = mode === "preview" ? ".preview-content" : ".studio-rich-content";
+      const heading = document.querySelectorAll<HTMLElement>(`${rootSelector} h1, ${rootSelector} h2, ${rootSelector} h3, ${rootSelector} h4, ${rootSelector} h5, ${rootSelector} h6`)[index];
+      heading?.scrollIntoView({ behavior: "smooth", block: "center" });
+    }
+    setMobilePanel(null);
+  }
+
+  function generateOutline() {
+    if (outlineItems.length) {
+      if (window.matchMedia("(max-width: 900px)").matches) setMobilePanel("outline");
+      else setOutlineVisible(true);
+      showToast(`已识别 ${outlineItems.length} 个标题`, "success");
+      return;
+    }
+    replaceEditorBody(`${body}${body ? "\n\n" : ""}## 背景\n\n## 实现过程\n\n## 总结\n`);
+    showToast("已生成文章大纲", "success");
+  }
+
+  function generateCodeBlock() {
+    replaceEditorBody(`${body}${body ? "\n\n" : ""}\`\`\`typescript\n// 在这里编写代码\n\`\`\`\n`);
+    showToast("已插入代码块", "success");
+  }
+
+  function generateSummary() {
+    const summary = plainText(body).slice(0, 256);
+    setField("description", summary);
+    setMobilePanel(null);
+    setAdvancedOpen(true);
+    showToast(summary ? "摘要已生成" : "正文中还没有内容", summary ? "success" : "info");
+  }
+
   function hydrateDocument(document: WorkingDocument, restored = false) {
     const parsed = parseDocument(document.content);
     setWorking(document);
@@ -276,6 +375,21 @@ function App() {
     setSyncState(restored ? "saved" : "idle");
     setSyncLabel(restored ? "已恢复云端草稿" : "未修改");
     setSidebarOpen(false);
+    setMobilePanel(null);
+    setHistoryOpen(false);
+  }
+
+  function restoreHistoryVersion(content: string) {
+    const parsed = parseDocument(content);
+    setFields(parsed.fields);
+    setBody(parsed.body);
+    setTagsText(parsed.fields.tags.join(", "));
+    const blocked = hasUnsafeRichContent(parsed.body);
+    setMode(blocked ? "source" : "rich");
+    setEditorEpoch((value) => value + 1);
+    markChanged();
+    setHistoryOpen(false);
+    showToast("历史版本已恢复到当前草稿，发布前不会覆盖 GitHub", "success");
   }
 
   async function openPost(post: PostMeta) {
@@ -558,13 +672,13 @@ function App() {
         <div className="topbar-brand">
           <button
             className="editor-back-button"
-            onClick={() => setSidebarOpen((value) => !value)}
+            onClick={togglePostSidebar}
             title="文章列表"
           >
             <ChevronLeft size={21} />
           </button>
           <div className="astro-wordmark"><span>AS</span><strong>tro</strong></div>
-          <button className="editor-title-button" onClick={() => setSidebarOpen(true)}>
+          <button className="editor-title-button" onClick={openPostSidebar}>
             发布文章 <ChevronDown size={15} fill="currentColor" />
           </button>
         </div>
@@ -588,6 +702,13 @@ function App() {
           </button>
           <button className="icon-button topbar-notification" title="同步消息"><Bell size={18} /></button>
           <span className="topbar-separator" />
+          <button
+            className={`icon-button mobile-writing-tools-button ${mobilePanel ? "active" : ""}`}
+            onClick={() => openMobilePanel("assistant")}
+            title="目录与AI助手"
+          >
+            <Sparkles size={18} />
+          </button>
           <button className="icon-button" onClick={() => setSettingsOpen(true)} title="设置">
             <Settings size={18} />
           </button>
@@ -710,7 +831,7 @@ function App() {
                 {outlineItems.length ? (
                   <nav className="outline-list" aria-label="文章目录">
                     {outlineItems.map((item, index) => (
-                      <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }}>
+                      <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }} onClick={() => jumpToOutline(item, index)}>
                         {item.text}
                       </button>
                     ))}
@@ -726,7 +847,7 @@ function App() {
                     <span className="draft-badge">{working.isNew ? "草稿" : fields.draft ? "草稿" : "已发布"}</span>
                     <span className="draft-resume-title">{fields.title || "未命名文章"}</span>
                     <span className="draft-resume-action">{syncLabel}</span>
-                    <button onClick={() => setSidebarOpen(true)}>更多文章</button>
+                    <button onClick={openPostSidebar}>更多文章</button>
                     <button className="draft-banner-close" onClick={() => setWorking(null)} title="关闭文章"><X size={15} /></button>
                   </div>
 
@@ -764,9 +885,9 @@ function App() {
                           initialValue={body}
                           onChange={updateBody}
                           onUploadImage={uploadImage}
-                          onHistory={() => setSidebarOpen(true)}
+                          onHistory={openHistory}
                           onSourceMode={() => changeMode("source")}
-                          onToggleOutline={() => setOutlineVisible((value) => !value)}
+                          onToggleOutline={toggleOutlinePanel}
                           onToggleWide={() => setWideEditor((value) => !value)}
                           outlineVisible={outlineVisible}
                           wide={wideEditor}
@@ -804,6 +925,7 @@ function App() {
                         setField("description", summary);
                         showToast(summary ? "已从正文提取摘要" : "正文中还没有可提取的内容", summary ? "success" : "info");
                       }}
+                      onClose={() => setAdvancedOpen(false)}
                     />
                   ) : null}
                 </div>
@@ -812,25 +934,7 @@ function App() {
               <aside className="assistant-pane">
                 <div className="assistant-card">
                   <div className="assistant-title"><Sparkles size={22} /><strong>AI助手</strong><ChevronDown size={14} /></div>
-                  <button onClick={() => {
-                    if (outlineItems.length) {
-                      setOutlineVisible(true);
-                      showToast(`已识别 ${outlineItems.length} 个标题`, "success");
-                    } else {
-                      updateBody(`${body}${body ? "\n\n" : ""}## 背景\n\n## 实现过程\n\n## 总结\n`);
-                      showToast("已生成文章大纲", "success");
-                    }
-                  }}><BookOpenText size={16} /> 大纲生成</button>
-                  <button onClick={() => {
-                    updateBody(`${body}${body ? "\n\n" : ""}\`\`\`typescript\n// 在这里编写代码\n\`\`\`\n`);
-                    showToast("已插入代码块", "success");
-                  }}><Code2 size={16} /> 代码生成</button>
-                  <button onClick={() => {
-                    const summary = plainText(body).slice(0, 256);
-                    setField("description", summary);
-                    setAdvancedOpen(true);
-                    showToast(summary ? "摘要已生成" : "正文中还没有内容", summary ? "success" : "info");
-                  }}><MessageSquareText size={16} /> 摘要生成</button>
+                  <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onSummary={generateSummary} />
                 </div>
               </aside>
             </>
@@ -838,11 +942,39 @@ function App() {
         </main>
       </div>
 
+      {working && fields && mobilePanel ? (
+        <>
+          <button className="mobile-utility-scrim" onClick={() => setMobilePanel(null)} aria-label="关闭写作工具" />
+          <aside className="mobile-utility-drawer" aria-label="移动端写作工具">
+            <header>
+              <div className="mobile-utility-tabs" role="tablist" aria-label="写作工具">
+                <button className={mobilePanel === "outline" ? "active" : ""} onClick={() => setMobilePanel("outline")} role="tab" aria-selected={mobilePanel === "outline"}><ListTree size={17} /> 目录</button>
+                <button className={mobilePanel === "assistant" ? "active" : ""} onClick={() => setMobilePanel("assistant")} role="tab" aria-selected={mobilePanel === "assistant"}><Sparkles size={17} /> AI助手</button>
+              </div>
+              <button className="mobile-utility-close" onClick={() => setMobilePanel(null)} title="关闭"><X size={19} /></button>
+            </header>
+            {mobilePanel === "outline" ? (
+              outlineItems.length ? (
+                <nav className="mobile-outline-list" aria-label="移动端文章目录">
+                  {outlineItems.map((item, index) => (
+                    <button key={`${item.text}-${index}`} style={{ paddingLeft: `${16 + (item.depth - 1) * 14}px` }} onClick={() => jumpToOutline(item, index)}>{item.text}</button>
+                  ))}
+                </nav>
+              ) : <p className="mobile-panel-empty">为正文添加标题后，将在这里自动生成目录</p>
+            ) : (
+              <div className="mobile-assistant-actions">
+                <AssistantActions onOutline={generateOutline} onCode={generateCodeBlock} onSummary={generateSummary} />
+              </div>
+            )}
+          </aside>
+        </>
+      ) : null}
+
       {working && fields ? (
         <footer className="publish-bar">
           <div className="publish-bar-meta">
             <span>共 {countWords(body)} 字</span>
-            <button className={advancedOpen ? "active" : ""} onClick={() => setAdvancedOpen((value) => !value)}>
+            <button className={advancedOpen ? "active" : ""} onClick={toggleAdvancedFields}>
               发文设置 <ChevronDown size={14} />
             </button>
           </div>
@@ -879,6 +1011,15 @@ function App() {
           publishing={publishing}
           onClose={() => setScheduleOpen(false)}
           onSchedule={(value) => void schedulePost(value)}
+        />
+      ) : null}
+
+      {historyOpen && working ? (
+        <HistoryDialog
+          path={working.path}
+          isNew={working.isNew}
+          onClose={() => setHistoryOpen(false)}
+          onRestore={restoreHistoryVersion}
         />
       ) : null}
 
@@ -938,6 +1079,24 @@ function Login({ onAuthenticated }: { onAuthenticated: (session: SessionInfo) =>
   );
 }
 
+function AssistantActions({
+  onOutline,
+  onCode,
+  onSummary,
+}: {
+  onOutline: () => void;
+  onCode: () => void;
+  onSummary: () => void;
+}) {
+  return (
+    <>
+      <button onClick={onOutline}><BookOpenText size={16} /> 大纲生成</button>
+      <button onClick={onCode}><Code2 size={16} /> 代码生成</button>
+      <button onClick={onSummary}><MessageSquareText size={16} /> 摘要生成</button>
+    </>
+  );
+}
+
 function EmptyEditor({ onCreate }: { onCreate: () => void }) {
   return (
     <div className="empty-editor">
@@ -976,6 +1135,7 @@ function AdvancedFields({
   onTagsChange,
   onUploadImage,
   onExtractSummary,
+  onClose,
 }: {
   fields: FrontmatterFields;
   setField: <K extends keyof FrontmatterFields>(key: K, value: FrontmatterFields[K]) => void;
@@ -983,6 +1143,7 @@ function AdvancedFields({
   onTagsChange: (value: string) => void;
   onUploadImage: (file: File) => Promise<string>;
   onExtractSummary: () => void;
+  onClose: () => void;
 }) {
   const coverInputRef = useRef<HTMLInputElement>(null);
   const [coverUploading, setCoverUploading] = useState(false);
@@ -1000,6 +1161,10 @@ function AdvancedFields({
 
   return (
     <section className="advanced-fields" aria-label="发文设置">
+      <header className="mobile-settings-head">
+        <strong>发文设置</strong>
+        <button onClick={onClose} title="关闭发文设置"><X size={19} /></button>
+      </header>
       <SettingRow label="文章标签" required>
         <div className="setting-input-with-action">
           <input value={tagsText} onChange={(event) => onTagsChange(event.target.value)} placeholder="请输入文章标签，使用逗号分隔" />
@@ -1208,6 +1373,137 @@ function ScheduleDialog({
   );
 }
 
+function HistoryDialog({
+  path,
+  isNew,
+  onClose,
+  onRestore,
+}: {
+  path: string;
+  isNew: boolean;
+  onClose: () => void;
+  onRestore: (content: string) => void;
+}) {
+  const [revisions, setRevisions] = useState<PostRevision[]>([]);
+  const [selectedSha, setSelectedSha] = useState("");
+  const [selectedContent, setSelectedContent] = useState("");
+  const [loading, setLoading] = useState(!isNew);
+  const [loadingContent, setLoadingContent] = useState(false);
+  const [error, setError] = useState("");
+
+  useEffect(() => {
+    if (isNew) return;
+    let active = true;
+    void api.history(path)
+      .then(({ revisions: nextRevisions }) => {
+        if (!active) return;
+        setRevisions(nextRevisions);
+        if (nextRevisions[0]) setSelectedSha(nextRevisions[0].sha);
+      })
+      .catch((reason) => {
+        if (active) setError(errorMessage(reason));
+      })
+      .finally(() => {
+        if (active) setLoading(false);
+      });
+    return () => { active = false; };
+  }, [isNew, path]);
+
+  useEffect(() => {
+    if (!selectedSha) {
+      setSelectedContent("");
+      return;
+    }
+    let active = true;
+    setLoadingContent(true);
+    setError("");
+    void api.postRevision(path, selectedSha)
+      .then((document) => {
+        if (active) setSelectedContent(document.content);
+      })
+      .catch((reason) => {
+        if (active) setError(errorMessage(reason));
+      })
+      .finally(() => {
+        if (active) setLoadingContent(false);
+      });
+    return () => { active = false; };
+  }, [path, selectedSha]);
+
+  const selectedRevision = revisions.find((revision) => revision.sha === selectedSha);
+  const preview = selectedContent ? parseDocument(selectedContent) : null;
+
+  function restore() {
+    if (!selectedContent) return;
+    if (window.confirm("将此历史版本载入当前草稿？当前未发布的编辑内容会被替换。")) {
+      onRestore(selectedContent);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop history-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="history-dialog" role="dialog" aria-modal="true" aria-labelledby="history-title">
+        <header>
+          <div><h2 id="history-title">历史版本</h2><span>{path}</span></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+
+        {isNew ? (
+          <div className="history-empty">新文章还没有 GitHub 历史版本</div>
+        ) : loading ? (
+          <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取 GitHub 历史</div>
+        ) : error && revisions.length === 0 ? (
+          <div className="history-error"><AlertCircle size={18} /> {error}</div>
+        ) : revisions.length === 0 ? (
+          <div className="history-empty">GitHub 中没有找到这篇文章的历史版本</div>
+        ) : (
+          <div className="history-body">
+            <div className="history-list" role="listbox" aria-label="文章历史版本">
+              {revisions.map((revision) => (
+                <button
+                  key={revision.sha}
+                  className={revision.sha === selectedSha ? "active" : ""}
+                  onClick={() => setSelectedSha(revision.sha)}
+                  role="option"
+                  aria-selected={revision.sha === selectedSha}
+                >
+                  <strong>{revision.message}</strong>
+                  <span>{revision.author} · {formatDateTime(revision.committedAt)}</span>
+                  <code>{revision.sha.slice(0, 7)}</code>
+                </button>
+              ))}
+            </div>
+            <div className="history-preview">
+              <div className="history-preview-head">
+                <div>
+                  <strong>{preview?.fields.title || selectedRevision?.message || "文章版本"}</strong>
+                  <span>{selectedRevision ? formatDateTime(selectedRevision.committedAt) : ""}</span>
+                </div>
+                {selectedRevision?.htmlUrl ? <a href={selectedRevision.htmlUrl} target="_blank" rel="noreferrer" title="在 GitHub 查看"><ExternalLink size={16} /></a> : null}
+              </div>
+              {loadingContent ? (
+                <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取版本内容</div>
+              ) : error ? (
+                <div className="history-error"><AlertCircle size={18} /> {error}</div>
+              ) : (
+                <pre>{preview?.body || "这个版本没有正文内容"}</pre>
+              )}
+            </div>
+          </div>
+        )}
+
+        <footer>
+          <span>恢复后会先成为当前草稿</span>
+          <div>
+            <button className="secondary-button" onClick={onClose}>取消</button>
+            <button className="csdn-publish-button history-restore-button" onClick={restore} disabled={!selectedContent || loadingContent}>恢复此版本</button>
+          </div>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function ArticlePreview({
   fields,
   html,
@@ -1389,12 +1685,12 @@ function plainText(value: string): string {
     .trim();
 }
 
-function extractOutline(value: string): Array<{ depth: number; text: string }> {
+function extractOutline(value: string): OutlineItem[] {
   return value
     .split(/\r?\n/)
-    .map((line) => line.match(/^(#{1,6})\s+(.+?)\s*#*$/))
-    .filter((match): match is RegExpMatchArray => Boolean(match))
-    .map((match) => ({ depth: match[1].length, text: plainText(match[2]) }))
+    .map((line, index) => ({ match: line.match(/^(#{1,6})\s+(.+?)\s*#*$/), line: index }))
+    .filter((item): item is { match: RegExpMatchArray; line: number } => Boolean(item.match))
+    .map(({ match, line }) => ({ depth: match[1].length, text: plainText(match[2]), line }))
     .filter((item) => item.text);
 }
 
