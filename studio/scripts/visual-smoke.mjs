@@ -561,6 +561,59 @@ async function verifyDesktop() {
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });
 
+  await page.locator(".csdn-toolbar-action").filter({ hasText: "历史" }).click();
+  const historyDialog = page.locator(".history-dialog");
+  await historyDialog.waitFor();
+  assert.deepEqual(await historyDialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: Math.round(rect.top),
+      left: Math.round(rect.left),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      radius: getComputedStyle(element).borderRadius,
+    };
+  }), { top: 54, left: 152, width: 960, height: 612, radius: "4px" });
+  assert.deepEqual(await historyDialog.locator(".history-sidebar").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { top: 54, left: 152, width: 250, height: 612 });
+  assert.deepEqual(await historyDialog.locator(".history-sidebar h1, .history-filter-trigger").evaluateAll((elements) => elements.map((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  })), [
+    { top: 54, left: 152, width: 249, height: 54 },
+    { top: 108, left: 152, width: 249, height: 56 },
+  ]);
+  assert.equal(await historyDialog.locator(".history-filter-options input").count(), 5);
+  assert.equal(
+    await page.locator(".history-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.6)",
+  );
+  assert.deepEqual(await historyDialog.getByTitle("关闭").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      top: Math.round(rect.top),
+      right: Math.round(innerWidth - rect.right),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+    };
+  }), { top: 54, right: 152, width: 36, height: 36 });
+  assert.deepEqual(await historyDialog.getByRole("button", { name: "恢复到这个版本" }).evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      right: Math.round(innerWidth - rect.right),
+      bottom: Math.round(innerHeight - rect.bottom),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+    };
+  }), { right: 184, bottom: 67, width: 144, height: 32 });
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "hidden");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-history.png"), animations: "disabled" });
+  await page.keyboard.press("Escape");
+  await historyDialog.waitFor({ state: "detached" });
+  assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "");
+
   const publishingSettingsButton = page.locator(".publish-bar-meta button");
   await publishingSettingsButton.click();
   await page.locator(".advanced-fields").waitFor();
@@ -1678,6 +1731,20 @@ async function verifyNarrowExistingArticle() {
   await page.locator(".history-dialog").waitFor();
   await page.locator(".history-list > button").first().click();
   await page.waitForFunction(() => document.querySelector(".history-preview pre")?.textContent?.includes("GitHub 历史读取"));
+  const historyFilter = page.locator(".history-filter-trigger");
+  assert.match(await historyFilter.textContent(), /共\s*2\s*条历史版本/);
+  await historyFilter.click();
+  const historyTypeFilters = page.locator(".history-filter-options input");
+  assert.equal(await historyTypeFilters.count(), 5);
+  assert.deepEqual(await historyTypeFilters.evaluateAll((elements) => elements.map((element) => element.checked)), [true, true, true, true, true]);
+  await page.getByLabel("手动保存").uncheck();
+  assert.equal(await page.locator(".history-list > button").count(), 0);
+  await page.getByText("当前筛选条件下暂无历史").waitFor();
+  await page.getByLabel("手动保存").check();
+  await page.locator(".history-list > button").first().waitFor();
+  await historyFilter.click();
+  await page.locator(".history-list > button").first().click();
+  await page.waitForFunction(() => document.querySelector(".history-preview pre")?.textContent?.includes("GitHub 历史读取"));
   const historyRect = await page.locator(".history-dialog").evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
@@ -1686,7 +1753,7 @@ async function verifyNarrowExistingArticle() {
   const path = join(outputDirectory, "mobile-320-history.png");
   await page.screenshot({ path, animations: "disabled" });
   page.once("dialog", (dialog) => dialog.accept());
-  await page.getByRole("button", { name: "恢复此版本" }).click();
+  await page.getByRole("button", { name: "恢复到这个版本" }).click();
   await page.locator(".history-dialog").waitFor({ state: "detached" });
   await page.waitForFunction(() => document.querySelector(".studio-rich-content")?.textContent?.includes("GitHub 历史读取"));
   assert.equal(await page.locator(".title-input").inputValue(), "历史版本文章");

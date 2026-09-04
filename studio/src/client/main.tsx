@@ -1699,6 +1699,25 @@ function ScheduleDialog({
   );
 }
 
+type HistoryRevisionType = "1" | "2" | "3" | "4" | "5";
+
+const HISTORY_REVISION_TYPES: Array<{ type: HistoryRevisionType; label: string }> = [
+  { type: "1", label: "自动保存" },
+  { type: "2", label: "手动保存" },
+  { type: "3", label: "发布更新" },
+  { type: "4", label: "版本恢复" },
+  { type: "5", label: "定时发布" },
+];
+
+function historyRevisionType(message: string): HistoryRevisionType {
+  const normalized = message.toLocaleLowerCase();
+  if (/自动|auto.?save/.test(normalized)) return "1";
+  if (/定时|schedule/.test(normalized)) return "5";
+  if (/恢复|回滚|restore|recover|revert/.test(normalized)) return "4";
+  if (/发布|上线|publish|release|update post/.test(normalized)) return "3";
+  return "2";
+}
+
 function HistoryDialog({
   path,
   isNew,
@@ -1716,6 +1735,33 @@ function HistoryDialog({
   const [loading, setLoading] = useState(!isNew);
   const [loadingContent, setLoadingContent] = useState(false);
   const [error, setError] = useState("");
+  const [filterOpen, setFilterOpen] = useState(false);
+  const [selectedTypes, setSelectedTypes] = useState<HistoryRevisionType[]>(HISTORY_REVISION_TYPES.map(({ type }) => type));
+  const onCloseRef = useRef(onClose);
+  const filteredRevisions = useMemo(
+    () => revisions.filter((revision) => selectedTypes.includes(historyRevisionType(revision.message))),
+    [revisions, selectedTypes],
+  );
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onCloseRef.current();
+    }
+
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      root.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+    };
+  }, []);
 
   useEffect(() => {
     if (isNew) return;
@@ -1756,6 +1802,11 @@ function HistoryDialog({
     return () => { active = false; };
   }, [path, selectedSha]);
 
+  useEffect(() => {
+    if (filteredRevisions.some((revision) => revision.sha === selectedSha)) return;
+    setSelectedSha(filteredRevisions[0]?.sha || "");
+  }, [filteredRevisions, selectedSha]);
+
   const selectedRevision = revisions.find((revision) => revision.sha === selectedSha);
   const preview = selectedContent ? parseDocument(selectedContent) : null;
 
@@ -1766,65 +1817,93 @@ function HistoryDialog({
     }
   }
 
+  function toggleType(type: HistoryRevisionType) {
+    setSelectedTypes((current) => current.includes(type)
+      ? current.filter((item) => item !== type)
+      : [...current, type]);
+  }
+
   return (
     <div className="modal-backdrop history-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="history-dialog" role="dialog" aria-modal="true" aria-labelledby="history-title">
-        <header>
-          <div><h2 id="history-title">历史版本</h2><span>{path}</span></div>
-          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
-        </header>
-
-        {isNew ? (
-          <div className="history-empty">新文章还没有 GitHub 历史版本</div>
-        ) : loading ? (
-          <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取 GitHub 历史</div>
-        ) : error && revisions.length === 0 ? (
-          <div className="history-error"><AlertCircle size={18} /> {error}</div>
-        ) : revisions.length === 0 ? (
-          <div className="history-empty">GitHub 中没有找到这篇文章的历史版本</div>
-        ) : (
-          <div className="history-body">
+        <button className="history-close-button" onClick={onClose} title="关闭"><X size={22} /></button>
+        <div className="history-body">
+          <aside className="history-sidebar">
+            <h1 id="history-title" title={path}>历史版本</h1>
+            <div className={`history-filter${filterOpen ? " open" : ""}`}>
+              <button
+                className="history-filter-trigger"
+                type="button"
+                aria-expanded={filterOpen}
+                onClick={() => setFilterOpen((current) => !current)}
+              >
+                <Clock3 size={24} />
+                <span>共 {filteredRevisions.length} 条历史版本</span>
+                <span className="history-filter-label">筛选 <ChevronDown size={14} /></span>
+              </button>
+              <div className="history-filter-options">
+                {HISTORY_REVISION_TYPES.map(({ type, label }) => (
+                  <label key={type}>
+                    <input
+                      type="checkbox"
+                      checked={selectedTypes.includes(type)}
+                      onChange={() => toggleType(type)}
+                    />
+                    <span>{label}</span>
+                  </label>
+                ))}
+              </div>
+            </div>
             <div className="history-list" role="listbox" aria-label="文章历史版本">
-              {revisions.map((revision) => (
+              {filteredRevisions.map((revision) => {
+                const type = HISTORY_REVISION_TYPES.find((item) => item.type === historyRevisionType(revision.message));
+                return (
                 <button
                   key={revision.sha}
                   className={revision.sha === selectedSha ? "active" : ""}
                   onClick={() => setSelectedSha(revision.sha)}
                   role="option"
                   aria-selected={revision.sha === selectedSha}
+                  title={`${revision.message} · ${revision.author}`}
                 >
-                  <strong>{revision.message}</strong>
-                  <span>{revision.author} · {formatDateTime(revision.committedAt)}</span>
-                  <code>{revision.sha.slice(0, 7)}</code>
+                  <span className="history-kind">{type?.label || "手动保存"}</span>
+                  <span className="history-relative-time">{formatRelativeTime(revision.committedAt)}</span>
+                  <span className="history-exact-time">{formatDateTime(revision.committedAt)}</span>
                 </button>
-              ))}
+                );
+              })}
             </div>
-            <div className="history-preview">
+          </aside>
+          <main className="history-preview">
+            {selectedRevision ? (
               <div className="history-preview-head">
-                <div>
-                  <strong>{preview?.fields.title || selectedRevision?.message || "文章版本"}</strong>
-                  <span>{selectedRevision ? formatDateTime(selectedRevision.committedAt) : ""}</span>
-                </div>
+                <h2>{preview?.fields.title || selectedRevision.message || "文章版本"}</h2>
                 {selectedRevision?.htmlUrl ? <a href={selectedRevision.htmlUrl} target="_blank" rel="noreferrer" title="在 GitHub 查看"><ExternalLink size={16} /></a> : null}
               </div>
-              {loadingContent ? (
-                <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取版本内容</div>
-              ) : error ? (
-                <div className="history-error"><AlertCircle size={18} /> {error}</div>
-              ) : (
-                <pre>{preview?.body || "这个版本没有正文内容"}</pre>
-              )}
+            ) : null}
+            {isNew ? (
+              <div className="history-empty">新文章还没有 GitHub 历史版本</div>
+            ) : loading ? (
+              <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取 GitHub 历史</div>
+            ) : error && revisions.length === 0 ? (
+              <div className="history-error"><AlertCircle size={18} /> {error}</div>
+            ) : revisions.length === 0 ? (
+              <div className="history-empty">暂无历史</div>
+            ) : filteredRevisions.length === 0 ? (
+              <div className="history-empty">当前筛选条件下暂无历史</div>
+            ) : loadingContent ? (
+              <div className="history-loading"><LoaderCircle className="spin" size={20} /> 正在读取版本内容</div>
+            ) : error ? (
+              <div className="history-error"><AlertCircle size={18} /> {error}</div>
+            ) : (
+              <pre>{preview?.body || "这个版本没有正文内容"}</pre>
+            )}
+            <div className="history-operate-box">
+              {selectedRevision ? <span>{formatDateTime(selectedRevision.committedAt)}</span> : null}
+              <button className="history-restore-button" onClick={restore} disabled={!selectedContent || loadingContent}>恢复到这个版本</button>
             </div>
-          </div>
-        )}
-
-        <footer>
-          <span>恢复后会先成为当前草稿</span>
-          <div>
-            <button className="secondary-button" onClick={onClose}>取消</button>
-            <button className="csdn-publish-button history-restore-button" onClick={restore} disabled={!selectedContent || loadingContent}>恢复此版本</button>
-          </div>
-        </footer>
+          </main>
+        </div>
       </section>
     </div>
   );
@@ -3027,6 +3106,22 @@ function formatDateTime(value: string): string {
     hour: "2-digit",
     minute: "2-digit",
   }).format(date);
+}
+
+function formatRelativeTime(value: string): string {
+  const timestamp = new Date(value).getTime();
+  if (Number.isNaN(timestamp)) return value;
+  const elapsedSeconds = Math.max(0, Math.floor((Date.now() - timestamp) / 1000));
+  if (elapsedSeconds < 60) return "刚刚";
+  const minutes = Math.floor(elapsedSeconds / 60);
+  if (minutes < 60) return `${minutes} 分钟前`;
+  const hours = Math.floor(minutes / 60);
+  if (hours < 24) return `${hours} 小时前`;
+  const days = Math.floor(hours / 24);
+  if (days < 30) return `${days} 天前`;
+  const months = Math.floor(days / 30);
+  if (months < 12) return `${months} 个月前`;
+  return `${Math.floor(months / 12)} 年前`;
 }
 
 function plainText(value: string): string {
