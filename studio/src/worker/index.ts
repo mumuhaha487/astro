@@ -156,6 +156,11 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   if (url.pathname === "/api/session" && request.method === "GET") {
     return json(await getSessionInfo(env));
   }
+  if (url.pathname === "/api/asset" && ["GET", "HEAD"].includes(request.method)) {
+    const repositoryPath = repositoryPublicAssetPath(url.searchParams.get("path") || "");
+    if (!repositoryPath) throw new HttpError(400, "静态资源路径无效");
+    return proxyEditorAsset(request, env, repositoryPath);
+  }
   if (url.pathname === "/api/logout" && request.method === "POST") {
     return json({}, 200, { "Set-Cookie": expiredSessionCookie() });
   }

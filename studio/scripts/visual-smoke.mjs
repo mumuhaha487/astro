@@ -140,6 +140,13 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
         github: { connected: true, login: "visual-test", repository: "mumuhaha487/astro", branch: "main" },
       });
     }
+    if (url.pathname === "/api/asset" && request.method() === "GET") {
+      return route.fulfill({
+        status: 200,
+        contentType: "image/png",
+        body: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+      });
+    }
     if (url.pathname === "/api/posts") return json({ posts: postRecords });
     if (url.pathname === "/api/post" && request.method() === "GET") {
       return json({ path: examplePost.path, sha: examplePost.sha, content: exampleContent });
@@ -657,7 +664,7 @@ async function verifyDesktop() {
 
   await settingsDrawer.getByLabel("标题", { exact: true }).fill("抽屉设置验证文章");
   await settingsDrawer.getByLabel("封面 URL 或路径").fill("/image/manual-cover.webp");
-  assert.equal(await settingsDrawer.locator('.cover-preview-box img').getAttribute("src"), "/image/manual-cover.webp");
+  assert.equal(await settingsDrawer.locator('.cover-preview-box img').getAttribute("src"), "/api/asset?path=%2Fimage%2Fmanual-cover.webp");
   await settingsDrawer.getByLabel("简介").fill("抽屉中的文章简介");
   await settingsDrawer.getByLabel("标签").fill("Astro, Studio, 编辑器");
   await settingsDrawer.getByLabel("分类").fill("工程实践");

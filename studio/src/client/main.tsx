@@ -1530,7 +1530,7 @@ function AdvancedFields({
             </div>
           </div>
           <div className="cover-preview-box">
-            {coverPreview || fields.image ? <img src={coverPreview || fields.image} alt="文章封面预览" /> : <span>输入图片路径或上传本地图片</span>}
+            {coverPreview || fields.image ? <img src={coverPreview || coverPreviewSource(fields.image)} alt="文章封面预览" /> : <span>输入图片路径或上传本地图片</span>}
           </div>
         </div>
       </SettingRow>
@@ -3080,6 +3080,13 @@ function SettingsDialog({
 
 function parseTags(value: string): string[] {
   return [...new Set(value.split(/[,，\n]/).map((tag) => tag.trim()).filter(Boolean))];
+}
+
+function coverPreviewSource(value: string): string {
+  const source = value.trim();
+  return /^\/(?:image|images)\//.test(source)
+    ? `/api/asset?path=${encodeURIComponent(source)}`
+    : source;
 }
 
 function formatDate(value: string): string {

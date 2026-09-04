@@ -4,7 +4,12 @@ import worker from "./index";
 function testEnv(assetFetch = vi.fn()) {
   return {
     ASSETS: { fetch: assetFetch },
-    DRAFTS: {},
+    DRAFTS: {
+      get: vi.fn(async () => null),
+      put: vi.fn(async () => undefined),
+      delete: vi.fn(async () => undefined),
+      list: vi.fn(async () => ({ objects: [] })),
+    },
     EDITOR_PASSWORD: "test-password",
     SESSION_SECRET: "test-secret",
     GITHUB_TOKEN: "test-token",
@@ -19,16 +24,25 @@ afterEach(() => {
 });
 
 describe("editor asset proxy", () => {
-  it("serves existing blog covers from the repository", async () => {
+  it("serves existing blog covers through the authenticated API route", async () => {
     const upstreamFetch = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("cover-bytes", {
       headers: { "Content-Type": "image/png" },
     }));
     vi.stubGlobal("fetch", upstreamFetch);
     const assetFetch = vi.fn();
+    const env = testEnv(assetFetch);
+    const login = await worker.fetch(new Request("https://studio.example/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: "https://studio.example" },
+      body: JSON.stringify({ password: "test-password" }),
+    }), env);
+    const cookie = login.headers.get("Set-Cookie")?.split(";", 1)[0] || "";
 
     const response = await worker.fetch(
-      new Request("https://studio.example/image/20260320image.png"),
-      testEnv(assetFetch),
+      new Request("https://studio.example/api/asset?path=%2Fimage%2F20260320image.png", {
+        headers: { Cookie: cookie },
+      }),
+      env,
     );
 
     expect(assetFetch).not.toHaveBeenCalled();
@@ -36,6 +50,7 @@ describe("editor asset proxy", () => {
       "https://raw.githubusercontent.com/mumuhaha487/astro/main/public/image/20260320image.png",
     );
     expect(response.headers.get("Content-Type")).toBe("image/png");
+    expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(await response.text()).toBe("cover-bytes");
   });
 
