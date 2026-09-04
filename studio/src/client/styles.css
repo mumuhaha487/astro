@@ -2492,39 +2492,52 @@ body > [data-radix-popper-content-wrapper],
   z-index: 10001;
   box-sizing: border-box;
   display: grid;
-  grid-template-columns: repeat(9, 20px);
-  grid-auto-rows: 20px;
-  gap: 8px;
-  width: 270px;
-  height: 181px;
-  padding: 24px 12px 23px;
-  border: 1px solid #e5e6eb;
-  border-radius: 0;
+  grid-template-columns: repeat(9, 28px);
+  grid-auto-rows: 28px;
+  gap: 0;
+  width: 272px;
+  height: 180px;
+  padding: 22px 10px 18px;
+  border: 0;
+  border-radius: 4px;
   background: #fff;
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
+  box-shadow: 0 0 4px #d1d1d1;
 }
 
 .csdn-color-palette-button {
   position: relative;
   box-sizing: border-box;
-  width: 20px;
-  height: 20px;
-  min-width: 20px;
-  padding: 0;
-  border: 1px solid rgba(34, 34, 38, 0.1);
-  border-radius: 1px;
+  display: grid;
+  width: 28px;
+  height: 28px;
+  min-width: 28px;
+  place-items: center;
+  padding: 4px;
+  border: 0;
+  border-radius: 0;
+  background: transparent;
   outline: 0;
   cursor: pointer;
 }
 
-.csdn-color-palette-button:hover,
-.csdn-color-palette-button:focus-visible {
+.csdn-color-swatch {
+  position: relative;
+  display: block;
+  box-sizing: border-box;
+  width: 20px;
+  height: 20px;
+  border-radius: 2px;
+}
+
+.csdn-color-palette-button:hover .csdn-color-swatch,
+.csdn-color-palette-button:focus-visible .csdn-color-swatch {
   border-color: #fc5531;
   box-shadow: 0 0 0 1px #fc5531;
 }
 
 .csdn-color-clear {
   overflow: hidden;
+  border: 1px solid #808080;
   background: #fff;
 }
 

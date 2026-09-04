@@ -860,15 +860,54 @@ async function verifyDesktop() {
   assert.equal(await colorPalette.getByRole("menuitem").count(), 45, "CSDN color palette must contain clear plus 44 colors");
   const colorPaletteRect = await colorPalette.evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(colorPaletteRect, { top: 98, width: 270, height: 181 });
+  assert.deepEqual(colorPaletteRect, { top: 98, left: 287, width: 272, height: 180 });
+  const colorSwatchLayout = await colorPalette.getByRole("menuitem").evaluateAll((elements) => {
+    const paletteRect = elements[0].parentElement.getBoundingClientRect();
+    return [0, 1, 9].map((index) => {
+      const buttonRect = elements[index].getBoundingClientRect();
+      const swatchRect = elements[index].firstElementChild.getBoundingClientRect();
+      return {
+        button: {
+          x: Math.round(buttonRect.x - paletteRect.x),
+          y: Math.round(buttonRect.y - paletteRect.y),
+          width: Math.round(buttonRect.width),
+          height: Math.round(buttonRect.height),
+        },
+        swatch: {
+          x: Math.round(swatchRect.x - paletteRect.x),
+          y: Math.round(swatchRect.y - paletteRect.y),
+          width: Math.round(swatchRect.width),
+          height: Math.round(swatchRect.height),
+        },
+      };
+    });
+  });
+  assert.deepEqual(colorSwatchLayout, [
+    { button: { x: 10, y: 22, width: 28, height: 28 }, swatch: { x: 14, y: 26, width: 20, height: 20 } },
+    { button: { x: 38, y: 22, width: 28, height: 28 }, swatch: { x: 42, y: 26, width: 20, height: 20 } },
+    { button: { x: 10, y: 50, width: 28, height: 28 }, swatch: { x: 14, y: 54, width: 20, height: 20 } },
+  ]);
   await assertEveryMenuItemIsTopLayer(colorPalette, '[role="menuitem"]', "color menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-color-palette.png"), animations: "disabled" });
   await page.getByTitle("文字颜色 #FE2C24", { exact: true }).click();
+  await selectEditorText(page, "基础段落");
   const backgroundColorButton = page.locator('button[aria-label="文字背景色"]');
   await backgroundColorButton.scrollIntoViewIfNeeded();
   assert.equal(await backgroundColorButton.count(), 1);
+  await backgroundColorButton.click();
+  const backgroundPalette = page.locator(".csdn-color-palette");
+  await backgroundPalette.waitFor();
+  const backgroundPaletteRect = await backgroundPalette.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(backgroundPaletteRect, { top: 98, left: 333, width: 272, height: 180 });
+  assert.equal(await backgroundPalette.getByRole("menuitem").count(), 45);
+  await assertEveryMenuItemIsTopLayer(backgroundPalette, '[role="menuitem"]', "background menu must stay above the article title");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-background-palette.png"), animations: "disabled" });
+  await page.getByTitle("文字背景色 #FFD900", { exact: true }).click();
 
   const moreStyleButton = page.getByRole("combobox", { name: "其他样式" });
   await moreStyleButton.scrollIntoViewIfNeeded();
@@ -910,6 +949,7 @@ async function verifyDesktop() {
     .map((key) => localStorage.getItem(key) || "")
     .join("\n"));
   assert(styledDraft.includes("color:#FE2C24"), "selected text color must persist in Markdown");
+  assert(styledDraft.includes("background-color:#FFD900"), "selected text background must persist in Markdown");
   const editorText = await page.locator(".studio-rich-content[contenteditable='true']").textContent();
   assert(editorText?.includes("文字") && editorText.includes("基础段落"), `toolbar insertion failed: ${JSON.stringify({ editorText, pageErrors })}`);
   const visibleToast = page.locator(".toast");
@@ -1130,8 +1170,8 @@ async function verifyNarrowExistingArticle() {
       height: Math.round(rect.height),
     };
   });
-  assert.equal(colorPaletteRect.width, 270);
-  assert.equal(colorPaletteRect.height, 181);
+  assert.equal(colorPaletteRect.width, 272);
+  assert.equal(colorPaletteRect.height, 180);
   assert(colorPaletteRect.left >= 8 && colorPaletteRect.right <= width - 8, `mobile color palette must stay inside viewport: ${JSON.stringify(colorPaletteRect)}`);
   assert.equal(await colorPalette.getByRole("menuitem").count(), 45);
   await page.screenshot({ path: join(outputDirectory, "mobile-320-color-palette.png"), animations: "disabled" });

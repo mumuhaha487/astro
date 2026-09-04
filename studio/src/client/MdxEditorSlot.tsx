@@ -208,7 +208,7 @@ function ColorMenu({ background = false }: { background?: boolean }) {
     }
     const rect = anchorRef.current?.getBoundingClientRect();
     if (rect) {
-      const left = Math.min(Math.max(8, rect.left - 13), Math.max(8, window.innerWidth - 278));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - 280));
       setPosition({ top: rect.top + 50, left });
     }
     setOpen(true);
@@ -249,13 +249,15 @@ function ColorMenu({ background = false }: { background?: boolean }) {
         >
           <button
             aria-label={`清除${title}`}
-            className="csdn-color-palette-button csdn-color-clear"
+            className="csdn-color-palette-button"
             onClick={() => applyColor(null)}
             onMouseDown={(event) => event.preventDefault()}
             role="menuitem"
             title={`清除${title}`}
             type="button"
-          />
+          >
+            <span aria-hidden className="csdn-color-swatch csdn-color-clear" />
+          </button>
           {csdnColors.map((color, index) => (
             <button
               aria-label={`${title} ${color}`}
@@ -264,10 +266,11 @@ function ColorMenu({ background = false }: { background?: boolean }) {
               onClick={() => applyColor(color)}
               onMouseDown={(event) => event.preventDefault()}
               role="menuitem"
-              style={{ backgroundColor: color }}
               title={`${title} ${color}`}
               type="button"
-            />
+            >
+              <span aria-hidden className="csdn-color-swatch" style={{ backgroundColor: color }} />
+            </button>
           ))}
         </div>,
         document.body,
