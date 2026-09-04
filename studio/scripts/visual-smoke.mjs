@@ -726,9 +726,53 @@ async function verifyDesktop() {
   const linkTool = page.locator(".csdn-toolbar-action").filter({ hasText: "链接" });
   await linkTool.scrollIntoViewIfNeeded();
   await linkTool.click();
-  await page.locator(".link-insert-dialog").waitFor();
-  await page.locator(".link-insert-dialog input").nth(0).fill("https://docs.astro.build/");
-  await page.locator(".link-insert-dialog input").nth(1).fill("Astro 文档");
+  const linkDialog = page.locator(".link-insert-dialog");
+  await linkDialog.waitFor();
+  const linkDialogRect = await linkDialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(linkDialogRect, { top: 244, left: 390, width: 484, height: 232 });
+  assert.equal(
+    await page.locator(".link-dialog-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.25)",
+  );
+  const linkFieldRects = await linkDialog.locator("label").evaluateAll((labels) => labels.map((label) => {
+    const labelRect = label.getBoundingClientRect();
+    const inputRect = label.querySelector("input").getBoundingClientRect();
+    return {
+      label: { x: Math.round(labelRect.x), y: Math.round(labelRect.y), width: Math.round(labelRect.width), height: Math.round(labelRect.height) },
+      input: { x: Math.round(inputRect.x), y: Math.round(inputRect.y), width: Math.round(inputRect.width), height: Math.round(inputRect.height) },
+    };
+  }));
+  assert.deepEqual(linkFieldRects, [
+    { label: { x: 414, y: 318, width: 436, height: 28 }, input: { x: 490, y: 318, width: 360, height: 28 } },
+    { label: { x: 414, y: 362, width: 436, height: 28 }, input: { x: 490, y: 362, width: 360, height: 28 } },
+  ]);
+  const linkActionRects = await linkDialog.locator("footer button").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    const style = getComputedStyle(button);
+    return {
+      text: button.textContent,
+      x: Math.round(rect.x),
+      y: Math.round(rect.y),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      radius: style.borderRadius,
+      background: style.backgroundColor,
+      disabled: button.disabled,
+    };
+  }));
+  assert.deepEqual(linkActionRects, [
+    { text: "确定", x: 670, y: 418, width: 82, height: 34, radius: "18px", background: "rgb(252, 85, 49)", disabled: false },
+    { text: "取消", x: 768, y: 418, width: 82, height: 34, radius: "18px", background: "rgb(255, 255, 255)", disabled: false },
+  ]);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-link-dialog.png"), animations: "disabled" });
+  await linkDialog.getByRole("button", { name: "确定" }).click();
+  await linkDialog.getByText("请输入有效的 HTTP 或 HTTPS 链接").waitFor();
+  assert.equal(await linkDialog.isVisible(), true, "invalid links must keep the CSDN-style dialog open");
+  await linkDialog.locator("input").nth(0).fill("https://docs.astro.build/");
+  await linkDialog.locator("input").nth(1).fill("Astro 文档");
   await page.locator(".link-insert-dialog .dialog-primary-button").click();
   await page.locator(".link-insert-dialog").waitFor({ state: "detached" });
 
@@ -1052,6 +1096,30 @@ async function verifyMobile(width) {
     await page.screenshot({ path: join(outputDirectory, "mobile-390-formula-dialog.png"), animations: "disabled" });
     await page.locator(".formula-dialog").getByTitle("关闭").click();
     await page.locator(".formula-dialog").waitFor({ state: "detached" });
+
+    const linkTool = page.locator(".csdn-toolbar-action").filter({ hasText: "链接" });
+    await linkTool.scrollIntoViewIfNeeded();
+    await linkTool.click();
+    const linkDialog = page.locator(".link-insert-dialog");
+    await linkDialog.waitFor();
+    const linkRect = await linkDialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(linkRect, { top: 0, left: 0, width, height }, "mobile link dialog must use the full viewport");
+    const mobileLinkInputs = await linkDialog.locator("input").evaluateAll((inputs) => inputs.map((input) => {
+      const rect = input.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width), height: Math.round(rect.height) };
+    }));
+    assert.deepEqual(mobileLinkInputs, [
+      { left: 16, right: width - 16, width: width - 32, height: 36 },
+      { left: 16, right: width - 16, width: width - 32, height: 36 },
+    ]);
+    const mobileToast = page.locator(".toast");
+    if (await mobileToast.isVisible()) await mobileToast.waitFor({ state: "detached", timeout: 6_000 });
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-link-dialog.png"), animations: "disabled" });
+    await linkDialog.getByTitle("关闭").click();
+    await linkDialog.waitFor({ state: "detached" });
 
     const resourceTool = page.locator(".csdn-toolbar-action").filter({ hasText: "资源绑定" });
     await resourceTool.scrollIntoViewIfNeeded();

@@ -2057,7 +2057,7 @@ function LinkInsertDialog({
           <label><span>插入URL：</span><input value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></label>
           <label><span>替换文本：</span><input value={text} onChange={(event) => setText(event.target.value)} /></label>
           {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
-          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={!url.trim()}>确定</button></footer>
+          <footer><button className="dialog-primary-button">确定</button><button type="button" className="secondary-button" onClick={onClose}>取消</button></footer>
         </form>
       </section>
     </div>

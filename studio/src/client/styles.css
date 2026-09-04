@@ -3973,33 +3973,109 @@ body > [data-radix-popper-content-wrapper],
   padding: 10px 24px 18px;
 }
 
+.link-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
 .link-insert-dialog {
   width: min(484px, 100%);
-  min-height: 233px;
+  height: 232px;
+  min-height: 232px;
   overflow: hidden;
-  border: 1px solid #dedfe4;
-  border-radius: 5px;
+  border: 0;
+  border-radius: 4px;
   background: #fff;
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 4px #d1d1d1;
+}
+
+.link-insert-dialog > header {
+  flex: 0 0 24px;
+  align-items: flex-start;
+  height: 24px;
+  min-height: 24px;
+  margin: 24px 24px 0;
+  padding: 0;
+}
+
+.link-insert-dialog h2 {
+  color: #3c3c3c;
+  font: 700 16px/24px Arial, Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+.link-insert-dialog > header .icon-button {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  color: #000;
+}
+
+.link-insert-dialog > header .icon-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .link-insert-dialog > form {
-  display: grid;
-  gap: 12px;
-  padding: 8px 24px 22px;
+  position: relative;
+  display: block;
+  height: 160px;
+  margin: 0 24px 24px;
+  padding: 26px 0 0;
 }
 
 .link-insert-dialog label {
-  grid-template-columns: 74px minmax(0, 1fr);
+  display: grid;
+  height: 28px;
+  grid-template-columns: 76px 360px;
   align-items: center;
-  gap: 4px;
+  gap: 0;
+}
+
+.link-insert-dialog label + label {
+  margin-top: 16px;
+}
+
+.link-insert-dialog label > span {
+  color: #4d4d4d;
+  font: 14px/28px Arial, Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+.link-insert-dialog input {
+  height: 28px;
+  padding: 4px 6px 4px 5px;
+  border-color: #bcbcbc;
+  border-radius: 4px;
+  color: #000;
+  font: 12px Arial, Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+.link-insert-dialog .insert-dialog-error {
+  position: absolute;
+  top: 102px;
+  left: 76px;
 }
 
 .link-insert-dialog > form > footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
+  height: 34px;
   justify-content: flex-end;
-  gap: 14px;
-  margin-top: 8px;
+  gap: 16px;
+  margin: 0;
+}
+
+.link-insert-dialog > form > footer button {
+  flex: 0 0 82px;
+  width: 82px;
+  min-width: 82px;
+  height: 34px;
+  min-height: 34px;
+  padding: 6px 16px;
+  border-radius: 18px;
+  font: 14px/20px Arial, Helvetica, Tahoma, Verdana, sans-serif;
 }
 
 .template-insert-drawer {
@@ -5374,6 +5450,10 @@ body > [data-radix-popper-content-wrapper],
   .formula-dialog > header,
   .link-insert-dialog > header {
     flex-basis: 58px;
+    align-items: center;
+    height: 58px;
+    min-height: 58px;
+    margin: 0;
     padding-inline: 16px 10px;
     border-bottom: 1px solid #ededf0;
   }
@@ -5444,18 +5524,39 @@ body > [data-radix-popper-content-wrapper],
   }
 
   .link-insert-dialog > form {
+    position: static;
+    display: flex;
+    flex-direction: column;
     align-content: start;
     height: calc(100dvh - 58px);
+    margin: 0;
     padding: 28px 16px 14px;
   }
 
   .link-insert-dialog label {
+    height: auto;
     grid-template-columns: 1fr;
     gap: 6px;
   }
 
+  .link-insert-dialog label + label {
+    margin-top: 16px;
+  }
+
+  .link-insert-dialog input {
+    height: 36px;
+  }
+
+  .link-insert-dialog .insert-dialog-error {
+    position: static;
+    margin-top: 10px;
+  }
+
   .link-insert-dialog > form > footer {
+    position: static;
     align-self: end;
+    width: 100%;
+    height: auto;
     margin-top: auto;
     padding-bottom: 0;
   }
