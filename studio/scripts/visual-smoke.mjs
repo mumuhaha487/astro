@@ -702,13 +702,41 @@ async function verifyDesktop() {
     return { left: Math.round(rect.left), width: Math.round(rect.width), right: Math.round(rect.right), height: Math.round(rect.height) };
   });
   assert.deepEqual(imageDrawerRect, { left: 581, width: 683, right: 1264, height: 720 });
+  assert.equal(
+    await page.locator(".insert-drawer-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.5)",
+  );
+  assert.deepEqual(await page.locator(".insert-drawer-tabs button").evaluateAll((elements) => elements.map((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      text: element.textContent,
+      x: Math.round(rect.x),
+      y: Math.round(rect.y),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      color: getComputedStyle(element).color,
+    };
+  })), [
+    { text: "图片上传", x: 625, y: 28, width: 84, height: 40, color: "rgb(26, 26, 26)" },
+    { text: "链接添加", x: 709, y: 28, width: 84, height: 40, color: "rgb(153, 153, 153)" },
+  ]);
+  assert.deepEqual(await page.getByRole("button", { name: "选择图片", exact: true }).evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { x: 863, y: 254, width: 104, height: 40 });
+  assert.equal(await page.getByRole("button", { name: "选择图片", exact: true }).locator("svg").count(), 0, "CSDN image upload button is text-only");
+  assert.equal(
+    await page.locator(".image-upload-empty p").textContent(),
+    "支持jpg、gif、png、bmp、jpeg、webp等多种格式，单张图片最大支持5MB",
+  );
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-image-upload.png"), animations: "disabled" });
   await page.getByRole("tab", { name: "链接添加" }).click();
   await page.getByPlaceholder("图片URL").fill("https://example.com/architecture.png");
   const imageUrlRect = await page.getByPlaceholder("图片URL").evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    return { top: Math.round(rect.top), height: Math.round(rect.height) };
+    return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(imageUrlRect, { top: 274, height: 36 });
+  assert.deepEqual(imageUrlRect, { top: 274, width: 315, height: 32 });
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-image-drawer.png"), animations: "disabled" });
   await page.locator(".image-link-panel .drawer-primary-button").click();
   await page.locator(".image-insert-drawer").waitFor({ state: "detached" });
@@ -1238,7 +1266,23 @@ async function verifyMobile(width) {
     });
     assert.deepEqual(imageDrawerRect, { top: 0, left: 0, width, height }, "mobile image drawer must use the full viewport");
     await page.screenshot({ path: join(outputDirectory, "mobile-390-image-drawer.png"), animations: "disabled" });
-    await page.locator('.image-insert-drawer input[type="file"]').setInputFiles({ name: "diagram.bmp", mimeType: "image/bmp", buffer: Buffer.from("visual-image") });
+    await page.locator('.image-insert-drawer input[type="file"]').setInputFiles({
+      name: "diagram.png",
+      mimeType: "image/png",
+      buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+    });
+    await page.locator(".image-upload-list").waitFor();
+    const uploadedImagePreview = page.locator(".image-upload-list img[alt='diagram']");
+    assert.equal(await uploadedImagePreview.count(), 1, "uploaded image must be previewed before insertion");
+    await page.waitForFunction(() => document.querySelector(".image-upload-list img")?.naturalWidth > 0);
+    assert.equal(await page.locator(".image-upload-footer").getByText("已选择 1 张").count(), 1);
+    const imageConfirm = page.locator(".image-upload-footer .drawer-primary-button");
+    assert.equal(await imageConfirm.isEnabled(), true);
+    await page.getByRole("checkbox", { name: "取消选择图片 diagram" }).click();
+    assert.equal(await imageConfirm.isDisabled(), true, "image confirmation must require a selected image");
+    await page.getByRole("checkbox", { name: "选择图片 diagram" }).click();
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-image-selected.png"), animations: "disabled" });
+    await imageConfirm.click();
     await page.locator(".image-insert-drawer").waitFor({ state: "detached" });
     await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("/image/editor/2026/09/visual-test.png")));
 

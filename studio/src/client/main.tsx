@@ -1267,7 +1267,10 @@ function App() {
         <ImageInsertDrawer
           onClose={() => setInsertPanel(null)}
           onUpload={uploadImage}
-          onInsert={(url, alt) => insertMarkdownAtCursor(`![${escapeMarkdownInline(alt || "image")}](${url})`, "图片已插入正文")}
+          onInsert={(images) => insertMarkdownAtCursor(
+            images.map(({ url, alt }) => `![${escapeMarkdownInline(alt || "image")}](${url})`).join("\n\n"),
+            images.length > 1 ? `${images.length} 张图片已插入正文` : "图片已插入正文",
+          )}
         />
       ) : null}
 
@@ -1833,27 +1836,75 @@ function ImageInsertDrawer({
 }: {
   onClose: () => void;
   onUpload: (file: File) => Promise<string>;
-  onInsert: (url: string, alt: string) => void;
+  onInsert: (images: Array<{ url: string; alt: string }>) => void;
 }) {
   const [tab, setTab] = useState<"upload" | "link">("upload");
   const [url, setUrl] = useState("");
+  const [images, setImages] = useState<Array<{
+    id: string;
+    url: string;
+    alt: string;
+    previewUrl: string;
+    selected: boolean;
+  }>>([]);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const activeRef = useRef(true);
+  const onCloseRef = useRef(onClose);
+  const previewUrlsRef = useRef<string[]>([]);
+  const selectedCount = images.filter((image) => image.selected).length;
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    activeRef.current = true;
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onCloseRef.current();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      activeRef.current = false;
+      window.removeEventListener("keydown", closeOnEscape);
+      previewUrlsRef.current.forEach((previewUrl) => URL.revokeObjectURL(previewUrl));
+      previewUrlsRef.current = [];
+    };
+  }, []);
 
   async function upload(file: File | undefined) {
     if (!file) return;
+    const previewUrl = URL.createObjectURL(file);
+    previewUrlsRef.current.push(previewUrl);
     setUploading(true);
     setError("");
     try {
       const uploadedUrl = await onUpload(file);
-      onInsert(uploadedUrl, file.name.replace(/\.[^.]+$/, "") || "image");
+      if (!activeRef.current) return;
+      setImages((current) => [...current, {
+        id: `${uploadedUrl}:${Date.now()}`,
+        url: uploadedUrl,
+        alt: file.name.replace(/\.[^.]+$/, "") || "image",
+        previewUrl,
+        selected: true,
+      }]);
     } catch (reason) {
-      setError(errorMessage(reason));
+      URL.revokeObjectURL(previewUrl);
+      previewUrlsRef.current = previewUrlsRef.current.filter((value) => value !== previewUrl);
+      if (activeRef.current) setError(errorMessage(reason));
     } finally {
-      setUploading(false);
-      if (inputRef.current) inputRef.current.value = "";
+      if (activeRef.current) {
+        setUploading(false);
+        if (inputRef.current) inputRef.current.value = "";
+      }
     }
+  }
+
+  function confirmUploads() {
+    const selectedImages = images.filter((image) => image.selected).map(({ url: imageUrl, alt }) => ({ url: imageUrl, alt }));
+    if (!selectedImages.length) return;
+    onInsert(selectedImages);
   }
 
   function insertLink(event: FormEvent) {
@@ -1869,7 +1920,7 @@ function ImageInsertDrawer({
     } catch {
       // URL validity was already checked above.
     }
-    onInsert(normalized, imageName);
+    onInsert([{ url: normalized, alt: imageName }]);
   }
 
   return (
@@ -1883,13 +1934,46 @@ function ImageInsertDrawer({
           <button className="insert-drawer-close" onClick={onClose} title="关闭"><X size={21} /></button>
         </header>
         {tab === "upload" ? (
-          <div className="image-upload-panel">
-            <input ref={inputRef} className="visually-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp" onChange={(event) => void upload(event.target.files?.[0])} />
-            <button className="drawer-primary-button" onClick={() => inputRef.current?.click()} disabled={uploading}>
-              {uploading ? <LoaderCircle className="spin" size={17} /> : <Upload size={17} />} {uploading ? "正在上传" : "选择图片"}
-            </button>
-            <p>支持 jpg、gif、png、bmp、jpeg、webp、avif 等格式，单张图片最大支持 5MB</p>
+          <div className={`image-upload-panel${images.length ? " has-images" : ""}`}>
+            <input ref={inputRef} className="visually-hidden" type="file" accept=".png,.jpg,.jpeg,.gif,.webp,.bmp" onChange={(event) => void upload(event.target.files?.[0])} />
+            {images.length ? (
+              <div className="image-upload-list" aria-label="已上传图片">
+                {images.map((image) => (
+                  <button
+                    aria-checked={image.selected}
+                    aria-label={`${image.selected ? "取消选择" : "选择"}图片 ${image.alt}`}
+                    className={image.selected ? "selected" : ""}
+                    key={image.id}
+                    onClick={() => setImages((current) => current.map((item) => item.id === image.id ? { ...item, selected: !item.selected } : item))}
+                    role="checkbox"
+                    type="button"
+                  >
+                    <img alt={image.alt} src={image.previewUrl} />
+                    <span aria-hidden><Check size={13} /></span>
+                  </button>
+                ))}
+                <button className="image-upload-more" disabled={uploading} onClick={() => inputRef.current?.click()} title="继续添加图片" type="button">
+                  {uploading ? <LoaderCircle className="spin" size={24} /> : <Plus size={28} />}
+                </button>
+              </div>
+            ) : (
+              <div className="image-upload-empty">
+                <button className="drawer-primary-button" onClick={() => inputRef.current?.click()} disabled={uploading}>
+                  {uploading ? "正在上传" : "选择图片"}
+                </button>
+                <p>支持jpg、gif、png、bmp、jpeg、webp等多种格式，单张图片最大支持5MB</p>
+              </div>
+            )}
             {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+            {images.length ? (
+              <footer className="image-upload-footer">
+                <span>已选择 {selectedCount} 张</span>
+                <div>
+                  <button className="image-upload-cancel" onClick={onClose} type="button">取消</button>
+                  <button className="drawer-primary-button" disabled={!selectedCount || uploading} onClick={confirmUploads} type="button">确定</button>
+                </div>
+              </footer>
+            ) : null}
           </div>
         ) : (
           <form className="image-link-panel" onSubmit={insertLink}>
@@ -1921,18 +2005,23 @@ function VideoInsertDialog({
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
   const activeRef = useRef(true);
+  const onCloseRef = useRef(onClose);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
 
   useEffect(() => {
     activeRef.current = true;
     function closeOnEscape(event: KeyboardEvent) {
-      if (event.key === "Escape") onClose();
+      if (event.key === "Escape") onCloseRef.current();
     }
     window.addEventListener("keydown", closeOnEscape);
     return () => {
       activeRef.current = false;
       window.removeEventListener("keydown", closeOnEscape);
     };
-  }, [onClose]);
+  }, []);
 
   async function upload(file: File | undefined) {
     if (!file) return;
