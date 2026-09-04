@@ -4050,6 +4050,10 @@ body > [data-radix-popper-content-wrapper],
   font: 12px Arial, Helvetica, Tahoma, Verdana, sans-serif;
 }
 
+.link-insert-dialog input:focus {
+  border-color: #bcbcbc;
+}
+
 .link-insert-dialog .insert-dialog-error {
   position: absolute;
   top: 102px;
@@ -4559,75 +4563,161 @@ body > [data-radix-popper-content-wrapper],
 }
 
 .table-properties-dialog {
-  width: min(360px, calc(100vw - 24px));
+  width: min(358px, calc(100vw - 24px));
+  height: 664px;
+  min-height: 0;
   max-height: calc(100dvh - 32px);
   overflow: hidden;
-  border: 1px solid #dedfe4;
-  border-radius: 5px;
+  border: 0;
+  border-radius: 4px;
   background: #fff;
-  box-shadow: var(--shadow);
+  box-shadow: 0 0 4px #d1d1d1;
+}
+
+.table-dialog-backdrop {
+  background: rgba(0, 0, 0, 0.25);
+}
+
+.table-properties-dialog > header {
+  flex: 0 0 24px;
+  align-items: flex-start;
+  height: 24px;
+  min-height: 24px;
+  margin: 24px 24px 0;
+  padding: 0;
+  border: 0;
+}
+
+.table-properties-dialog h2 {
+  color: #3c3c3c;
+  font: 700 16px/24px Arial, Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+.table-properties-dialog > header .icon-button {
+  width: 16px;
+  min-width: 16px;
+  height: 16px;
+  min-height: 16px;
+  padding: 0;
+  color: #000;
+}
+
+.table-properties-dialog > header .icon-button svg {
+  width: 16px;
+  height: 16px;
 }
 
 .table-properties-dialog > form {
-  display: flex;
-  min-height: 0;
-  flex-direction: column;
+  position: relative;
+  display: block;
+  width: 310px;
+  height: 592px;
+  margin: 0 24px 24px;
 }
 
 .table-properties-grid {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap: 18px 56px;
-  padding: 18px 24px 0;
-  overflow-y: auto;
+  grid-template-columns: 197px 97px;
+  grid-auto-rows: 60px;
+  gap: 16px;
+  width: 310px;
+  padding: 26px 0 0;
+  overflow: visible;
 }
 
 .table-properties-grid label {
   display: grid;
+  height: 60px;
   min-width: 0;
-  gap: 7px;
-  color: #52535b;
-  font-size: 13px;
+  gap: 4px;
+  color: #4d4d4d;
+  font: 14px/28px Arial, Helvetica, Tahoma, Verdana, sans-serif;
 }
 
 .table-properties-grid input,
 .table-properties-grid select {
-  width: 100%;
-  height: 32px;
+  width: 60px;
   min-width: 0;
-  padding: 0 9px;
-  border: 1px solid #d7d8de;
-  border-radius: 2px;
+  height: 28px;
+  padding: 4px 6px 4px 5px;
+  border: 1px solid #bcbcbc;
+  border-radius: 4px;
   outline: 0;
   background: #fff;
-  color: #33343b;
-  font-size: 12px;
+  color: #000;
+  font: 12px Arial, Helvetica, Tahoma, Verdana, sans-serif;
+}
+
+.table-properties-grid input[type="number"] {
+  appearance: textfield;
+}
+
+.table-properties-grid input[type="number"]::-webkit-inner-spin-button,
+.table-properties-grid input[type="number"]::-webkit-outer-spin-button {
+  margin: 0;
+  appearance: none;
+}
+
+.table-properties-grid input[aria-label="间距"],
+.table-properties-grid input[aria-label="边框"],
+.table-properties-grid input[aria-label="边距"] {
+  width: 36px;
+}
+
+.table-properties-grid select {
+  height: 28px;
+  margin-left: 1px;
+  padding: 3px 3px 3px 6px;
+  border-radius: 2px;
+}
+
+.table-properties-grid select[aria-label="标题单元格"] {
+  width: 115px;
+}
+
+.table-properties-grid select[aria-label="对齐方式"] {
+  width: 93px;
 }
 
 .table-properties-grid input:focus,
 .table-properties-grid select:focus {
-  border-color: #fc8062;
+  border-color: #bcbcbc;
 }
 
 .table-wide-field {
   grid-column: 1 / -1;
 }
 
+.table-properties-grid .table-wide-field input {
+  width: 310px;
+}
+
 .table-properties-dialog > form > .insert-dialog-error {
-  margin: 10px 24px 0;
+  position: absolute;
+  top: 542px;
+  left: 0;
 }
 
 .table-properties-dialog > form > footer {
+  position: absolute;
+  right: 0;
+  bottom: 0;
   display: flex;
-  min-height: 72px;
-  align-items: center;
+  height: 34px;
   justify-content: flex-end;
-  gap: 14px;
-  padding: 12px 24px 16px;
+  gap: 16px;
+  padding: 0;
 }
 
 .table-properties-dialog > form > footer button {
+  flex: 0 0 82px;
+  width: 82px;
   min-width: 82px;
+  height: 34px;
+  min-height: 34px;
+  padding: 6px 16px;
+  border-radius: 18px;
+  font: 14px/20px Arial, Helvetica, Tahoma, Verdana, sans-serif;
 }
 
 .code-runner-backdrop {
@@ -5547,6 +5637,10 @@ body > [data-radix-popper-content-wrapper],
     height: 36px;
   }
 
+  .link-insert-dialog input:focus {
+    border-color: #fc8062;
+  }
+
   .link-insert-dialog .insert-dialog-error {
     position: static;
     margin-top: 10px;
@@ -5610,6 +5704,7 @@ body > [data-radix-popper-content-wrapper],
   .table-properties-dialog {
     width: 100%;
     height: 100dvh;
+    min-height: 0;
     max-height: none;
     border: 0;
     border-radius: 0;
@@ -5618,7 +5713,12 @@ body > [data-radix-popper-content-wrapper],
   .resource-binding-dialog > header,
   .table-properties-dialog > header {
     flex-basis: 58px;
+    align-items: center;
+    height: 58px;
+    min-height: 58px;
+    margin: 0;
     padding-inline: 16px 10px;
+    border-bottom: 1px solid #ededf0;
   }
 
   .resource-dialog-notice {
@@ -5670,18 +5770,46 @@ body > [data-radix-popper-content-wrapper],
   }
 
   .table-properties-dialog > form {
+    position: relative;
+    display: flex;
+    width: 100%;
+    height: auto;
+    margin: 0;
     flex: 1;
+    flex-direction: column;
   }
 
   .table-properties-grid {
     flex: 1;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+    grid-auto-rows: 70px;
     gap: 16px 14px;
+    width: 100%;
     padding: 20px 16px 8px;
+    overflow-y: auto;
+  }
+
+  .table-properties-grid label {
+    height: 70px;
+    gap: 6px;
+  }
+
+  .table-properties-grid input,
+  .table-properties-grid select {
+    height: 36px;
+  }
+
+  .table-properties-grid input:focus,
+  .table-properties-grid select:focus {
+    border-color: #fc8062;
   }
 
   .table-properties-dialog > form > footer {
     position: sticky;
     bottom: 0;
+    flex: 0 0 64px;
+    width: 100%;
+    height: 64px;
     padding: 10px 14px;
     border-top: 1px solid #ededf0;
     background: #fff;

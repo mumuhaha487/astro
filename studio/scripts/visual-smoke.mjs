@@ -737,6 +737,7 @@ async function verifyDesktop() {
     await page.locator(".link-dialog-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
     "rgba(0, 0, 0, 0.25)",
   );
+  assert.equal(await linkDialog.locator("input").first().evaluate((element) => getComputedStyle(element).borderColor), "rgb(188, 188, 188)");
   const linkFieldRects = await linkDialog.locator("label").evaluateAll((labels) => labels.map((label) => {
     const labelRect = label.getBoundingClientRect();
     const inputRect = label.querySelector("input").getBoundingClientRect();
@@ -821,13 +822,55 @@ async function verifyDesktop() {
   const tableTool = page.locator(".csdn-toolbar-action").filter({ hasText: "表格" });
   await tableTool.scrollIntoViewIfNeeded();
   await tableTool.click();
-  await page.locator(".table-properties-dialog").waitFor();
+  const tableDialog = page.locator(".table-properties-dialog");
+  await tableDialog.waitFor();
+  const tableDialogRect = await tableDialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(tableDialogRect, { top: 28, left: 453, width: 358, height: 664 });
+  assert.equal(
+    await page.locator(".table-dialog-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.25)",
+  );
+  assert.equal(await tableDialog.getByRole("spinbutton", { name: "行数" }).evaluate((element) => getComputedStyle(element).borderColor), "rgb(188, 188, 188)");
+  const tableFieldRects = await tableDialog.locator(".table-properties-grid input, .table-properties-grid select").evaluateAll((fields) => fields.map((field) => {
+    const rect = field.getBoundingClientRect();
+    return {
+      label: field.getAttribute("aria-label"),
+      x: Math.round(rect.x),
+      y: Math.round(rect.y),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+    };
+  }));
+  assert.deepEqual(tableFieldRects, [
+    { label: "行数", x: 477, y: 134, width: 60, height: 28 },
+    { label: "宽度", x: 690, y: 134, width: 60, height: 28 },
+    { label: "列数", x: 477, y: 210, width: 60, height: 28 },
+    { label: "高度", x: 690, y: 210, width: 60, height: 28 },
+    { label: "标题单元格", x: 478, y: 286, width: 115, height: 28 },
+    { label: "间距", x: 690, y: 286, width: 36, height: 28 },
+    { label: "边框", x: 477, y: 362, width: 36, height: 28 },
+    { label: "边距", x: 690, y: 362, width: 36, height: 28 },
+    { label: "对齐方式", x: 478, y: 438, width: 93, height: 28 },
+    { label: "标题", x: 477, y: 514, width: 310, height: 28 },
+    { label: "摘要", x: 477, y: 590, width: 310, height: 28 },
+  ]);
+  const tableActionRects = await tableDialog.locator("footer button").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return { text: button.textContent, x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }));
+  assert.deepEqual(tableActionRects, [
+    { text: "确定", x: 607, y: 634, width: 82, height: 34 },
+    { text: "取消", x: 705, y: 634, width: 82, height: 34 },
+  ]);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-table-dialog.png"), animations: "disabled" });
   await page.getByRole("combobox", { name: "标题单元格" }).selectOption("both");
   await page.getByRole("textbox", { name: "标题", exact: true }).fill("功能对比表");
   await page.getByRole("textbox", { name: "摘要", exact: true }).fill("编辑器功能验证");
-  await page.screenshot({ path: join(outputDirectory, "desktop-1264-table-dialog.png"), animations: "disabled" });
-  await page.locator(".table-properties-dialog .dialog-primary-button").click();
-  await page.locator(".table-properties-dialog").waitFor({ state: "detached" });
+  await tableDialog.locator(".dialog-primary-button").click();
+  await tableDialog.waitFor({ state: "detached" });
 
   await page.waitForTimeout(1_000);
   const insertedDraft = await page.evaluate(() => Object.keys(localStorage)
@@ -1143,6 +1186,11 @@ async function verifyMobile(width) {
       return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
     });
     assert.deepEqual(tableRect, { top: 0, left: 0, width, height }, "mobile table dialog must use the full viewport");
+    const mobileTableFields = await page.locator(".table-properties-grid input, .table-properties-grid select").evaluateAll((fields) => fields.map((field) => {
+      const rect = field.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), height: Math.round(rect.height) };
+    }));
+    assert(mobileTableFields.every((field) => field.left >= 16 && field.right <= width - 16 && field.height === 36), `mobile table fields must be reachable and touch-sized: ${JSON.stringify(mobileTableFields)}`);
     await page.screenshot({ path: join(outputDirectory, "mobile-390-table-dialog.png"), animations: "disabled" });
     await page.locator(".table-properties-dialog").getByTitle("关闭").click();
     await page.locator(".table-properties-dialog").waitFor({ state: "detached" });
