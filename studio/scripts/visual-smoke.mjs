@@ -144,6 +144,11 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
     if (url.pathname === "/api/post" && request.method() === "GET") {
       return json({ path: examplePost.path, sha: examplePost.sha, content: exampleContent });
     }
+    if (url.pathname === "/api/post" && request.method() === "PUT") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "PUT", path: url.pathname, body });
+      return json({ path: body.path, sha: "d".repeat(40), content: body.content });
+    }
     if (url.pathname === "/api/post" && request.method() === "DELETE") {
       const body = request.postDataJSON();
       mutations.push({ method: "DELETE", path: url.pathname, body });
@@ -180,6 +185,7 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
     }
     if (url.pathname === "/api/draft" && request.method() === "PUT") {
       const body = request.postDataJSON();
+      mutations.push({ method: "PUT", path: url.pathname, body });
       const saved = { key: body.key || "visual-draft", path: body.path, title: body.title, updatedAt: body.updatedAt, isNew: body.isNew };
       draftRecords = [saved, ...draftRecords.filter((draft) => draft.key !== saved.key)];
       return json(saved);
@@ -661,6 +667,7 @@ async function verifyDesktop() {
   );
   const advancedPath = join(outputDirectory, "desktop-1264-publishing-settings.png");
   await page.screenshot({ path: advancedPath, animations: "disabled" });
+  await page.getByRole("radio", { name: "简洁模板" }).check();
   await page.locator('.cover-setting input[type="file"]').setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: Buffer.from("visual-cover") });
   await page.locator('.cover-preview-box img[alt="文章封面预览"]').waitFor();
   await publishingSettingsButton.click();
@@ -670,6 +677,8 @@ async function verifyDesktop() {
   await sourceModeButton.scrollIntoViewIfNeeded();
   await sourceModeButton.click();
   await page.locator(".source-editor").fill("基础段落\n\n样式文字\n\n列表项目");
+  await page.getByRole("button", { name: "预览" }).click();
+  await page.locator(".article-preview.compact").waitFor();
   await page.getByRole("button", { name: "富文本" }).click();
   await selectEditorText(page, "基础段落");
   await page.getByRole("combobox", { name: "段落对齐" }).click();
@@ -1788,7 +1797,7 @@ async function verifyContentCrud() {
   page.once("dialog", (dialog) => dialog.accept());
   await deleteDraftButton.click();
   await deleteDraftButton.waitFor({ state: "detached" });
-  assert.deepEqual(mutations[0], {
+  assert.deepEqual(mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/draft"), {
     method: "DELETE",
     path: "/api/draft",
     body: { key: exampleDraft.key },
@@ -1800,7 +1809,7 @@ async function verifyContentCrud() {
   page.once("dialog", (dialog) => dialog.accept());
   await deleteArticleButton.click();
   await deleteArticleButton.waitFor({ state: "detached" });
-  assert.deepEqual(mutations[1], {
+  assert.deepEqual(mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/post"), {
     method: "DELETE",
     path: "/api/post",
     body: { path: examplePost.path, sha: examplePost.sha },
@@ -1813,6 +1822,56 @@ async function verifyContentCrud() {
   assert.deepEqual(pageErrors, [], `CRUD page errors: ${pageErrors.join("; ")}`);
   await context.close();
   return { listPath, mutations };
+}
+
+async function verifyDraftBackupPublishing() {
+  const results = [];
+  for (const backup of [true, false]) {
+    const { context, page, pageErrors, mutations } = await openEditor(
+      { width: 1264, height: 720 },
+      { includeDraft: true },
+    );
+    await page.locator(".editor-back-button").click();
+    await page.locator(".post-row").filter({ hasText: exampleDraft.title }).click();
+    if (backup) {
+      await page.locator(".publish-bar-meta button").click();
+      await page.getByLabel("同时保留云端编辑草稿").check();
+      await page.locator(".publish-bar-meta button").click();
+    }
+    await page.getByRole("button", { name: "发布博客" }).click();
+    await page.locator(".toast", { hasText: "文章已发布" }).waitFor();
+
+    const postMutation = mutations.find((mutation) => mutation.method === "PUT" && mutation.path === "/api/post");
+    assert(postMutation, "publishing a cloud draft must save the article to GitHub");
+    assert.equal(postMutation.body.path, `content/posts/${exampleDraft.title}.md`);
+    assert.match(postMutation.body.content, /draft: false/);
+
+    const finalDraftSave = mutations.find((mutation) =>
+      mutation.method === "PUT"
+      && mutation.path === "/api/draft"
+      && mutation.body.path === postMutation.body.path
+      && mutation.body.sha === "d".repeat(40));
+    const draftDelete = mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/draft");
+    if (backup) {
+      assert(finalDraftSave, "backup publishing must retain the cloud draft with the published path and SHA");
+      assert.equal(finalDraftSave.body.key, exampleDraft.key);
+      assert.equal(finalDraftSave.body.isNew, false);
+      assert.match(finalDraftSave.body.content, /draft: true/);
+      assert.match(finalDraftSave.body.content, /backup: true/);
+      assert.equal(draftDelete, undefined, "backup publishing must not delete the cloud draft");
+    } else {
+      assert.equal(finalDraftSave, undefined, "ordinary publishing must not retain the cloud draft");
+      assert.deepEqual(draftDelete, {
+        method: "DELETE",
+        path: "/api/draft",
+        body: { key: exampleDraft.key },
+      });
+    }
+    assert.deepEqual(pageErrors, [], `draft backup page errors: ${pageErrors.join("; ")}`);
+    results.push({ backup, mutations });
+    await context.close();
+  }
+  return results;
 }
 
 async function verifyScheduledPublish() {
@@ -1890,6 +1949,7 @@ try {
     await verifyCompactDropdownLayer(),
     await verifyNarrowExistingArticle(),
     await verifyContentCrud(),
+    await verifyDraftBackupPublishing(),
     await verifyScheduledPublish(),
   ];
   console.log(JSON.stringify(results, null, 2));

@@ -595,16 +595,48 @@ function App() {
           ? `发布文章：${normalizedFields.title}`
           : `更新文章：${normalizedFields.title}`,
       );
-      if (working.draftKey) await api.deleteDraft(working.draftKey).catch(() => undefined);
+      let backupFailed = false;
+      if (working.draftKey && normalizedFields.backup === true) {
+        try {
+          const savedDraft = await api.saveDraft({
+            key: working.draftKey,
+            path: saved.path,
+            sha: saved.sha,
+            title: normalizedFields.title,
+            updatedAt: new Date().toISOString(),
+            isNew: false,
+            content: serializeDocument({ ...normalizedFields, draft: true }, body),
+          });
+          setDrafts((currentDrafts) => [
+            savedDraft,
+            ...currentDrafts.filter((draft) => draft.key !== savedDraft.key),
+          ]);
+        } catch {
+          backupFailed = true;
+        }
+      } else if (working.draftKey) {
+        await api.deleteDraft(working.draftKey).catch(() => undefined);
+      }
       window.localStorage.removeItem(`astro-studio:${working.path}`);
-      setWorking({ ...saved, isNew: false });
+      setWorking({
+        ...saved,
+        isNew: false,
+        ...(normalizedFields.backup === true && working.draftKey ? { draftKey: working.draftKey } : {}),
+      });
       setFields(normalizedFields);
       setRevision(0);
       setPublishedRevision(0);
       setDraftSyncedRevision(0);
       setSyncState("saved");
       setSyncLabel(`已提交 ${formatTime(new Date().toISOString())}`);
-      showToast(normalizedFields.draft ? "草稿已保存到 GitHub" : "文章已发布，EdgeOne 正在构建", "success");
+      showToast(
+        backupFailed
+          ? "文章已发布，但云端草稿保留失败"
+          : normalizedFields.draft
+            ? "草稿已保存到 GitHub"
+            : "文章已发布，EdgeOne 正在构建",
+        backupFailed ? "error" : "success",
+      );
       await loadPostsAndDrafts(true);
     } catch (error) {
       setSyncState("error");
@@ -1147,7 +1179,7 @@ function App() {
                         />
                       ) : null}
                       {mode === "preview" ? (
-                        <ArticlePreview fields={fields} html={previewHtml} />
+                        <ArticlePreview fields={fields} html={previewHtml} compact={fields.articleTemplate === "compact"} />
                       ) : null}
                     </div>
                   </div>
