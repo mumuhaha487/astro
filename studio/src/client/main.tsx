@@ -210,14 +210,6 @@ function App() {
     return () => window.clearTimeout(timer);
   }, [toast]);
 
-  useEffect(() => {
-    if (!advancedOpen || window.matchMedia("(max-width: 900px)").matches) return;
-    const frame = window.requestAnimationFrame(() => {
-      document.querySelector(".advanced-fields")?.scrollIntoView({ behavior: "smooth", block: "start" });
-    });
-    return () => window.cancelAnimationFrame(frame);
-  }, [advancedOpen]);
-
   const currentFields = useCallback((): FrontmatterFields | null => {
     if (!fields) return null;
     return { ...fields, tags: parseTags(tagsText) };
@@ -1086,7 +1078,7 @@ function App() {
 
         {sidebarOpen ? <button className="sidebar-scrim" onClick={() => setSidebarOpen(false)} /> : null}
 
-        <main className={`editor-workspace mode-${mode} ${wideEditor ? "wide-editor" : ""} ${outlineVisible ? "outline-visible" : "outline-hidden"}`}>
+        <main className={`editor-workspace mode-${mode} ${wideEditor ? "wide-editor" : ""} ${outlineVisible ? "outline-visible" : "outline-hidden"} ${advancedOpen ? "settings-open" : ""}`}>
           {!working || !fields ? (
             <EmptyEditor onCreate={createPost} />
           ) : (
@@ -1184,28 +1176,28 @@ function App() {
                     </div>
                   </div>
 
-                  {advancedOpen ? (
-                    <AdvancedFields
-                      fields={fields}
-                      setField={setField}
-                      tagsText={tagsText}
-                      onTagsChange={(value) => {
-                        setTagsText(value);
-                        setFields((current) => current ? { ...current, tags: parseTags(value) } : current);
-                        markChanged();
-                      }}
-                      onUploadImage={uploadImage}
-                      onExtractSummary={() => {
-                        const summary = plainText(body).slice(0, 256);
-                        setField("description", summary);
-                        showToast(summary ? "已从正文提取摘要" : "正文中还没有可提取的内容", summary ? "success" : "info");
-                      }}
-                      onClose={() => setAdvancedOpen(false)}
-                    />
-                  ) : null}
                 </div>
               </section>
 
+              {advancedOpen ? (
+                <AdvancedFields
+                  fields={fields}
+                  setField={setField}
+                  tagsText={tagsText}
+                  onTagsChange={(value) => {
+                    setTagsText(value);
+                    setFields((current) => current ? { ...current, tags: parseTags(value) } : current);
+                    markChanged();
+                  }}
+                  onUploadImage={uploadImage}
+                  onExtractSummary={() => {
+                    const summary = plainText(body).slice(0, 256);
+                    setField("description", summary);
+                    showToast(summary ? "已从正文提取摘要" : "正文中还没有可提取的内容", summary ? "success" : "info");
+                  }}
+                  onClose={() => setAdvancedOpen(false)}
+                />
+              ) : null}
             </>
           )}
         </main>
@@ -1235,7 +1227,7 @@ function App() {
           <div className="publish-bar-meta">
             <span>共 {countWords(body)} 字</span>
             <button className={advancedOpen ? "active" : ""} onClick={toggleAdvancedFields}>
-              {advancedOpen ? "回到顶部" : "发文设置"} <ChevronDown size={14} />
+              {advancedOpen ? "关闭设置" : "发文设置"} <ChevronDown size={14} />
             </button>
           </div>
           <div className={`publish-sync ${syncState}`}>
@@ -1462,14 +1454,28 @@ function AdvancedFields({
   onClose: () => void;
 }) {
   const coverInputRef = useRef<HTMLInputElement>(null);
+  const coverPreviewRef = useRef<string | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
+  const [coverPreview, setCoverPreview] = useState<string | null>(null);
+
+  useEffect(() => () => {
+    if (coverPreviewRef.current) URL.revokeObjectURL(coverPreviewRef.current);
+  }, []);
+
+  function replaceCoverPreview(value: string | null) {
+    if (coverPreviewRef.current) URL.revokeObjectURL(coverPreviewRef.current);
+    coverPreviewRef.current = value;
+    setCoverPreview(value);
+  }
 
   async function uploadCover(file: File | undefined) {
     if (!file) return;
+    replaceCoverPreview(URL.createObjectURL(file));
     setCoverUploading(true);
     try {
       setField("image", await onUploadImage(file));
     } catch {
+      replaceCoverPreview(null);
       // The shared uploader already reports the failure in the editor toast.
     } finally {
       setCoverUploading(false);
@@ -1480,153 +1486,135 @@ function AdvancedFields({
   return (
     <section className="advanced-fields" aria-label="发文设置">
       <header className="mobile-settings-head">
-        <strong>发文设置</strong>
+        <div><strong>发文设置</strong><span>文章属性会随内容保存</span></div>
         <button onClick={onClose} title="关闭发文设置"><X size={19} /></button>
       </header>
-      <SettingRow label="文章标签" required>
-        <div className="setting-input-with-action">
-          <input value={tagsText} onChange={(event) => onTagsChange(event.target.value)} placeholder="请输入文章标签，使用逗号分隔" />
-          <span>{fields.tags.length}/10</span>
-        </div>
+
+      <div className="astro-settings-divider"><span>文章信息</span></div>
+
+      <SettingRow label="标题" required>
+        <input
+          aria-label="标题"
+          value={fields.title}
+          onChange={(event) => setField("title", event.target.value)}
+          maxLength={100}
+          placeholder="请输入文章标题"
+        />
       </SettingRow>
 
-      <SettingRow label="添加封面">
+      <SettingRow label="封面">
         <div className="cover-setting">
-          <input
-            ref={coverInputRef}
-            className="visually-hidden"
-            type="file"
-            accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp"
-            onChange={(event) => void uploadCover(event.target.files?.[0])}
-          />
-          <button className="cover-upload-button" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
-            {coverUploading ? <LoaderCircle className="spin" size={20} /> : <ImagePlus size={22} />}
-            <span>{coverUploading ? "正在上传" : "从本地上传"}</span>
-          </button>
+          <div className="cover-controls">
+            <input
+              aria-label="封面 URL 或路径"
+              value={fields.image}
+              onChange={(event) => {
+                replaceCoverPreview(null);
+                setField("image", event.target.value);
+              }}
+              placeholder="/image/cover.webp 或 https://..."
+            />
+            <input
+              ref={coverInputRef}
+              className="visually-hidden"
+              type="file"
+              accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp"
+              onChange={(event) => void uploadCover(event.target.files?.[0])}
+            />
+            <div className="cover-actions">
+              <button className="cover-upload-button" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
+                {coverUploading ? <LoaderCircle className="spin" size={17} /> : <ImagePlus size={17} />}
+                <span>{coverUploading ? "正在上传" : "本地上传"}</span>
+              </button>
+              {fields.image || coverPreview ? <button className="cover-clear-button" onClick={() => { replaceCoverPreview(null); setField("image", ""); }}>移除封面</button> : null}
+            </div>
+          </div>
           <div className="cover-preview-box">
-            {fields.image ? <img src={fields.image} alt="文章封面预览" /> : <span>暂无内容图片，请在正文中添加图片</span>}
+            {coverPreview || fields.image ? <img src={coverPreview || fields.image} alt="文章封面预览" /> : <span>输入图片路径或上传本地图片</span>}
           </div>
         </div>
       </SettingRow>
 
-      <SettingRow label="文章摘要">
+      <SettingRow label="简介">
         <div className="summary-setting">
           <textarea
+            aria-label="简介"
             value={fields.description}
             onChange={(event) => setField("description", event.target.value)}
             rows={3}
             maxLength={256}
-            placeholder="摘要：会在推荐、列表等场景外露，帮助读者快速了解内容"
+            placeholder="用于文章列表、分享和搜索摘要"
           />
           <span>{fields.description.length} / 256</span>
-          <button onClick={onExtractSummary}><MessageSquareText size={15} /> 提取摘要</button>
+          <button onClick={onExtractSummary}><MessageSquareText size={15} /> 从正文提取</button>
         </div>
       </SettingRow>
 
-      <SettingRow label="分类专栏">
-        <input value={fields.category} onChange={(event) => setField("category", event.target.value)} placeholder="请选择或输入分类" />
+      <SettingRow label="标签">
+        <div className="setting-input-with-action">
+          <input aria-label="标签" value={tagsText} onChange={(event) => onTagsChange(event.target.value)} placeholder="使用逗号分隔多个标签" />
+          <span>{fields.tags.length}/10</span>
+        </div>
       </SettingRow>
 
-      <SettingRow label="文章类型">
-        <RadioGroup
-          name="article-type"
-          value={(fields.articleType as string) || "original"}
-          options={[["original", "原创"], ["repost", "转载"], ["translation", "翻译"]]}
-          onChange={(value) => setField("articleType", value)}
-        />
+      <SettingRow label="分类">
+        <input aria-label="分类" value={fields.category} onChange={(event) => setField("category", event.target.value)} placeholder="请输入文章分类" />
       </SettingRow>
 
-      <SettingRow label="创作声明">
-        <select value={(fields.creationStatement as string) || "none"} onChange={(event) => setField("creationStatement", event.target.value)}>
-          <option value="none">无声明</option>
-          <option value="original">本文为原创内容</option>
-          <option value="reprint">本文允许规范转载</option>
+      <div className="astro-settings-divider"><span>发布属性</span></div>
+
+      <SettingRow label="发布日期" required>
+        <input aria-label="发布日期" type="date" value={fields.published} onChange={(event) => setField("published", event.target.value)} />
+      </SettingRow>
+
+      <SettingRow label="状态">
+        <div className="advanced-toggles">
+          <Toggle checked={fields.draft} label="草稿" onChange={(checked) => setField("draft", checked)} />
+          <Toggle checked={fields.pinned} label="置顶" accent="pin" onChange={(checked) => setField("pinned", checked)} />
+        </div>
+      </SettingRow>
+
+      {fields.pinned ? (
+        <SettingRow label="置顶优先级">
+          <input aria-label="置顶优先级" type="number" min="0" value={fields.priority ?? ""} onChange={(event) => setField("priority", event.target.value ? Number(event.target.value) : undefined)} placeholder="数字越小越靠前" />
+        </SettingRow>
+      ) : null}
+
+      <SettingRow label="语言">
+        <select value={fields.lang} onChange={(event) => setField("lang", event.target.value)} aria-label="语言">
+          <option value="">跟随站点默认</option>
+          <option value="zh-CN">简体中文</option>
+          <option value="zh-TW">繁体中文</option>
+          <option value="en">English</option>
+          <option value="ja">日本語</option>
         </select>
       </SettingRow>
 
-      <SettingRow label="文章备份">
-        <label className="check-option">
-          <input type="checkbox" checked={fields.backup === true} onChange={(event) => setField("backup", event.target.checked)} />
-          <span>同时保留云端编辑草稿</span>
-        </label>
-      </SettingRow>
+      <div className="astro-settings-divider"><span>博客功能</span></div>
 
-      <SettingRow label="可见范围">
-        <RadioGroup
-          name="visibility"
-          value={(fields.visibility as string) || "public"}
-          options={[["public", "全部可见"], ["private", "仅我可见"], ["followers", "订阅读者可见"], ["password", "密码可见"]]}
-          onChange={(value) => setField("visibility", value)}
-        />
-      </SettingRow>
-
-      <SettingRow label="文章模板">
-        <RadioGroup
-          name="article-template"
-          value={(fields.articleTemplate as string) || "default"}
-          options={[["default", "默认模板"], ["compact", "简洁模板"]]}
-          onChange={(value) => setField("articleTemplate", value)}
-        />
-      </SettingRow>
-
-      <SettingRow label="多平台发布">
-        <RadioGroup
-          name="multi-platform"
-          value={fields.multiPlatform === true ? "yes" : "no"}
-          options={[["no", "否"], ["yes", "是"]]}
-          onChange={(value) => setField("multiPlatform", value === "yes")}
-        />
-      </SettingRow>
-
-      <SettingRow label="参与活动 /话题">
-        <div className="activity-fields">
-          <input value={(fields.activity as string) || ""} onChange={(event) => setField("activity", event.target.value)} placeholder="请选择创作活动" />
-          <input value={(fields.topic as string) || ""} onChange={(event) => setField("topic", event.target.value)} placeholder="请选择创作话题" />
-        </div>
-      </SettingRow>
-
-      <div className="astro-settings-divider"><span>博客属性</span></div>
-
-      <SettingRow label="发布日期" required>
-        <input type="date" value={fields.published} onChange={(event) => setField("published", event.target.value)} />
-      </SettingRow>
-
-      <SettingRow label="发布选项">
+      <SettingRow label="功能">
         <div className="advanced-toggles">
-          <Toggle checked={!fields.draft} label="发布" onChange={(checked) => setField("draft", !checked)} />
-          <Toggle checked={fields.pinned} label="置顶" accent="pin" onChange={(checked) => setField("pinned", checked)} />
           <Toggle checked={fields.comment} label="允许评论" onChange={(checked) => setField("comment", checked)} />
           <Toggle checked={fields.encrypted} label="文章加密" onChange={(checked) => setField("encrypted", checked)} />
         </div>
       </SettingRow>
 
-      {fields.pinned ? (
-        <SettingRow label="置顶顺序">
-          <input type="number" min="0" value={fields.priority ?? ""} onChange={(event) => setField("priority", event.target.value ? Number(event.target.value) : undefined)} placeholder="数字越小越靠前" />
-        </SettingRow>
-      ) : null}
-
-      <SettingRow label="更多属性">
-        <div className="activity-fields three-columns">
-          <input type="date" value={fields.updated || ""} onChange={(event) => setField("updated", event.target.value || undefined)} aria-label="更新日期" />
-          <select value={fields.lang} onChange={(event) => setField("lang", event.target.value)} aria-label="语言">
-            <option value="zh-CN">简体中文</option>
-            <option value="zh-TW">繁体中文</option>
-            <option value="en">English</option>
-            <option value="ja">日本語</option>
-          </select>
-          <input value={fields.permalink || ""} onChange={(event) => setField("permalink", event.target.value || undefined)} placeholder="固定链接" />
-        </div>
-      </SettingRow>
-
       {fields.encrypted ? (
         <SettingRow label="加密设置">
-          <div className="activity-fields">
-            <input type="password" value={fields.password || ""} onChange={(event) => setField("password", event.target.value)} placeholder="文章密码" />
-            <input value={fields.passwordHint || ""} onChange={(event) => setField("passwordHint", event.target.value)} placeholder="密码提示" />
+          <div className="settings-field-grid">
+            <input aria-label="文章密码" type="password" value={fields.password || ""} onChange={(event) => setField("password", event.target.value)} placeholder="文章密码" />
+            <input aria-label="密码提示" value={fields.passwordHint || ""} onChange={(event) => setField("passwordHint", event.target.value)} placeholder="密码提示" />
           </div>
         </SettingRow>
       ) : null}
+
+      <SettingRow label="更新日期">
+        <input aria-label="更新日期" type="date" value={fields.updated || ""} onChange={(event) => setField("updated", event.target.value || undefined)} />
+      </SettingRow>
+
+      <SettingRow label="固定链接">
+        <input aria-label="固定链接" value={fields.permalink || ""} onChange={(event) => setField("permalink", event.target.value || undefined)} placeholder="例如 /notes/astro-editor/" />
+      </SettingRow>
     </section>
   );
 }
@@ -1636,29 +1624,6 @@ function SettingRow({ label, required, children }: { label: string; required?: b
     <div className="setting-row">
       <div className="setting-label">{label}{required ? <span>*</span> : null}</div>
       <div className="setting-control">{children}</div>
-    </div>
-  );
-}
-
-function RadioGroup({
-  name,
-  value,
-  options,
-  onChange,
-}: {
-  name: string;
-  value: string;
-  options: Array<[string, string]>;
-  onChange: (value: string) => void;
-}) {
-  return (
-    <div className="radio-options" role="radiogroup" aria-label={name}>
-      {options.map(([optionValue, label]) => (
-        <label key={optionValue}>
-          <input type="radio" name={name} checked={value === optionValue} onChange={() => onChange(optionValue)} />
-          <span>{label}</span>
-        </label>
-      ))}
     </div>
   );
 }

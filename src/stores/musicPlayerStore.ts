@@ -113,6 +113,7 @@ class MusicPlayerStore {
 		}
 
 		this.audio = new Audio();
+		this.audio.preload = "none";
 		this.setupAudioListeners();
 		this.loadVolumeFromStorage();
 		this.registerInteractionHandler();

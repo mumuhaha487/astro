@@ -120,9 +120,9 @@ export default {
         const response = await routeApi(request, env, url);
         return secureResponse(response, true);
       }
-      const editorAssetPath = editorAssetRepositoryPath(url.pathname);
-      if (editorAssetPath && (request.method === "GET" || request.method === "HEAD")) {
-        return secureResponse(await proxyEditorAsset(request, env, editorAssetPath), false);
+      const repositoryAssetPath = repositoryPublicAssetPath(url.pathname);
+      if (repositoryAssetPath && (request.method === "GET" || request.method === "HEAD")) {
+        return secureResponse(await proxyEditorAsset(request, env, repositoryAssetPath), false);
       }
       const response = await env.ASSETS.fetch(request);
       return secureResponse(response, false);
@@ -995,7 +995,7 @@ function rawGitHubUrl(env: Env, path: string): string {
   return `https://raw.githubusercontent.com/${encodeURIComponent(env.GITHUB_OWNER)}/${encodeURIComponent(env.GITHUB_REPO)}/${encodeURIComponent(env.GITHUB_BRANCH)}/${encodeGitHubPath(path)}`;
 }
 
-function editorAssetRepositoryPath(pathname: string): string | null {
+function repositoryPublicAssetPath(pathname: string): string | null {
   let decoded: string;
   try {
     decoded = decodeURIComponent(pathname);
@@ -1004,7 +1004,9 @@ function editorAssetRepositoryPath(pathname: string): string | null {
   }
   if (decoded.length > 500 || decoded.includes("\\") || /[\u0000-\u001f\u007f]/.test(decoded)) return null;
   const segments = decoded.split("/").filter(Boolean);
-  if (segments.length < 3 || !["image", "video", "resource"].includes(segments[0]) || segments[1] !== "editor") return null;
+  const isBlogImage = segments.length >= 2 && ["image", "images"].includes(segments[0]);
+  const isEditorUpload = segments.length >= 3 && ["video", "resource"].includes(segments[0]) && segments[1] === "editor";
+  if (!isBlogImage && !isEditorUpload) return null;
   if (segments.some((segment) => segment === "." || segment === "..")) return null;
   return `public/${segments.join("/")}`;
 }

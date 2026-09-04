@@ -19,6 +19,26 @@ afterEach(() => {
 });
 
 describe("editor asset proxy", () => {
+  it("serves existing blog covers from the repository", async () => {
+    const upstreamFetch = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("cover-bytes", {
+      headers: { "Content-Type": "image/png" },
+    }));
+    vi.stubGlobal("fetch", upstreamFetch);
+    const assetFetch = vi.fn();
+
+    const response = await worker.fetch(
+      new Request("https://studio.example/image/20260320image.png"),
+      testEnv(assetFetch),
+    );
+
+    expect(assetFetch).not.toHaveBeenCalled();
+    expect(upstreamFetch.mock.calls[0][0]).toBe(
+      "https://raw.githubusercontent.com/mumuhaha487/astro/main/public/image/20260320image.png",
+    );
+    expect(response.headers.get("Content-Type")).toBe("image/png");
+    expect(await response.text()).toBe("cover-bytes");
+  });
+
   it("serves uploaded videos from the repository and forwards byte ranges", async () => {
     const upstreamFetch = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("video-bytes", {
       status: 206,

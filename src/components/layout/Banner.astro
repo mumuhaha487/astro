@@ -93,8 +93,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						position={siteConfig.banner.position}
 						widths={[640, 1024, 1536]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="auto"
 					/>
 				</div>
 			)}
@@ -107,8 +107,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						position={siteConfig.banner.position}
 						widths={[640, 1024, 1536]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="auto"
 					/>
 				</template>
 			))}
@@ -124,8 +124,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						position={siteConfig.banner.position}
 						widths={[1024, 1536, 2048, 2560]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="auto"
 					/>
 				</div>
 			)}
@@ -138,8 +138,8 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						position={siteConfig.banner.position}
 						widths={[1024, 1536, 2048, 2560]}
 						sizes="100vw"
-						loading="eager"
-						fetchpriority="high"
+						loading="lazy"
+						fetchpriority="auto"
 					/>
 				</template>
 			))}
@@ -183,15 +183,16 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 
 					const desktopSrc = getRandomImage(desktopImages, "banner_desktop_index");
 					const mobileSrc = getRandomImage(mobileImages, "banner_mobile_index");
+					const isDesktopViewport = window.matchMedia("(min-width: 768px)").matches;
 
 					if (mobileSrc) {
 						const mobileImg = document.createElement("img");
 						mobileImg.alt = "Mobile banner image of the blog";
 						mobileImg.className =
 							"block md:hidden object-cover h-full w-full transition duration-700 opacity-100";
+						mobileImg.loading = isDesktopViewport ? "lazy" : "eager";
+						mobileImg.fetchPriority = isDesktopViewport ? "auto" : "high";
 						mobileImg.src = mobileSrc;
-						mobileImg.loading = "eager";
-						mobileImg.fetchPriority = "high";
 						mobileImg.dataset.position = position;
 						container.appendChild(mobileImg);
 					}
@@ -202,9 +203,9 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 						desktopImg.alt = "Desktop banner image of the blog";
 						desktopImg.className =
 							"hidden md:block object-cover h-full w-full transition duration-700 opacity-100";
+						desktopImg.loading = isDesktopViewport ? "eager" : "lazy";
+						desktopImg.fetchPriority = isDesktopViewport ? "high" : "auto";
 						desktopImg.src = desktopSrc;
-						desktopImg.loading = "eager";
-						desktopImg.fetchPriority = "high";
 						desktopImg.dataset.position = position;
 						container.appendChild(desktopImg);
 					}
@@ -324,6 +325,18 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					return false;
 				}
 
+				function prioritizeVisibleSlot(slotClass) {
+					var slot = container.querySelector('.' + slotClass);
+					if (!slot || isSlotHiddenByBreakpoint(slot)) return;
+					var image = slot.querySelector('img');
+					if (!image) return;
+					image.loading = 'eager';
+					image.fetchPriority = 'high';
+				}
+
+				prioritizeVisibleSlot('banner-image-slot-mobile');
+				prioritizeVisibleSlot('banner-image-slot-desktop');
+
 				// 给首张图启动 Ken Burns
 				function applyInitialKB(slotClass) {
 					var slot = container.querySelector('.' + slotClass);
@@ -370,6 +383,11 @@ const hasBannerLink = !!siteConfig.banner.credit.url;
 					newSlot.style.opacity = '0';
 					newSlot.style.transition = 'opacity ' + FADE_MS + 'ms ease-in-out';
 					newSlot.innerHTML = frames[targetIndex];
+					var nextImage = newSlot.querySelector('img');
+					if (nextImage) {
+						nextImage.loading = 'eager';
+						nextImage.fetchPriority = 'high';
+					}
 					oldSlot.parentNode.insertBefore(newSlot, oldSlot.nextSibling);
 
 					// 双 rAF：确保 opacity:0 已绘制，然后同时触发淡入 + Ken Burns

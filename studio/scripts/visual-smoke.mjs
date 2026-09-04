@@ -622,63 +622,99 @@ async function verifyDesktop() {
 
   const publishingSettingsButton = page.locator(".publish-bar-meta button");
   await publishingSettingsButton.click();
-  await page.locator(".advanced-fields").waitFor();
-  await page.waitForTimeout(500);
-  assert.match(await publishingSettingsButton.textContent(), /回到顶部/);
-  assert.equal(await page.getByRole("option", { name: "本文包含 AI 辅助内容" }).count(), 0);
-  const advancedLayout = await page.locator(".advanced-fields").evaluate((root) => {
+  const settingsDrawer = page.locator(".advanced-fields");
+  await settingsDrawer.waitFor();
+  assert.match(await publishingSettingsButton.textContent(), /关闭设置/);
+  const advancedLayout = await settingsDrawer.evaluate((root) => {
     const rootRect = root.getBoundingClientRect();
     const rootStyle = getComputedStyle(root);
+    const headStyle = getComputedStyle(root.querySelector(".mobile-settings-head"));
     return {
-      root: {
-        width: Math.round(rootRect.width),
-        padding: rootStyle.padding,
-        marginTop: rootStyle.marginTop,
-      },
-      rows: [...root.querySelectorAll(":scope > .setting-row")].slice(0, 3).map((row) => {
-        const rowRect = row.getBoundingClientRect();
-        const labelRect = row.querySelector(".setting-label").getBoundingClientRect();
-        const controlRect = row.querySelector(".setting-control").getBoundingClientRect();
-        return {
-          x: Math.round(rowRect.x - rootRect.x),
-          width: Math.round(rowRect.width),
-          height: Math.round(rowRect.height),
-          labelX: Math.round(labelRect.x - rootRect.x),
-          labelWidth: Math.round(labelRect.width),
-          labelHeight: Math.round(labelRect.height),
-          controlX: Math.round(controlRect.x - rootRect.x),
-          controlWidth: Math.round(controlRect.width),
-          controlHeight: Math.round(controlRect.height),
-        };
-      }),
+      top: Math.round(rootRect.top),
+      right: Math.round(innerWidth - rootRect.right),
+      bottom: Math.round(innerHeight - rootRect.bottom),
+      width: Math.round(rootRect.width),
+      position: rootStyle.position,
+      overflowY: rootStyle.overflowY,
+      headerPosition: headStyle.position,
     };
   });
-  assert.deepEqual(
-    advancedLayout,
-    {
-      root: { width: 816, padding: "8px 32px 32px", marginTop: "24px" },
-      rows: [
-        { x: 32, width: 752, height: 48, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 32 },
-        { x: 32, width: 752, height: 106, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 90 },
-        { x: 32, width: 752, height: 164, labelX: 40, labelWidth: 88, labelHeight: 32, controlX: 128, controlWidth: 648, controlHeight: 148 },
-      ],
-    },
-    "desktop publishing settings must match the measured CSDN form geometry",
-  );
+  assert.deepEqual(advancedLayout, {
+    top: 109,
+    right: 0,
+    bottom: 68,
+    width: 430,
+    position: "fixed",
+    overflowY: "auto",
+    headerPosition: "sticky",
+  }, "desktop publishing settings must be a fixed right drawer");
+  for (const removedLabel of ["文章类型", "创作声明", "文章备份", "可见范围", "文章模板", "多平台发布", "参与活动 /话题"]) {
+    assert.equal(await settingsDrawer.getByText(removedLabel, { exact: true }).count(), 0, `${removedLabel} must not be exposed`);
+  }
+  for (const controlName of ["标题", "封面 URL 或路径", "简介", "标签", "分类", "发布日期", "语言", "更新日期", "固定链接"]) {
+    assert.equal(await settingsDrawer.getByLabel(controlName, { exact: true }).count(), 1, `${controlName} must be editable`);
+  }
+
+  await settingsDrawer.getByLabel("标题", { exact: true }).fill("抽屉设置验证文章");
+  await settingsDrawer.getByLabel("封面 URL 或路径").fill("/image/manual-cover.webp");
+  assert.equal(await settingsDrawer.locator('.cover-preview-box img').getAttribute("src"), "/image/manual-cover.webp");
+  await settingsDrawer.getByLabel("简介").fill("抽屉中的文章简介");
+  await settingsDrawer.getByLabel("标签").fill("Astro, Studio, 编辑器");
+  await settingsDrawer.getByLabel("分类").fill("工程实践");
+  await settingsDrawer.getByLabel("发布日期").fill("2026-09-05");
+  await settingsDrawer.locator(".toggle-control").filter({ hasText: "草稿" }).locator("input").check({ force: true });
+  await settingsDrawer.locator(".toggle-control").filter({ hasText: "置顶" }).locator("input").check({ force: true });
+  await settingsDrawer.getByLabel("置顶优先级").fill("2");
+  await settingsDrawer.getByLabel("语言").selectOption("en");
+  await settingsDrawer.locator(".toggle-control").filter({ hasText: "允许评论" }).locator("input").uncheck({ force: true });
+  await settingsDrawer.locator(".toggle-control").filter({ hasText: "文章加密" }).locator("input").check({ force: true });
+  await settingsDrawer.getByLabel("文章密码").fill("drawer-secret");
+  await settingsDrawer.getByLabel("密码提示").fill("drawer hint");
+  await settingsDrawer.getByLabel("更新日期").fill("2026-09-06");
+  await settingsDrawer.getByLabel("固定链接").fill("/notes/drawer-settings/");
+  await page.locator('.cover-setting input[type="file"]').setInputFiles({
+    name: "cover.png",
+    mimeType: "image/png",
+    buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+  });
+  await page.waitForFunction(() => {
+    const image = document.querySelector('.cover-preview-box img');
+    return image?.getAttribute("src")?.startsWith("blob:") && image.naturalWidth > 0;
+  });
+  await page.waitForTimeout(500);
+  const savedSettingsDraft = await page.evaluate(() => Object.keys(localStorage)
+    .filter((key) => key.startsWith("astro-studio:") && key !== "astro-studio:templates")
+    .map((key) => localStorage.getItem(key) || "")
+    .join("\n"));
+  for (const persistedValue of [
+    "抽屉设置验证文章",
+    "/image/editor/2026/09/visual-test.png",
+    "抽屉中的文章简介",
+    "工程实践",
+    "draft: true",
+    "priority: 2",
+    "comment: false",
+    "encrypted: true",
+    "drawer-secret",
+    "2026-09-06",
+    "/notes/drawer-settings/",
+  ]) {
+    assert(savedSettingsDraft.includes(persistedValue), `settings draft must persist ${persistedValue}: ${savedSettingsDraft}`);
+  }
+  assert.match(savedSettingsDraft, /lang:\s+['"]?en['"]?/);
+  await settingsDrawer.evaluate((element) => { element.scrollTop = 0; });
   const advancedPath = join(outputDirectory, "desktop-1264-publishing-settings.png");
   await page.screenshot({ path: advancedPath, animations: "disabled" });
-  await page.getByRole("radio", { name: "简洁模板" }).check();
-  await page.locator('.cover-setting input[type="file"]').setInputFiles({ name: "cover.png", mimeType: "image/png", buffer: Buffer.from("visual-cover") });
-  await page.locator('.cover-preview-box img[alt="文章封面预览"]').waitFor();
-  await publishingSettingsButton.click();
-  await page.locator(".advanced-fields").waitFor({ state: "detached" });
+  await settingsDrawer.getByTitle("关闭发文设置").click();
+  await settingsDrawer.waitFor({ state: "detached" });
 
   const sourceModeButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
   await sourceModeButton.scrollIntoViewIfNeeded();
   await sourceModeButton.click();
   await page.locator(".source-editor").fill("基础段落\n\n样式文字\n\n列表项目");
   await page.getByRole("button", { name: "预览" }).click();
-  await page.locator(".article-preview.compact").waitFor();
+  await page.locator(".article-preview").waitFor();
+  assert.equal(await page.locator(".article-preview.compact").count(), 0, "removed template controls must not alter the preview layout");
   await page.getByRole("button", { name: "富文本" }).click();
   await selectEditorText(page, "基础段落");
   await page.getByRole("combobox", { name: "段落对齐" }).click();
@@ -1375,13 +1411,14 @@ async function verifyMobile(width) {
 
   await page.getByRole("button", { name: "发文设置" }).click();
   await page.locator(".advanced-fields").waitFor();
-  await page.getByRole("button", { name: "提取摘要" }).click();
+  await page.getByRole("button", { name: "从正文提取" }).click();
   assert.notEqual(await page.locator(".summary-setting textarea").inputValue(), "");
   const settingsRect = await page.locator(".advanced-fields").evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return { top: Math.round(rect.top), bottom: Math.round(rect.bottom), width: Math.round(rect.width) };
   });
   assert.deepEqual(settingsRect, { top: 109, bottom: height - 64, width });
+  assert.equal(await page.locator(".advanced-fields").evaluate((element) => element.scrollHeight > element.clientHeight), true, "mobile publishing settings must scroll within the full-screen drawer");
   const firstSettingRowRect = await page.locator(".setting-row").first().evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return { left: Math.round(rect.left), width: Math.round(rect.width) };
@@ -1840,54 +1877,36 @@ async function verifyContentCrud() {
   return { listPath, mutations };
 }
 
-async function verifyDraftBackupPublishing() {
-  const results = [];
-  for (const backup of [true, false]) {
-    const { context, page, pageErrors, mutations } = await openEditor(
-      { width: 1264, height: 720 },
-      { includeDraft: true },
-    );
-    await page.locator(".editor-back-button").click();
-    await page.locator(".post-row").filter({ hasText: exampleDraft.title }).click();
-    if (backup) {
-      await page.locator(".publish-bar-meta button").click();
-      await page.getByLabel("同时保留云端编辑草稿").check();
-      await page.locator(".publish-bar-meta button").click();
-    }
-    await page.getByRole("button", { name: "发布博客" }).click();
-    await page.locator(".toast", { hasText: "文章已发布" }).waitFor();
+async function verifyDraftPublishing() {
+  const { context, page, pageErrors, mutations } = await openEditor(
+    { width: 1264, height: 720 },
+    { includeDraft: true },
+  );
+  await page.locator(".editor-back-button").click();
+  await page.locator(".post-row").filter({ hasText: exampleDraft.title }).click();
+  await page.getByRole("button", { name: "发布博客" }).click();
+  await page.locator(".toast", { hasText: "文章已发布" }).waitFor();
 
-    const postMutation = mutations.find((mutation) => mutation.method === "PUT" && mutation.path === "/api/post");
-    assert(postMutation, "publishing a cloud draft must save the article to GitHub");
-    assert.equal(postMutation.body.path, `content/posts/${exampleDraft.title}.md`);
-    assert.match(postMutation.body.content, /draft: false/);
+  const postMutation = mutations.find((mutation) => mutation.method === "PUT" && mutation.path === "/api/post");
+  assert(postMutation, "publishing a cloud draft must save the article to GitHub");
+  assert.equal(postMutation.body.path, `content/posts/${exampleDraft.title}.md`);
+  assert.match(postMutation.body.content, /draft: false/);
 
-    const finalDraftSave = mutations.find((mutation) =>
-      mutation.method === "PUT"
-      && mutation.path === "/api/draft"
-      && mutation.body.path === postMutation.body.path
-      && mutation.body.sha === "d".repeat(40));
-    const draftDelete = mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/draft");
-    if (backup) {
-      assert(finalDraftSave, "backup publishing must retain the cloud draft with the published path and SHA");
-      assert.equal(finalDraftSave.body.key, exampleDraft.key);
-      assert.equal(finalDraftSave.body.isNew, false);
-      assert.match(finalDraftSave.body.content, /draft: true/);
-      assert.match(finalDraftSave.body.content, /backup: true/);
-      assert.equal(draftDelete, undefined, "backup publishing must not delete the cloud draft");
-    } else {
-      assert.equal(finalDraftSave, undefined, "ordinary publishing must not retain the cloud draft");
-      assert.deepEqual(draftDelete, {
-        method: "DELETE",
-        path: "/api/draft",
-        body: { key: exampleDraft.key },
-      });
-    }
-    assert.deepEqual(pageErrors, [], `draft backup page errors: ${pageErrors.join("; ")}`);
-    results.push({ backup, mutations });
-    await context.close();
-  }
-  return results;
+  const finalDraftSave = mutations.find((mutation) =>
+    mutation.method === "PUT"
+    && mutation.path === "/api/draft"
+    && mutation.body.path === postMutation.body.path
+    && mutation.body.sha === "d".repeat(40));
+  const draftDelete = mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/draft");
+  assert.equal(finalDraftSave, undefined, "ordinary publishing must not retain the cloud draft");
+  assert.deepEqual(draftDelete, {
+    method: "DELETE",
+    path: "/api/draft",
+    body: { key: exampleDraft.key },
+  });
+  assert.deepEqual(pageErrors, [], `draft publishing page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return mutations;
 }
 
 async function verifyScheduledPublish() {
@@ -1965,7 +1984,7 @@ try {
     await verifyCompactDropdownLayer(),
     await verifyNarrowExistingArticle(),
     await verifyContentCrud(),
-    await verifyDraftBackupPublishing(),
+    await verifyDraftPublishing(),
     await verifyScheduledPublish(),
   ];
   console.log(JSON.stringify(results, null, 2));
