@@ -2130,7 +2130,8 @@ button:disabled {
 }
 
 body > [data-radix-popper-content-wrapper],
-.mdxeditor-popup-container {
+.mdxeditor-popup-container,
+[data-radix-popper-content-wrapper] {
   z-index: 1000 !important;
 }
 

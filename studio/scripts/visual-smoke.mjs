@@ -19,6 +19,32 @@ const outputDirectory = join(tmpdir(), "astro-studio-visual");
 await mkdir(outputDirectory, { recursive: true });
 const browser = await chromium.launch({ executablePath, headless: true });
 
+async function assertEveryMenuItemIsTopLayer(menu, itemSelector, message) {
+  const menuSelector = ".mdxeditor-select-content, .csdn-format-menu-popup, .csdn-color-palette";
+  const items = menu.locator(itemSelector);
+  const initialScrollTop = await menu.evaluate((element) => element.scrollTop);
+  const visibility = [];
+  for (let index = 0; index < await items.count(); index += 1) {
+    const item = items.nth(index);
+    await item.scrollIntoViewIfNeeded();
+    visibility.push(await item.evaluate((element, selector) => {
+      const owner = element.closest(selector);
+      const rect = element.getBoundingClientRect();
+      const ownerRect = owner?.getBoundingClientRect();
+      if (!ownerRect) return false;
+      const left = Math.max(rect.left, ownerRect.left, 0);
+      const right = Math.min(rect.right, ownerRect.right, window.innerWidth);
+      const top = Math.max(rect.top, ownerRect.top, 0);
+      const bottom = Math.min(rect.bottom, ownerRect.bottom, window.innerHeight);
+      if (right <= left || bottom <= top) return false;
+      const hit = document.elementFromPoint((left + right) / 2, (top + bottom) / 2);
+      return hit?.closest(selector) === owner;
+    }, menuSelector));
+  }
+  await menu.evaluate((element, scrollTop) => { element.scrollTop = scrollTop; }, initialScrollTop);
+  assert(visibility.length > 0 && visibility.every(Boolean), `${message}: ${JSON.stringify(visibility)}`);
+}
+
 const examplePost = {
   path: "content/posts/visual-history.md",
   sha: "a".repeat(40),
@@ -258,11 +284,13 @@ async function verifyDesktop() {
   await page.getByRole("button", { name: "富文本" }).click();
   await page.getByText("基础段落", { exact: true }).dblclick();
   await page.getByRole("combobox", { name: "段落对齐" }).click();
+  await assertEveryMenuItemIsTopLayer(page.locator(".mdxeditor-select-content"), '[role="option"]', "alignment menu must stay above the article title");
   await page.getByRole("option", { name: "右对齐" }).click();
   await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("text-align:right")));
 
   await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
   await page.locator(".csdn-code-block-tool button").click();
+  await assertEveryMenuItemIsTopLayer(page.locator(".mdxeditor-select-content"), '[role="option"]', "code menu must stay above the article title");
   await page.getByRole("option", { name: "运行代码" }).click();
   await page.locator(".code-runner-dialog").waitFor();
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-code-runner.png"), animations: "disabled" });
@@ -386,11 +414,7 @@ async function verifyDesktop() {
     return { width: Math.round(rect.width), height: Math.round(rect.height) };
   });
   assert.deepEqual(formatMenuRect, { width: 139, height: 257 });
-  const formatMenuIsTopLayer = await formatMenu.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 160)?.closest(".csdn-format-menu-popup"));
-  });
-  assert.equal(formatMenuIsTopLayer, true, "format menu must render above the article title where they overlap");
+  await assertEveryMenuItemIsTopLayer(formatMenu, '[role="menuitem"]', "format menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-format-menu.png"), animations: "disabled" });
   await formatMenu.getByRole("menuitem", { name: "标题六" }).click();
   await page.locator(".studio-rich-content h6").waitFor();
@@ -406,11 +430,7 @@ async function verifyDesktop() {
     return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
   assert.deepEqual(colorPaletteRect, { top: 98, width: 270, height: 181 });
-  const colorPaletteIsTopLayer = await colorPalette.evaluate((element) => {
-    const rect = element.getBoundingClientRect();
-    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 160)?.closest(".csdn-color-palette"));
-  });
-  assert.equal(colorPaletteIsTopLayer, true, "color menu must render above the article title where they overlap");
+  await assertEveryMenuItemIsTopLayer(colorPalette, '[role="menuitem"]', "color menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-color-palette.png"), animations: "disabled" });
   await page.getByTitle("文字颜色 #FE2C24", { exact: true }).click();
   const backgroundColorButton = page.locator('button[aria-label="文字背景色"]');
@@ -427,6 +447,7 @@ async function verifyDesktop() {
     return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
   assert.deepEqual(moreStyleMenuRect, { top: 98, width: 139, height: 126 });
+  await assertEveryMenuItemIsTopLayer(moreStyleMenu, '[role="option"]', "more-style menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-more-style-menu.png"), animations: "disabled" });
   await page.keyboard.press("Escape");
 
@@ -440,6 +461,7 @@ async function verifyDesktop() {
     return { width: Math.round(rect.width), height: Math.round(rect.height) };
   });
   assert.deepEqual(listMenuRect, { width: 139, height: 84 });
+  await assertEveryMenuItemIsTopLayer(listMenu, '[role="option"]', "list menu must stay above the article title");
   await page.keyboard.press("Escape");
 
   await page.waitForTimeout(500);
@@ -680,6 +702,16 @@ async function verifyContentCrud() {
   const listPath = join(outputDirectory, "desktop-content-management.png");
   await page.screenshot({ path: listPath, animations: "disabled" });
 
+  await page.getByRole("tab", { name: "已发布" }).click();
+  assert.equal(await page.getByRole("button", { name: `删除草稿 ${exampleDraft.title}` }).count(), 0, "published filter must hide cloud drafts");
+  assert.equal(await page.getByRole("button", { name: `删除文章 ${examplePost.title}` }).count(), 1);
+  await page.getByRole("tab", { name: "草稿" }).click();
+  assert.equal(await page.getByRole("button", { name: `删除草稿 ${exampleDraft.title}` }).count(), 1, "draft filter must include cloud drafts");
+  assert.equal(await page.getByRole("button", { name: `删除文章 ${examplePost.title}` }).count(), 0);
+  await page.getByPlaceholder("搜索标题、标签或分类").fill("不存在的标题");
+  assert.equal(await page.getByRole("button", { name: `删除草稿 ${exampleDraft.title}` }).count(), 0, "search must filter cloud drafts");
+  await page.getByPlaceholder("搜索标题、标签或分类").fill("");
+
   const deleteDraftButton = page.getByRole("button", { name: `删除草稿 ${exampleDraft.title}` });
   await deleteDraftButton.waitFor();
   page.once("dialog", (dialog) => dialog.accept());
@@ -691,6 +723,7 @@ async function verifyContentCrud() {
     body: { key: exampleDraft.key },
   });
 
+  await page.getByRole("tab", { name: "全部" }).click();
   const deleteArticleButton = page.getByRole("button", { name: `删除文章 ${examplePost.title}` });
   await deleteArticleButton.waitFor();
   page.once("dialog", (dialog) => dialog.accept());

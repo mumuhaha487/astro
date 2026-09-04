@@ -806,9 +806,18 @@ function App() {
     });
   }, [filter, posts, query]);
 
-  const orphanDrafts = drafts.filter(
-    (draft) => draft.isNew && !posts.some((post) => post.path === draft.path),
-  );
+  const orphanDrafts = useMemo(() => {
+    if (filter !== "all" && filter !== "draft") return [];
+    const normalized = query.trim().toLocaleLowerCase();
+    return drafts.filter((draft) => {
+      if (!draft.isNew || posts.some((post) => post.path === draft.path)) return false;
+      if (!normalized) return true;
+      return [draft.title, draft.path]
+        .join(" ")
+        .toLocaleLowerCase()
+        .includes(normalized);
+    });
+  }, [drafts, filter, posts, query]);
 
   const previewHtml = useMemo(() => {
     const rendered = marked.parse(body) as string;

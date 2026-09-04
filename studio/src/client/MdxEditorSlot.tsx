@@ -314,7 +314,10 @@ function FormatMenu() {
     const closeOnEscape = (event: KeyboardEvent) => {
       if (event.key === "Escape") setOpen(false);
     };
-    const closeOnViewportChange = () => setOpen(false);
+    const closeOnViewportChange = (event: Event) => {
+      if (event.type === "scroll" && event.target instanceof Node && menuRef.current?.contains(event.target)) return;
+      setOpen(false);
+    };
     document.addEventListener("pointerdown", closeOnOutsidePress);
     document.addEventListener("keydown", closeOnEscape);
     window.addEventListener("resize", closeOnViewportChange);
