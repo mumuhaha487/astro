@@ -109,4 +109,21 @@ describe("EdgeOne Makers adapter", () => {
     expect(removed.status).toBe(204);
     expect(values.has(`drafts/${summary.key}`)).toBe(false);
   });
+
+  it("uses the forwarded public host for same-origin checks", async () => {
+    const response = await handleEdgeOneRequest(
+      context(new Request("https://internal-function.example/api/login", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Host: "studio.example",
+          Origin: "https://studio.example",
+          "X-Forwarded-Proto": "https",
+        },
+        body: JSON.stringify({ password: "test-password" }),
+      }), runtimeEnv),
+    );
+
+    expect(response.status).toBe(200);
+  });
 });

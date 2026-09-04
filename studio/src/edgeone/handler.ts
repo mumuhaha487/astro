@@ -49,12 +49,12 @@ class EdgeOneBlobBucket implements ObjectBucket {
 }
 
 export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Response> {
-  const origin = new URL(context.request.url).origin;
-  const requestHeaders = new Headers(context.request.headers);
-  if (context.clientIp && !requestHeaders.has("CF-Connecting-IP")) {
-    requestHeaders.set("CF-Connecting-IP", context.clientIp);
+  const requestUrl = externalRequestUrl(context.request);
+  const origin = requestUrl.origin;
+  const request = new Request(requestUrl, context.request);
+  if (context.clientIp && !request.headers.has("CF-Connecting-IP")) {
+    request.headers.set("CF-Connecting-IP", context.clientIp);
   }
-  const request = new Request(context.request, { headers: requestHeaders });
   const env: BlogStudioEnv = {
     ASSETS: {
       fetch(input, init) {
@@ -93,4 +93,19 @@ export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Res
   }
 
   return worker.fetch(request, env);
+}
+
+function externalRequestUrl(request: Request): URL {
+  const url = new URL(request.url);
+  const forwardedHost = request.headers.get("X-Forwarded-Host")?.split(",", 1)[0]?.trim();
+  const host = forwardedHost || request.headers.get("Host")?.trim();
+  if (!host || !/^[a-z0-9.-]+(?::\d+)?$/i.test(host)) return url;
+
+  const forwardedProto = request.headers.get("X-Forwarded-Proto")?.split(",", 1)[0]?.trim();
+  const protocol = forwardedProto === "http" || forwardedProto === "https"
+    ? `${forwardedProto}:`
+    : url.protocol;
+  url.protocol = protocol;
+  url.host = host;
+  return url;
 }
