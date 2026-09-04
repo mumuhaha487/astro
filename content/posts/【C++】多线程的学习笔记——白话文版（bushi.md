@@ -237,7 +237,7 @@ int main() {
 
 <p>哦，对了</p>
 
-<p><img alt="" height="286" src="/image/35982b391b5cf5ccbd52664e94f390ef.jpeg" width="364" /></p>
+<p><img alt="" height="286" src="/image/35982b391b5cf5ccbd52664e94f390ef.gif" width="364" /></p>
 
 <p></p>
 

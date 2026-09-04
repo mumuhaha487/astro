@@ -3,7 +3,7 @@ title: 用python来爬取某鱼的商品信息（1/2）
 published: 2023-08-11
 tags: [python,开发语言]
 category: python
-image: /_image/?href=%2F%40fs%2Fworkspace%2Ffuwari%2Fsrc%2Fassets%2Fimages%2Fdemo-avatar.png%3ForigWidth%3D700%26origHeight%3D700%26origFormat%3Djpg&w=700&h=700&f=webp
+image: /images/demo-avatar.webp
 ---
 
 <!--more-->

@@ -3,7 +3,7 @@ title: 简单的学习一下用python做一些后台挂机的项目
 published: 2023-08-28
 tags: [学习]
 category: python
-image: /_image/?href=%2F%40fs%2Fworkspace%2Ffuwari%2Fsrc%2Fassets%2Fimages%2Fdemo-avatar.png%3ForigWidth%3D700%26origHeight%3D700%26origFormat%3Djpg&w=700&h=700&f=webp
+image: /images/demo-avatar.webp
 ---
 
 <!--more-->

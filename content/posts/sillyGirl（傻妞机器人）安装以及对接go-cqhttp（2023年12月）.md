@@ -3,7 +3,7 @@ title: sillyGirl（傻妞机器人）安装以及对接go-cqhttp（2023年12月�
 published: 2023-12-13
 tags: [机器人,linux,ubuntu,node.js,github]
 category: 宝塔
-image: /image/icon-default.png
+image: /images/demo-avatar.webp
 ---
 
 <!--more-->

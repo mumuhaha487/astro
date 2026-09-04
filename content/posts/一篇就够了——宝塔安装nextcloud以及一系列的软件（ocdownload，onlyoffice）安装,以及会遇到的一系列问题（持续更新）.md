@@ -3,7 +3,7 @@ title: 一篇就够了——宝塔安装nextcloud以及一系列的软件（ocdo
 published: 2023-05-27
 tags: [php,linux,docker,服务器,容器]
 category: 宝塔
-image: /_image/?href=%2F%40fs%2Fworkspace%2Ffuwari%2Fsrc%2Fassets%2Fimages%2Fdemo-avatar.png%3ForigWidth%3D700%26origHeight%3D700%26origFormat%3Djpg&w=700&h=700&f=webp
+image: /images/demo-avatar.webp
 ---
 
 <!--more-->

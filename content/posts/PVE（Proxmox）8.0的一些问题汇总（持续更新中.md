@@ -262,4 +262,4 @@ vfio_virqfd
 
 <p>好了目前先到这，之后想到啥我会继续加，或者有啥问的我有时间也会回</p>
 
-<p><img alt="" height="166" isbindedload="true" src="/image/450463f39713b9e844de7f6e21dcae6b.jpeg" width="166" /></p>
+<p><img alt="" height="166" isbindedload="true" src="/image/450463f39713b9e844de7f6e21dcae6b.gif" width="166" /></p>
