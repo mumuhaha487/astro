@@ -129,6 +129,14 @@ interface ToastMessage {
   tone: "success" | "error" | "info";
 }
 
+function validateTitle(title: string): string | null {
+  const length = title.trim().length;
+  if (length === 0) return "请填写文章标题";
+  if (length < 5) return "文章标题不能少于 5 个字";
+  if (length > 100) return "文章标题不能超过 100 个字";
+  return null;
+}
+
 marked.setOptions({ gfm: true, breaks: true });
 
 function App() {
@@ -534,8 +542,9 @@ function App() {
       ? { ...current, draft: draftOverride }
       : current;
     if (!normalizedFields) return;
-    if (!normalizedFields.title.trim()) {
-      showToast("请填写文章标题", "error");
+    const titleError = validateTitle(normalizedFields.title);
+    if (titleError) {
+      showToast(titleError, "error");
       return;
     }
     if (!normalizedFields.published) {
@@ -584,8 +593,10 @@ function App() {
   async function schedulePost(publishAt: string) {
     if (!working || !fields) return;
     const current = currentFields();
-    if (!current?.title.trim()) {
-      showToast("请填写文章标题", "error");
+    if (!current) return;
+    const titleError = validateTitle(current.title);
+    if (titleError) {
+      showToast(titleError, "error");
       return;
     }
     const path = working.isNew ? makePostPath(current.title) : working.path;

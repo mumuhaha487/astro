@@ -261,9 +261,20 @@ async function verifyDesktop() {
     { x: metrics.draftBanner.x, y: metrics.draftBanner.y, width: metrics.draftBanner.width, height: metrics.draftBanner.height },
     { x: 288, y: 165, width: 688, height: 54 },
   );
+  assert.deepEqual(
+    { x: metrics.titleInput.x, y: metrics.titleInput.y, width: metrics.titleInput.width, height: metrics.titleInput.height },
+    { x: 288, y: 243, width: 688, height: 55 },
+  );
   assert.equal(metrics.publish.height, 68);
   await page.getByTitle("同步消息").click();
   await page.locator(".toast", { hasText: "等待同步" }).waitFor();
+  await page.locator(".title-input").fill("短标题");
+  await page.getByRole("button", { name: "发布博客" }).click();
+  await page.locator(".toast", { hasText: "文章标题不能少于 5 个字" }).waitFor();
+  await page.locator(".title-input").focus();
+  assert.equal(await page.locator(".title-input").evaluate((element) => getComputedStyle(element).outlineStyle), "none");
+  await page.locator(".title-input").fill("");
+  await page.locator(".toast").waitFor({ state: "detached", timeout: 6_000 });
   assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "the unconfigured AI assistant must not be rendered");
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });
@@ -480,6 +491,10 @@ async function verifyMobile(width) {
   assert.equal(metrics.topbar.height, 48);
   assert.equal(metrics.toolbar.height, 61);
   assert.equal(metrics.publish.height, 64);
+  assert.deepEqual(
+    { x: metrics.titleInput.x, y: metrics.titleInput.y, width: metrics.titleInput.width, height: metrics.titleInput.height },
+    { x: 14, y: 189, width: width - 28, height: 49 },
+  );
   assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "mobile must not render the unconfigured AI assistant");
 
   await page.locator(".title-input").fill("移动端编辑验证");
