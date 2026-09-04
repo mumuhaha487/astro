@@ -54,6 +54,31 @@ describe("editor asset proxy", () => {
     expect(await response.text()).toBe("video-bytes");
   });
 
+  it("serves uploaded resources from the repository as downloads", async () => {
+    const upstreamFetch = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("archive-bytes", {
+      headers: {
+        "Content-Disposition": 'attachment; filename="source.zip"',
+        "Content-Type": "application/zip",
+      },
+    }));
+    vi.stubGlobal("fetch", upstreamFetch);
+    const assetFetch = vi.fn();
+
+    const response = await worker.fetch(
+      new Request("https://studio.example/resource/editor/2026/09/source.zip"),
+      testEnv(assetFetch),
+    );
+
+    expect(assetFetch).not.toHaveBeenCalled();
+    expect(upstreamFetch).toHaveBeenCalledOnce();
+    expect(upstreamFetch.mock.calls[0][0]).toBe(
+      "https://raw.githubusercontent.com/mumuhaha487/astro/main/public/resource/editor/2026/09/source.zip",
+    );
+    expect(response.headers.get("Content-Type")).toBe("application/zip");
+    expect(response.headers.get("Content-Disposition")).toBe('attachment; filename="source.zip"');
+    expect(await response.text()).toBe("archive-bytes");
+  });
+
   it("leaves unrelated static paths with the Studio asset binding", async () => {
     const assetFetch = vi.fn(async () => new Response("studio-asset"));
     vi.stubGlobal("fetch", vi.fn());

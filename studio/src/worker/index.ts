@@ -993,7 +993,7 @@ function editorAssetRepositoryPath(pathname: string): string | null {
   }
   if (decoded.length > 500 || decoded.includes("\\") || /[\u0000-\u001f\u007f]/.test(decoded)) return null;
   const segments = decoded.split("/").filter(Boolean);
-  if (segments.length < 3 || !["image", "video"].includes(segments[0]) || segments[1] !== "editor") return null;
+  if (segments.length < 3 || !["image", "video", "resource"].includes(segments[0]) || segments[1] !== "editor") return null;
   if (segments.some((segment) => segment === "." || segment === "..")) return null;
   return `public/${segments.join("/")}`;
 }
