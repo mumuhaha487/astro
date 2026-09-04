@@ -123,7 +123,7 @@ const exampleDraftContent = exampleContent
   .replace("draft: false", "draft: true")
   .replace("pinned: true", "pinned: false");
 
-async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}) {
+async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [] } = {}) {
   let postRecords = [examplePost];
   let draftRecords = includeDraft ? [exampleDraft] : [];
   await page.route("**/api/**", async (route) => {
@@ -183,7 +183,9 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
     if (url.pathname === "/api/history/content") {
       return json({ path: examplePost.path, commitSha: url.searchParams.get("sha"), content: historyContent });
     }
-    if (url.pathname === "/api/drafts" && request.method() === "GET") return json({ drafts: draftRecords });
+    if (url.pathname === "/api/drafts" && request.method() === "GET") {
+      return failDrafts ? json({ error: "Draft storage unavailable" }, 503) : json({ drafts: draftRecords });
+    }
     if (url.pathname === "/api/draft" && request.method() === "GET") {
       const draft = draftRecords.find((item) => item.key === url.searchParams.get("key"));
       return draft
@@ -248,6 +250,20 @@ async function openEditor(viewport, { existing = false, includeDraft = false } =
   }
   await page.locator(".csdn-editor-toolbar").waitFor();
   return { context, page, pageErrors, mutations };
+}
+
+async function verifyPostListSurvivesDraftFailure() {
+  const context = await browser.newContext({ viewport: { width: 1264, height: 720 }, deviceScaleFactor: 1 });
+  const page = await context.newPage();
+  const pageErrors = [];
+  page.on("pageerror", (error) => pageErrors.push(error.message));
+  await mockStudioApi(page, { failDrafts: true });
+  await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
+  await page.locator(".post-row").filter({ hasText: examplePost.title }).waitFor();
+  assert.match(await page.locator(".toast").textContent(), /草稿.*Draft storage unavailable/);
+  assert.deepEqual(pageErrors, [], `independent list loading page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { postListSurvivedDraftFailure: true };
 }
 
 async function layoutMetrics(page) {
@@ -2020,6 +2036,7 @@ try {
     await verifyContentCrud(),
     await verifyDraftPublishing(),
     await verifyScheduledPublish(),
+    await verifyPostListSurvivesDraftFailure(),
   ];
   console.log(JSON.stringify(results, null, 2));
 } finally {

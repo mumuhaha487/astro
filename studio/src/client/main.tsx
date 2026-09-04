@@ -203,6 +203,12 @@ function App() {
   const editorRef = useRef<MdxEditorSlotHandle>(null);
 
   useEffect(() => {
+    void loadBundledPosts()
+      .then((bundledPosts) => {
+        setPosts((current) => current.length > 0 ? current : bundledPosts);
+      })
+      .catch(() => {});
+
     void api
       .session()
       .then((value) => {
@@ -284,20 +290,42 @@ function App() {
   async function loadPostsAndDrafts(force = false) {
     setLoadingPosts(true);
     try {
-      const [postResult, draftResult] = await Promise.all([
+      const [postResult, draftResult] = await Promise.allSettled([
         force ? fetch("/api/posts?refresh=1", { credentials: "same-origin" }).then(async (response) => {
           if (!response.ok) throw new Error("刷新文章失败");
           return (await response.json()) as { posts: PostMeta[]; stale?: boolean };
         }) : api.posts(),
         api.drafts(),
       ]);
-      setPosts(postResult.posts);
-      setDrafts(draftResult.drafts);
-      if (postResult.stale) {
-        showToast("GitHub 暂时不可用，当前显示最近缓存", "info");
+
+      const notices: string[] = [];
+      let noticeTone: ToastMessage["tone"] = "info";
+
+      if (postResult.status === "fulfilled") {
+        setPosts(postResult.value.posts);
+        if (postResult.value.stale) {
+          notices.push("GitHub 暂时不可用，当前显示最近缓存");
+        }
+      } else {
+        try {
+          setPosts(await loadBundledPosts());
+          notices.push("GitHub 暂时不可用，当前显示部署时的文章索引");
+        } catch {
+          notices.push(`文章列表：${errorMessage(postResult.reason)}`);
+          noticeTone = "error";
+        }
       }
-    } catch (error) {
-      showToast(errorMessage(error), "error");
+
+      if (draftResult.status === "fulfilled") {
+        setDrafts(draftResult.value.drafts);
+      } else {
+        notices.push(`草稿：${errorMessage(draftResult.reason)}`);
+        noticeTone = "error";
+      }
+
+      if (notices.length > 0) {
+        showToast(notices.join("；"), noticeTone);
+      }
     } finally {
       setLoadingPosts(false);
     }
@@ -3151,6 +3179,14 @@ function coverPreviewSource(value: string): string {
   return /^\/(?:image|images)\//.test(source)
     ? `/api/asset?path=${encodeURIComponent(source)}`
     : source;
+}
+
+async function loadBundledPosts(): Promise<PostMeta[]> {
+  const response = await fetch("/post-index.json", { cache: "no-cache" });
+  if (!response.ok) throw new Error("无法加载部署时的文章索引");
+  const result = (await response.json()) as { posts?: PostMeta[] };
+  if (!Array.isArray(result.posts)) throw new Error("文章索引格式无效");
+  return result.posts;
 }
 
 function formatDate(value: string): string {
