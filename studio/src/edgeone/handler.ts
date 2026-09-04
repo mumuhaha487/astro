@@ -51,7 +51,7 @@ class EdgeOneBlobBucket implements ObjectBucket {
 export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Response> {
   const requestUrl = externalRequestUrl(context.request);
   const origin = requestUrl.origin;
-  const request = new Request(requestUrl, context.request);
+  const request = await copyRequestToUrl(context.request, requestUrl);
   if (context.clientIp && !request.headers.has("CF-Connecting-IP")) {
     request.headers.set("CF-Connecting-IP", context.clientIp);
   }
@@ -93,6 +93,18 @@ export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Res
   }
 
   return worker.fetch(request, env);
+}
+
+async function copyRequestToUrl(request: Request, url: URL): Promise<Request> {
+  const init: RequestInit = {
+    method: request.method,
+    headers: new Headers(request.headers),
+    redirect: request.redirect,
+  };
+  if (request.method !== "GET" && request.method !== "HEAD") {
+    init.body = await request.arrayBuffer();
+  }
+  return new Request(url, init);
 }
 
 function externalRequestUrl(request: Request): URL {
