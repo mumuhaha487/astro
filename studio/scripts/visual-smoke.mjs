@@ -936,10 +936,59 @@ async function verifyDesktop() {
     return { left: Math.round(rect.left), width: Math.round(rect.width), right: Math.round(rect.right), height: Math.round(rect.height) };
   });
   assert.deepEqual(templateDrawerRect, { left: 564, width: 700, right: 1264, height: 720 });
+  assert.equal(await page.locator(".template-card.selected").count(), 0, "CSDN template drawer must not preselect a template");
+  assert.equal(await page.locator(".template-card-preview.official img").count(), 6, "all six official templates need their visual previews");
+  await page.waitForFunction(() => [...document.querySelectorAll(".template-card-preview.official img, .template-contributors img")].every((image) => image.complete && image.naturalWidth > 0));
+  assert.deepEqual(await page.locator(".template-card").evaluateAll((cards) => cards.slice(0, 4).map((card) => {
+    const rect = card.getBoundingClientRect();
+    return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  })), [
+    { x: 608, y: 87, width: 282, height: 264 },
+    { x: 914, y: 87, width: 282, height: 264 },
+    { x: 608, y: 375, width: 282, height: 264 },
+    { x: 914, y: 375, width: 282, height: 264 },
+  ]);
+  assert.deepEqual(await page.locator(".template-insert-drawer > footer").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { x: 564, y: 632, width: 700, height: 88 });
+  assert.equal(await page.locator(".template-contributors img").count(), 7);
+  await page.getByRole("button", { name: "添加到正文", exact: true }).click();
+  await page.getByText("请选择一个模板").waitFor();
   await page.getByRole("button", { name: "选择记录bug模板" }).click();
+  assert.equal(await page.locator(".template-card.selected .template-card-check").count(), 1, "selected template must show the CSDN check overlay");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-template-drawer.png"), animations: "disabled" });
-  await page.locator(".template-insert-drawer .drawer-primary-button").click();
+  await page.getByRole("button", { name: "添加到正文", exact: true }).click();
   await page.locator(".template-insert-drawer").waitFor({ state: "detached" });
+
+  await templateTool.scrollIntoViewIfNeeded();
+  await templateTool.click();
+  const customTemplateDrawer = page.locator(".template-insert-drawer");
+  await customTemplateDrawer.getByRole("tab", { name: "我的模板" }).click();
+  assert.equal(await customTemplateDrawer.getByText("暂无数据").count(), 1);
+  await customTemplateDrawer.getByRole("button", { name: "创建新模板" }).click();
+  await customTemplateDrawer.getByLabel("模板名称").fill("测试模板");
+  await customTemplateDrawer.getByLabel("模板内容").fill("## 自定义模板内容\n\n正文占位符");
+  await customTemplateDrawer.getByRole("button", { name: "保存模板", exact: true }).click();
+  const savedTemplateCard = customTemplateDrawer.locator(".template-card").filter({ hasText: "测试模板" });
+  await savedTemplateCard.waitFor();
+  assert.match(await page.evaluate(() => localStorage.getItem("astro-studio:templates") || ""), /测试模板/);
+  await savedTemplateCard.hover();
+  await customTemplateDrawer.getByTitle("编辑模板 测试模板").click();
+  await customTemplateDrawer.getByLabel("模板名称").fill("更新后的模板");
+  await customTemplateDrawer.getByRole("button", { name: "保存模板", exact: true }).click();
+  const updatedTemplateCard = customTemplateDrawer.locator(".template-card").filter({ hasText: "更新后的模板" });
+  await updatedTemplateCard.waitFor();
+  await updatedTemplateCard.hover();
+  page.once("dialog", async (dialog) => {
+    assert.match(dialog.message(), /确定删除模板“更新后的模板”吗/);
+    await dialog.accept();
+  });
+  await customTemplateDrawer.getByTitle("删除模板 更新后的模板").click();
+  await customTemplateDrawer.getByText("暂无数据").waitFor();
+  assert.doesNotMatch(await page.evaluate(() => localStorage.getItem("astro-studio:templates") || ""), /更新后的模板/);
+  await customTemplateDrawer.getByRole("button", { name: "取消", exact: true }).click();
+  await customTemplateDrawer.waitFor({ state: "detached" });
 
   const resourceTool = page.locator(".csdn-toolbar-action").filter({ hasText: "资源绑定" });
   await resourceTool.scrollIntoViewIfNeeded();
@@ -1285,6 +1334,24 @@ async function verifyMobile(width) {
     await imageConfirm.click();
     await page.locator(".image-insert-drawer").waitFor({ state: "detached" });
     await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("/image/editor/2026/09/visual-test.png")));
+
+    const templateTool = page.locator(".csdn-toolbar-action").filter({ hasText: "模版" });
+    await templateTool.scrollIntoViewIfNeeded();
+    await templateTool.click();
+    const templateDrawer = page.locator(".template-insert-drawer");
+    await templateDrawer.waitFor();
+    assert.deepEqual(await templateDrawer.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    }), { top: 0, left: 0, width, height }, "mobile template drawer must use the full viewport");
+    const mobileTemplateCard = templateDrawer.locator(".template-card").first();
+    assert.deepEqual(await mobileTemplateCard.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), height: Math.round(rect.height) };
+    }), { left: 16, right: width - 16, height: 264 });
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-template-drawer.png"), animations: "disabled" });
+    await page.keyboard.press("Escape");
+    await templateDrawer.waitFor({ state: "detached" });
 
     const formulaTool = page.locator(".csdn-toolbar-action").filter({ hasText: "公式" });
     await formulaTool.scrollIntoViewIfNeeded();

@@ -15,7 +15,6 @@ import {
   Eye,
   FileArchive,
   FilePlus2,
-  FileStack,
   FolderGit2,
   GitBranch,
   ImagePlus,
@@ -23,6 +22,7 @@ import {
   Link2,
   ListTree,
   LoaderCircle,
+  Medal,
   MessageSquareText,
   PencilLine,
   Pin,
@@ -92,6 +92,7 @@ interface SavedTemplate {
   title: string;
   content: string;
   updatedAt: string;
+  previewUrl?: string;
 }
 
 interface ResourceRecord {
@@ -2410,12 +2411,22 @@ function LinkInsertDialog({
 }
 
 const officialTemplates: SavedTemplate[] = [
-  { id: "learning", title: "学习计划模板示例", updatedAt: "2022-04-18", content: "## 学习目标\n\n在这里写下清晰、可验证的学习目标。\n\n## 学习内容\n\n列出需要掌握的知识与练习。\n\n## 学习时间\n\n安排阶段目标与复盘时间。" },
-  { id: "series", title: "系列文章模板", updatedAt: "2022-03-07", content: "## 系列文章目录\n\n- 本文：当前主题\n- 下一篇：后续主题\n\n## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
-  { id: "bug", title: "记录bug模板", updatedAt: "2022-03-07", content: "## 项目场景\n\n## 问题描述\n\n## 原因分析\n\n## 解决方案\n\n```text\n关键日志或代码\n```\n\n## 验证结果" },
-  { id: "beginner", title: "新手模版", updatedAt: "2020-08-13", content: "## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
-  { id: "anniversary", title: "创作纪念日模板", updatedAt: "2022-04-18", content: "## 创作历程\n\n## 印象深刻的文章\n\n## 收获与成长\n\n## 下一阶段计划" },
-  { id: "analysis", title: "技术分析模板", updatedAt: "2023-05-16", content: "## 背景\n\n## 技术原理\n\n## 方案对比\n\n## 实现过程\n\n## 性能与限制\n\n## 总结" },
+  { id: "learning", title: "学习计划模板示例", updatedAt: "2022-04-18", previewUrl: "/template-assets/learning.png", content: "## 学习目标\n\n在这里写下清晰、可验证的学习目标。\n\n## 学习内容\n\n列出需要掌握的知识与练习。\n\n## 学习时间\n\n安排阶段目标与复盘时间。" },
+  { id: "series", title: "系列文章模板", updatedAt: "2022-03-07", previewUrl: "/template-assets/series.png", content: "## 系列文章目录\n\n- 本文：当前主题\n- 下一篇：后续主题\n\n## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
+  { id: "bug", title: "记录bug模板", updatedAt: "2022-03-07", previewUrl: "/template-assets/bug.png", content: "## 项目场景\n\n## 问题描述\n\n## 原因分析\n\n## 解决方案\n\n```text\n关键日志或代码\n```\n\n## 验证结果" },
+  { id: "beginner", title: "新手模版", updatedAt: "2020-08-13", previewUrl: "/template-assets/beginner.png", content: "## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
+  { id: "anniversary", title: "创作纪念日模板", updatedAt: "2022-04-18", previewUrl: "/template-assets/anniversary.png", content: "## 创作历程\n\n## 印象深刻的文章\n\n## 收获与成长\n\n## 下一阶段计划" },
+  { id: "analysis", title: "技术分析模板", updatedAt: "2023-05-16", previewUrl: "/template-assets/analysis.png", content: "## 背景\n\n## 技术原理\n\n## 方案对比\n\n## 实现过程\n\n## 性能与限制\n\n## 总结" },
+];
+
+const templateContributors = [
+  { name: "谷哥的小弟", avatar: "/template-assets/contributor-1.jpg" },
+  { name: "沉默王二", avatar: "/template-assets/contributor-2.jpg" },
+  { name: "Michael阿明", avatar: "/template-assets/contributor-3.jpg" },
+  { name: "开发游戏的老王", avatar: "/template-assets/contributor-4.jpg" },
+  { name: "kongfanyu", avatar: "/template-assets/contributor-5.jpg" },
+  { name: "ursula skr", avatar: "/template-assets/contributor-6.jpg" },
+  { name: "李孟聊人工智能", avatar: "/template-assets/contributor-7.jpg" },
 ];
 
 function readSavedTemplates(): SavedTemplate[] {
@@ -2441,10 +2452,24 @@ function TemplateInsertDrawer({
 }) {
   const [tab, setTab] = useState<"official" | "mine">("official");
   const [saved, setSaved] = useState(readSavedTemplates);
-  const [selectedId, setSelectedId] = useState(officialTemplates[0].id);
+  const [selectedId, setSelectedId] = useState("");
+  const [editor, setEditor] = useState<{ id?: string; title: string; content: string } | null>(null);
   const [error, setError] = useState("");
+  const onCloseRef = useRef(onClose);
   const visibleTemplates = tab === "official" ? officialTemplates : saved;
   const selected = visibleTemplates.find((template) => template.id === selectedId);
+
+  useEffect(() => {
+    onCloseRef.current = onClose;
+  }, [onClose]);
+
+  useEffect(() => {
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onCloseRef.current();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => window.removeEventListener("keydown", closeOnEscape);
+  }, []);
 
   function persist(next: SavedTemplate[]) {
     try {
@@ -2456,17 +2481,60 @@ function TemplateInsertDrawer({
     }
   }
 
-  function saveCurrent() {
-    if (!currentBody.trim()) return;
-    const template: SavedTemplate = { id: crypto.randomUUID(), title: currentTitle.trim() || "未命名模板", content: currentBody, updatedAt: new Date().toISOString().slice(0, 10) };
-    persist([template, ...saved]);
+  function openTemplateEditor(template?: SavedTemplate) {
+    setTab("mine");
+    setSelectedId("");
+    setError("");
+    setEditor(template
+      ? { id: template.id, title: template.title, content: template.content }
+      : { title: "", content: currentBody });
+  }
+
+  function saveTemplate() {
+    if (!editor) return;
+    const title = editor.title.trim();
+    if (!title) {
+      setError("请输入模板名称");
+      return;
+    }
+    if (!editor.content.trim()) {
+      setError("模板内容不能为空");
+      return;
+    }
+    const template: SavedTemplate = {
+      id: editor.id || crypto.randomUUID(),
+      title,
+      content: editor.content,
+      updatedAt: new Date().toISOString().slice(0, 10),
+    };
+    const next = editor.id
+      ? saved.map((item) => item.id === editor.id ? template : item)
+      : [template, ...saved];
+    persist(next);
     setSelectedId(template.id);
+    setEditor(null);
+  }
+
+  function deleteTemplate(template: SavedTemplate) {
+    if (!window.confirm(`确定删除模板“${template.title}”吗？`)) return;
+    const next = saved.filter((item) => item.id !== template.id);
+    persist(next);
+    if (selectedId === template.id) setSelectedId("");
   }
 
   function changeTab(nextTab: "official" | "mine") {
     setTab(nextTab);
-    const templates = nextTab === "official" ? officialTemplates : saved;
-    setSelectedId(templates[0]?.id || "");
+    setSelectedId("");
+    setEditor(null);
+    setError("");
+  }
+
+  function insertSelectedTemplate() {
+    if (!selected) {
+      setError("请选择一个模板");
+      return;
+    }
+    onInsert(selected.content);
   }
 
   return (
@@ -2479,19 +2547,52 @@ function TemplateInsertDrawer({
           </div>
           <button className="insert-drawer-close" onClick={onClose} title="关闭"><X size={21} /></button>
         </header>
-        {tab === "mine" ? <div className="template-save-row"><button onClick={saveCurrent} disabled={!currentBody.trim()}><Plus size={15} /> 将当前正文保存为模板</button><span>{saved.length} 个自定义模板</span></div> : null}
-        <div className="template-grid">
-          {visibleTemplates.length ? visibleTemplates.map((template) => (
-            <article key={template.id} className={`template-card ${selectedId === template.id ? "selected" : ""}`} onClick={() => setSelectedId(template.id)}>
-              <button className="template-card-select" onClick={() => setSelectedId(template.id)} aria-label={`选择${template.title}`}><h3>{template.title}</h3><p>{plainText(template.content).slice(0, 92)}</p><span>更新于 {template.updatedAt}</span></button>
-              {tab === "mine" ? <button className="template-delete" onClick={(event) => { event.stopPropagation(); const next = saved.filter((item) => item.id !== template.id); persist(next); if (selectedId === template.id) setSelectedId(next[0]?.id || ""); }} title="删除模板"><Trash2 size={15} /></button> : null}
-            </article>
-          )) : <div className="template-empty"><FileStack size={28} /><strong>还没有自定义模板</strong><span>可以把当前正文保存为模板，以后重复使用</span></div>}
-        </div>
+        {editor ? (
+          <div className="template-editor-panel">
+            <label>
+              <span>模板名称 <small>{editor.title.length} / 30</small></span>
+              <input aria-label="模板名称" autoFocus maxLength={30} placeholder="请输入模板名称" value={editor.title} onChange={(event) => setEditor({ ...editor, title: event.target.value })} />
+            </label>
+            <label>
+              <span>模板内容</span>
+              <textarea aria-label="模板内容" placeholder="输入模板正文" value={editor.content} onChange={(event) => setEditor({ ...editor, content: event.target.value })} />
+            </label>
+          </div>
+        ) : (
+          <div className="template-grid">
+            {visibleTemplates.length ? visibleTemplates.map((template) => (
+              <article key={template.id} className={`template-card ${selectedId === template.id ? "selected" : ""}`}>
+                <button className="template-card-select" onClick={() => { setSelectedId(template.id); setError(""); }} aria-label={`选择${template.title}`}>
+                  <h2>{template.title}</h2>
+                  <div className={`template-card-preview${template.previewUrl ? " official" : " custom"}`}>
+                    {template.previewUrl ? <img alt="" src={template.previewUrl} /> : <p>{plainText(template.content).slice(0, 180)}</p>}
+                  </div>
+                  <span>更新于 {template.updatedAt}</span>
+                </button>
+                {selectedId === template.id ? <span aria-hidden className="template-card-check"><Check size={94} strokeWidth={7} /></span> : null}
+                {tab === "mine" ? (
+                  <div className="template-card-actions">
+                    <button onClick={() => openTemplateEditor(template)} title={`编辑模板 ${template.title}`}><PencilLine size={16} /></button>
+                    <button onClick={() => deleteTemplate(template)} title={`删除模板 ${template.title}`}><Trash2 size={16} /></button>
+                  </div>
+                ) : null}
+              </article>
+            )) : <div className="template-empty"><span>暂无数据</span></div>}
+          </div>
+        )}
         {error ? <span className="insert-dialog-error template-error"><AlertCircle size={15} /> {error}</span> : null}
         <footer>
-          <div className="template-contributors"><span>模板贡献者</span><div>{["谷", "王", "明", "开", "孔", "U", "李"].map((name, index) => <i key={`${name}-${index}`}><UserRound size={14} /><b>{name}</b></i>)}</div></div>
-          <div><button className="secondary-button" onClick={onClose}>取消</button><button className="drawer-primary-button" onClick={() => selected && onInsert(selected.content)} disabled={!selected}>添加到正文</button></div>
+          {tab === "official" ? (
+            <div className="template-contributors"><span><Medal size={22} />模板贡献者</span><div>{templateContributors.map((contributor) => <img alt="" key={contributor.name} src={contributor.avatar} title={contributor.name} />)}</div></div>
+          ) : editor ? <span className="template-editor-status">{editor.id ? "编辑模板" : "创建模板"}</span> : (
+            <button className="template-create-button" onClick={() => openTemplateEditor()}><Plus size={15} /> 创建新模板</button>
+          )}
+          <div>
+            <button className="secondary-button" onClick={editor ? () => { setEditor(null); setError(""); } : onClose}>取消</button>
+            {editor
+              ? <button className="drawer-primary-button" onClick={saveTemplate}>保存模板</button>
+              : <button className="drawer-primary-button" onClick={insertSelectedTemplate}>添加到正文</button>}
+          </div>
         </footer>
       </section>
     </div>
