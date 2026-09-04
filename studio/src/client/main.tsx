@@ -3090,12 +3090,18 @@ function makeCodeFence(language: string, value: string): string {
 }
 
 function extractOutline(value: string): OutlineItem[] {
-  return value
-    .split(/\r?\n/)
-    .map((line, index) => ({ match: line.match(/^(#{1,6})\s+(.+?)\s*#*$/), line: index }))
-    .filter((item): item is { match: RegExpMatchArray; line: number } => Boolean(item.match))
-    .map(({ match, line }) => ({ depth: match[1].length, text: plainText(match[2]), line }))
-    .filter((item) => item.text);
+  const items: OutlineItem[] = [];
+  let line = 0;
+
+  for (const token of marked.lexer(value)) {
+    if (token.type === "heading") {
+      const text = plainText(token.text);
+      if (text) items.push({ depth: token.depth, text, line });
+    }
+    line += token.raw.match(/\n/g)?.length ?? 0;
+  }
+
+  return items;
 }
 
 function countWords(value: string): number {

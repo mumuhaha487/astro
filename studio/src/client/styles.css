@@ -1751,7 +1751,9 @@ button:disabled {
 }
 
 .editor-workspace.wide-editor .compose-pane {
-  width: min(1100px, calc(100% - 48px));
+  width: 80%;
+  max-width: none;
+  transform: translateX(13px);
 }
 
 .editor-workspace.outline-hidden .outline-pane,
@@ -5760,6 +5762,10 @@ body > [data-radix-popper-content-wrapper],
     max-width: none;
   }
 
+  .editor-workspace.wide-editor .compose-pane {
+    transform: none;
+  }
+
   .document-scroll {
     height: 100%;
     margin-top: 0;
@@ -6915,6 +6921,10 @@ body > [data-radix-popper-content-wrapper],
 }
 
 @media (max-width: 760px) {
+  .studio-rich-content [class*="_codeMirrorWrapper_"] .cm-editor {
+    margin-top: 40px;
+  }
+
   .insert-drawer {
     width: 100%;
     min-width: 0;

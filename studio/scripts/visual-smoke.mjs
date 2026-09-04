@@ -665,7 +665,18 @@ async function verifyDesktop() {
   const wideButton = page.getByRole("button", { name: "切换宽屏编辑" });
   await wideButton.scrollIntoViewIfNeeded();
   await wideButton.click();
-  await page.locator(".editor-workspace.wide-editor").waitFor();
+  const wideWorkspace = page.locator(".editor-workspace.wide-editor");
+  await wideWorkspace.waitFor();
+  assert.deepEqual(await wideWorkspace.locator(".compose-pane").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      x: Math.round(rect.x),
+      width: Math.round(rect.width),
+      maxWidth: getComputedStyle(element).maxWidth,
+      transform: getComputedStyle(element).transform,
+    };
+  }), { x: 139, width: 1011, maxWidth: "none", transform: "matrix(1, 0, 0, 1, 13, 0)" });
+  assert.equal(await wideWorkspace.locator(".outline-pane").evaluate((element) => getComputedStyle(element).visibility), "hidden");
   await wideButton.click();
   await page.locator(".editor-workspace.wide-editor").waitFor({ state: "detached" });
 
@@ -1074,6 +1085,7 @@ async function verifyDesktop() {
   }
 
   await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 160, y: 24 } });
+  await page.locator(".csdn-editor-toolbar").evaluate((element) => { element.scrollLeft = 0; });
   const formatButton = page.getByRole("button", { name: "格式" });
   await formatButton.scrollIntoViewIfNeeded();
   await formatButton.click();
@@ -1262,14 +1274,39 @@ async function verifyMobile(width) {
   const markdownButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
   await markdownButton.scrollIntoViewIfNeeded();
   await markdownButton.click();
-  await page.locator(".source-editor").fill("## 背景\n\n这是移动端正文。\n\n## 总结\n\n验证完成。");
+  await page.locator(".source-editor").fill("## 背景\n\n这是移动端正文。\n\n~~~markdown\n# 代码块里的标题\n~~~\n\nSetext 标题\n---\n\n## 总结\n\n验证完成。");
   await page.getByRole("button", { name: "富文本" }).click();
+  const mobileCodeBlockLayout = await page.locator('.studio-rich-content [class*="_codeMirrorWrapper_"]').evaluate((wrapper) => {
+    const toolbar = wrapper.querySelector('[class*="_codeMirrorToolbar_"]');
+    const editor = wrapper.querySelector('.cm-editor');
+    const wrapperRect = wrapper.getBoundingClientRect();
+    const toolbarRect = toolbar.getBoundingClientRect();
+    const editorRect = editor.getBoundingClientRect();
+    return {
+      toolbarBottom: Math.round(toolbarRect.bottom),
+      editorTop: Math.round(editorRect.top),
+      toolbarRight: Math.round(toolbarRect.right),
+      wrapperRight: Math.round(wrapperRect.right),
+    };
+  });
+  assert(
+    mobileCodeBlockLayout.editorTop >= mobileCodeBlockLayout.toolbarBottom,
+    `mobile code text must start below its toolbar: ${JSON.stringify(mobileCodeBlockLayout)}`,
+  );
+  assert(
+    mobileCodeBlockLayout.toolbarRight <= mobileCodeBlockLayout.wrapperRight,
+    `mobile code toolbar must stay inside the code block: ${JSON.stringify(mobileCodeBlockLayout)}`,
+  );
 
   const outlineTool = page.locator(".csdn-toolbar-action").filter({ hasText: "目录" });
   await outlineTool.scrollIntoViewIfNeeded();
   await outlineTool.click();
   await page.locator(".mobile-utility-drawer").waitFor();
-  assert.equal(await page.locator(".mobile-outline-list > button").count(), 2);
+  assert.deepEqual(
+    (await page.locator(".mobile-outline-list > button").allTextContents()).map((text) => text.trim()),
+    ["背景", "Setext 标题", "总结"],
+    "the outline must include real Markdown headings and ignore headings inside code fences",
+  );
   const drawerPath = join(outputDirectory, `mobile-${width}-drawer.png`);
   await page.screenshot({ path: drawerPath, animations: "disabled" });
   await page.locator(".mobile-outline-list > button").first().click();
