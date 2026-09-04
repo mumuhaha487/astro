@@ -1,5 +1,4 @@
 import type {
-  AcademicWork,
   DraftDocument,
   DraftSummary,
   PostDocument,
@@ -62,8 +61,6 @@ export const api = {
     request<{ revisions: PostRevision[] }>(`/api/history?path=${encodeURIComponent(path)}`),
   postRevision: (path: string, sha: string) =>
     request<PostRevisionDocument>(`/api/history/content?path=${encodeURIComponent(path)}&sha=${encodeURIComponent(sha)}`),
-  academicSearch: (query: string) =>
-    request<{ works: AcademicWork[] }>(`/api/academic-search?q=${encodeURIComponent(query)}`),
   savePost: (document: PostDocument, message: string) =>
     request<PostDocument>("/api/post", {
       method: "PUT",

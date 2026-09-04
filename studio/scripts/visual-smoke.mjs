@@ -150,17 +150,6 @@ async function mockStudioApi(page, { includeDraft = false, mutations = [] } = {}
     if (url.pathname === "/api/history/content") {
       return json({ path: examplePost.path, commitSha: url.searchParams.get("sha"), content: historyContent });
     }
-    if (url.pathname === "/api/academic-search") {
-      return json({ works: [{
-        id: "https://openalex.org/W123",
-        title: "Astro Studio Editing Research",
-        year: 2026,
-        authors: ["Ada Lovelace", "Alan Turing"],
-        venue: "Open Web Journal",
-        url: "https://doi.org/10.1000/astro-studio",
-        doi: "10.1000/astro-studio",
-      }] });
-    }
     if (url.pathname === "/api/drafts" && request.method() === "GET") return json({ drafts: draftRecords });
     if (url.pathname === "/api/draft" && request.method() === "GET") {
       const draft = draftRecords.find((item) => item.key === url.searchParams.get("key"));
@@ -273,6 +262,8 @@ async function verifyDesktop() {
     { x: 288, y: 165, width: 688, height: 54 },
   );
   assert.equal(metrics.publish.height, 68);
+  await page.getByTitle("同步消息").click();
+  await page.locator(".toast", { hasText: "等待同步" }).waitFor();
   assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "the unconfigured AI assistant must not be rendered");
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });

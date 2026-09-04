@@ -524,6 +524,7 @@ function App() {
       false,
     );
     setRevision(1);
+    setSyncLabel("等待同步");
   }
 
   async function publishPost(draftOverride?: boolean) {
@@ -872,7 +873,13 @@ function App() {
             <span>{session.github.connected ? "GitHub 同步" : "连接 GitHub"}</span>
             <ChevronDown size={13} />
           </button>
-          <button className="icon-button topbar-notification" title="同步消息"><Bell size={18} /></button>
+          <button
+            className="icon-button topbar-notification"
+            onClick={() => showToast(syncLabel, syncState === "error" ? "error" : "info")}
+            title="同步消息"
+          >
+            <Bell size={18} />
+          </button>
           <span className="topbar-separator" />
           <button className="icon-button" onClick={() => setSettingsOpen(true)} title="设置">
             <Settings size={18} />
