@@ -1,4 +1,6 @@
 import DOMPurify from "dompurify";
+import katex from "katex";
+import "katex/dist/katex.min.css";
 import {
   AlertCircle,
   Bell,
@@ -10,12 +12,15 @@ import {
   Code2,
   ExternalLink,
   Eye,
+  FileArchive,
   FilePlus2,
+  FileStack,
   FolderGit2,
   GitBranch,
   GraduationCap,
   ImagePlus,
   KeyRound,
+  Link2,
   ListTree,
   LoaderCircle,
   MessageSquareText,
@@ -25,13 +30,19 @@ import {
   Play,
   Plus,
   RefreshCw,
+  Redo2,
   Save,
   Search,
   Send,
   Settings,
+  Sigma,
   Sparkles,
+  Table2,
   Trash2,
+  Undo2,
+  Upload,
   UserRound,
+  Video,
   WandSparkles,
   X,
 } from "lucide-react";
@@ -76,11 +87,43 @@ type SyncState = "idle" | "saving" | "saved" | "error";
 type MobilePanel = "outline" | "assistant" | null;
 type AssistantMode = "agent" | "chat";
 type RunnableCodeTab = "html" | "css" | "javascript";
+type InsertPanel = "image" | "video" | "formula" | "link" | "template" | "resource" | "table" | null;
 
 interface AssistantMessage {
   id: string;
   role: "user" | "assistant";
   text: string;
+}
+
+interface SavedTemplate {
+  id: string;
+  title: string;
+  content: string;
+  updatedAt: string;
+}
+
+interface ResourceRecord {
+  path: string;
+  url: string;
+  name: string;
+  size: number;
+  description?: string;
+  category?: string;
+  tags?: string[];
+}
+
+interface TableOptions {
+  rows: number;
+  columns: number;
+  header: "none" | "row" | "column" | "both";
+  width?: number;
+  height?: number;
+  spacing: number;
+  padding: number;
+  border: number;
+  align: "" | "left" | "center" | "right";
+  title: string;
+  summary: string;
 }
 
 interface OutlineItem {
@@ -121,6 +164,8 @@ function App() {
   const [historyOpen, setHistoryOpen] = useState(false);
   const [academicSearchOpen, setAcademicSearchOpen] = useState(false);
   const [runnableCodeOpen, setRunnableCodeOpen] = useState(false);
+  const [insertPanel, setInsertPanel] = useState<InsertPanel>(null);
+  const [linkSelection, setLinkSelection] = useState("");
   const [outlineVisible, setOutlineVisible] = useState(true);
   const [wideEditor, setWideEditor] = useState(false);
   const [mobilePanel, setMobilePanel] = useState<MobilePanel>(null);
@@ -329,6 +374,33 @@ function App() {
     setAdvancedOpen(false);
     setMobilePanel(null);
     setRunnableCodeOpen(true);
+  }
+
+  function openInsertPanel(panel: Exclude<InsertPanel, null>) {
+    setSidebarOpen(false);
+    setAdvancedOpen(false);
+    setMobilePanel(null);
+    if (panel === "link") {
+      setLinkSelection(editorRef.current?.getSelectionMarkdown() || "");
+    }
+    setInsertPanel(panel);
+  }
+
+  function insertMarkdownAtCursor(markdown: string, message: string) {
+    if (mode === "rich" && editorRef.current) {
+      editorRef.current.insertMarkdown(markdown);
+    } else {
+      replaceEditorBody(`${body}${body ? "\n\n" : ""}${markdown}`);
+    }
+    setInsertPanel(null);
+    showToast(message, "success");
+  }
+
+  function insertMarkdownAtTop(markdown: string, message: string) {
+    const latestBody = mode === "rich" ? editorRef.current?.getMarkdown() ?? body : body;
+    replaceEditorBody(`${markdown.trim()}${latestBody.trim() ? `\n\n${latestBody.trimStart()}` : ""}`);
+    setInsertPanel(null);
+    showToast(message, "success");
   }
 
   function toggleOutlinePanel() {
@@ -718,6 +790,48 @@ function App() {
     }
   }, []);
 
+  const uploadVideo = useCallback(async (file: File) => {
+    setSyncState("saving");
+    setSyncLabel("正在上传视频");
+    try {
+      const result = await api.uploadMedia(file);
+      setSyncState("saved");
+      setSyncLabel("视频已写入静态目录");
+      return result.url;
+    } catch (error) {
+      setSyncState("error");
+      setSyncLabel(errorMessage(error));
+      showToast(errorMessage(error), "error");
+      if (error instanceof ApiError && error.code === "GITHUB_NOT_CONNECTED") {
+        setSettingsOpen(true);
+      }
+      throw error;
+    }
+  }, []);
+
+  const uploadResource = useCallback(async (
+    file: File,
+    metadata: Pick<ResourceRecord, "name" | "description" | "category" | "tags">,
+  ) => {
+    setSyncState("saving");
+    setSyncLabel("正在上传资源");
+    try {
+      const result = await api.uploadResource(file, metadata);
+      setSyncState("saved");
+      setSyncLabel("资源已写入静态目录");
+      showToast("资源已上传到 public/resource/editor", "success");
+      return result;
+    } catch (error) {
+      setSyncState("error");
+      setSyncLabel(errorMessage(error));
+      showToast(errorMessage(error), "error");
+      if (error instanceof ApiError && error.code === "GITHUB_NOT_CONNECTED") {
+        setSettingsOpen(true);
+      }
+      throw error;
+    }
+  }, []);
+
   async function handleSourcePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
     const images = Array.from(event.clipboardData.files).filter((file) =>
       file.type.startsWith("image/"),
@@ -1000,6 +1114,13 @@ function App() {
                           onUploadImage={uploadImage}
                           onHistory={openHistory}
                           onRunnableCode={openRunnableCode}
+                          onInsertImage={() => openInsertPanel("image")}
+                          onInsertVideo={() => openInsertPanel("video")}
+                          onInsertFormula={() => openInsertPanel("formula")}
+                          onInsertLink={() => openInsertPanel("link")}
+                          onInsertTemplate={() => openInsertPanel("template")}
+                          onInsertResource={() => openInsertPanel("resource")}
+                          onInsertTable={() => openInsertPanel("table")}
                           onSourceMode={() => changeMode("source")}
                           onToggleOutline={toggleOutlinePanel}
                           onToggleWide={() => setWideEditor((value) => !value)}
@@ -1174,6 +1295,64 @@ function App() {
         <RunnableCodeDialog
           onClose={() => setRunnableCodeOpen(false)}
           onInsert={insertRunnableCode}
+        />
+      ) : null}
+
+      {insertPanel === "image" ? (
+        <ImageInsertDrawer
+          onClose={() => setInsertPanel(null)}
+          onUpload={uploadImage}
+          onInsert={(url, alt) => insertMarkdownAtCursor(`![${escapeMarkdownInline(alt || "image")}](${url})`, "图片已插入正文")}
+        />
+      ) : null}
+
+      {insertPanel === "video" ? (
+        <VideoInsertDialog
+          onClose={() => setInsertPanel(null)}
+          onUpload={uploadVideo}
+          onInsert={(url, title) => insertMarkdownAtCursor(`\n<video controls preload="metadata" src="${escapeHtmlAttribute(url)}" title="${escapeHtmlAttribute(title || "视频")}"></video>\n`, "视频已插入正文")}
+        />
+      ) : null}
+
+      {insertPanel === "formula" ? (
+        <FormulaDialog
+          onClose={() => setInsertPanel(null)}
+          onInsert={(formula) => insertMarkdownAtCursor(`\n$$\n${formula}\n$$\n`, "公式已插入正文")}
+        />
+      ) : null}
+
+      {insertPanel === "link" ? (
+        <LinkInsertDialog
+          initialText={plainText(linkSelection)}
+          onClose={() => setInsertPanel(null)}
+          onInsert={(url, text) => insertMarkdownAtCursor(`[${escapeMarkdownInline(text || url)}](${url})`, "链接已插入正文")}
+        />
+      ) : null}
+
+      {insertPanel === "template" ? (
+        <TemplateInsertDrawer
+          currentTitle={fields?.title || "未命名文章"}
+          currentBody={body}
+          onClose={() => setInsertPanel(null)}
+          onInsert={(template) => insertMarkdownAtCursor(template, "模板已添加到正文")}
+        />
+      ) : null}
+
+      {insertPanel === "resource" ? (
+        <ResourceBindingDialog
+          onClose={() => setInsertPanel(null)}
+          onUpload={uploadResource}
+          onInsert={(resource) => insertMarkdownAtTop(
+            buildResourceMarkdown(resource),
+            "资源已绑定到正文顶部",
+          )}
+        />
+      ) : null}
+
+      {insertPanel === "table" ? (
+        <TablePropertiesDialog
+          onClose={() => setInsertPanel(null)}
+          onInsert={(options) => insertMarkdownAtCursor(buildTableMarkup(options), "表格已插入正文")}
         />
       ) : null}
 
@@ -1411,7 +1590,7 @@ function AdvancedFields({
             ref={coverInputRef}
             className="visually-hidden"
             type="file"
-            accept="image/png,image/jpeg,image/gif,image/webp,image/avif"
+            accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp"
             onChange={(event) => void uploadCover(event.target.files?.[0])}
           />
           <button className="cover-upload-button" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
@@ -1801,6 +1980,532 @@ function AcademicSearchDialog({
   );
 }
 
+function ImageInsertDrawer({
+  onClose,
+  onUpload,
+  onInsert,
+}: {
+  onClose: () => void;
+  onUpload: (file: File) => Promise<string>;
+  onInsert: (url: string, alt: string) => void;
+}) {
+  const [tab, setTab] = useState<"upload" | "link">("upload");
+  const [url, setUrl] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const uploadedUrl = await onUpload(file);
+      onInsert(uploadedUrl, file.name.replace(/\.[^.]+$/, "") || "image");
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  function insertLink(event: FormEvent) {
+    event.preventDefault();
+    const normalized = safeHttpUrl(url);
+    if (!normalized) {
+      setError("请输入有效的 HTTP 或 HTTPS 图片地址");
+      return;
+    }
+    let imageName = "image";
+    try {
+      imageName = decodeURIComponent(new URL(normalized).pathname.split("/").pop() || "image").replace(/\.[^.]+$/, "") || "image";
+    } catch {
+      // URL validity was already checked above.
+    }
+    onInsert(normalized, imageName);
+  }
+
+  return (
+    <div className="insert-drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="insert-drawer image-insert-drawer" role="dialog" aria-modal="true" aria-labelledby="image-drawer-title">
+        <header>
+          <div className="insert-drawer-tabs" role="tablist" aria-label="图片插入方式">
+            <button id="image-drawer-title" className={tab === "upload" ? "active" : ""} onClick={() => { setTab("upload"); setError(""); }} role="tab" aria-selected={tab === "upload"}>图片上传</button>
+            <button className={tab === "link" ? "active" : ""} onClick={() => { setTab("link"); setError(""); }} role="tab" aria-selected={tab === "link"}>链接添加</button>
+          </div>
+          <button className="insert-drawer-close" onClick={onClose} title="关闭"><X size={21} /></button>
+        </header>
+        {tab === "upload" ? (
+          <div className="image-upload-panel">
+            <input ref={inputRef} className="visually-hidden" type="file" accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp" onChange={(event) => void upload(event.target.files?.[0])} />
+            <button className="drawer-primary-button" onClick={() => inputRef.current?.click()} disabled={uploading}>
+              {uploading ? <LoaderCircle className="spin" size={17} /> : <Upload size={17} />} {uploading ? "正在上传" : "选择图片"}
+            </button>
+            <p>支持 jpg、gif、png、bmp、jpeg、webp、avif 等格式，单张图片最大支持 5MB</p>
+            {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+          </div>
+        ) : (
+          <form className="image-link-panel" onSubmit={insertLink}>
+            <span className="image-link-label">图片URL <b>*</b></span>
+            <input aria-label="图片URL" value={url} onChange={(event) => setUrl(event.target.value)} placeholder="图片URL" autoFocus />
+            <button className="drawer-primary-button" disabled={!url.trim()}>确定</button>
+            {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+          </form>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function VideoInsertDialog({
+  onClose,
+  onUpload,
+  onInsert,
+}: {
+  onClose: () => void;
+  onUpload: (file: File) => Promise<string>;
+  onInsert: (url: string, title: string) => void;
+}) {
+  const [url, setUrl] = useState("");
+  const [title, setTitle] = useState("");
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  async function upload(file: File | undefined) {
+    if (!file) return;
+    setUploading(true);
+    setError("");
+    try {
+      const uploadedUrl = await onUpload(file);
+      onInsert(uploadedUrl, file.name.replace(/\.[^.]+$/, "") || "视频");
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  function insert(event: FormEvent) {
+    event.preventDefault();
+    const normalized = safeHttpUrl(url);
+    if (!normalized) {
+      setError("请输入有效的 HTTP 或 HTTPS 视频地址");
+      return;
+    }
+    onInsert(normalized, title.trim() || "视频");
+  }
+
+  return (
+    <div className="modal-backdrop media-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="media-dialog video-insert-dialog" role="dialog" aria-modal="true" aria-labelledby="video-dialog-title">
+        <header><div><Video size={20} /><h2 id="video-dialog-title">插入视频</h2></div><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        <form className="video-insert-body" onSubmit={insert}>
+          <label><span>视频地址</span><input value={url} onChange={(event) => setUrl(event.target.value)} placeholder="https://example.com/video.mp4" autoFocus /></label>
+          <label><span>视频标题</span><input value={title} onChange={(event) => setTitle(event.target.value)} placeholder="可选" /></label>
+          <input ref={inputRef} className="visually-hidden" type="file" accept="video/mp4,video/webm,video/ogg" onChange={(event) => void upload(event.target.files?.[0])} />
+          <button type="button" className="video-upload-link" onClick={() => inputRef.current?.click()} disabled={uploading}>
+            {uploading ? <LoaderCircle className="spin" size={15} /> : <Upload size={15} />} {uploading ? "正在上传到静态目录" : "从本地上传视频"}
+          </button>
+          {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={!url.trim()}>确定</button></footer>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+const formulaSymbols = [
+  ["基础", ["x^2", "x_{i}", "\\frac{a}{b}", "\\sqrt{x}", "\\sum_{i=1}^{n}", "\\prod_{i=1}^{n}", "\\int_a^b"]],
+  ["括号", ["(x)", "[x]", "\\{x\\}", "|x|", "\\langle x \\rangle", "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}"]],
+  ["希腊", ["\\alpha", "\\beta", "\\gamma", "\\delta", "\\theta", "\\lambda", "\\mu", "\\pi", "\\sigma", "\\omega"]],
+  ["关系", ["=", "\\ne", "\\approx", "<", ">", "\\le", "\\ge", "\\in", "\\subset", "\\rightarrow"]],
+] as const;
+
+function FormulaDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (formula: string) => void }) {
+  const [history, setHistory] = useState(["E = mc^2"]);
+  const [historyIndex, setHistoryIndex] = useState(0);
+  const textareaRef = useRef<HTMLTextAreaElement>(null);
+  const formula = history[historyIndex] || "";
+  const preview = useMemo(() => katex.renderToString(formula || "\\;", { displayMode: true, throwOnError: false, strict: "ignore", trust: false }), [formula]);
+
+  function updateFormula(value: string) {
+    const nextHistory = [...history.slice(0, historyIndex + 1), value].slice(-100);
+    setHistory(nextHistory);
+    setHistoryIndex(nextHistory.length - 1);
+  }
+
+  function moveHistory(direction: -1 | 1) {
+    setHistoryIndex((current) => Math.max(0, Math.min(history.length - 1, current + direction)));
+  }
+
+  function insertSymbol(symbol: string) {
+    const input = textareaRef.current;
+    const start = input?.selectionStart ?? formula.length;
+    const end = input?.selectionEnd ?? start;
+    const next = `${formula.slice(0, start)}${symbol}${formula.slice(end)}`;
+    updateFormula(next);
+    requestAnimationFrame(() => {
+      textareaRef.current?.focus();
+      textareaRef.current?.setSelectionRange(start + symbol.length, start + symbol.length);
+    });
+  }
+
+  return (
+    <div className="modal-backdrop formula-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="formula-dialog" role="dialog" aria-modal="true" aria-labelledby="formula-dialog-title">
+        <header><h2 id="formula-dialog-title">公式编辑器</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        <div className="formula-tools">
+          <div className="formula-history-actions">
+            <button onClick={() => moveHistory(-1)} disabled={historyIndex === 0} title="撤销"><Undo2 size={18} /></button>
+            <button onClick={() => moveHistory(1)} disabled={historyIndex === history.length - 1} title="重做"><Redo2 size={18} /></button>
+            <button onClick={() => updateFormula("")}>清空</button>
+            <select aria-label="常用函数" defaultValue="" onChange={(event) => { if (event.target.value) insertSymbol(event.target.value); event.target.value = ""; }}>
+              <option value="">函数</option><option value="\\sin(x)">sin</option><option value="\\cos(x)">cos</option><option value="\\tan(x)">tan</option><option value="\\log_{a}(x)">log</option><option value="\\lim_{x \\to 0}">limit</option>
+            </select>
+          </div>
+          <div className="formula-symbol-groups">
+            {formulaSymbols.map(([label, symbols]) => (
+              <div key={label}><span>{label}</span><div>{symbols.map((symbol) => <button key={symbol} onClick={() => insertSymbol(symbol)} title={`插入 ${symbol}`}>{symbol.replaceAll("\\", "")}</button>)}</div></div>
+            ))}
+          </div>
+        </div>
+        <label className="formula-input-label"><span>LaTeX公式：</span><textarea ref={textareaRef} value={formula} onChange={(event) => updateFormula(event.target.value)} autoFocus /></label>
+        <div className="formula-preview"><span>公式预览：</span><div dangerouslySetInnerHTML={{ __html: preview }} /></div>
+        <footer><button className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" onClick={() => onInsert(formula.trim())} disabled={!formula.trim()}>确定</button></footer>
+      </section>
+    </div>
+  );
+}
+
+function LinkInsertDialog({
+  initialText,
+  onClose,
+  onInsert,
+}: {
+  initialText: string;
+  onClose: () => void;
+  onInsert: (url: string, text: string) => void;
+}) {
+  const [url, setUrl] = useState("");
+  const [text, setText] = useState(initialText);
+  const [error, setError] = useState("");
+
+  function insert(event: FormEvent) {
+    event.preventDefault();
+    const normalized = safeHttpUrl(url);
+    if (!normalized) {
+      setError("请输入有效的 HTTP 或 HTTPS 链接");
+      return;
+    }
+    onInsert(normalized, text.trim());
+  }
+
+  return (
+    <div className="modal-backdrop link-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="link-insert-dialog" role="dialog" aria-modal="true" aria-labelledby="link-dialog-title">
+        <header><h2 id="link-dialog-title">插入链接</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        <form onSubmit={insert}>
+          <label><span>插入URL：</span><input value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></label>
+          <label><span>替换文本：</span><input value={text} onChange={(event) => setText(event.target.value)} /></label>
+          {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={!url.trim()}>确定</button></footer>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+const officialTemplates: SavedTemplate[] = [
+  { id: "learning", title: "学习计划模板示例", updatedAt: "2022-04-18", content: "## 学习目标\n\n在这里写下清晰、可验证的学习目标。\n\n## 学习内容\n\n列出需要掌握的知识与练习。\n\n## 学习时间\n\n安排阶段目标与复盘时间。" },
+  { id: "series", title: "系列文章模板", updatedAt: "2022-03-07", content: "## 系列文章目录\n\n- 本文：当前主题\n- 下一篇：后续主题\n\n## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
+  { id: "bug", title: "记录bug模板", updatedAt: "2022-03-07", content: "## 项目场景\n\n## 问题描述\n\n## 原因分析\n\n## 解决方案\n\n```text\n关键日志或代码\n```\n\n## 验证结果" },
+  { id: "beginner", title: "新手模版", updatedAt: "2020-08-13", content: "## 文章目录\n\n## 前言\n\n## 正文\n\n## 总结" },
+  { id: "anniversary", title: "创作纪念日模板", updatedAt: "2022-04-18", content: "## 创作历程\n\n## 印象深刻的文章\n\n## 收获与成长\n\n## 下一阶段计划" },
+  { id: "analysis", title: "技术分析模板", updatedAt: "2023-05-16", content: "## 背景\n\n## 技术原理\n\n## 方案对比\n\n## 实现过程\n\n## 性能与限制\n\n## 总结" },
+];
+
+function readSavedTemplates(): SavedTemplate[] {
+  try {
+    const value = window.localStorage.getItem("astro-studio:templates");
+    const parsed = value ? JSON.parse(value) : [];
+    return Array.isArray(parsed) ? parsed.filter((item): item is SavedTemplate => typeof item?.id === "string" && typeof item?.title === "string" && typeof item?.content === "string") : [];
+  } catch {
+    return [];
+  }
+}
+
+function TemplateInsertDrawer({
+  currentTitle,
+  currentBody,
+  onClose,
+  onInsert,
+}: {
+  currentTitle: string;
+  currentBody: string;
+  onClose: () => void;
+  onInsert: (content: string) => void;
+}) {
+  const [tab, setTab] = useState<"official" | "mine">("official");
+  const [saved, setSaved] = useState(readSavedTemplates);
+  const [selectedId, setSelectedId] = useState(officialTemplates[0].id);
+  const [error, setError] = useState("");
+  const visibleTemplates = tab === "official" ? officialTemplates : saved;
+  const selected = visibleTemplates.find((template) => template.id === selectedId);
+
+  function persist(next: SavedTemplate[]) {
+    try {
+      window.localStorage.setItem("astro-studio:templates", JSON.stringify(next));
+      setSaved(next);
+      setError("");
+    } catch {
+      setError("浏览器存储空间不足，无法保存当前模板");
+    }
+  }
+
+  function saveCurrent() {
+    if (!currentBody.trim()) return;
+    const template: SavedTemplate = { id: crypto.randomUUID(), title: currentTitle.trim() || "未命名模板", content: currentBody, updatedAt: new Date().toISOString().slice(0, 10) };
+    persist([template, ...saved]);
+    setSelectedId(template.id);
+  }
+
+  function changeTab(nextTab: "official" | "mine") {
+    setTab(nextTab);
+    const templates = nextTab === "official" ? officialTemplates : saved;
+    setSelectedId(templates[0]?.id || "");
+  }
+
+  return (
+    <div className="insert-drawer-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="insert-drawer template-insert-drawer" role="dialog" aria-modal="true" aria-labelledby="template-drawer-title">
+        <header>
+          <div className="insert-drawer-tabs" role="tablist" aria-label="模板来源">
+            <button id="template-drawer-title" className={tab === "official" ? "active" : ""} onClick={() => changeTab("official")} role="tab" aria-selected={tab === "official"}>插入模板</button>
+            <button className={tab === "mine" ? "active" : ""} onClick={() => changeTab("mine")} role="tab" aria-selected={tab === "mine"}>我的模板</button>
+          </div>
+          <button className="insert-drawer-close" onClick={onClose} title="关闭"><X size={21} /></button>
+        </header>
+        {tab === "mine" ? <div className="template-save-row"><button onClick={saveCurrent} disabled={!currentBody.trim()}><Plus size={15} /> 将当前正文保存为模板</button><span>{saved.length} 个自定义模板</span></div> : null}
+        <div className="template-grid">
+          {visibleTemplates.length ? visibleTemplates.map((template) => (
+            <article key={template.id} className={`template-card ${selectedId === template.id ? "selected" : ""}`} onClick={() => setSelectedId(template.id)}>
+              <button className="template-card-select" onClick={() => setSelectedId(template.id)} aria-label={`选择${template.title}`}><h3>{template.title}</h3><p>{plainText(template.content).slice(0, 92)}</p><span>更新于 {template.updatedAt}</span></button>
+              {tab === "mine" ? <button className="template-delete" onClick={(event) => { event.stopPropagation(); const next = saved.filter((item) => item.id !== template.id); persist(next); if (selectedId === template.id) setSelectedId(next[0]?.id || ""); }} title="删除模板"><Trash2 size={15} /></button> : null}
+            </article>
+          )) : <div className="template-empty"><FileStack size={28} /><strong>还没有自定义模板</strong><span>可以把当前正文保存为模板，以后重复使用</span></div>}
+        </div>
+        {error ? <span className="insert-dialog-error template-error"><AlertCircle size={15} /> {error}</span> : null}
+        <footer>
+          <div className="template-contributors"><span>模板贡献者</span><div>{["谷", "王", "明", "开", "孔", "U", "李"].map((name, index) => <i key={`${name}-${index}`}><UserRound size={14} /><b>{name}</b></i>)}</div></div>
+          <div><button className="secondary-button" onClick={onClose}>取消</button><button className="drawer-primary-button" onClick={() => selected && onInsert(selected.content)} disabled={!selected}>添加到正文</button></div>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
+function ResourceBindingDialog({
+  onClose,
+  onUpload,
+  onInsert,
+}: {
+  onClose: () => void;
+  onUpload: (
+    file: File,
+    metadata: Pick<ResourceRecord, "name" | "description" | "category" | "tags">,
+  ) => Promise<ResourceRecord>;
+  onInsert: (resource: ResourceRecord) => void;
+}) {
+  const [tab, setTab] = useState<"upload" | "existing">("upload");
+  const [file, setFile] = useState<File | null>(null);
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [category, setCategory] = useState("");
+  const [tagsText, setTagsText] = useState("");
+  const [resources, setResources] = useState<ResourceRecord[]>([]);
+  const [loading, setLoading] = useState(true);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  useEffect(() => {
+    let active = true;
+    void api.resources()
+      .then((result) => { if (active) setResources(result.resources); })
+      .catch((reason) => { if (active) setError(errorMessage(reason)); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, []);
+
+  function selectFile(nextFile: File | undefined) {
+    if (!nextFile) return;
+    setFile(nextFile);
+    if (!name.trim()) setName(nextFile.name.replace(/\.[^.]+$/, "").slice(0, 64));
+    setError("");
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    const tags = tagsText.split(/[,，]/).map((tag) => tag.trim()).filter(Boolean);
+    if (!file) {
+      setError("请先选择要上传的代码包资源");
+      return;
+    }
+    if (!name.trim() || !description.trim() || !category) {
+      setError("请填写资源名称、描述和资源分类");
+      return;
+    }
+    if (tags.length > 5) {
+      setError("资源标签最多添加 5 个");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      const result = await onUpload(file, {
+        name: name.trim(),
+        description: description.trim(),
+        category,
+        tags,
+      });
+      onInsert(result);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setUploading(false);
+      if (inputRef.current) inputRef.current.value = "";
+    }
+  }
+
+  return (
+    <div className="modal-backdrop resource-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="resource-binding-dialog" role="dialog" aria-modal="true" aria-labelledby="resource-dialog-title">
+        <header>
+          <div><FileArchive size={20} /><h2 id="resource-dialog-title">上传代码包资源</h2></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <div className="resource-dialog-notice"><AlertCircle size={16} /><span>资源会上传到博客静态目录，发布后可在文章中置顶展示下载入口。</span></div>
+        <div className="resource-dialog-tabs" role="tablist" aria-label="资源来源">
+          <button className={tab === "upload" ? "active" : ""} onClick={() => { setTab("upload"); setError(""); }} role="tab" aria-selected={tab === "upload"}>上传资源</button>
+          <button className={tab === "existing" ? "active" : ""} onClick={() => { setTab("existing"); setError(""); }} role="tab" aria-selected={tab === "existing"}>已有资源</button>
+        </div>
+        {tab === "upload" ? (
+          <form className="resource-upload-form" onSubmit={(event) => void submit(event)}>
+            <input ref={inputRef} className="visually-hidden" type="file" accept=".zip,.rar,.7z,.tar,.gz,.tgz,.bz2,.xz,.pdf,.doc,.docx,.xls,.xlsx,.ppt,.pptx" onChange={(event) => selectFile(event.target.files?.[0])} />
+            <button
+              type="button"
+              className={`resource-drop-zone ${file ? "selected" : ""}`}
+              onClick={() => inputRef.current?.click()}
+              onDragOver={(event) => event.preventDefault()}
+              onDrop={(event) => { event.preventDefault(); selectFile(event.dataTransfer.files?.[0]); }}
+            >
+              {file ? <><Check size={24} /><strong>{file.name}</strong><span>{formatFileSize(file.size)} · 点击重新选择</span></> : <><Upload size={24} /><strong>点击或拖拽文件到此处上传</strong><span>支持代码压缩包和常用文档，单个文件不超过 25MB</span></>}
+            </button>
+            <label><span>资源名称 <b>*</b></span><input value={name} onChange={(event) => setName(event.target.value)} maxLength={64} placeholder="请输入资源名称" /><small>{name.length}/64</small></label>
+            <label><span>资源描述 <b>*</b></span><textarea value={description} onChange={(event) => setDescription(event.target.value)} maxLength={500} rows={3} placeholder="请描述资源内容和使用方式" /><small>{description.length}/500</small></label>
+            <label><span>资源分类 <b>*</b></span><select value={category} onChange={(event) => setCategory(event.target.value)}><option value="">请选择资源分类</option><option value="code">代码资源</option><option value="document">文档资料</option><option value="tool">开发工具</option><option value="data">数据集</option><option value="other">其他</option></select></label>
+            <label><span>资源标签</span><input value={tagsText} onChange={(event) => setTagsText(event.target.value)} placeholder="使用逗号分隔，最多 5 个" /></label>
+            {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+            <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={uploading || !file}>{uploading ? <LoaderCircle className="spin" size={15} /> : null} 提交</button></footer>
+          </form>
+        ) : (
+          <div className="resource-existing-panel">
+            {loading ? <div className="resource-empty"><LoaderCircle className="spin" size={22} /> 正在读取仓库资源</div> : null}
+            {!loading && resources.length === 0 ? <div className="resource-empty"><FileArchive size={28} /><strong>仓库中还没有资源</strong><span>上传后的文件会保存在 public/resource/editor</span></div> : null}
+            {!loading && resources.map((resource) => (
+              <article key={resource.path}><FileArchive size={22} /><div><strong>{resource.name}</strong><span>{formatFileSize(resource.size)}</span></div><button onClick={() => onInsert(resource)}>绑定</button></article>
+            ))}
+            {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+            <footer><button className="secondary-button" onClick={onClose}>取消</button></footer>
+          </div>
+        )}
+      </section>
+    </div>
+  );
+}
+
+function TablePropertiesDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (options: TableOptions) => void }) {
+  const [options, setOptions] = useState<TableOptions>({
+    rows: 3,
+    columns: 2,
+    header: "none",
+    width: 500,
+    height: undefined,
+    spacing: 1,
+    padding: 1,
+    border: 1,
+    align: "",
+    title: "",
+    summary: "",
+  });
+
+  function numberValue(key: keyof Pick<TableOptions, "rows" | "columns" | "width" | "height" | "spacing" | "padding" | "border">, value: string) {
+    setOptions((current) => ({ ...current, [key]: value === "" ? undefined : Math.max(0, Number.parseInt(value, 10) || 0) }));
+  }
+
+  const valid = options.rows >= 1 && options.rows <= 50 && options.columns >= 1 && options.columns <= 20;
+
+  return (
+    <div className="modal-backdrop table-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="table-properties-dialog" role="dialog" aria-modal="true" aria-labelledby="table-dialog-title">
+        <header><h2 id="table-dialog-title">表格属性</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
+        <form onSubmit={(event) => { event.preventDefault(); if (valid) onInsert(options); }}>
+          <div className="table-properties-grid">
+            <label className="table-field-rows"><span>行数</span><input aria-label="行数" type="number" min="1" max="50" value={options.rows} onChange={(event) => numberValue("rows", event.target.value)} autoFocus /></label>
+            <label className="table-field-width"><span>宽度</span><input aria-label="宽度" type="number" min="0" value={options.width ?? ""} onChange={(event) => numberValue("width", event.target.value)} /></label>
+            <label className="table-field-columns"><span>列数</span><input aria-label="列数" type="number" min="1" max="20" value={options.columns} onChange={(event) => numberValue("columns", event.target.value)} /></label>
+            <label className="table-field-height"><span>高度</span><input aria-label="高度" type="number" min="0" value={options.height ?? ""} onChange={(event) => numberValue("height", event.target.value)} /></label>
+            <label><span>标题单元格</span><select aria-label="标题单元格" value={options.header} onChange={(event) => setOptions((current) => ({ ...current, header: event.target.value as TableOptions["header"] }))}><option value="none">无</option><option value="row">第一行</option><option value="column">第一列</option><option value="both">第一列和第一行</option></select></label>
+            <label><span>间距</span><input aria-label="间距" type="number" min="0" value={options.spacing} onChange={(event) => numberValue("spacing", event.target.value)} /></label>
+            <label><span>边框</span><input aria-label="边框" type="number" min="0" value={options.border} onChange={(event) => numberValue("border", event.target.value)} /></label>
+            <label><span>边距</span><input aria-label="边距" type="number" min="0" value={options.padding} onChange={(event) => numberValue("padding", event.target.value)} /></label>
+            <label><span>对齐方式</span><select aria-label="对齐方式" value={options.align} onChange={(event) => setOptions((current) => ({ ...current, align: event.target.value as TableOptions["align"] }))}><option value="">&lt;没有设置&gt;</option><option value="left">左对齐</option><option value="center">居中</option><option value="right">右对齐</option></select></label>
+            <label className="table-wide-field"><span>标题</span><input aria-label="标题" value={options.title} onChange={(event) => setOptions((current) => ({ ...current, title: event.target.value }))} /></label>
+            <label className="table-wide-field"><span>摘要</span><input aria-label="摘要" value={options.summary} onChange={(event) => setOptions((current) => ({ ...current, summary: event.target.value }))} /></label>
+          </div>
+          {!valid ? <span className="insert-dialog-error"><AlertCircle size={15} /> 行数需为 1-50，列数需为 1-20</span> : null}
+          <footer><button className="dialog-primary-button" disabled={!valid}>确定</button><button type="button" className="secondary-button" onClick={onClose}>取消</button></footer>
+        </form>
+      </section>
+    </div>
+  );
+}
+
+function buildResourceMarkdown(resource: ResourceRecord): string {
+  const details = [resource.description, resource.category, resource.tags?.join("、")]
+    .filter(Boolean)
+    .map((value) => plainText(String(value)))
+    .join(" · ");
+  return `\n> **资源下载：** [${escapeMarkdownInline(resource.name)}](${resource.url})${details ? `\n> ${details}` : ""}\n`;
+}
+
+function buildTableMarkup(options: TableOptions): string {
+  const attributes = [
+    `border="${options.border}"`,
+    `cellspacing="${options.spacing}"`,
+    `cellpadding="${options.padding}"`,
+    options.width ? `width="${options.width}"` : "",
+    options.height ? `height="${options.height}"` : "",
+    options.align ? `align="${options.align}"` : "",
+    options.summary ? `summary="${escapeHtmlAttribute(options.summary)}"` : "",
+  ].filter(Boolean).join(" ");
+  const rows = Array.from({ length: options.rows }, (_, rowIndex) => {
+    const cells = Array.from({ length: options.columns }, (_, columnIndex) => {
+      const isColumnHeader = (options.header === "row" || options.header === "both") && rowIndex === 0;
+      const isRowHeader = (options.header === "column" || options.header === "both") && columnIndex === 0;
+      if (isColumnHeader) return `<th scope="col">标题 ${columnIndex + 1}</th>`;
+      if (isRowHeader) return `<th scope="row">行 ${rowIndex + 1}</th>`;
+      return "<td>内容</td>";
+    }).join("");
+    return `  <tr>${cells}</tr>`;
+  }).join("\n");
+  const caption = options.title ? `\n  <caption>${escapeHtmlText(options.title)}</caption>` : "";
+  return `\n<table ${attributes}>${caption}\n${rows}\n</table>\n`;
+}
+
 const runnableCodeDefaults: Record<RunnableCodeTab, string> = {
   html: '<main class="demo-card">\n  <h1>Hello, Astro!</h1>\n  <button id="action">运行交互</button>\n  <p id="result">等待操作</p>\n</main>',
   css: 'body {\n  margin: 0;\n  padding: 32px;\n  font-family: system-ui, sans-serif;\n  background: #f5f6f8;\n}\n\n.demo-card {\n  max-width: 420px;\n  padding: 24px;\n  border-radius: 6px;\n  background: white;\n}',
@@ -2054,6 +2759,24 @@ function safeHttpUrl(value: string): string | null {
 
 function escapeMarkdownInline(value: string): string {
   return value.replace(/([\\`*{}[\]()#+.!_|<>~-])/g, "\\$1");
+}
+
+function escapeHtmlAttribute(value: string): string {
+  return value
+    .replaceAll("&", "&amp;")
+    .replaceAll('"', "&quot;")
+    .replaceAll("<", "&lt;")
+    .replaceAll(">", "&gt;");
+}
+
+function escapeHtmlText(value: string): string {
+  return value.replaceAll("&", "&amp;").replaceAll("<", "&lt;").replaceAll(">", "&gt;");
+}
+
+function formatFileSize(bytes: number): string {
+  if (bytes < 1024) return `${bytes} B`;
+  if (bytes < 1024 * 1024) return `${(bytes / 1024).toFixed(1)} KB`;
+  return `${(bytes / (1024 * 1024)).toFixed(1)} MB`;
 }
 
 function buildRunnableDocument(code: Record<RunnableCodeTab, string>): string {

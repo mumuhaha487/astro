@@ -22,6 +22,15 @@ export interface FrontmatterFields {
   sourceLink?: string;
   licenseName?: string;
   licenseUrl?: string;
+  articleType?: string;
+  creationStatement?: string;
+  backup?: boolean;
+  visibility?: string;
+  articleTemplate?: string;
+  multiPlatform?: boolean;
+  activity?: string;
+  topic?: string;
+  scheduledAt?: string;
   [key: string]: unknown;
 }
 

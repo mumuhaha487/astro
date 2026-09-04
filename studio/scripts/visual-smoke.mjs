@@ -119,6 +119,26 @@ async function mockStudioApi(page) {
       const body = request.postDataJSON();
       return json({ key: "visual-draft", path: body.path, title: body.title, updatedAt: body.updatedAt, isNew: body.isNew });
     }
+    if (url.pathname === "/api/image" && request.method() === "POST") {
+      return json({ path: "public/image/editor/2026/09/visual-test.png", url: "/image/editor/2026/09/visual-test.png" });
+    }
+    if (url.pathname === "/api/media" && request.method() === "POST") {
+      return json({ path: "public/video/editor/2026/09/visual-test.mp4", url: "/video/editor/2026/09/visual-test.mp4" });
+    }
+    if (url.pathname === "/api/resources" && request.method() === "GET") {
+      return json({ resources: [{ path: "public/resource/editor/2026/09/existing-pack.zip", url: "/resource/editor/2026/09/existing-pack.zip", name: "existing-pack.zip", size: 2048 }] });
+    }
+    if (url.pathname === "/api/resources" && request.method() === "POST") {
+      return json({
+        path: "public/resource/editor/2026/09/visual-test.zip",
+        url: "/resource/editor/2026/09/visual-test.zip",
+        name: "Astro 示例资源",
+        size: 4096,
+        description: "可运行的 Astro 示例代码",
+        category: "code",
+        tags: ["Astro", "示例"],
+      });
+    }
     return json({ error: `Unhandled visual test API: ${request.method()} ${url.pathname}` }, 404);
   });
 }
@@ -179,6 +199,7 @@ async function verifyDesktop() {
   assert.equal(metrics.body.scrollWidth, metrics.body.clientWidth, "desktop body must not overflow horizontally");
   assert.equal(metrics.topbar.height, 48);
   assert.equal(metrics.toolbar.height, 61);
+  assert.equal(metrics.toolbar.scrollWidth, 1324);
   assert.deepEqual(
     { x: metrics.outline.x, y: metrics.outline.y, width: metrics.outline.width, bottom: metrics.outline.y + metrics.outline.height },
     { x: 24, y: 132, width: 280, bottom: 652 },
@@ -229,6 +250,107 @@ async function verifyDesktop() {
   await page.locator(".code-runner-dialog").getByRole("button", { name: "插入文章" }).click();
   await page.locator(".code-runner-dialog").waitFor({ state: "detached" });
   await page.waitForFunction(() => document.querySelector(".pageel-editor-slot")?.textContent?.includes("Hello, Astro!"));
+
+  const imageTool = page.locator(".csdn-toolbar-action").filter({ hasText: "图像" });
+  await imageTool.scrollIntoViewIfNeeded();
+  await imageTool.click();
+  await page.locator(".image-insert-drawer").waitFor();
+  const imageDrawerRect = await page.locator(".image-insert-drawer").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), width: Math.round(rect.width), right: Math.round(rect.right), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(imageDrawerRect, { left: 581, width: 683, right: 1264, height: 720 });
+  await page.getByRole("tab", { name: "链接添加" }).click();
+  await page.getByPlaceholder("图片URL").fill("https://example.com/architecture.png");
+  const imageUrlRect = await page.getByPlaceholder("图片URL").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(imageUrlRect, { top: 274, height: 36 });
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-image-drawer.png"), animations: "disabled" });
+  await page.locator(".image-link-panel .drawer-primary-button").click();
+  await page.locator(".image-insert-drawer").waitFor({ state: "detached" });
+
+  const formulaTool = page.locator(".csdn-toolbar-action").filter({ hasText: "公式" });
+  await formulaTool.scrollIntoViewIfNeeded();
+  await formulaTool.click();
+  await page.locator(".formula-dialog").waitFor();
+  await page.locator(".formula-input-label textarea").fill("\\frac{a}{b} + \\alpha");
+  await page.locator(".formula-preview .katex").waitFor();
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-formula-dialog.png"), animations: "disabled" });
+  await page.locator(".formula-dialog .dialog-primary-button").click();
+  await page.locator(".formula-dialog").waitFor({ state: "detached" });
+
+  const linkTool = page.locator(".csdn-toolbar-action").filter({ hasText: "链接" });
+  await linkTool.scrollIntoViewIfNeeded();
+  await linkTool.click();
+  await page.locator(".link-insert-dialog").waitFor();
+  await page.locator(".link-insert-dialog input").nth(0).fill("https://docs.astro.build/");
+  await page.locator(".link-insert-dialog input").nth(1).fill("Astro 文档");
+  await page.locator(".link-insert-dialog .dialog-primary-button").click();
+  await page.locator(".link-insert-dialog").waitFor({ state: "detached" });
+
+  const videoTool = page.locator(".csdn-toolbar-action").filter({ hasText: "视频" });
+  await videoTool.scrollIntoViewIfNeeded();
+  await videoTool.click();
+  await page.locator(".video-insert-dialog").waitFor();
+  await page.locator('.video-insert-dialog input[type="file"]').setInputFiles({ name: "tutorial.mp4", mimeType: "video/mp4", buffer: Buffer.from("visual-video") });
+  await page.locator(".video-insert-dialog").waitFor({ state: "detached" });
+
+  const templateTool = page.locator(".csdn-toolbar-action").filter({ hasText: "模版" });
+  await templateTool.scrollIntoViewIfNeeded();
+  await templateTool.click();
+  await page.locator(".template-insert-drawer").waitFor();
+  const templateDrawerRect = await page.locator(".template-insert-drawer").evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), width: Math.round(rect.width), right: Math.round(rect.right), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(templateDrawerRect, { left: 564, width: 700, right: 1264, height: 720 });
+  await page.getByRole("button", { name: "选择记录bug模板" }).click();
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-template-drawer.png"), animations: "disabled" });
+  await page.locator(".template-insert-drawer .drawer-primary-button").click();
+  await page.locator(".template-insert-drawer").waitFor({ state: "detached" });
+
+  const resourceTool = page.locator(".csdn-toolbar-action").filter({ hasText: "资源绑定" });
+  await resourceTool.scrollIntoViewIfNeeded();
+  await resourceTool.click();
+  await page.locator(".resource-binding-dialog").waitFor();
+  await page.getByRole("tab", { name: "已有资源" }).click();
+  await page.locator(".resource-existing-panel article").waitFor();
+  await page.locator(".resource-existing-panel article").getByRole("button", { name: "绑定" }).click();
+  await page.locator(".resource-binding-dialog").waitFor({ state: "detached" });
+
+  await resourceTool.scrollIntoViewIfNeeded();
+  await resourceTool.click();
+  await page.locator(".resource-binding-dialog").waitFor();
+  await page.locator('.resource-binding-dialog input[type="file"]').setInputFiles({ name: "astro-example.zip", mimeType: "application/zip", buffer: Buffer.from("visual-resource") });
+  await page.locator(".resource-upload-form input").nth(1).fill("Astro 示例资源");
+  await page.locator(".resource-upload-form textarea").fill("可运行的 Astro 示例代码");
+  await page.locator(".resource-upload-form select").selectOption("code");
+  await page.locator(".resource-upload-form input").nth(2).fill("Astro, 示例");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-resource-dialog.png"), animations: "disabled" });
+  await page.locator(".resource-upload-form .dialog-primary-button").click();
+  await page.locator(".resource-binding-dialog").waitFor({ state: "detached" });
+
+  const tableTool = page.locator(".csdn-toolbar-action").filter({ hasText: "表格" });
+  await tableTool.scrollIntoViewIfNeeded();
+  await tableTool.click();
+  await page.locator(".table-properties-dialog").waitFor();
+  await page.getByRole("combobox", { name: "标题单元格" }).selectOption("both");
+  await page.getByRole("textbox", { name: "标题", exact: true }).fill("功能对比表");
+  await page.getByRole("textbox", { name: "摘要", exact: true }).fill("编辑器功能验证");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-table-dialog.png"), animations: "disabled" });
+  await page.locator(".table-properties-dialog .dialog-primary-button").click();
+  await page.locator(".table-properties-dialog").waitFor({ state: "detached" });
+
+  await page.waitForTimeout(1_000);
+  const insertedDraft = await page.evaluate(() => Object.keys(localStorage)
+    .filter((key) => key.startsWith("astro-studio:") && key !== "astro-studio:templates")
+    .map((key) => localStorage.getItem(key) || "")
+    .join("\n"));
+  for (const expected of ["architecture.png", "frac{a}{b}", "docs.astro.build", "visual-test.mp4", "问题描述", "existing-pack.zip", "Astro 示例资源", "功能对比表", "编辑器功能验证"]) {
+    assert(insertedDraft.includes(expected), `inserted content is missing ${expected}: ${insertedDraft.slice(-1200)}`);
+  }
 
   await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 160, y: 24 } });
   await page.getByRole("combobox", { name: "文字颜色" }).click();
@@ -296,6 +418,59 @@ async function verifyMobile(width) {
   await page.locator(".mobile-settings-head button").click();
 
   if (width === 390) {
+    const imageTool = page.locator(".csdn-toolbar-action").filter({ hasText: "图像" });
+    await imageTool.scrollIntoViewIfNeeded();
+    await imageTool.click();
+    await page.locator(".image-insert-drawer").waitFor();
+    const imageDrawerRect = await page.locator(".image-insert-drawer").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(imageDrawerRect, { top: 0, left: 0, width, height }, "mobile image drawer must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-image-drawer.png"), animations: "disabled" });
+    await page.locator('.image-insert-drawer input[type="file"]').setInputFiles({ name: "diagram.bmp", mimeType: "image/bmp", buffer: Buffer.from("visual-image") });
+    await page.locator(".image-insert-drawer").waitFor({ state: "detached" });
+    await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("/image/editor/2026/09/visual-test.png")));
+
+    const formulaTool = page.locator(".csdn-toolbar-action").filter({ hasText: "公式" });
+    await formulaTool.scrollIntoViewIfNeeded();
+    await formulaTool.click();
+    await page.locator(".formula-dialog").waitFor();
+    const formulaRect = await page.locator(".formula-dialog").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(formulaRect, { top: 0, left: 0, width, height }, "mobile formula editor must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-formula-dialog.png"), animations: "disabled" });
+    await page.locator(".formula-dialog").getByTitle("关闭").click();
+    await page.locator(".formula-dialog").waitFor({ state: "detached" });
+
+    const resourceTool = page.locator(".csdn-toolbar-action").filter({ hasText: "资源绑定" });
+    await resourceTool.scrollIntoViewIfNeeded();
+    await resourceTool.click();
+    await page.locator(".resource-binding-dialog").waitFor();
+    const resourceRect = await page.locator(".resource-binding-dialog").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(resourceRect, { top: 0, left: 0, width, height }, "mobile resource dialog must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-resource-dialog.png"), animations: "disabled" });
+    await page.locator(".resource-binding-dialog").getByTitle("关闭").click();
+    await page.locator(".resource-binding-dialog").waitFor({ state: "detached" });
+
+    const tableTool = page.locator(".csdn-toolbar-action").filter({ hasText: "表格" });
+    await tableTool.scrollIntoViewIfNeeded();
+    await tableTool.click();
+    await page.locator(".table-properties-dialog").waitFor();
+    const tableRect = await page.locator(".table-properties-dialog").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(tableRect, { top: 0, left: 0, width, height }, "mobile table dialog must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-table-dialog.png"), animations: "disabled" });
+    await page.locator(".table-properties-dialog").getByTitle("关闭").click();
+    await page.locator(".table-properties-dialog").waitFor({ state: "detached" });
+
     await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
     await page.locator(".csdn-code-block-tool button").click();
     await page.getByRole("option", { name: "运行代码" }).click();

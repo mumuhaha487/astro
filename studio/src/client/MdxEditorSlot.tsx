@@ -7,9 +7,6 @@ import {
   BoldItalicUnderlineToggles,
   ButtonOrDropdownButton,
   ButtonWithTooltip,
-  CreateLink,
-  InsertImage,
-  InsertTable,
   InsertThematicBreak,
   MDXEditor,
   UndoRedo,
@@ -43,6 +40,8 @@ import {
   FolderSymlink,
   Highlighter,
   History,
+  ImagePlus,
+  Link2,
   List,
   ListTree,
   Maximize2,
@@ -51,6 +50,7 @@ import {
   Palette,
   PlaySquare,
   Sigma,
+  Table2,
 } from "lucide-react";
 import {
   forwardRef,
@@ -70,6 +70,13 @@ export interface MdxEditorSlotProps {
   onToggleOutline: () => void;
   onToggleWide: () => void;
   onRunnableCode: () => void;
+  onInsertImage: () => void;
+  onInsertVideo: () => void;
+  onInsertFormula: () => void;
+  onInsertLink: () => void;
+  onInsertTemplate: () => void;
+  onInsertResource: () => void;
+  onInsertTable: () => void;
   outlineVisible: boolean;
   wide: boolean;
   readOnly?: boolean;
@@ -78,6 +85,8 @@ export interface MdxEditorSlotProps {
 export interface MdxEditorSlotHandle {
   getMarkdown: () => string;
   setMarkdown: (markdown: string) => void;
+  insertMarkdown: (markdown: string) => void;
+  getSelectionMarkdown: () => string;
 }
 
 interface InsertActionProps {
@@ -273,16 +282,6 @@ function CodeMenu({ onRunnableCode }: { onRunnableCode: () => void }) {
   );
 }
 
-function normalizeExternalUrl(value: string | null): string | null {
-  if (!value) return null;
-  try {
-    const parsed = new URL(value.trim());
-    return parsed.protocol === "https:" || parsed.protocol === "http:" ? parsed.toString() : null;
-  } catch {
-    return null;
-  }
-}
-
 function useDebouncedCallback<T extends (...args: never[]) => void>(
   callback: T,
   delay: number,
@@ -310,6 +309,13 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
     onToggleOutline,
     onToggleWide,
     onRunnableCode,
+    onInsertImage,
+    onInsertVideo,
+    onInsertFormula,
+    onInsertLink,
+    onInsertTemplate,
+    onInsertResource,
+    onInsertTable,
     outlineVisible,
     wide,
     readOnly,
@@ -326,6 +332,11 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
       () => ({
         getMarkdown: () => editorRef.current?.getMarkdown() ?? "",
         setMarkdown: (markdown) => editorRef.current?.setMarkdown(markdown),
+        insertMarkdown: (markdown) => editorRef.current?.focus(
+          () => editorRef.current?.insertMarkdown(markdown),
+          { defaultSelection: "rootEnd", preventScroll: true },
+        ),
+        getSelectionMarkdown: () => editorRef.current?.getSelectionMarkdown() ?? "",
       }),
       [],
     );
@@ -376,42 +387,28 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
                 buildMarkdown={() => "\n> 引用内容\n"}
               />
               <span className="csdn-tool-group csdn-code-block-tool"><CodeMenu onRunnableCode={onRunnableCode} /></span>
-              <InsertAction
-                label="资源绑定"
-                title="插入资源链接"
-                icon={<FolderSymlink size={18} />}
-                buildMarkdown={() => {
-                  const url = normalizeExternalUrl(window.prompt("输入资源链接", "https://"));
-                  return url ? `[资源名称](${url})` : null;
-                }}
-              />
-              <span className="csdn-tool-group csdn-table-tool"><InsertTable /></span>
+              <ToolbarAction label="资源绑定" title="上传并绑定资源" icon={<FolderSymlink size={18} />} onClick={onInsertResource} />
+              <ToolbarAction label="表格" title="插入表格" icon={<Table2 size={18} />} onClick={onInsertTable} />
               <span className="csdn-toolbar-divider" />
-              <span className="csdn-tool-group csdn-image-tool"><InsertImage /></span>
-              <InsertAction
+              <ToolbarAction label="图像" title="插入图片" icon={<ImagePlus size={18} />} onClick={onInsertImage} />
+              <ToolbarAction
                 label="视频"
                 title="插入视频"
                 icon={<PlaySquare size={18} />}
-                buildMarkdown={() => {
-                  const url = normalizeExternalUrl(window.prompt("输入视频地址", "https://"));
-                  return url ? `\n<video controls src="${url}"></video>\n` : null;
-                }}
+                onClick={onInsertVideo}
               />
-              <InsertAction
+              <ToolbarAction
                 label="公式"
                 title="插入数学公式"
                 icon={<Sigma size={18} />}
-                buildMarkdown={() => {
-                  const formula = window.prompt("输入 LaTeX 公式", "E = mc^2")?.trim();
-                  return formula ? `\n$$\n${formula}\n$$\n` : null;
-                }}
+                onClick={onInsertFormula}
               />
-              <span className="csdn-tool-group csdn-link-tool"><CreateLink /></span>
-              <InsertAction
-                label="模板"
+              <ToolbarAction label="链接" title="插入链接" icon={<Link2 size={18} />} onClick={onInsertLink} />
+              <ToolbarAction
+                label="模版"
                 title="插入文章模板"
                 icon={<FileStack size={18} />}
-                buildMarkdown={() => "\n## 背景\n\n## 实现过程\n\n## 关键代码\n\n```\n\n```\n\n## 总结\n"}
+                onClick={onInsertTemplate}
               />
               <ToolbarAction label="目录" title="显示或隐藏文章目录" icon={<ListTree size={18} />} active={outlineVisible} onClick={onToggleOutline} />
               <ToolbarAction label="宽屏" title="切换宽屏编辑" icon={<Maximize2 size={18} />} active={wide} onClick={onToggleWide} />
@@ -421,7 +418,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           ),
         }),
       ],
-      [imageUploadHandler, onHistory, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
+      [imageUploadHandler, onHistory, onInsertFormula, onInsertImage, onInsertLink, onInsertResource, onInsertTable, onInsertTemplate, onInsertVideo, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
     );
 
     return (

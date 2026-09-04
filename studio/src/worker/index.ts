@@ -85,7 +85,9 @@ const SESSION_COOKIE = "astro_studio_session";
 const SESSION_MAX_AGE = 60 * 60 * 12;
 const POST_PREFIX = "content/posts/";
 const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
-const MAX_IMAGE_BYTES = 8 * 1024 * 1024;
+const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
+const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
+const MAX_RESOURCE_BYTES = 25 * 1024 * 1024;
 
 const securityHeaders: Record<string, string> = {
   "Content-Security-Policy": [
@@ -194,6 +196,15 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/image" && request.method === "POST") {
     return json(await uploadImage(env, request));
+  }
+  if (url.pathname === "/api/media" && request.method === "POST") {
+    return json(await uploadMedia(env, request));
+  }
+  if (url.pathname === "/api/resources" && request.method === "GET") {
+    return json({ resources: await listResources(env) });
+  }
+  if (url.pathname === "/api/resources" && request.method === "POST") {
+    return json(await uploadResource(env, request));
   }
   if (url.pathname === "/api/settings/github" && request.method === "PUT") {
     return json(await connectGitHub(env, await readJson(request)));
@@ -535,10 +546,11 @@ async function uploadImage(env: Env, request: Request): Promise<{ path: string; 
     "image/gif": "gif",
     "image/webp": "webp",
     "image/avif": "avif",
+    "image/bmp": "bmp",
   };
   const extension = allowedTypes[file.type];
-  if (!extension) throw new HttpError(415, "仅支持 PNG、JPEG、GIF、WebP 和 AVIF 图片");
-  if (file.size > MAX_IMAGE_BYTES) throw new HttpError(413, "单张图片不能超过 8 MB");
+  if (!extension) throw new HttpError(415, "仅支持 PNG、JPEG、GIF、BMP、WebP 和 AVIF 图片");
+  if (file.size > MAX_IMAGE_BYTES) throw new HttpError(413, "单张图片不能超过 5 MB");
 
   const now = new Date();
   const id = crypto.randomUUID().replaceAll("-", "").slice(0, 16);
@@ -559,6 +571,141 @@ async function uploadImage(env: Env, request: Request): Promise<{ path: string; 
     token,
   );
   return { path: repositoryPath, url: `/${relativePath}` };
+}
+
+async function uploadMedia(env: Env, request: Request): Promise<{ path: string; url: string }> {
+  const token = await requireGitHubToken(env);
+  const form = await request.formData();
+  const file = form.get("file");
+  if (!(file instanceof File)) throw new HttpError(400, "请选择视频文件");
+  const allowedTypes: Record<string, string> = {
+    "video/mp4": "mp4",
+    "video/webm": "webm",
+    "video/ogg": "ogv",
+  };
+  const extension = allowedTypes[file.type];
+  if (!extension) throw new HttpError(415, "仅支持 MP4、WebM 和 Ogg 视频");
+  if (file.size > MAX_MEDIA_BYTES) throw new HttpError(413, "单个视频不能超过 25 MB");
+
+  const now = new Date();
+  const id = crypto.randomUUID().replaceAll("-", "").slice(0, 16);
+  const relativePath = `video/editor/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${id}.${extension}`;
+  const repositoryPath = `public/${relativePath}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  await githubJson(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(repositoryPath)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        message: `上传文章视频：${id}.${extension}`,
+        content: bytesToBase64(bytes),
+        branch: env.GITHUB_BRANCH,
+      }),
+    },
+    token,
+  );
+  return { path: repositoryPath, url: `/${relativePath}` };
+}
+
+interface ResourceRecord {
+  path: string;
+  url: string;
+  name: string;
+  size: number;
+  description?: string;
+  category?: string;
+  tags?: string[];
+}
+
+async function listResources(env: Env): Promise<ResourceRecord[]> {
+  const token = await requireGitHubToken(env);
+  const tree = await githubJson<{
+    tree?: Array<{ path?: string; type?: string; size?: number }>;
+  }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees/${encodeURIComponent(env.GITHUB_BRANCH)}?recursive=1`,
+    { method: "GET" },
+    token,
+  );
+  return (tree.tree || [])
+    .filter((entry) => entry.type === "blob" && entry.path?.startsWith("public/resource/editor/"))
+    .map((entry) => {
+      const path = entry.path || "";
+      const storedName = path.split("/").pop() || "resource";
+      return {
+        path,
+        url: repositoryPathToPublicUrl(path),
+        name: storedName.replace(/^[a-f0-9]{16}-/, ""),
+        size: entry.size || 0,
+      };
+    })
+    .sort((a, b) => b.path.localeCompare(a.path));
+}
+
+async function uploadResource(env: Env, request: Request): Promise<ResourceRecord> {
+  const token = await requireGitHubToken(env);
+  const form = await request.formData();
+  const file = form.get("file");
+  if (!(file instanceof File)) throw new HttpError(400, "请选择代码包资源");
+
+  const name = String(form.get("name") || "").trim();
+  const description = String(form.get("description") || "").trim();
+  const category = String(form.get("category") || "").trim();
+  let tags: string[] = [];
+  try {
+    const parsed = JSON.parse(String(form.get("tags") || "[]"));
+    if (Array.isArray(parsed)) tags = parsed.map(String).map((tag) => tag.trim()).filter(Boolean);
+  } catch {
+    throw new HttpError(400, "资源标签格式无效");
+  }
+  if (!name || name.length > 64) throw new HttpError(400, "资源名称需要在 1 到 64 个字符之间");
+  if (!description || description.length > 500) throw new HttpError(400, "资源描述需要在 1 到 500 个字符之间");
+  if (!category || category.length > 32) throw new HttpError(400, "请选择有效的资源分类");
+  if (tags.length > 5 || tags.some((tag) => tag.length > 24)) throw new HttpError(400, "最多添加 5 个资源标签，每个标签不超过 24 个字符");
+  if (file.size === 0) throw new HttpError(400, "资源文件不能为空");
+  if (file.size > MAX_RESOURCE_BYTES) throw new HttpError(413, "单个资源不能超过 25 MB");
+
+  const originalName = (file.name.split(/[\\/]/).pop() || "resource").normalize("NFKC");
+  const extension = originalName.includes(".") ? originalName.split(".").pop()?.toLowerCase() || "" : "";
+  const allowedExtensions = new Set(["zip", "rar", "7z", "tar", "gz", "tgz", "bz2", "xz", "pdf", "doc", "docx", "xls", "xlsx", "ppt", "pptx"]);
+  if (!allowedExtensions.has(extension)) throw new HttpError(415, "仅支持压缩包、PDF 和常用 Office 文档");
+
+  const safeOriginalName = originalName
+    .replace(/[^\p{L}\p{N}._-]+/gu, "-")
+    .replace(/^-+|-+$/g, "")
+    .slice(-96) || `resource.${extension}`;
+  const now = new Date();
+  const id = crypto.randomUUID().replaceAll("-", "").slice(0, 16);
+  const relativePath = `resource/editor/${now.getUTCFullYear()}/${String(now.getUTCMonth() + 1).padStart(2, "0")}/${id}-${safeOriginalName}`;
+  const repositoryPath = `public/${relativePath}`;
+  const bytes = new Uint8Array(await file.arrayBuffer());
+  await githubJson(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(repositoryPath)}`,
+    {
+      method: "PUT",
+      body: JSON.stringify({
+        message: `上传文章资源：${name}`,
+        content: bytesToBase64(bytes),
+        branch: env.GITHUB_BRANCH,
+      }),
+    },
+    token,
+  );
+  return {
+    path: repositoryPath,
+    url: repositoryPathToPublicUrl(repositoryPath),
+    name,
+    size: file.size,
+    description,
+    category,
+    tags,
+  };
+}
+
+function repositoryPathToPublicUrl(path: string): string {
+  return `/${path.replace(/^public\//, "").split("/").map(encodeURIComponent).join("/")}`;
 }
 
 async function connectGitHub(

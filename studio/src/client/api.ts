@@ -100,6 +100,30 @@ export const api = {
       body: form,
     });
   },
+  uploadMedia: async (file: File) => {
+    const form = new FormData();
+    form.set("file", file);
+    return request<{ path: string; url: string }>("/api/media", {
+      method: "POST",
+      body: form,
+    });
+  },
+  resources: () => request<{ resources: Array<{ path: string; url: string; name: string; size: number }> }>("/api/resources"),
+  uploadResource: async (
+    file: File,
+    metadata: { name: string; description?: string; category?: string; tags?: string[] },
+  ) => {
+    const form = new FormData();
+    form.set("file", file);
+    form.set("name", metadata.name);
+    form.set("description", metadata.description || "");
+    form.set("category", metadata.category || "");
+    form.set("tags", JSON.stringify(metadata.tags || []));
+    return request<{ path: string; url: string; name: string; size: number; description?: string; category?: string; tags?: string[] }>("/api/resources", {
+      method: "POST",
+      body: form,
+    });
+  },
   connectGitHub: (token: string) =>
     request<SessionInfo["github"]>("/api/settings/github", {
       method: "PUT",
