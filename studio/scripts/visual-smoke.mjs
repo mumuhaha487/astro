@@ -45,6 +45,25 @@ async function assertEveryMenuItemIsTopLayer(menu, itemSelector, message) {
   assert(visibility.length > 0 && visibility.every(Boolean), `${message}: ${JSON.stringify(visibility)}`);
 }
 
+async function selectEditorText(page, text) {
+  const selected = await page.locator(".studio-rich-content[contenteditable='true']").evaluate((root, expected) => {
+    const walker = document.createTreeWalker(root, NodeFilter.SHOW_TEXT);
+    for (let node = walker.nextNode(); node; node = walker.nextNode()) {
+      const start = node.textContent?.indexOf(expected) ?? -1;
+      if (start < 0) continue;
+      const range = document.createRange();
+      range.setStart(node, start);
+      range.setEnd(node, start + expected.length);
+      const selection = window.getSelection();
+      selection?.removeAllRanges();
+      selection?.addRange(range);
+      return selection?.toString() === expected;
+    }
+    return false;
+  }, text);
+  assert.equal(selected, true, `editor text was not selectable: ${text}`);
+}
+
 const examplePost = {
   path: "content/posts/visual-history.md",
   sha: "a".repeat(40),
@@ -282,13 +301,64 @@ async function verifyDesktop() {
   const sourceModeButton = page.getByRole("button", { name: "使用 Markdown 源码编辑器" });
   await sourceModeButton.scrollIntoViewIfNeeded();
   await sourceModeButton.click();
-  await page.locator(".source-editor").fill("基础段落");
+  await page.locator(".source-editor").fill("基础段落\n\n样式文字\n\n列表项目");
   await page.getByRole("button", { name: "富文本" }).click();
-  await page.getByText("基础段落", { exact: true }).dblclick();
+  await selectEditorText(page, "基础段落");
   await page.getByRole("combobox", { name: "段落对齐" }).click();
   await assertEveryMenuItemIsTopLayer(page.locator(".mdxeditor-select-content"), '[role="option"]', "alignment menu must stay above the article title");
   await page.getByRole("option", { name: "右对齐" }).click();
   await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("text-align:right")));
+  await page.locator('.studio-rich-content div[style="text-align:right"]', { hasText: "基础段落" }).waitFor();
+
+  await selectEditorText(page, "样式文字");
+  await page.locator('button[aria-label="Bold"]').click();
+  await page.locator(".studio-rich-content strong", { hasText: "样式文字" }).waitFor();
+  await selectEditorText(page, "样式文字");
+  await page.getByRole("combobox", { name: "其他样式" }).click();
+  await page.getByRole("option", { name: "倾斜" }).click();
+  const styledText = page.locator(".studio-rich-content strong", { hasText: "样式文字" });
+  await styledText.waitFor();
+  assert.equal(await styledText.evaluate((element) => getComputedStyle(element).fontStyle), "italic");
+  await selectEditorText(page, "样式文字");
+  await page.getByRole("combobox", { name: "其他样式" }).click();
+  await page.getByRole("option", { name: "下划线" }).click();
+  assert.match(await styledText.evaluate((element) => getComputedStyle(element).textDecorationLine), /underline/);
+  await selectEditorText(page, "样式文字");
+  await page.getByRole("combobox", { name: "其他样式" }).click();
+  await page.getByRole("option", { name: "删除线" }).click();
+  assert.match(await styledText.evaluate((element) => getComputedStyle(element).textDecorationLine), /line-through/);
+
+  await selectEditorText(page, "列表项目");
+  await page.getByRole("combobox", { name: "列表" }).click();
+  await page.getByRole("option", { name: "无序列表" }).click();
+  await page.locator(".studio-rich-content ul li", { hasText: "列表项目" }).waitFor();
+
+  const horizontalRuleCount = await page.locator(".studio-rich-content hr").count();
+  await page.locator(".csdn-line-tool button").click();
+  await page.locator(".studio-rich-content hr").nth(horizontalRuleCount).waitFor();
+  await page.locator('button[aria-label^="Undo"]').click();
+  await page.waitForFunction((count) => document.querySelectorAll(".studio-rich-content hr").length === count, horizontalRuleCount);
+  await page.locator('button[aria-label^="Redo"]').click();
+  await page.locator(".studio-rich-content hr").nth(horizontalRuleCount).waitFor();
+
+  const blockquoteCount = await page.locator(".studio-rich-content blockquote").count();
+  await page.getByRole("button", { name: "插入块引用" }).click();
+  await page.locator(".studio-rich-content blockquote").nth(blockquoteCount).waitFor();
+
+  const wideButton = page.getByRole("button", { name: "切换宽屏编辑" });
+  await wideButton.scrollIntoViewIfNeeded();
+  await wideButton.click();
+  await page.locator(".editor-workspace.wide-editor").waitFor();
+  await wideButton.click();
+  await page.locator(".editor-workspace.wide-editor").waitFor({ state: "detached" });
+
+  await page.locator(".csdn-code-block-tool button").click();
+  await page.getByRole("option", { name: "代码", exact: true }).click();
+  await page.waitForFunction(() => Object.keys(localStorage).some((key) => {
+    const value = localStorage.getItem(key) || "";
+    return value.includes("```typescript") && value.includes("在这里编写代码");
+  }));
+  await page.locator(".studio-rich-content", { hasText: "在这里编写代码" }).waitFor();
 
   await page.locator(".csdn-code-block-tool").scrollIntoViewIfNeeded();
   await page.locator(".csdn-code-block-tool button").click();

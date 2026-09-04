@@ -2133,6 +2133,13 @@ button:disabled {
   min-width: 92px;
 }
 
+.csdn-alignment-menu {
+  display: inline-flex;
+  flex: 0 0 56px;
+  width: 56px;
+  height: 60px;
+}
+
 body > [data-radix-popper-content-wrapper],
 .mdxeditor-popup-container,
 [data-radix-popper-content-wrapper] {

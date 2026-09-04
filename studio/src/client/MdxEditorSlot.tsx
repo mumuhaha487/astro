@@ -16,6 +16,7 @@ import {
   convertSelectionToNode$,
   headingsPlugin,
   imagePlugin,
+  insertCodeBlock$,
   insertMarkdown$,
   linkDialogPlugin,
   linkPlugin,
@@ -268,23 +269,29 @@ function ColorMenu({ background = false }: { background?: boolean }) {
 
 function AlignmentMenu() {
   const insertMarkdown = usePublisher(insertMarkdown$);
+  const selectionRef = useRef("段落内容");
   return (
-    <ButtonOrDropdownButton
-      title="段落对齐"
-      items={[
-        { value: "left", label: <span className="csdn-align-option"><AlignLeft size={16} />左对齐</span> },
-        { value: "center", label: <span className="csdn-align-option"><AlignCenter size={16} />居中对齐</span> },
-        { value: "right", label: <span className="csdn-align-option"><AlignRight size={16} />右对齐</span> },
-        { value: "justify", label: <span className="csdn-align-option"><AlignJustify size={16} />两端对齐</span> },
-      ]}
-      onChoose={(value) => {
-        const selected = escapeInlineHtml(selectedTextOr("段落内容"));
-        insertMarkdown(`\n<div style="text-align:${value}">${selected}</div>\n`);
-      }}
+    <span
+      className="csdn-alignment-menu"
+      onMouseDownCapture={() => { selectionRef.current = selectedTextOr("段落内容"); }}
     >
-      <AlignCenter size={18} />
-      <span>对齐</span>
-    </ButtonOrDropdownButton>
+      <ButtonOrDropdownButton
+        title="段落对齐"
+        items={[
+          { value: "left", label: <span className="csdn-align-option"><AlignLeft size={16} />左对齐</span> },
+          { value: "center", label: <span className="csdn-align-option"><AlignCenter size={16} />居中对齐</span> },
+          { value: "right", label: <span className="csdn-align-option"><AlignRight size={16} />右对齐</span> },
+          { value: "justify", label: <span className="csdn-align-option"><AlignJustify size={16} />两端对齐</span> },
+        ]}
+        onChoose={(value) => {
+          const selected = escapeInlineHtml(selectionRef.current);
+          insertMarkdown(`\n<div style="text-align:${value}">${selected}</div>\n`);
+        }}
+      >
+        <AlignCenter size={18} />
+        <span>对齐</span>
+      </ButtonOrDropdownButton>
+    </span>
   );
 }
 
@@ -429,7 +436,7 @@ function ListMenu() {
 }
 
 function CodeMenu({ onRunnableCode }: { onRunnableCode: () => void }) {
-  const insertMarkdown = usePublisher(insertMarkdown$);
+  const insertCodeBlock = usePublisher(insertCodeBlock$);
   return (
     <ButtonOrDropdownButton
       title="代码"
@@ -439,7 +446,7 @@ function CodeMenu({ onRunnableCode }: { onRunnableCode: () => void }) {
       ]}
       onChoose={(value) => {
         if (value === "run") onRunnableCode();
-        else insertMarkdown("\n```typescript\n// 在这里编写代码\n```\n");
+        else insertCodeBlock({ language: "typescript", code: "// 在这里编写代码" });
       }}
     >
       <FileCode2 size={18} />
