@@ -318,8 +318,10 @@ function FormatMenu() {
   const convertSelectionToNode = usePublisher(convertSelectionToNode$);
   const anchorRef = useRef<HTMLSpanElement>(null);
   const menuRef = useRef<HTMLDivElement>(null);
+  const scrollRef = useRef<HTMLDivElement>(null);
   const [open, setOpen] = useState(false);
   const [position, setPosition] = useState({ top: 98, left: 8 });
+  const [scrollTop, setScrollTop] = useState(0);
 
   useEffect(() => {
     if (!open) return undefined;
@@ -353,9 +355,10 @@ function FormatMenu() {
     }
     const rect = anchorRef.current?.getBoundingClientRect();
     if (rect) {
-      const left = Math.min(Math.max(8, rect.left - 2), Math.max(8, window.innerWidth - 147));
+      const left = Math.min(Math.max(8, rect.left), Math.max(8, window.innerWidth - 148));
       setPosition({ top: rect.top + 50, left });
     }
+    setScrollTop(0);
     setOpen(true);
   };
 
@@ -390,18 +393,46 @@ function FormatMenu() {
           role="menu"
           style={{ left: position.left, top: position.top }}
         >
-          {blockTypes.map(([value, label, level]) => (
+          <div
+            className="csdn-format-menu-scroll"
+            data-menu-scroll
+            onScroll={(event) => setScrollTop(event.currentTarget.scrollTop)}
+            ref={scrollRef}
+          >
+            {blockTypes.map(([value, label, level]) => (
+              <button
+                className="csdn-format-menu-item"
+                key={value}
+                onClick={() => chooseBlockType(value)}
+                onMouseDown={(event) => event.preventDefault()}
+                role="menuitem"
+                type="button"
+              >
+                <span className={`csdn-format-option csdn-format-${level}`}>{label}</span>
+              </button>
+            ))}
+          </div>
+          <span className="csdn-format-scrollbar" role="presentation">
             <button
-              className="csdn-format-menu-item"
-              key={value}
-              onClick={() => chooseBlockType(value)}
+              aria-label="向上滚动格式菜单"
+              className="csdn-format-scroll-arrow up"
+              onClick={() => { if (scrollRef.current) scrollRef.current.scrollTop -= 40; }}
               onMouseDown={(event) => event.preventDefault()}
-              role="menuitem"
+              tabIndex={-1}
               type="button"
-            >
-              <span className={`csdn-format-option csdn-format-${level}`}>{label}</span>
-            </button>
-          ))}
+            />
+            <span aria-hidden className="csdn-format-scroll-track">
+              <span className="csdn-format-scroll-thumb" style={{ transform: `translateY(${Math.round(Math.min(31, scrollTop * 31 / 40))}px)` }} />
+            </span>
+            <button
+              aria-label="向下滚动格式菜单"
+              className="csdn-format-scroll-arrow down"
+              onClick={() => { if (scrollRef.current) scrollRef.current.scrollTop += 40; }}
+              onMouseDown={(event) => event.preventDefault()}
+              tabIndex={-1}
+              type="button"
+            />
+          </span>
         </div>,
         document.body,
       )}

@@ -22,7 +22,9 @@ const browser = await chromium.launch({ executablePath, headless: true });
 async function assertEveryMenuItemIsTopLayer(menu, itemSelector, message) {
   const menuSelector = ".mdxeditor-select-content, .csdn-format-menu-popup, .csdn-color-palette";
   const items = menu.locator(itemSelector);
-  const initialScrollTop = await menu.evaluate((element) => element.scrollTop);
+  const nestedScroll = menu.locator("[data-menu-scroll]");
+  const scrollOwner = await nestedScroll.count() ? nestedScroll : menu;
+  const initialScrollTop = await scrollOwner.evaluate((element) => element.scrollTop);
   const visibility = [];
   for (let index = 0; index < await items.count(); index += 1) {
     const item = items.nth(index);
@@ -41,7 +43,7 @@ async function assertEveryMenuItemIsTopLayer(menu, itemSelector, message) {
       return hit?.closest(selector) === owner;
     }, menuSelector));
   }
-  await menu.evaluate((element, scrollTop) => { element.scrollTop = scrollTop; }, initialScrollTop);
+  await scrollOwner.evaluate((element, scrollTop) => { element.scrollTop = scrollTop; }, initialScrollTop);
   assert(visibility.length > 0 && visibility.every(Boolean), `${message}: ${JSON.stringify(visibility)}`);
 }
 
@@ -801,9 +803,50 @@ async function verifyDesktop() {
   assert.deepEqual(await formatMenu.getByRole("menuitem").allTextContents(), ["正文", "标题一", "标题二", "标题三", "标题四", "标题五", "标题六"]);
   const formatMenuRect = await formatMenu.evaluate((element) => {
     const rect = element.getBoundingClientRect();
-    return { width: Math.round(rect.width), height: Math.round(rect.height) };
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(formatMenuRect, { width: 139, height: 257 });
+  assert.deepEqual(formatMenuRect, { top: 98, left: 191, width: 140, height: 260 });
+  const formatItemLayout = await formatMenu.getByRole("menuitem").evaluateAll((elements) => {
+    const menuRect = elements[0].parentElement.getBoundingClientRect();
+    return elements.map((element) => {
+      const rect = element.getBoundingClientRect();
+      const label = element.firstElementChild;
+      const labelStyle = getComputedStyle(label);
+      return {
+        x: Math.round(rect.x - menuRect.x),
+        y: Math.round(rect.y - menuRect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        fontSize: labelStyle.fontSize,
+        lineHeight: labelStyle.lineHeight,
+      };
+    });
+  });
+  assert.deepEqual(formatItemLayout, [
+    { x: 8, y: 8, width: 109, height: 32, fontSize: "16px", lineHeight: "16px" },
+    { x: 8, y: 48, width: 109, height: 38, fontSize: "22px", lineHeight: "22px" },
+    { x: 8, y: 94, width: 109, height: 36, fontSize: "20px", lineHeight: "20px" },
+    { x: 8, y: 138, width: 109, height: 34, fontSize: "18px", lineHeight: "18px" },
+    { x: 8, y: 180, width: 109, height: 32, fontSize: "16px", lineHeight: "16px" },
+    { x: 8, y: 220, width: 109, height: 32, fontSize: "16px", lineHeight: "16px" },
+    { x: 8, y: 260, width: 109, height: 32, fontSize: "16px", lineHeight: "16px" },
+  ]);
+  const formatScrollbar = await formatMenu.locator(".csdn-format-scrollbar").evaluate((element) => {
+    const track = element.querySelector(".csdn-format-scroll-track").getBoundingClientRect();
+    const thumb = element.querySelector(".csdn-format-scroll-thumb").getBoundingClientRect();
+    return {
+      width: Math.round(element.getBoundingClientRect().width),
+      trackHeight: Math.round(track.height),
+      thumbWidth: Math.round(thumb.width),
+      thumbHeight: Math.round(thumb.height),
+    };
+  });
+  assert.deepEqual(formatScrollbar, { width: 15, trackHeight: 230, thumbWidth: 7, thumbHeight: 199 });
+  const formatScroll = formatMenu.locator("[data-menu-scroll]");
+  await formatMenu.getByRole("button", { name: "向下滚动格式菜单" }).click();
+  assert.equal(await formatScroll.evaluate((element) => element.scrollTop), 40, "format menu down arrow must scroll one item step");
+  await formatMenu.getByRole("button", { name: "向上滚动格式菜单" }).click();
+  assert.equal(await formatScroll.evaluate((element) => element.scrollTop), 0, "format menu up arrow must return to the top");
   await assertEveryMenuItemIsTopLayer(formatMenu, '[role="menuitem"]', "format menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-format-menu.png"), animations: "disabled" });
   await formatMenu.getByRole("menuitem", { name: "标题六" }).click();
@@ -1110,8 +1153,8 @@ async function verifyNarrowExistingArticle() {
       height: Math.round(rect.height),
     };
   });
-  assert.equal(formatMenuRect.width, 139);
-  assert.equal(formatMenuRect.height, 257);
+  assert.equal(formatMenuRect.width, 140);
+  assert.equal(formatMenuRect.height, 260);
   assert(formatMenuRect.left >= 8 && formatMenuRect.right <= width - 8, `mobile format menu must stay inside viewport: ${JSON.stringify(formatMenuRect)}`);
   assert.equal(await formatMenu.getByRole("menuitem").count(), 7);
   await page.screenshot({ path: join(outputDirectory, "mobile-320-format-menu.png"), animations: "disabled" });
