@@ -519,18 +519,19 @@ button:disabled {
   width: 30px;
   height: 30px;
   padding: 0;
-  border: 0;
+  border: 1px solid #ffd8cf;
   border-radius: 4px;
-  background: transparent;
-  color: #8a8b95;
+  background: #fff7f5;
+  color: #fc5531;
   cursor: pointer;
+  opacity: 1;
   transform: translateY(-50%);
 }
 
 .post-row-delete:hover,
 .post-row-delete:focus-visible {
+  border-color: #fc5531;
   background: #fff0ec;
-  color: #fc5531;
   outline: 0;
 }
 

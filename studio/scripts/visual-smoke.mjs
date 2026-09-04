@@ -1779,6 +1779,22 @@ async function verifyContentCrud() {
 
   assert.equal(await page.getByRole("button", { name: "删除当前草稿" }).count(), 1, "new drafts must have a delete action");
   await page.locator(".editor-back-button").click();
+  const sidebarDeleteButtons = page.locator(".post-row-delete");
+  assert.equal(await sidebarDeleteButtons.count(), 2, "the sidebar must show delete controls for both cloud drafts and articles");
+  assert.deepEqual(await sidebarDeleteButtons.evaluateAll((buttons) => buttons.map((button) => {
+    const style = getComputedStyle(button);
+    const rect = button.getBoundingClientRect();
+    return {
+      visible: style.display !== "none" && style.visibility === "visible" && Number(style.opacity) === 1,
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+      color: style.color,
+      background: style.backgroundColor,
+    };
+  })), [
+    { visible: true, width: 30, height: 30, color: "rgb(252, 85, 49)", background: "rgb(255, 247, 245)" },
+    { visible: true, width: 30, height: 30, color: "rgb(252, 85, 49)", background: "rgb(255, 247, 245)" },
+  ], "sidebar delete controls must remain clearly visible without hover");
   const listPath = join(outputDirectory, "desktop-content-management.png");
   await page.screenshot({ path: listPath, animations: "disabled" });
 
