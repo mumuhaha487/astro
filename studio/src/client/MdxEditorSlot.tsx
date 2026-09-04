@@ -38,21 +38,27 @@ import {
   AlignRight,
   Baseline,
   ChevronDown,
+  Code2,
   FileCode2,
   FileStack,
   FolderSymlink,
   Highlighter,
   History,
   ImagePlus,
+  Italic,
   Link2,
   List,
+  ListOrdered,
   ListTree,
   Maximize2,
   MessageSquareQuote,
   MoreHorizontal,
   PlaySquare,
   Sigma,
+  SquareTerminal,
+  Strikethrough,
   Table2,
+  Underline,
 } from "lucide-react";
 import {
   forwardRef,
@@ -409,9 +415,9 @@ function MoreStyleMenu() {
     <ButtonOrDropdownButton
       title="其他样式"
       items={[
-        { value: "italic", label: "倾斜" },
-        { value: "underline", label: "下划线" },
-        { value: "strikethrough", label: "删除线" },
+        { value: "italic", label: <span className="csdn-dropdown-option"><Italic size={18} />倾斜</span> },
+        { value: "underline", label: <span className="csdn-dropdown-option"><Underline size={18} />下划线</span> },
+        { value: "strikethrough", label: <span className="csdn-dropdown-option"><Strikethrough size={18} />删除线</span> },
       ]}
       onChoose={(value) => applyFormat(value)}
     >
@@ -427,8 +433,8 @@ function ListMenu() {
     <ButtonOrDropdownButton
       title="列表"
       items={[
-        { value: "number", label: "有序列表" },
-        { value: "bullet", label: "无序列表" },
+        { value: "number", label: <span className="csdn-dropdown-option"><ListOrdered size={18} />有序列表</span> },
+        { value: "bullet", label: <span className="csdn-dropdown-option"><List size={18} />无序列表</span> },
       ]}
       onChoose={(value) => applyListType(value)}
     >
@@ -444,8 +450,8 @@ function CodeMenu({ onRunnableCode }: { onRunnableCode: () => void }) {
     <ButtonOrDropdownButton
       title="代码"
       items={[
-        { value: "code", label: "代码" },
-        { value: "run", label: "运行代码" },
+        { value: "code", label: <span className="csdn-dropdown-option"><Code2 size={18} />代码</span> },
+        { value: "run", label: <span className="csdn-dropdown-option"><SquareTerminal size={18} />运行代码</span> },
       ]}
       onChoose={(value) => {
         if (value === "run") onRunnableCode();

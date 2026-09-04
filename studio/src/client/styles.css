@@ -2273,10 +2273,10 @@ body > [data-radix-popper-content-wrapper],
 .mdxeditor-select-content {
   z-index: 1000 !important;
   box-sizing: border-box;
-  width: 139px;
-  min-width: 139px;
+  width: 140px;
+  min-width: 140px;
   padding: 0;
-  border: 0;
+  border: 1px solid #e5e6eb;
   border-radius: 0;
   background: #fff;
   filter: none;
@@ -2292,17 +2292,39 @@ body > [data-radix-popper-content-wrapper],
   box-sizing: border-box;
   display: flex;
   align-items: center;
-  width: 139px;
+  width: 138px;
   height: 42px;
-  padding: 0 15px;
+  padding: 0 14px;
   border-radius: 0;
   color: #555666;
-  font-size: 16px;
+  font-size: 14px;
   letter-spacing: 0;
 }
 
 .mdxeditor-select-content [role="option"][data-highlighted] {
-  background: #f5f6f7;
+  background: transparent !important;
+}
+
+.mdxeditor-select-content [role="option"]:hover,
+.mdxeditor-select-content [role="option"]:focus-visible {
+  background: #f5f6f7 !important;
+}
+
+.csdn-dropdown-option {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  color: #555666;
+  font-size: 14px;
+  line-height: 20px;
+  white-space: nowrap;
+}
+
+.csdn-dropdown-option > svg {
+  width: 18px;
+  height: 18px;
+  flex: 0 0 18px;
+  stroke-width: 1.75;
 }
 
 .csdn-format-menu-popup {

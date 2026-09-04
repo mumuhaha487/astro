@@ -618,7 +618,9 @@ async function verifyDesktop() {
   await page.getByRole("button", { name: "富文本" }).click();
   await selectEditorText(page, "基础段落");
   await page.getByRole("combobox", { name: "段落对齐" }).click();
-  await assertEveryMenuItemIsTopLayer(page.locator(".mdxeditor-select-content"), '[role="option"]', "alignment menu must stay above the article title");
+  const alignmentMenu = page.locator(".mdxeditor-select-content");
+  await assertEveryMenuItemIsTopLayer(alignmentMenu, '[role="option"]', "alignment menu must stay above the article title");
+  assert.deepEqual(await alignmentMenu.getByRole("option").allTextContents(), ["左对齐", "居中对齐", "右对齐", "两端对齐"]);
   await page.getByRole("option", { name: "右对齐" }).click();
   await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("text-align:right")));
   await page.locator('.studio-rich-content div[style="text-align:right"]', { hasText: "基础段落" }).waitFor();
@@ -666,6 +668,9 @@ async function verifyDesktop() {
   await page.locator(".editor-workspace.wide-editor").waitFor({ state: "detached" });
 
   await page.locator(".csdn-code-block-tool button").click();
+  const codeMenu = page.locator(".mdxeditor-select-content");
+  assert.deepEqual(await codeMenu.getByRole("option").allTextContents(), ["代码", "运行代码"]);
+  assert.equal(await codeMenu.locator(".csdn-dropdown-option svg").count(), 2, "code options must use the CSDN-style leading icons");
   await page.getByRole("option", { name: "代码", exact: true }).click();
   await page.waitForFunction(() => Object.keys(localStorage).some((key) => {
     const value = localStorage.getItem(key) || "";
@@ -827,11 +832,17 @@ async function verifyDesktop() {
   await moreStyleButton.click();
   const moreStyleMenu = page.locator(".mdxeditor-select-content");
   assert.deepEqual(await moreStyleMenu.getByRole("option").allTextContents(), ["倾斜", "下划线", "删除线"]);
+  assert.equal(await moreStyleMenu.locator(".csdn-dropdown-option svg").count(), 3, "more-style options must use the CSDN-style leading icons");
+  assert.equal(
+    await moreStyleMenu.getByRole("option").first().evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0)",
+    "opening a menu must not paint an option as hovered",
+  );
   const moreStyleMenuRect = await moreStyleMenu.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(moreStyleMenuRect, { top: 98, width: 139, height: 126 });
+  assert.deepEqual(moreStyleMenuRect, { top: 98, width: 140, height: 128 });
   await assertEveryMenuItemIsTopLayer(moreStyleMenu, '[role="option"]', "more-style menu must stay above the article title");
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-more-style-menu.png"), animations: "disabled" });
   await page.keyboard.press("Escape");
@@ -841,11 +852,12 @@ async function verifyDesktop() {
   await listButton.click();
   const listMenu = page.locator(".mdxeditor-select-content");
   assert.deepEqual(await listMenu.getByRole("option").allTextContents(), ["有序列表", "无序列表"]);
+  assert.equal(await listMenu.locator(".csdn-dropdown-option svg").count(), 2, "list options must use the CSDN-style leading icons");
   const listMenuRect = await listMenu.evaluate((element) => {
     const rect = element.getBoundingClientRect();
     return { width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(listMenuRect, { width: 139, height: 84 });
+  assert.deepEqual(listMenuRect, { width: 140, height: 86 });
   await assertEveryMenuItemIsTopLayer(listMenu, '[role="option"]', "list menu must stay above the article title");
   await page.keyboard.press("Escape");
 
