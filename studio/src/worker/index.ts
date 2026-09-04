@@ -9,6 +9,7 @@ import type {
   ScheduledPost,
   SessionInfo,
 } from "../shared/types";
+import { validateScheduleTime } from "../shared/schedule";
 
 interface Env {
   ASSETS: Fetcher;
@@ -433,11 +434,12 @@ async function saveScheduledPost(env: Env, input: unknown): Promise<ScheduledPos
   if (typeof body.content !== "string") throw new HttpError(400, "定时发布内容无效");
   assertByteLength(body.content, MAX_DOCUMENT_BYTES, "文章内容不能超过 2 MB");
   const publishAt = typeof body.publishAt === "string" ? new Date(body.publishAt) : new Date(Number.NaN);
-  if (Number.isNaN(publishAt.getTime()) || publishAt.getTime() < Date.now() + 60_000) {
-    throw new HttpError(400, "定时发布时间至少需要晚于当前时间 1 分钟");
+  const scheduleTimeError = validateScheduleTime(publishAt);
+  if (scheduleTimeError === "invalid" || scheduleTimeError === "too-early") {
+    throw new HttpError(400, "定时发布时间至少需要晚于当前时间 4 小时");
   }
-  if (publishAt.getTime() > Date.now() + 366 * 24 * 60 * 60 * 1000) {
-    throw new HttpError(400, "定时发布时间不能超过一年");
+  if (scheduleTimeError === "too-late") {
+    throw new HttpError(400, "定时发布时间不能超过 7 天");
   }
   await requireGitHubToken(env);
   const schedule: ScheduledPost = {

@@ -4,9 +4,11 @@ import "katex/dist/katex.min.css";
 import {
   AlertCircle,
   Bell,
+  CalendarDays,
   Check,
   ChevronDown,
   ChevronLeft,
+  Clock3,
   Cloud,
   Code2,
   ExternalLink,
@@ -71,6 +73,11 @@ import type {
   PostRevision,
   SessionInfo,
 } from "../shared/types";
+import {
+  SCHEDULE_MAX_DELAY_MS,
+  SCHEDULE_MIN_DELAY_MS,
+  validateScheduleTime,
+} from "../shared/schedule";
 import "./styles.css";
 
 type EditorMode = "rich" | "source" | "preview";
@@ -1629,19 +1636,60 @@ function ScheduleDialog({
   onClose: () => void;
   onSchedule: (value: string) => void;
 }) {
-  const earliest = new Date(Date.now() + 5 * 60 * 1000);
-  const defaultValue = new Date(Date.now() + 60 * 60 * 1000);
-  const toLocalInput = (date: Date) => new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString().slice(0, 16);
-  const [value, setValue] = useState(toLocalInput(defaultValue));
+  const [{ earliest, latest }] = useState(() => ({
+    earliest: new Date(Date.now() + SCHEDULE_MIN_DELAY_MS),
+    latest: new Date(Date.now() + SCHEDULE_MAX_DELAY_MS),
+  }));
+  const [dateValue, setDateValue] = useState("");
+  const [timeValue, setTimeValue] = useState("");
+  const publishAt = dateValue && timeValue ? new Date(`${dateValue}T${timeValue}`) : null;
+  const isValid = publishAt !== null && validateScheduleTime(publishAt, earliest.getTime() - SCHEDULE_MIN_DELAY_MS) === null;
+  const timeOptions = Array.from({ length: 48 }, (_, index) => {
+    const hours = String(Math.floor(index / 2)).padStart(2, "0");
+    const minutes = index % 2 === 0 ? "00" : "30";
+    return `${hours}:${minutes}`;
+  });
+
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+    <div className="modal-backdrop schedule-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="schedule-dialog" role="dialog" aria-modal="true" aria-labelledby="schedule-title">
-        <header><h2 id="schedule-title">定时发布</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
-        <label><span>发布时间</span><input type="datetime-local" min={toLocalInput(earliest)} value={value} onChange={(event) => setValue(event.target.value)} /></label>
-        <div className="schedule-dialog-actions">
-          <button className="secondary-button" onClick={onClose}>取消</button>
-          <button className="csdn-publish-button" disabled={publishing || !value} onClick={() => onSchedule(new Date(value).toISOString())}>确认定时发布</button>
+        <header><h2 id="schedule-title">定时发布</h2><button className="icon-button" onClick={onClose} title="关闭定时发布"><X size={18} /></button></header>
+        <div className="schedule-dialog-body">
+          <p>请选择当前时间后 <strong>4小时</strong> 至 <strong>7天</strong> 进行定时发布</p>
+          <div className="schedule-dialog-controls">
+            <label className="schedule-field schedule-date-field">
+              <CalendarDays size={15} />
+              <span className={dateValue ? "selected" : ""}>{dateValue || "选择日期"}</span>
+              <input
+                aria-label="选择日期"
+                type="date"
+                min={localDateValue(earliest)}
+                max={localDateValue(latest)}
+                value={dateValue}
+                onChange={(event) => setDateValue(event.target.value)}
+              />
+            </label>
+            <label className="schedule-field schedule-time-field">
+              <Clock3 size={15} />
+              <select aria-label="选择时间" value={timeValue} onChange={(event) => setTimeValue(event.target.value)} disabled={!dateValue}>
+                <option value="">选择时间</option>
+                {timeOptions.map((time) => <option key={time} value={time}>{time}</option>)}
+              </select>
+              <ChevronDown size={15} />
+            </label>
+          </div>
         </div>
+        <footer className="schedule-dialog-actions">
+          <button className="secondary-button" onClick={onClose}>取消</button>
+          <button
+            className="csdn-publish-button"
+            disabled={publishing}
+            aria-disabled={!isValid}
+            onClick={() => { if (publishAt && isValid) onSchedule(publishAt.toISOString()); }}
+          >
+            定时发布
+          </button>
+        </footer>
       </section>
     </div>
   );

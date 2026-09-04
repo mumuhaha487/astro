@@ -920,6 +920,17 @@ async function verifyMobile(width) {
   await page.locator(".mobile-settings-head button").click();
 
   if (width === 390) {
+    await page.getByRole("button", { name: "定时发布", exact: true }).click();
+    await page.locator(".schedule-dialog").waitFor();
+    const scheduleRect = await page.locator(".schedule-dialog").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(scheduleRect, { top: 0, left: 0, width, height }, "mobile schedule dialog must use the full viewport");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-schedule-dialog.png"), animations: "disabled" });
+    await page.getByTitle("关闭定时发布").click();
+    await page.locator(".schedule-dialog").waitFor({ state: "detached" });
+
     const imageTool = page.locator(".csdn-toolbar-action").filter({ hasText: "图像" });
     await imageTool.scrollIntoViewIfNeeded();
     await imageTool.click();
@@ -1176,19 +1187,64 @@ async function verifyScheduledPublish() {
   await page.locator(".setting-input-with-action input").fill("Astro, 定时发布");
   await page.locator(".publish-bar-meta button").click();
   await page.getByRole("button", { name: "定时发布" }).click();
-  const input = page.locator('.schedule-dialog input[type="datetime-local"]');
-  const localValue = await input.inputValue();
-  await page.getByRole("button", { name: "确认定时发布" }).click();
+  const scheduleLayout = await page.locator(".schedule-dialog").evaluate((dialog) => {
+    const dialogRect = dialog.getBoundingClientRect();
+    const relativeRect = (selector) => {
+      const rect = dialog.querySelector(selector).getBoundingClientRect();
+      return {
+        x: Math.round(rect.x - dialogRect.x),
+        y: Math.round(rect.y - dialogRect.y),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+      };
+    };
+    return {
+      dialog: { x: Math.round(dialogRect.x), y: Math.round(dialogRect.y), width: Math.round(dialogRect.width), height: Math.round(dialogRect.height) },
+      header: relativeRect(":scope > header"),
+      body: relativeRect(".schedule-dialog-body"),
+      fields: [...dialog.querySelectorAll(".schedule-field")].map((element) => {
+        const rect = element.getBoundingClientRect();
+        return { x: Math.round(rect.x - dialogRect.x), y: Math.round(rect.y - dialogRect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+      }),
+      footer: relativeRect(".schedule-dialog-actions"),
+    };
+  });
+  assert.deepEqual(
+    scheduleLayout,
+    {
+      dialog: { x: 449, y: 249, width: 366, height: 223 },
+      header: { x: 24, y: 24, width: 318, height: 49 },
+      body: { x: 24, y: 73, width: 318, height: 70 },
+      fields: [
+        { x: 24, y: 111, width: 155, height: 32 },
+        { x: 187, y: 111, width: 155, height: 32 },
+      ],
+      footer: { x: 24, y: 159, width: 318, height: 40 },
+    },
+    "desktop schedule dialog must match the measured CSDN geometry",
+  );
+  assert.match(await page.locator(".schedule-dialog-body").textContent(), /4小时.*7天/);
+  const schedulePath = join(outputDirectory, "desktop-1264-schedule-dialog.png");
+  await page.screenshot({ path: schedulePath, animations: "disabled" });
+  const target = await page.evaluate(() => {
+    const date = new Date();
+    date.setDate(date.getDate() + 1);
+    const shifted = new Date(date.getTime() - date.getTimezoneOffset() * 60_000).toISOString();
+    return { date: shifted.slice(0, 10), time: "12:00" };
+  });
+  await page.getByLabel("选择日期").fill(target.date);
+  await page.getByLabel("选择时间").selectOption(target.time);
+  await page.locator(".schedule-dialog-actions .csdn-publish-button").click();
   await page.locator(".schedule-dialog").waitFor({ state: "detached" });
   await page.locator(".toast", { hasText: "已安排在" }).waitFor();
   const scheduleMutation = mutations.find((mutation) => mutation.path === "/api/schedule");
   assert(scheduleMutation, "scheduled publish must call the schedule API");
-  assert.match(scheduleMutation.body.content, new RegExp(`published: '${localValue.slice(0, 10)}'`));
+  assert.match(scheduleMutation.body.content, new RegExp(`published: '${target.date}'`));
   assert.match(scheduleMutation.body.content, /draft: false/);
   assert.match(scheduleMutation.body.content, /scheduledAt:/);
   assert.deepEqual(pageErrors, [], `scheduled publish page errors: ${pageErrors.join("; ")}`);
   await context.close();
-  return { scheduleMutation };
+  return { schedulePath, scheduleMutation };
 }
 
 try {
