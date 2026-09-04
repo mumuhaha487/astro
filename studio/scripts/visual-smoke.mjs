@@ -716,12 +716,85 @@ async function verifyDesktop() {
   const formulaTool = page.locator(".csdn-toolbar-action").filter({ hasText: "公式" });
   await formulaTool.scrollIntoViewIfNeeded();
   await formulaTool.click();
-  await page.locator(".formula-dialog").waitFor();
-  await page.locator(".formula-input-label textarea").fill("\\frac{a}{b} + \\alpha");
+  const formulaDialog = page.locator(".formula-dialog");
+  await formulaDialog.waitFor();
+  assert.deepEqual(await formulaDialog.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }), { top: 104, left: 332, width: 600, height: 512 });
+  assert.equal(
+    await page.locator(".formula-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
+    "rgba(0, 0, 0, 0.25)",
+  );
+  assert.equal(await formulaDialog.locator('select[aria-label="常用函数"] option').count(), 44);
+  const formulaControlRects = await formulaDialog.locator(".formula-clear-button, .formula-history-actions select").evaluateAll((elements) => elements.map((element) => {
+    const rect = element.getBoundingClientRect();
+    return { tag: element.tagName, x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }));
+  assert.deepEqual(formulaControlRects, [
+    { tag: "BUTTON", x: 411, y: 173, width: 34, height: 20 },
+    { tag: "SELECT", x: 448, y: 172, width: 83, height: 21 },
+  ]);
+  const formulaCategoryRects = await formulaDialog.locator(".formula-category-button").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return { title: button.getAttribute("title"), x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }));
+  assert.deepEqual(formulaCategoryRects, [
+    { title: "样式", x: 356, y: 212, width: 111, height: 23 },
+    { title: "空格", x: 467, y: 212, width: 36, height: 34 },
+    { title: "二元运算符", x: 503, y: 212, width: 73, height: 34 },
+    { title: "常用符号", x: 576, y: 212, width: 73, height: 34 },
+    { title: "数集", x: 649, y: 212, width: 39, height: 34 },
+    { title: "上下标", x: 688, y: 212, width: 39, height: 34 },
+    { title: "重音符号", x: 727, y: 212, width: 39, height: 34 },
+    { title: "扩展重音", x: 766, y: 212, width: 30, height: 34 },
+    { title: "箭头", x: 796, y: 212, width: 60, height: 34 },
+    { title: "大型运算符", x: 356, y: 264, width: 173, height: 28 },
+    { title: "括号", x: 529, y: 264, width: 61, height: 28 },
+    { title: "小写希腊字母", x: 590, y: 264, width: 73, height: 34 },
+    { title: "大写希腊字母", x: 663, y: 264, width: 39, height: 34 },
+    { title: "关系符号", x: 702, y: 264, width: 56, height: 34 },
+    { title: "矩阵", x: 758, y: 264, width: 106, height: 34 },
+  ]);
+  assert.equal(await formulaDialog.locator(".formula-category-button .katex-error").count(), 0);
+  for (const category of formulaCategoryRects) {
+    await formulaDialog.getByTitle(category.title).click();
+    const symbolPopover = formulaDialog.locator(".formula-symbol-popover");
+    assert(await symbolPopover.locator('[role="menuitem"]').count() > 0, `${category.title} must expose insertable symbols`);
+    assert.equal(await symbolPopover.locator(".katex-error").count(), 0, `${category.title} contains an invalid formula symbol`);
+  }
+  const formulaTextarea = formulaDialog.locator(".formula-input-label textarea");
+  const formulaPrimaryButton = formulaDialog.locator(".dialog-primary-button");
+  assert.equal(await formulaPrimaryButton.isDisabled(), true);
+  assert.deepEqual(await formulaTextarea.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height), value: element.value };
+  }), { x: 356, y: 344, width: 552, height: 104, value: "" });
+  const formulaFooterRects = await formulaDialog.locator("footer button").evaluateAll((buttons) => buttons.map((button) => {
+    const rect = button.getBoundingClientRect();
+    return { text: button.textContent?.trim(), x: Math.round(rect.x), y: Math.round(rect.y), width: Math.round(rect.width), height: Math.round(rect.height) };
+  }));
+  assert.deepEqual(formulaFooterRects, [
+    { text: "确定", x: 727, y: 558, width: 82, height: 34 },
+    { text: "取消", x: 826, y: 558, width: 82, height: 34 },
+  ]);
+  await formulaDialog.getByTitle("大型运算符").click();
+  assert.equal(await formulaDialog.locator('.formula-symbol-popover [role="menuitem"]').count(), 13);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-formula-symbols.png"), animations: "disabled" });
+  await formulaDialog.getByTitle("插入 分数").click();
+  assert.equal(await formulaTextarea.inputValue(), "\\frac{a}{b}");
+  assert.equal(await formulaPrimaryButton.isEnabled(), true);
+  await formulaDialog.locator('select[aria-label="常用函数"]').selectOption({ label: "sin" });
+  assert.equal(await formulaTextarea.inputValue(), "\\frac{a}{b}\\sin(x)");
+  await formulaDialog.getByTitle("撤销").click();
+  assert.equal(await formulaTextarea.inputValue(), "\\frac{a}{b}");
+  await formulaDialog.getByTitle("重做").click();
+  assert.equal(await formulaTextarea.inputValue(), "\\frac{a}{b}\\sin(x)");
+  await formulaTextarea.fill("\\frac{a}{b} + \\alpha");
   await page.locator(".formula-preview .katex").waitFor();
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-formula-dialog.png"), animations: "disabled" });
-  await page.locator(".formula-dialog .dialog-primary-button").click();
-  await page.locator(".formula-dialog").waitFor({ state: "detached" });
+  await formulaDialog.locator(".dialog-primary-button").click();
+  await formulaDialog.waitFor({ state: "detached" });
 
   const linkTool = page.locator(".csdn-toolbar-action").filter({ hasText: "链接" });
   await linkTool.scrollIntoViewIfNeeded();
@@ -1130,15 +1203,65 @@ async function verifyMobile(width) {
     const formulaTool = page.locator(".csdn-toolbar-action").filter({ hasText: "公式" });
     await formulaTool.scrollIntoViewIfNeeded();
     await formulaTool.click();
-    await page.locator(".formula-dialog").waitFor();
-    const formulaRect = await page.locator(".formula-dialog").evaluate((element) => {
+    const formulaDialog = page.locator(".formula-dialog");
+    await formulaDialog.waitFor();
+    const formulaRect = await formulaDialog.evaluate((element) => {
       const rect = element.getBoundingClientRect();
       return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
     });
     assert.deepEqual(formulaRect, { top: 0, left: 0, width, height }, "mobile formula editor must use the full viewport");
+    assert.equal(await formulaDialog.locator(".formula-category-button").count(), 15);
+    assert.deepEqual(await formulaDialog.locator(".formula-input-label textarea").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), height: Math.round(rect.height) };
+    }), { left: 14, right: width - 14, height: 100 });
+    const formulaCategories = formulaDialog.locator(".formula-category-rows");
+    await formulaCategories.evaluate((element) => { element.scrollLeft = element.scrollWidth; });
+    const matrixRect = await formulaDialog.getByTitle("矩阵").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right) };
+    });
+    assert(matrixRect.left >= 0 && matrixRect.right <= width, `mobile formula categories must expose the last group: ${JSON.stringify(matrixRect)}`);
+    await formulaCategories.evaluate((element) => { element.scrollLeft = 0; });
     await page.screenshot({ path: join(outputDirectory, "mobile-390-formula-dialog.png"), animations: "disabled" });
-    await page.locator(".formula-dialog").getByTitle("关闭").click();
-    await page.locator(".formula-dialog").waitFor({ state: "detached" });
+    const mobileFormulaTextareaRect = await formulaDialog.locator(".formula-input-label textarea").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { bottom: Math.round(rect.bottom) };
+    });
+    await formulaDialog.getByTitle("大型运算符").click();
+    const mobileFormulaPopoverRect = await formulaDialog.locator(".formula-symbol-popover").evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), bottom: Math.round(rect.bottom) };
+    });
+    const mobileFormulaFooterTop = await formulaDialog.locator("footer").evaluate((element) => Math.round(element.getBoundingClientRect().top));
+    assert(mobileFormulaPopoverRect.top >= mobileFormulaTextareaRect.bottom, "mobile formula symbols must not cover the LaTeX field");
+    assert(mobileFormulaPopoverRect.bottom <= mobileFormulaFooterTop, "mobile formula symbols must stay above the footer");
+    await formulaDialog.getByTitle("关闭").click();
+    await formulaDialog.waitFor({ state: "detached" });
+
+    if (width === 390) {
+      await page.setViewportSize({ width, height: 400 });
+      await formulaTool.scrollIntoViewIfNeeded();
+      await formulaTool.click();
+      const landscapeFormulaDialog = page.locator(".formula-dialog");
+      await landscapeFormulaDialog.waitFor();
+      assert.equal(await landscapeFormulaDialog.evaluate((element) => Math.round(element.getBoundingClientRect().height)), 512);
+      const landscapeTextareaBottom = await landscapeFormulaDialog.locator(".formula-input-label textarea").evaluate((element) => Math.round(element.getBoundingClientRect().bottom));
+      const landscapeFooterTop = await landscapeFormulaDialog.locator("footer").evaluate((element) => Math.round(element.getBoundingClientRect().top));
+      assert(landscapeTextareaBottom < landscapeFooterTop, "landscape formula footer must not overlap the LaTeX field");
+      await landscapeFormulaDialog.getByTitle("大型运算符").click();
+      const landscapePopoverRect = await landscapeFormulaDialog.locator(".formula-symbol-popover").evaluate((element) => {
+        const rect = element.getBoundingClientRect();
+        return { top: Math.round(rect.top), bottom: Math.round(rect.bottom) };
+      });
+      assert(landscapePopoverRect.top >= landscapeTextareaBottom && landscapePopoverRect.bottom <= landscapeFooterTop, "landscape formula symbols must fit between the field and footer");
+      const shortBackdrop = page.locator(".formula-backdrop");
+      const shortBackdropScroll = await shortBackdrop.evaluate((element) => ({ clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+      assert.deepEqual(shortBackdropScroll, { clientHeight: 400, scrollHeight: 512 });
+      await landscapeFormulaDialog.getByTitle("关闭").click();
+      await landscapeFormulaDialog.waitFor({ state: "detached" });
+      await page.setViewportSize({ width, height });
+    }
 
     const linkTool = page.locator(".csdn-toolbar-action").filter({ hasText: "链接" });
     await linkTool.scrollIntoViewIfNeeded();

@@ -1963,19 +1963,182 @@ function VideoInsertDialog({
   );
 }
 
-const formulaSymbols = [
-  ["基础", ["x^2", "x_{i}", "\\frac{a}{b}", "\\sqrt{x}", "\\sum_{i=1}^{n}", "\\prod_{i=1}^{n}", "\\int_a^b"]],
-  ["括号", ["(x)", "[x]", "\\{x\\}", "|x|", "\\langle x \\rangle", "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}"]],
-  ["希腊", ["\\alpha", "\\beta", "\\gamma", "\\delta", "\\theta", "\\lambda", "\\mu", "\\pi", "\\sigma", "\\omega"]],
-  ["关系", ["=", "\\ne", "\\approx", "<", ">", "\\le", "\\ge", "\\in", "\\subset", "\\rightarrow"]],
+interface FormulaSymbol {
+  label: string;
+  preview?: string;
+  value: string;
+}
+
+interface FormulaCategory {
+  id: string;
+  title: string;
+  preview: string;
+  width: number;
+  symbols: FormulaSymbol[];
+}
+
+const formulaFunctions = [
+  ["display style", "\\displaystyle "],
+  ["sin", "\\sin(x)"], ["cos", "\\cos(x)"], ["tan", "\\tan(x)"],
+  ["csc", "\\csc(x)"], ["sec", "\\sec(x)"], ["cot", "\\cot(x)"],
+  ["sinh", "\\sinh(x)"], ["cosh", "\\cosh(x)"], ["tanh", "\\tanh(x)"], ["coth", "\\coth(x)"],
+  ["arcsin", "\\arcsin(x)"], ["arccos", "\\arccos(x)"], ["arctan", "\\arctan(x)"],
+  ["arccsc", "\\operatorname{arccsc}(x)"], ["arcsec", "\\operatorname{arcsec}(x)"], ["arccot", "\\operatorname{arccot}(x)"],
+  ["sin-1", "\\sin^{-1}(x)"], ["cos-1", "\\cos^{-1}(x)"], ["tan-1", "\\tan^{-1}(x)"],
+  ["sinh-1", "\\sinh^{-1}(x)"], ["cosh-1", "\\cosh^{-1}(x)"], ["tanh-1", "\\tanh^{-1}(x)"],
+  ["exp", "\\exp(x)"], ["lg", "\\lg(x)"], ["ln", "\\ln(x)"], ["log", "\\log(x)"],
+  ["log e", "\\log_{e}(x)"], ["log 10", "\\log_{10}(x)"], ["limit", "\\lim_{x \\to 0}"],
+  ["liminf", "\\liminf_{n \\to \\infty}"], ["limsup", "\\limsup_{n \\to \\infty}"],
+  ["maximum", "\\max"], ["minimum", "\\min"], ["infinite", "\\infty"], ["arg", "\\arg"],
+  ["det", "\\det"], ["dim", "\\dim"], ["gcd", "\\gcd"], ["hom", "\\hom"], ["ker", "\\ker"],
+  ["Pr", "\\Pr"], ["sup", "\\sup"],
 ] as const;
 
+const formulaCategoryRows: FormulaCategory[][] = [
+  [
+    {
+      id: "style", title: "样式", preview: "\\mathbf{B}\\;\\mathit{I}\\;\\mathrm{U}", width: 111,
+      symbols: [
+        { label: "粗体", value: "\\mathbf{x}" }, { label: "斜体", value: "\\mathit{x}" },
+        { label: "正体", value: "\\mathrm{x}" }, { label: "无衬线", value: "\\mathsf{x}" },
+        { label: "等宽", value: "\\mathtt{x}" }, { label: "黑板体", value: "\\mathbb{R}" },
+        { label: "花体", value: "\\mathcal{F}" }, { label: "哥特体", value: "\\mathfrak{g}" },
+      ],
+    },
+    {
+      id: "spaces", title: "空格", preview: "\\square\\;\\square", width: 36,
+      symbols: [
+        { label: "负空格", preview: "a\\!b", value: "\\!" }, { label: "细空格", preview: "a\\,b", value: "\\," },
+        { label: "中空格", preview: "a\\:b", value: "\\:" }, { label: "厚空格", preview: "a\\;b", value: "\\;" },
+        { label: "字宽空格", preview: "a\\quad b", value: "\\quad" }, { label: "双字宽空格", preview: "a\\qquad b", value: "\\qquad" },
+      ],
+    },
+    {
+      id: "binary", title: "二元运算符", preview: "+\\;\\oplus\\;\\cup", width: 73,
+      symbols: [
+        { label: "+", value: "+" }, { label: "-", value: "-" }, { label: "乘", value: "\\times" },
+        { label: "除", value: "\\div" }, { label: "正负", value: "\\pm" }, { label: "负正", value: "\\mp" },
+        { label: "点乘", value: "\\cdot" }, { label: "星号", value: "\\ast" }, { label: "星", value: "\\star" },
+        { label: "圆", value: "\\circ" }, { label: "实心圆", value: "\\bullet" }, { label: "直和", value: "\\oplus" },
+        { label: "张量积", value: "\\otimes" }, { label: "并集", value: "\\cup" }, { label: "交集", value: "\\cap" },
+        { label: "差集", value: "\\setminus" }, { label: "花积", value: "\\wr" },
+      ],
+    },
+    {
+      id: "symbols", title: "常用符号", preview: "\\forall\\;\\exists\\;\\infty", width: 73,
+      symbols: [
+        { label: "任意", value: "\\forall" }, { label: "存在", value: "\\exists" }, { label: "不存在", value: "\\nexists" },
+        { label: "空集", value: "\\emptyset" }, { label: "无穷", value: "\\infty" }, { label: "梯度", value: "\\nabla" },
+        { label: "偏导", value: "\\partial" }, { label: "约化普朗克常数", value: "\\hbar" }, { label: "椭圆", value: "\\ell" },
+        { label: "实部", value: "\\Re" }, { label: "虚部", value: "\\Im" }, { label: "阿列夫", value: "\\aleph" },
+      ],
+    },
+    {
+      id: "foreign", title: "数集", preview: "\\Re\\;\\Im", width: 39,
+      symbols: [
+        { label: "实数", value: "\\mathbb{R}" }, { label: "复数", value: "\\mathbb{C}" },
+        { label: "自然数", value: "\\mathbb{N}" }, { label: "整数", value: "\\mathbb{Z}" },
+        { label: "有理数", value: "\\mathbb{Q}" },
+      ],
+    },
+    {
+      id: "subsupset", title: "上下标", preview: "x_i^2", width: 39,
+      symbols: [
+        { label: "上标", value: "x^{2}" }, { label: "下标", value: "x_{i}" }, { label: "上下标", value: "x_{i}^{2}" },
+        { label: "左上下标", value: "{}_{a}^{b}x" }, { label: "正上方", value: "\\overset{a}{x}" },
+        { label: "正下方", value: "\\underset{b}{x}" },
+      ],
+    },
+    {
+      id: "accents", title: "重音符号", preview: "\\hat{x}\\;\\bar{x}", width: 39,
+      symbols: [
+        { label: "帽", value: "\\hat{x}" }, { label: "横线", value: "\\bar{x}" }, { label: "向量", value: "\\vec{x}" },
+        { label: "单点", value: "\\dot{x}" }, { label: "双点", value: "\\ddot{x}" }, { label: "波浪", value: "\\tilde{x}" },
+        { label: "锐音", value: "\\acute{x}" }, { label: "抑音", value: "\\grave{x}" },
+      ],
+    },
+    {
+      id: "accents-extended", title: "扩展重音", preview: "\\overline{abc}", width: 30,
+      symbols: [
+        { label: "上横线", value: "\\overline{abc}" }, { label: "下横线", value: "\\underline{abc}" },
+        { label: "上大括号", value: "\\overbrace{a+b}^{n}" }, { label: "下大括号", value: "\\underbrace{a+b}_{n}" },
+        { label: "宽帽", value: "\\widehat{abc}" }, { label: "宽波浪", value: "\\widetilde{abc}" },
+      ],
+    },
+    {
+      id: "arrows", title: "箭头", preview: "\\leftarrow\\;\\rightarrow", width: 60,
+      symbols: [
+        { label: "左箭头", value: "\\leftarrow" }, { label: "右箭头", value: "\\rightarrow" },
+        { label: "双向箭头", value: "\\leftrightarrow" }, { label: "左双线箭头", value: "\\Leftarrow" },
+        { label: "右双线箭头", value: "\\Rightarrow" }, { label: "双向双线箭头", value: "\\Leftrightarrow" },
+        { label: "映射", value: "\\mapsto" }, { label: "上箭头", value: "\\uparrow" }, { label: "下箭头", value: "\\downarrow" },
+      ],
+    },
+  ],
+  [
+    {
+      id: "operators", title: "大型运算符", preview: "\\int\\;\\sum\\;\\prod\\;\\bigcup", width: 173,
+      symbols: [
+        { label: "分数", value: "\\frac{a}{b}" }, { label: "平方根", value: "\\sqrt{x}" }, { label: "n次根", value: "\\sqrt[n]{x}" },
+        { label: "求和", value: "\\sum_{i=1}^{n}" }, { label: "乘积", value: "\\prod_{i=1}^{n}" },
+        { label: "余积", value: "\\coprod_{i=1}^{n}" }, { label: "定积分", value: "\\int_{a}^{b}" },
+        { label: "二重积分", value: "\\iint_{D}" }, { label: "三重积分", value: "\\iiint_{V}" },
+        { label: "环路积分", value: "\\oint_{C}" }, { label: "大并集", value: "\\bigcup_{i=1}^{n}" },
+        { label: "大交集", value: "\\bigcap_{i=1}^{n}" }, { label: "极限", value: "\\lim_{x \\to 0}" },
+      ],
+    },
+    {
+      id: "brackets", title: "括号", preview: "(\\;)\\;[\\;]\\;|\\;|", width: 61,
+      symbols: [
+        { label: "圆括号", value: "\\left(x\\right)" }, { label: "方括号", value: "\\left[x\\right]" },
+        { label: "花括号", value: "\\left\\{x\\right\\}" }, { label: "尖括号", value: "\\left\\langle x\\right\\rangle" },
+        { label: "绝对值", value: "\\left|x\\right|" }, { label: "范数", value: "\\left\\|x\\right\\|" },
+        { label: "下取整", value: "\\left\\lfloor x\\right\\rfloor" }, { label: "上取整", value: "\\left\\lceil x\\right\\rceil" },
+      ],
+    },
+    {
+      id: "greek-lower", title: "小写希腊字母", preview: "\\alpha\\;\\beta\\;\\gamma", width: 73,
+      symbols: ["alpha", "beta", "gamma", "delta", "epsilon", "varepsilon", "zeta", "eta", "theta", "vartheta", "iota", "kappa", "lambda", "mu", "nu", "xi", "pi", "varpi", "rho", "varrho", "sigma", "varsigma", "tau", "upsilon", "phi", "varphi", "chi", "psi", "omega"].map((name) => ({ label: name, value: `\\${name}` })).concat({ label: "omicron", value: "o" }),
+    },
+    {
+      id: "greek-upper", title: "大写希腊字母", preview: "\\Gamma\\;\\Delta", width: 39,
+      symbols: ["Gamma", "Delta", "Theta", "Lambda", "Xi", "Pi", "Sigma", "Upsilon", "Phi", "Psi", "Omega"].map((name) => ({ label: name, value: `\\${name}` })),
+    },
+    {
+      id: "relations", title: "关系符号", preview: "<\\;\\le\\;=\\;\\ge", width: 56,
+      symbols: [
+        { label: "等于", value: "=" }, { label: "不等于", value: "\\ne" }, { label: "小于", value: "<" }, { label: "大于", value: ">" },
+        { label: "小于等于", value: "\\le" }, { label: "大于等于", value: "\\ge" }, { label: "约等于", value: "\\approx" },
+        { label: "恒等于", value: "\\equiv" }, { label: "相似", value: "\\sim" }, { label: "渐近", value: "\\simeq" },
+        { label: "正比", value: "\\propto" }, { label: "属于", value: "\\in" }, { label: "不属于", value: "\\notin" },
+        { label: "子集", value: "\\subset" }, { label: "超集", value: "\\supset" }, { label: "子集或等于", value: "\\subseteq" },
+        { label: "超集或等于", value: "\\supseteq" }, { label: "垂直", value: "\\perp" }, { label: "平行", value: "\\parallel" },
+      ],
+    },
+    {
+      id: "matrix", title: "矩阵", preview: "\\begin{smallmatrix}a&b\\\\c&d\\end{smallmatrix}", width: 106,
+      symbols: [
+        { label: "矩阵", value: "\\begin{matrix}a&b\\\\c&d\\end{matrix}" },
+        { label: "圆括号矩阵", value: "\\begin{pmatrix}a&b\\\\c&d\\end{pmatrix}" },
+        { label: "方括号矩阵", value: "\\begin{bmatrix}a&b\\\\c&d\\end{bmatrix}" },
+        { label: "花括号矩阵", value: "\\begin{Bmatrix}a&b\\\\c&d\\end{Bmatrix}" },
+        { label: "行列式", value: "\\begin{vmatrix}a&b\\\\c&d\\end{vmatrix}" },
+        { label: "范数矩阵", value: "\\begin{Vmatrix}a&b\\\\c&d\\end{Vmatrix}" },
+        { label: "分段函数", value: "\\begin{cases}a,&x>0\\\\b,&x\\le 0\\end{cases}" },
+        { label: "对齐公式", value: "\\begin{aligned}a&=b+c\\\\d&=e+f\\end{aligned}" },
+        { label: "二项式", value: "\\binom{n}{r}" },
+      ],
+    },
+  ],
+];
+
 function FormulaDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (formula: string) => void }) {
-  const [history, setHistory] = useState(["E = mc^2"]);
+  const [history, setHistory] = useState([""]);
   const [historyIndex, setHistoryIndex] = useState(0);
+  const [activeCategory, setActiveCategory] = useState<FormulaCategory | null>(null);
   const textareaRef = useRef<HTMLTextAreaElement>(null);
   const formula = history[historyIndex] || "";
-  const preview = useMemo(() => katex.renderToString(formula || "\\;", { displayMode: true, throwOnError: false, strict: "ignore", trust: false }), [formula]);
+  const preview = useMemo(() => formula ? katex.renderToString(formula, { displayMode: true, throwOnError: false, strict: "ignore", trust: false }) : "", [formula]);
 
   function updateFormula(value: string) {
     const nextHistory = [...history.slice(0, historyIndex + 1), value].slice(-100);
@@ -1997,6 +2160,7 @@ function FormulaDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (
       textareaRef.current?.focus();
       textareaRef.current?.setSelectionRange(start + symbol.length, start + symbol.length);
     });
+    setActiveCategory(null);
   }
 
   return (
@@ -2007,20 +2171,44 @@ function FormulaDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (
           <div className="formula-history-actions">
             <button onClick={() => moveHistory(-1)} disabled={historyIndex === 0} title="撤销"><Undo2 size={18} /></button>
             <button onClick={() => moveHistory(1)} disabled={historyIndex === history.length - 1} title="重做"><Redo2 size={18} /></button>
-            <button onClick={() => updateFormula("")}>清空</button>
+            <button className="formula-clear-button" onClick={() => updateFormula("")}>清空</button>
             <select aria-label="常用函数" defaultValue="" onChange={(event) => { if (event.target.value) insertSymbol(event.target.value); event.target.value = ""; }}>
-              <option value="">函数</option><option value="\\sin(x)">sin</option><option value="\\cos(x)">cos</option><option value="\\tan(x)">tan</option><option value="\\log_{a}(x)">log</option><option value="\\lim_{x \\to 0}">limit</option>
+              <option value="">函数</option>
+              {formulaFunctions.map(([label, value]) => <option key={label} value={value}>{label}</option>)}
             </select>
           </div>
-          <div className="formula-symbol-groups">
-            {formulaSymbols.map(([label, symbols]) => (
-              <div key={label}><span>{label}</span><div>{symbols.map((symbol) => <button key={symbol} onClick={() => insertSymbol(symbol)} title={`插入 ${symbol}`}>{symbol.replaceAll("\\", "")}</button>)}</div></div>
+          <div className="formula-category-rows">
+            {formulaCategoryRows.map((row, rowIndex) => (
+              <div className="formula-category-row" key={rowIndex}>
+                {row.map((category) => (
+                  <button
+                    aria-expanded={activeCategory?.id === category.id}
+                    className={`formula-category-button ${activeCategory?.id === category.id ? "active" : ""}`}
+                    key={category.id}
+                    onClick={() => setActiveCategory((current) => current?.id === category.id ? null : category)}
+                    style={{ width: category.width }}
+                    title={category.title}
+                    type="button"
+                  >
+                    <span dangerouslySetInnerHTML={{ __html: katex.renderToString(category.preview, { throwOnError: false, strict: "ignore", trust: false }) }} />
+                  </button>
+                ))}
+              </div>
             ))}
           </div>
+          {activeCategory ? (
+            <div aria-label={`${activeCategory.title}符号`} className="formula-symbol-popover" role="menu">
+              {activeCategory.symbols.map((symbol, index) => (
+                <button key={`${symbol.label}-${index}`} onClick={() => insertSymbol(symbol.value)} role="menuitem" title={`插入 ${symbol.label}`} type="button">
+                  <span dangerouslySetInnerHTML={{ __html: katex.renderToString(symbol.preview ?? symbol.value, { throwOnError: false, strict: "ignore", trust: false }) }} />
+                </button>
+              ))}
+            </div>
+          ) : null}
         </div>
-        <label className="formula-input-label"><span>LaTeX公式：</span><textarea ref={textareaRef} value={formula} onChange={(event) => updateFormula(event.target.value)} autoFocus /></label>
-        <div className="formula-preview"><span>公式预览：</span><div dangerouslySetInnerHTML={{ __html: preview }} /></div>
-        <footer><button className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" onClick={() => onInsert(formula.trim())} disabled={!formula.trim()}>确定</button></footer>
+        <label className="formula-input-label"><span>LaTeX公式:</span><textarea ref={textareaRef} value={formula} onChange={(event) => updateFormula(event.target.value)} autoFocus /></label>
+        <div className="formula-preview"><span>公式预览:</span><div dangerouslySetInnerHTML={{ __html: preview }} /></div>
+        <footer><button className="dialog-primary-button" onClick={() => onInsert(formula.trim())} disabled={!formula.trim()}>确定</button><button className="secondary-button" onClick={onClose}>取消</button></footer>
       </section>
     </div>
   );
