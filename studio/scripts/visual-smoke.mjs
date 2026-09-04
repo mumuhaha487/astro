@@ -249,6 +249,37 @@ async function layoutMetrics(page) {
       viewport: { width: innerWidth, height: innerHeight },
       body: { scrollWidth: document.body.scrollWidth, clientWidth: document.body.clientWidth },
       topbar: rect(".topbar"),
+      topbarBrand: rect(".topbar-brand"),
+      topbarBrandItems: [...document.querySelectorAll(".topbar-brand > *")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        const icon = element.querySelector("svg");
+        const iconBounds = icon?.getBoundingClientRect();
+        return {
+          className: element.className,
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+          icon: iconBounds ? {
+            x: Math.round(iconBounds.x),
+            y: Math.round(iconBounds.y),
+            width: Math.round(iconBounds.width),
+            height: Math.round(iconBounds.height),
+          } : null,
+        };
+      }),
+      topbarSync: rect(".sync-state"),
+      topbarActions: rect(".topbar-actions"),
+      topbarActionItems: [...document.querySelectorAll(".topbar-actions > *")].map((element) => {
+        const bounds = element.getBoundingClientRect();
+        return {
+          className: element.className,
+          x: Math.round(bounds.x),
+          y: Math.round(bounds.y),
+          width: Math.round(bounds.width),
+          height: Math.round(bounds.height),
+        };
+      }),
       toolbar: rect(".csdn-editor-toolbar"),
       toolbarButtons: [...document.querySelectorAll(".csdn-editor-toolbar button")]
         .filter((element) => {
@@ -347,6 +378,36 @@ async function verifyDesktop() {
   const metrics = await layoutMetrics(page);
   assert.equal(metrics.body.scrollWidth, metrics.body.clientWidth, "desktop body must not overflow horizontally");
   assert.equal(metrics.topbar.height, 48);
+  assert.deepEqual(
+    metrics.topbarBrandItems,
+    [
+      {
+        className: "editor-back-button",
+        x: 122,
+        y: 13,
+        width: 20,
+        height: 25,
+        icon: { x: 122, y: 15, width: 20, height: 20 },
+      },
+      {
+        className: "astro-wordmark",
+        x: 24,
+        y: 14,
+        width: 74,
+        height: 20,
+        icon: null,
+      },
+      {
+        className: "editor-title-button",
+        x: 142,
+        y: 0,
+        width: 108,
+        height: 48,
+        icon: { x: 230, y: 15, width: 20, height: 20 },
+      },
+    ],
+    "desktop brand navigation must match the CSDN header geometry",
+  );
   assert.equal(metrics.toolbar.height, 61);
   assert.equal(metrics.toolbar.scrollWidth, 1324);
   assert.deepEqual(
@@ -418,6 +479,18 @@ async function verifyDesktop() {
   await page.locator(".title-input").fill("");
   await page.locator(".toast").waitFor({ state: "detached", timeout: 6_000 });
   assert.equal(await page.getByText("AI助手", { exact: true }).count(), 0, "the unconfigured AI assistant must not be rendered");
+
+  await page.locator(".editor-title-button").click();
+  await page.locator(".post-sidebar.open").waitFor();
+  await page.locator(".sidebar-scrim").click();
+  await page.locator(".post-sidebar.open").waitFor({ state: "detached" });
+
+  await page.locator(".connection-pill").click();
+  const connectionSettings = page.getByRole("dialog", { name: "设置" });
+  await connectionSettings.waitFor();
+  await connectionSettings.getByTitle("关闭").click();
+  await connectionSettings.waitFor({ state: "detached" });
+
   const baselinePath = join(outputDirectory, "desktop-1264-baseline.png");
   await page.screenshot({ path: baselinePath, animations: "disabled" });
 
@@ -682,6 +755,10 @@ async function verifyMobile(width) {
   const metrics = await layoutMetrics(page);
   assert.equal(metrics.body.scrollWidth, metrics.body.clientWidth, `${width}px body must not overflow horizontally`);
   assert.equal(metrics.topbar.height, 48);
+  assert(
+    metrics.topbarBrand.x + metrics.topbarBrand.width <= metrics.topbarActions.x,
+    `${width}px header brand and actions must not overlap`,
+  );
   assert.equal(metrics.toolbar.height, 61);
   assert.equal(metrics.publish.height, 64);
   assert.deepEqual(

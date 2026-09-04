@@ -1548,23 +1548,29 @@ button:disabled {
   grid-template-columns: minmax(300px, 1fr) auto minmax(300px, 1fr);
   flex: 0 0 48px;
   height: 48px;
-  padding: 0 22px;
+  padding: 0 24px;
   border-bottom: 1px solid #f0f0f2;
   background: #fff;
 }
 
 .topbar-brand {
-  gap: 8px;
+  align-self: stretch;
+  gap: 0;
+  height: 48px;
 }
 
 .astro-wordmark {
   display: flex;
   align-items: baseline;
-  min-width: 91px;
+  flex: 0 0 74px;
+  width: 74px;
+  height: 20px;
+  min-width: 74px;
+  margin-right: 24px;
   color: #222226;
   font-size: 24px;
   font-style: italic;
-  line-height: 1;
+  line-height: 20px;
 }
 
 .astro-wordmark span {
@@ -1590,9 +1596,17 @@ button:disabled {
 
 .editor-back-button {
   order: 2;
-  width: 28px;
-  height: 34px;
+  align-self: flex-start;
+  width: 20px;
+  height: 25px;
+  margin-top: 13px;
   padding: 0;
+}
+
+.editor-back-button svg {
+  width: 20px;
+  height: 20px;
+  transform: translateY(-1px);
 }
 
 .astro-wordmark {
@@ -1601,10 +1615,25 @@ button:disabled {
 
 .editor-title-button {
   order: 3;
-  gap: 7px;
-  height: 36px;
-  padding: 0 6px;
+  flex: 0 0 108px;
+  justify-content: flex-start;
+  gap: 8px;
+  width: 108px;
+  height: 48px;
+  padding: 0 0 0 8px;
   font-size: 18px;
+}
+
+.editor-title-button > span {
+  width: 72px;
+  line-height: 20px;
+  transform: translateY(1px);
+}
+
+.editor-title-button > svg {
+  width: 20px;
+  height: 20px;
+  transform: translateY(1px);
 }
 
 .sync-state {
@@ -4637,13 +4666,32 @@ body > [data-radix-popper-content-wrapper],
 }
 
 @media (max-width: 600px) {
+  .topbar-brand {
+    gap: 8px;
+  }
+
   .astro-wordmark {
+    flex: 0 0 auto;
+    width: auto;
+    height: auto;
     min-width: auto;
+    margin: 0;
     font-size: 19px;
+    line-height: 1;
   }
 
   .editor-back-button {
     order: 1;
+    align-self: auto;
+    width: 28px;
+    height: 34px;
+    margin-top: 0;
+  }
+
+  .editor-back-button svg {
+    width: 21px;
+    height: 21px;
+    transform: none;
   }
 
   .astro-wordmark {
@@ -4652,7 +4700,24 @@ body > [data-radix-popper-content-wrapper],
 
   .editor-title-button {
     order: 3;
+    flex: 0 0 auto;
+    gap: 7px;
+    width: auto;
+    height: 36px;
+    padding: 0 6px;
     font-size: 15px;
+  }
+
+  .editor-title-button > span {
+    width: auto;
+    line-height: normal;
+    transform: none;
+  }
+
+  .editor-title-button > svg {
+    width: 15px;
+    height: 15px;
+    transform: none;
   }
 
   .workspace {

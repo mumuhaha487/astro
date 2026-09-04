@@ -862,7 +862,7 @@ function App() {
           </button>
           <div className="astro-wordmark"><span>AS</span><strong>tro</strong></div>
           <button className="editor-title-button" onClick={openPostSidebar}>
-            发布文章 <ChevronDown size={15} fill="currentColor" />
+            <span>发布文章</span><ChevronDown size={20} fill="currentColor" />
           </button>
         </div>
 
