@@ -3,7 +3,6 @@
  * See studio/THIRD_PARTY_NOTICES.md.
  */
 import {
-  BlockTypeSelect,
   BoldItalicUnderlineToggles,
   ButtonOrDropdownButton,
   ButtonWithTooltip,
@@ -14,6 +13,7 @@ import {
   applyListType$,
   codeBlockPlugin,
   codeMirrorPlugin,
+  convertSelectionToNode$,
   headingsPlugin,
   imagePlugin,
   insertMarkdown$,
@@ -35,6 +35,8 @@ import {
   AlignJustify,
   AlignLeft,
   AlignRight,
+  Baseline,
+  ChevronDown,
   FileCode2,
   FileStack,
   FolderSymlink,
@@ -47,7 +49,6 @@ import {
   Maximize2,
   MessageSquareQuote,
   MoreHorizontal,
-  Palette,
   PlaySquare,
   Sigma,
   Table2,
@@ -55,11 +56,16 @@ import {
 import {
   forwardRef,
   useCallback,
+  useEffect,
   useImperativeHandle,
   useMemo,
   useRef,
+  useState,
   type ReactNode,
 } from "react";
+import { createPortal } from "react-dom";
+import { $createHeadingNode } from "@lexical/rich-text";
+import { $createParagraphNode } from "lexical";
 
 export interface MdxEditorSlotProps {
   initialValue: string;
@@ -138,23 +144,12 @@ function ToolbarAction({
   );
 }
 
-const textColors = [
-  ["#222226", "默认黑"],
-  ["#fc5531", "CSDN 红"],
-  ["#e33e33", "红色"],
-  ["#f59e0b", "橙色"],
-  ["#16a34a", "绿色"],
-  ["#277ccc", "蓝色"],
-  ["#7657e8", "紫色"],
-] as const;
-
-const backgroundColors = [
-  ["#fff1eb", "浅红"],
-  ["#fff7d6", "浅黄"],
-  ["#eaf8ee", "浅绿"],
-  ["#edf5ff", "浅蓝"],
-  ["#f1edff", "浅紫"],
-  ["#f2f3f5", "浅灰"],
+const csdnColors = [
+  "#0D0016", "#FE2C24", "#FF9900", "#FFD900", "#A2E043", "#38D8F0", "#4DA8EE", "#956FE7",
+  "#F3F3F4", "#CCCCCC", "#FEF2F0", "#FFF5E6", "#FEFCD8", "#EDF6E8", "#E7FAFA", "#EAF4FC", "#EFEDF6",
+  "#D7D8D9", "#A5A5A5", "#FBD4D0", "#FFD7B9", "#F9EDA6", "#D4E9D5", "#C7E6EA", "#CBE0F1", "#DAD5E9",
+  "#7B7F82", "#494949", "#ED7976", "#FAA572", "#E6B223", "#98C091", "#79C6CD", "#6EAAD7", "#9C8EC1",
+  "#9C8EC1", "#333333", "#BE191C", "#B95514", "#AD720D", "#1C7331", "#1C7892", "#1A439C", "#511B78",
 ] as const;
 
 function escapeInlineHtml(value: string): string {
@@ -165,38 +160,109 @@ function selectedTextOr(fallback: string): string {
   return window.getSelection()?.toString().trim() || fallback;
 }
 
-function safeCssColor(value: string | undefined): string | null {
-  if (!value || !/^[#a-zA-Z0-9(),.%/\s-]{1,64}$/.test(value)) return null;
-  return CSS.supports("color", value) ? value : null;
-}
-
 function ColorMenu({ background = false }: { background?: boolean }) {
   const insertMarkdown = usePublisher(insertMarkdown$);
-  const colors = background ? backgroundColors : textColors;
   const title = background ? "文字背景色" : "文字颜色";
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const paletteRef = useRef<HTMLDivElement>(null);
+  const selectionRef = useRef("文字");
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 98, left: 8 });
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!anchorRef.current?.contains(target) && !paletteRef.current?.contains(target)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    const closeOnViewportChange = () => setOpen(false);
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("resize", closeOnViewportChange);
+    window.addEventListener("scroll", closeOnViewportChange, true);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("resize", closeOnViewportChange);
+      window.removeEventListener("scroll", closeOnViewportChange, true);
+    };
+  }, [open]);
+
+  const togglePalette = () => {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    const rect = anchorRef.current?.getBoundingClientRect();
+    if (rect) {
+      const left = Math.min(Math.max(8, rect.left - 13), Math.max(8, window.innerWidth - 278));
+      setPosition({ top: rect.top + 50, left });
+    }
+    setOpen(true);
+  };
+
+  const applyColor = (color: string | null) => {
+    const selected = escapeInlineHtml(selectionRef.current || "文字");
+    if (color) {
+      const property = background ? "background-color" : "color";
+      insertMarkdown(`<span style="${property}:${color}">${selected}</span>`);
+    } else {
+      insertMarkdown(selected);
+    }
+    setOpen(false);
+  };
+
   return (
-    <ButtonOrDropdownButton
-      title={title}
-      items={[
-        ...colors.map(([value, label]) => ({
-          value,
-          label: <span className="csdn-color-option"><i style={{ background: value }} />{label}</span>,
-        })),
-        { value: "custom", label: "自定义颜色" },
-      ]}
-      onChoose={(value) => {
-        const requestedColor = value === "custom"
-          ? window.prompt(`输入${background ? "背景" : "文字"}颜色（例如 #fc5531）`, background ? "#fff1eb" : "#fc5531")?.trim()
-          : value;
-        const color = safeCssColor(requestedColor);
-        if (!color) return;
-        const property = background ? "background-color" : "color";
-        insertMarkdown(`<span style="${property}:${color}">${escapeInlineHtml(selectedTextOr("文字"))}</span>`);
-      }}
-    >
-      {background ? <Highlighter size={18} /> : <Palette size={18} />}
-      <span>{background ? "背景" : "颜色"}</span>
-    </ButtonOrDropdownButton>
+    <span className="csdn-color-menu" ref={anchorRef}>
+      <ButtonWithTooltip
+        className="csdn-toolbar-action"
+        title={title}
+        aria-expanded={open}
+        aria-haspopup="menu"
+        onMouseDown={() => { selectionRef.current = selectedTextOr("文字"); }}
+        onClick={togglePalette}
+      >
+        {background ? <Highlighter size={18} /> : <Baseline size={18} />}
+        <span>{background ? "背景" : "颜色"}</span>
+        <span aria-hidden className="csdn-color-caret"><ChevronDown /></span>
+      </ButtonWithTooltip>
+      {open && createPortal(
+        <div
+          aria-label={`${title}色板`}
+          className="csdn-color-palette"
+          ref={paletteRef}
+          role="menu"
+          style={{ left: position.left, top: position.top }}
+        >
+          <button
+            aria-label={`清除${title}`}
+            className="csdn-color-palette-button csdn-color-clear"
+            onClick={() => applyColor(null)}
+            onMouseDown={(event) => event.preventDefault()}
+            role="menuitem"
+            title={`清除${title}`}
+            type="button"
+          />
+          {csdnColors.map((color, index) => (
+            <button
+              aria-label={`${title} ${color}`}
+              className="csdn-color-palette-button"
+              key={`${color}-${index}`}
+              onClick={() => applyColor(color)}
+              onMouseDown={(event) => event.preventDefault()}
+              role="menuitem"
+              style={{ backgroundColor: color }}
+              title={`${title} ${color}`}
+              type="button"
+            />
+          ))}
+        </div>,
+        document.body,
+      )}
+    </span>
   );
 }
 
@@ -222,19 +288,117 @@ function AlignmentMenu() {
   );
 }
 
+const blockTypes = [
+  ["paragraph", "正文", "body"],
+  ["h1", "标题一", "h1"],
+  ["h2", "标题二", "h2"],
+  ["h3", "标题三", "h3"],
+  ["h4", "标题四", "h4"],
+  ["h5", "标题五", "h5"],
+  ["h6", "标题六", "h6"],
+] as const;
+
+function FormatMenu() {
+  const convertSelectionToNode = usePublisher(convertSelectionToNode$);
+  const anchorRef = useRef<HTMLSpanElement>(null);
+  const menuRef = useRef<HTMLDivElement>(null);
+  const [open, setOpen] = useState(false);
+  const [position, setPosition] = useState({ top: 98, left: 8 });
+
+  useEffect(() => {
+    if (!open) return undefined;
+    const closeOnOutsidePress = (event: PointerEvent) => {
+      const target = event.target as Node;
+      if (!anchorRef.current?.contains(target) && !menuRef.current?.contains(target)) setOpen(false);
+    };
+    const closeOnEscape = (event: KeyboardEvent) => {
+      if (event.key === "Escape") setOpen(false);
+    };
+    const closeOnViewportChange = () => setOpen(false);
+    document.addEventListener("pointerdown", closeOnOutsidePress);
+    document.addEventListener("keydown", closeOnEscape);
+    window.addEventListener("resize", closeOnViewportChange);
+    window.addEventListener("scroll", closeOnViewportChange, true);
+    return () => {
+      document.removeEventListener("pointerdown", closeOnOutsidePress);
+      document.removeEventListener("keydown", closeOnEscape);
+      window.removeEventListener("resize", closeOnViewportChange);
+      window.removeEventListener("scroll", closeOnViewportChange, true);
+    };
+  }, [open]);
+
+  const toggleMenu = () => {
+    if (open) {
+      setOpen(false);
+      return;
+    }
+    const rect = anchorRef.current?.getBoundingClientRect();
+    if (rect) {
+      const left = Math.min(Math.max(8, rect.left - 2), Math.max(8, window.innerWidth - 147));
+      setPosition({ top: rect.top + 50, left });
+    }
+    setOpen(true);
+  };
+
+  const chooseBlockType = (value: (typeof blockTypes)[number][0]) => {
+    if (value === "paragraph") {
+      convertSelectionToNode(() => $createParagraphNode());
+    } else {
+      convertSelectionToNode(() => $createHeadingNode(value));
+    }
+    setOpen(false);
+  };
+
+  return (
+    <span className="csdn-format-menu" ref={anchorRef}>
+      <ButtonWithTooltip
+        aria-expanded={open}
+        aria-haspopup="menu"
+        className="csdn-toolbar-action"
+        onClick={toggleMenu}
+        onMouseDown={(event) => event.preventDefault()}
+        title="格式"
+      >
+        <b aria-hidden className="csdn-format-trigger-icon">H</b>
+        <span>格式</span>
+        <span aria-hidden className="csdn-format-caret"><ChevronDown /></span>
+      </ButtonWithTooltip>
+      {open && createPortal(
+        <div
+          aria-label="格式菜单"
+          className="csdn-format-menu-popup"
+          ref={menuRef}
+          role="menu"
+          style={{ left: position.left, top: position.top }}
+        >
+          {blockTypes.map(([value, label, level]) => (
+            <button
+              className="csdn-format-menu-item"
+              key={value}
+              onClick={() => chooseBlockType(value)}
+              onMouseDown={(event) => event.preventDefault()}
+              role="menuitem"
+              type="button"
+            >
+              <span className={`csdn-format-option csdn-format-${level}`}>{label}</span>
+            </button>
+          ))}
+        </div>,
+        document.body,
+      )}
+    </span>
+  );
+}
+
 function MoreStyleMenu() {
   const applyFormat = usePublisher(applyFormat$);
   return (
     <ButtonOrDropdownButton
       title="其他样式"
       items={[
-        { value: "italic", label: "斜体" },
+        { value: "italic", label: "倾斜" },
         { value: "underline", label: "下划线" },
         { value: "strikethrough", label: "删除线" },
-        { value: "superscript", label: "上标" },
-        { value: "subscript", label: "下标" },
-        { value: "highlight", label: "高亮" },
-        { value: "code", label: "行内代码" },
       ]}
       onChoose={(value) => applyFormat(value)}
     >
@@ -250,9 +414,8 @@ function ListMenu() {
     <ButtonOrDropdownButton
       title="列表"
       items={[
-        { value: "bullet", label: "无序列表" },
         { value: "number", label: "有序列表" },
-        { value: "check", label: "任务列表" },
+        { value: "bullet", label: "无序列表" },
       ]}
       onChoose={(value) => applyListType(value)}
     >
@@ -371,7 +534,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
             <>
               <span className="csdn-tool-group csdn-history-tools"><UndoRedo /></span>
               <ToolbarAction label="历史" title="查看文章和草稿历史" icon={<History size={18} />} onClick={onHistory} />
-              <span className="csdn-tool-group csdn-format-tool"><BlockTypeSelect /></span>
+              <span className="csdn-tool-group csdn-format-tool"><FormatMenu /></span>
               <span className="csdn-tool-group csdn-basic-tools"><BoldItalicUnderlineToggles options={["Bold"]} /></span>
               <ColorMenu />
               <ColorMenu background />

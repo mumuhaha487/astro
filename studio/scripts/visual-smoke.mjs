@@ -353,17 +353,82 @@ async function verifyDesktop() {
   }
 
   await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 160, y: 24 } });
-  await page.getByRole("combobox", { name: "文字颜色" }).click();
-  await page.getByRole("option", { name: "CSDN 红" }).click();
+  const formatButton = page.getByRole("button", { name: "格式" });
+  await formatButton.scrollIntoViewIfNeeded();
+  await formatButton.click();
+  const formatMenu = page.locator(".csdn-format-menu-popup");
+  await formatMenu.waitFor();
+  assert.deepEqual(await formatMenu.getByRole("menuitem").allTextContents(), ["正文", "标题一", "标题二", "标题三", "标题四", "标题五", "标题六"]);
+  const formatMenuRect = await formatMenu.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(formatMenuRect, { width: 139, height: 257 });
+  const formatMenuIsTopLayer = await formatMenu.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return Boolean(document.elementFromPoint(rect.left + 20, rect.top + 84)?.closest(".csdn-format-menu-popup"));
+  });
+  assert.equal(formatMenuIsTopLayer, true, "format menu must render above the outline panel");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-format-menu.png"), animations: "disabled" });
+  await formatMenu.getByRole("menuitem", { name: "标题六" }).click();
+  await page.locator(".studio-rich-content h6").waitFor();
+
+  const textColorButton = page.locator('button[aria-label="文字颜色"]');
+  await textColorButton.scrollIntoViewIfNeeded();
+  await textColorButton.click();
+  const colorPalette = page.locator(".csdn-color-palette");
+  await colorPalette.waitFor();
+  assert.equal(await colorPalette.getByRole("menuitem").count(), 45, "CSDN color palette must contain clear plus 44 colors");
+  const colorPaletteRect = await colorPalette.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(colorPaletteRect, { top: 98, width: 270, height: 181 });
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-color-palette.png"), animations: "disabled" });
+  await page.getByTitle("文字颜色 #FE2C24", { exact: true }).click();
   await page.locator(".studio-rich-content[contenteditable='true']").click();
   await page.locator(".studio-rich-content[contenteditable='true']").press("End");
-  await page.getByRole("combobox", { name: "文字背景色" }).click();
-  await page.getByRole("option", { name: "浅黄" }).click();
+  const backgroundColorButton = page.locator('button[aria-label="文字背景色"]');
+  await backgroundColorButton.scrollIntoViewIfNeeded();
+  await backgroundColorButton.click();
+  await page.getByTitle("文字背景色 #FEFCD8", { exact: true }).click();
   await page.locator(".studio-rich-content[contenteditable='true']").click();
   await page.locator(".studio-rich-content[contenteditable='true']").press("End");
+
+  const moreStyleButton = page.getByRole("combobox", { name: "其他样式" });
+  await moreStyleButton.scrollIntoViewIfNeeded();
+  await moreStyleButton.click();
+  const moreStyleMenu = page.locator(".mdxeditor-select-content");
+  assert.deepEqual(await moreStyleMenu.getByRole("option").allTextContents(), ["倾斜", "下划线", "删除线"]);
+  const moreStyleMenuRect = await moreStyleMenu.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { top: Math.round(rect.top), width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(moreStyleMenuRect, { top: 98, width: 139, height: 126 });
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-more-style-menu.png"), animations: "disabled" });
+  await page.keyboard.press("Escape");
+
+  const listButton = page.getByRole("combobox", { name: "列表" });
+  await listButton.scrollIntoViewIfNeeded();
+  await listButton.click();
+  const listMenu = page.locator(".mdxeditor-select-content");
+  assert.deepEqual(await listMenu.getByRole("option").allTextContents(), ["有序列表", "无序列表"]);
+  const listMenuRect = await listMenu.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return { width: Math.round(rect.width), height: Math.round(rect.height) };
+  });
+  assert.deepEqual(listMenuRect, { width: 139, height: 84 });
+  await page.keyboard.press("Escape");
+
   await page.getByRole("combobox", { name: "段落对齐" }).click();
   await page.getByRole("option", { name: "右对齐" }).click();
   await page.waitForTimeout(500);
+  const styledDraft = await page.evaluate(() => Object.keys(localStorage)
+    .filter((key) => key.startsWith("astro-studio:") && key !== "astro-studio:templates")
+    .map((key) => localStorage.getItem(key) || "")
+    .join("\n"));
+  assert(styledDraft.includes("color:#FE2C24"), "selected text color must persist in Markdown");
+  assert(styledDraft.includes("background-color:#FEFCD8"), "selected background color must persist in Markdown");
   const editorText = await page.locator(".studio-rich-content[contenteditable='true']").textContent();
   assert(editorText?.includes("文字") && editorText.includes("段落内容"), `toolbar insertion failed: ${JSON.stringify({ editorText, pageErrors })}`);
   await page.locator(".assistant-title").click();
@@ -520,6 +585,51 @@ async function verifyNarrowExistingArticle() {
   for (let index = 1; index < actionRects.length; index += 1) {
     assert(actionRects[index - 1].right <= actionRects[index].left, "publish actions must not overlap");
   }
+
+  const textColorButton = page.locator('button[aria-label="文字颜色"]');
+  await textColorButton.scrollIntoViewIfNeeded();
+  await textColorButton.click();
+  const colorPalette = page.locator(".csdn-color-palette");
+  await colorPalette.waitFor();
+  const colorPaletteRect = await colorPalette.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+    };
+  });
+  assert.equal(colorPaletteRect.width, 270);
+  assert.equal(colorPaletteRect.height, 181);
+  assert(colorPaletteRect.left >= 8 && colorPaletteRect.right <= width - 8, `mobile color palette must stay inside viewport: ${JSON.stringify(colorPaletteRect)}`);
+  assert.equal(await colorPalette.getByRole("menuitem").count(), 45);
+  await page.screenshot({ path: join(outputDirectory, "mobile-320-color-palette.png"), animations: "disabled" });
+  await page.keyboard.press("Escape");
+  await colorPalette.waitFor({ state: "detached" });
+
+  await page.locator(".studio-rich-content[contenteditable='true']").click({ position: { x: 80, y: 80 } });
+  const formatButton = page.getByRole("button", { name: "格式" });
+  await formatButton.scrollIntoViewIfNeeded();
+  await formatButton.click();
+  const formatMenu = page.locator(".csdn-format-menu-popup");
+  await formatMenu.waitFor();
+  const formatMenuRect = await formatMenu.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return {
+      left: Math.round(rect.left),
+      right: Math.round(rect.right),
+      width: Math.round(rect.width),
+      height: Math.round(rect.height),
+    };
+  });
+  assert.equal(formatMenuRect.width, 139);
+  assert.equal(formatMenuRect.height, 257);
+  assert(formatMenuRect.left >= 8 && formatMenuRect.right <= width - 8, `mobile format menu must stay inside viewport: ${JSON.stringify(formatMenuRect)}`);
+  assert.equal(await formatMenu.getByRole("menuitem").count(), 7);
+  await page.screenshot({ path: join(outputDirectory, "mobile-320-format-menu.png"), animations: "disabled" });
+  await formatMenu.getByRole("menuitem", { name: "标题六" }).click();
+  await page.locator(".studio-rich-content h6").waitFor();
 
   await page.locator(".csdn-toolbar-action").filter({ hasText: "历史" }).click();
   await page.locator(".history-dialog").waitFor();
