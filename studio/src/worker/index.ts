@@ -1,4 +1,6 @@
 import YAML from "yaml";
+
+import seedPostIndex from "../../public/post-index.json";
 import type {
   DraftDocument,
   DraftSummary,
@@ -263,7 +265,7 @@ async function listPosts(
     return { posts: cached.posts };
   }
 
-  const fallbackPosts = cached?.posts ?? (await loadSeedPosts(env));
+  const fallbackPosts = cached?.posts ?? loadSeedPosts();
 
   try {
     const token = await getGitHubToken(env);
@@ -1047,17 +1049,9 @@ function assertByteLength(value: string, max: number, message: string): void {
   if (new TextEncoder().encode(value).byteLength > max) throw new HttpError(413, message);
 }
 
-async function loadSeedPosts(env: Env): Promise<PostMeta[]> {
-  try {
-    const response = await env.ASSETS.fetch(
-      new Request("https://studio-assets.local/post-index.json"),
-    );
-    if (!response.ok) return [];
-    const payload = (await response.json()) as { posts?: PostMeta[] };
-    return Array.isArray(payload.posts) ? payload.posts : [];
-  } catch {
-    return [];
-  }
+function loadSeedPosts(): PostMeta[] {
+  const payload = seedPostIndex as unknown as { posts?: PostMeta[] };
+  return Array.isArray(payload.posts) ? payload.posts : [];
 }
 
 async function writePostsCache(env: Env, posts: PostMeta[]): Promise<void> {
@@ -1071,13 +1065,13 @@ async function writePostsCache(env: Env, posts: PostMeta[]): Promise<void> {
 
 async function upsertPostCache(env: Env, post: PostMeta): Promise<void> {
   const cached = await readJsonObject<{ posts: PostMeta[] }>(env.DRAFTS, "cache/posts-index");
-  const posts = cached?.posts ?? (await loadSeedPosts(env));
+  const posts = cached?.posts ?? loadSeedPosts();
   await writePostsCache(env, [post, ...posts.filter((entry) => entry.path !== post.path)]);
 }
 
 async function removePostFromCache(env: Env, path: string): Promise<void> {
   const cached = await readJsonObject<{ posts: PostMeta[] }>(env.DRAFTS, "cache/posts-index");
-  const posts = cached?.posts ?? (await loadSeedPosts(env));
+  const posts = cached?.posts ?? loadSeedPosts();
   await writePostsCache(env, posts.filter((entry) => entry.path !== path));
 }
 
