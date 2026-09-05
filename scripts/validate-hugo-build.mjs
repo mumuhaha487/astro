@@ -17,6 +17,9 @@ const requiredFiles = [
   "api/calendar-data.json",
   "pagefind/pagefind.js",
   "pagefind/pagefind-entry.json",
+  "icons/search.svg",
+  "assets/font/ZenMaruGothic-Medium.woff2",
+  "assets/font/loli.woff2",
   ...["about", "albums", "albums/AcgExample", "anime", "archive", "atom", "devices", "diary", "friends", "projects", "rss", "skills", "timeline"].map((route) => `${route}/index.html`),
 ];
 
@@ -51,6 +54,13 @@ assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on t
 const contentFiles = await listFiles(join(repositoryRoot, "content", "posts"));
 const misplaced = contentFiles.filter((path) => [".html", ".htm", ".js", ".zip"].includes(extname(path).toLowerCase()));
 assert.deepEqual(misplaced, [], `Web page assets must not be stored with Markdown posts: ${misplaced.join(", ")}`);
+for (const markdownPath of contentFiles.filter((path) => extname(path).toLowerCase() === ".md")) {
+  assert.equal(
+    (await readFile(markdownPath, "utf8")).includes("image.vmss.cn"),
+    false,
+    `Remote image.vmss.cn reference remains in ${markdownPath}`,
+  );
+}
 for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }

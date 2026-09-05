@@ -2,6 +2,37 @@
 html,
 body { max-width: 100%; overflow-x: clip; }
 
+#search-switch > svg,
+#search-bar > svg,
+#search-bar-inside > svg { opacity: 0 !important; }
+
+#search-switch::before,
+#search-bar::before,
+#search-bar-inside::before {
+  content: "";
+  display: block;
+  width: 1.25rem;
+  height: 1.25rem;
+  flex: 0 0 1.25rem;
+  background-color: currentColor;
+  -webkit-mask: url("/icons/search.svg") center / contain no-repeat;
+  mask: url("/icons/search.svg") center / contain no-repeat;
+  pointer-events: none;
+}
+
+#search-switch::before { margin: auto; }
+#search-bar::before,
+#search-bar-inside::before {
+  position: absolute;
+  top: 50%;
+  left: 50%;
+  z-index: 1;
+  transform: translate(-50%, -50%);
+}
+#search-bar:focus-within::before { left: .75rem; transform: translateY(-50%); }
+#search-bar-inside::before { left: .75rem; transform: translateY(-50%); color: rgb(0 0 0 / .3); }
+.dark #search-bar-inside::before { color: rgb(255 255 255 / .3); }
+
 .hugo-post-card svg,
 .category-bar svg { width: 1em; height: 1em; vertical-align: -.125em; }
 
