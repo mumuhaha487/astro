@@ -1,5 +1,4 @@
 import YAML from "yaml";
-import { unzipSync } from "fflate";
 
 import seedPostIndex from "../../public/post-index.json";
 import type {
@@ -16,6 +15,13 @@ import type {
 import { validateScheduleTime } from "../shared/schedule";
 import { fetchLinkPreview, LinkPreviewError } from "../shared/link-preview";
 import { clampWebEmbedHeight } from "../shared/web-embed";
+import {
+  MAX_WEB_FILE_BYTES,
+  MAX_WEB_FILES,
+  MAX_WEB_TOTAL_BYTES,
+  WEB_FILE_EXTENSIONS,
+  webFileExtension,
+} from "../shared/web-files";
 
 export interface ObjectBucket {
   get(key: string): Promise<{ json<T>(): Promise<T> } | null>;
@@ -94,10 +100,6 @@ const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const MAX_RESOURCE_BYTES = 25 * 1024 * 1024;
-const MAX_WEB_ARCHIVE_BYTES = 20 * 1024 * 1024;
-const MAX_WEB_TOTAL_BYTES = 40 * 1024 * 1024;
-const MAX_WEB_FILE_BYTES = 20 * 1024 * 1024;
-const MAX_WEB_FILES = 240;
 
 const webEmbedSecurityHeaders: Record<string, string> = {
   "Content-Security-Policy": [
@@ -707,14 +709,6 @@ interface WebUploadFile {
   bytes: Uint8Array;
 }
 
-const WEB_FILE_EXTENSIONS = new Set([
-  "html", "htm", "css", "js", "mjs", "json", "map", "txt", "xml", "csv",
-  "wasm", "data", "bin", "webmanifest", "glb", "gltf", "obj", "mtl",
-  "png", "jpg", "jpeg", "gif", "webp", "avif", "svg", "ico", "bmp",
-  "woff", "woff2", "ttf", "otf", "eot",
-  "mp3", "wav", "ogg", "oga", "mp4", "webm", "ogv",
-]);
-
 async function uploadWebEmbed(env: Env, request: Request): Promise<WebEmbedRecord> {
   const token = await requireGitHubToken(env);
   const form = await request.formData();
@@ -726,37 +720,33 @@ async function uploadWebEmbed(env: Env, request: Request): Promise<WebEmbedRecor
   if (!title || title.length > 100) throw new HttpError(400, "网页标题需要在 1 到 100 个字符之间");
   if (uploads.length === 0) throw new HttpError(400, "请选择 HTML 网页、JS 文件或 ZIP 压缩包");
 
-  let files: WebUploadFile[];
-  if (sourceType === "zip") {
-    if (uploads.length !== 1 || fileExtension(uploads[0].name) !== "zip") {
-      throw new HttpError(415, "ZIP 模式仅支持上传一个 .zip 压缩包");
-    }
-    if (uploads[0].size === 0) throw new HttpError(400, "ZIP 压缩包不能为空");
-    if (uploads[0].size > MAX_WEB_ARCHIVE_BYTES) throw new HttpError(413, "ZIP 压缩包不能超过 20 MB");
-    files = extractWebArchive(new Uint8Array(await uploads[0].arrayBuffer()));
-  } else {
-    if (uploads.length > MAX_WEB_FILES) throw new HttpError(413, `网页文件不能超过 ${MAX_WEB_FILES} 个`);
-    let paths: string[] = [];
-    try {
-      const parsed = JSON.parse(String(form.get("paths") || "[]"));
-      if (Array.isArray(parsed)) paths = parsed.map(String);
-    } catch {
-      throw new HttpError(400, "网页文件路径格式无效");
-    }
-    if (paths.length !== 0 && paths.length !== uploads.length) throw new HttpError(400, "网页文件与路径数量不一致");
-    files = await Promise.all(uploads.map(async (file, index) => {
-      if (file.size > MAX_WEB_FILE_BYTES) throw new HttpError(413, `网页文件 ${file.name} 不能超过 20 MB`);
-      return {
-        path: normalizeWebFilePath(paths[index] || file.name),
-        bytes: new Uint8Array(await file.arrayBuffer()),
-      };
-    }));
+  if (uploads.length > MAX_WEB_FILES) throw new HttpError(413, `网页文件不能超过 ${MAX_WEB_FILES} 个`);
+  let paths: string[] = [];
+  try {
+    const parsed = JSON.parse(String(form.get("paths") || "[]"));
+    if (Array.isArray(parsed)) paths = parsed.map(String);
+  } catch {
+    throw new HttpError(400, "网页文件路径格式无效");
   }
+  if (paths.length !== 0 && paths.length !== uploads.length) throw new HttpError(400, "网页文件与路径数量不一致");
+  if (sourceType === "zip" && paths.length !== uploads.length) {
+    throw new HttpError(400, "ZIP 解压文件缺少完整路径信息");
+  }
+  if (uploads.some((file) => webFileExtension(file.name) === "zip")) {
+    throw new HttpError(415, "请在编辑器中解压 ZIP 后再上传网页文件");
+  }
+  let files: WebUploadFile[] = await Promise.all(uploads.map(async (file, index) => {
+    if (file.size > MAX_WEB_FILE_BYTES) throw new HttpError(413, `网页文件 ${file.name} 不能超过 20 MB`);
+    return {
+      path: normalizeWebFilePath(paths[index] || file.name),
+      bytes: new Uint8Array(await file.arrayBuffer()),
+    };
+  }));
 
   files = normalizeWebFiles(files);
   let entry = selectWebEntry(files, String(form.get("entry") || ""));
   if (!entry) {
-    const runnableFiles = files.filter((file) => ["js", "mjs", "css"].includes(fileExtension(file.path)));
+    const runnableFiles = files.filter((file) => ["js", "mjs", "css"].includes(webFileExtension(file.path)));
     if (runnableFiles.length === 0) throw new HttpError(400, "静态网页中至少需要一个 HTML 或 JS 文件");
     files.push({ path: "index.html", bytes: new TextEncoder().encode(generatedWebEntry(title, runnableFiles)) });
     files = normalizeWebFiles(files);
@@ -777,32 +767,6 @@ async function uploadWebEmbed(env: Env, request: Request): Promise<WebEmbedRecor
   return webEmbedRecord({ id, root, entry, title, height, files, sourceType, reused: false });
 }
 
-function extractWebArchive(bytes: Uint8Array): WebUploadFile[] {
-  let fileCount = 0;
-  let totalSize = 0;
-  let validationError = "";
-  try {
-    const extracted = unzipSync(bytes, {
-      filter(info) {
-        if (info.name.endsWith("/") || isIgnoredArchivePath(info.name)) return false;
-        fileCount += 1;
-        totalSize += info.originalSize;
-        if (fileCount > MAX_WEB_FILES) validationError = `ZIP 解压后的文件不能超过 ${MAX_WEB_FILES} 个`;
-        if (info.originalSize > MAX_WEB_FILE_BYTES) validationError = `ZIP 中的单个文件不能超过 20 MB：${info.name}`;
-        if (totalSize > MAX_WEB_TOTAL_BYTES) validationError = "ZIP 解压后的总大小不能超过 40 MB";
-        return !validationError;
-      },
-    });
-    if (validationError) throw new HttpError(413, validationError);
-    return Object.entries(extracted)
-      .filter(([path]) => !path.endsWith("/") && !isIgnoredArchivePath(path))
-      .map(([path, content]) => ({ path: normalizeWebFilePath(path), bytes: content }));
-  } catch (error) {
-    if (error instanceof HttpError) throw error;
-    throw new HttpError(400, "ZIP 压缩包已损坏或使用了不支持的压缩格式");
-  }
-}
-
 function normalizeWebFiles(files: WebUploadFile[]): WebUploadFile[] {
   if (files.length === 0) throw new HttpError(400, "静态网页中没有可上传的文件");
   if (files.length > MAX_WEB_FILES) throw new HttpError(413, `网页文件不能超过 ${MAX_WEB_FILES} 个`);
@@ -810,7 +774,7 @@ function normalizeWebFiles(files: WebUploadFile[]): WebUploadFile[] {
   let totalSize = 0;
   for (const file of files) {
     const path = normalizeWebFilePath(file.path);
-    const extension = fileExtension(path);
+    const extension = webFileExtension(path);
     if (extension && !WEB_FILE_EXTENSIONS.has(extension)) {
       throw new HttpError(415, `不支持网页文件类型：${path}`);
     }
@@ -835,19 +799,15 @@ function normalizeWebFilePath(value: string): string {
   return segments.join("/");
 }
 
-function isIgnoredArchivePath(path: string): boolean {
-  return path.startsWith("__MACOSX/") || path.endsWith("/.DS_Store") || path === ".DS_Store";
-}
-
 function selectWebEntry(files: WebUploadFile[], requested: string): string | null {
   if (requested.trim()) {
     const normalized = normalizeWebFilePath(requested.trim());
-    if (!files.some((file) => file.path === normalized) || !["html", "htm"].includes(fileExtension(normalized))) {
+    if (!files.some((file) => file.path === normalized) || !["html", "htm"].includes(webFileExtension(normalized))) {
       throw new HttpError(400, "选择的网页入口不存在或不是 HTML 文件");
     }
     return normalized;
   }
-  const htmlFiles = files.filter((file) => ["html", "htm"].includes(fileExtension(file.path)));
+  const htmlFiles = files.filter((file) => ["html", "htm"].includes(webFileExtension(file.path)));
   const rootIndex = htmlFiles.find((file) => file.path.toLocaleLowerCase() === "index.html");
   if (rootIndex) return rootIndex.path;
   const nestedIndexes = htmlFiles
@@ -860,23 +820,18 @@ function selectWebEntry(files: WebUploadFile[], requested: string): string | nul
 
 function generatedWebEntry(title: string, files: WebUploadFile[]): string {
   const styles = files
-    .filter((file) => fileExtension(file.path) === "css")
+    .filter((file) => webFileExtension(file.path) === "css")
     .map((file) => `<link rel="stylesheet" href="${escapeHtmlAttribute(encodePublicPath(file.path))}">`)
     .join("\n");
   const scripts = files
-    .filter((file) => ["js", "mjs"].includes(fileExtension(file.path)))
-    .map((file) => `<script${fileExtension(file.path) === "mjs" ? ' type="module"' : ""} src="${escapeHtmlAttribute(encodePublicPath(file.path))}"></script>`)
+    .filter((file) => ["js", "mjs"].includes(webFileExtension(file.path)))
+    .map((file) => `<script${webFileExtension(file.path) === "mjs" ? ' type="module"' : ""} src="${escapeHtmlAttribute(encodePublicPath(file.path))}"></script>`)
     .join("\n");
   return `<!doctype html>\n<html lang="zh-CN">\n<head>\n<meta charset="utf-8">\n<meta name="viewport" content="width=device-width,initial-scale=1">\n<title>${escapeHtmlText(title)}</title>\n${styles}\n</head>\n<body>\n<div id="app"></div>\n${scripts}\n</body>\n</html>\n`;
 }
 
 function encodePublicPath(path: string): string {
   return path.split("/").map(encodeURIComponent).join("/");
-}
-
-function fileExtension(path: string): string {
-  const name = path.split("/").pop() || "";
-  return name.includes(".") ? name.split(".").pop()?.toLocaleLowerCase() || "" : "";
 }
 
 async function webBundleId(files: WebUploadFile[]): Promise<string> {
@@ -1386,7 +1341,7 @@ async function proxyEditorAsset(request: Request, env: Env, repositoryPath: stri
 }
 
 function webAssetContentType(path: string): string {
-  const extension = fileExtension(path);
+  const extension = webFileExtension(path);
   const types: Record<string, string> = {
     html: "text/html; charset=utf-8",
     htm: "text/html; charset=utf-8",

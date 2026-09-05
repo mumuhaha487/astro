@@ -97,6 +97,11 @@ import {
   WEB_EMBED_MAX_HEIGHT,
   WEB_EMBED_MIN_HEIGHT,
 } from "../shared/web-embed";
+import {
+  extractWebArchive,
+  preferredWebEntry,
+  webFileContentType,
+} from "./web-archive";
 import "./styles.css";
 
 type EditorMode = "rich" | "source" | "preview";
@@ -900,7 +905,7 @@ function App() {
     },
   ) => {
     setSyncState("saving");
-    setSyncLabel(options.sourceType === "zip" ? "正在解压并上传网页" : "正在上传网页");
+    setSyncLabel(options.sourceType === "zip" ? "正在上传解压后的网页文件" : "正在上传网页");
     try {
       const result = await api.uploadWebEmbed(files, options);
       setSyncState("saved");
@@ -2893,46 +2898,80 @@ function WebEmbedDialog({
   onInsert: (webpage: WebEmbedRecord) => void;
 }) {
   const [sourceType, setSourceType] = useState<"html" | "zip">("html");
-  const [files, setFiles] = useState<File[]>([]);
+  const [files, setFiles] = useState<Array<{ file: File; path: string }>>([]);
+  const [archiveName, setArchiveName] = useState("");
   const [title, setTitle] = useState("");
   const [entry, setEntry] = useState("");
   const [height, setHeight] = useState(WEB_EMBED_DEFAULT_HEIGHT);
+  const [extracting, setExtracting] = useState(false);
   const [uploading, setUploading] = useState(false);
   const [error, setError] = useState("");
   const inputRef = useRef<HTMLInputElement>(null);
+  const selectionVersionRef = useRef(0);
 
-  const paths = files.map((file) => file.webkitRelativePath || file.name);
+  const paths = files.map((file) => file.path);
   const htmlEntries = paths.filter((path) => /\.html?$/i.test(path));
 
   function changeSource(next: "html" | "zip") {
+    selectionVersionRef.current += 1;
     setSourceType(next);
     setFiles([]);
+    setArchiveName("");
     setEntry("");
+    setExtracting(false);
     setError("");
     if (inputRef.current) inputRef.current.value = "";
   }
 
-  function selectFiles(selected: File[]) {
-    const next = sourceType === "zip" ? selected.slice(0, 1) : selected;
-    setFiles(next);
+  async function selectFiles(selected: File[]) {
+    const version = selectionVersionRef.current + 1;
+    selectionVersionRef.current = version;
     setError("");
-    const nextPaths = next.map((file) => file.webkitRelativePath || file.name);
-    const entries = nextPaths.filter((path) => /\.html?$/i.test(path));
-    const preferred = entries.find((path) => /(^|\/)index\.html?$/i.test(path)) || (entries.length === 1 ? entries[0] : "");
-    setEntry(preferred);
-    if (!title.trim() && next[0]) {
-      setTitle(next[0].name.replace(/\.(?:zip|html?|js|mjs)$/i, "").slice(0, 100));
+    setFiles([]);
+    setEntry("");
+
+    const first = selected[0];
+    if (!first) return;
+    if (!title.trim()) setTitle(first.name.replace(/\.(?:zip|html?|js|mjs)$/i, "").slice(0, 100));
+
+    if (sourceType === "zip") {
+      if (!/\.zip$/i.test(first.name)) {
+        setError("ZIP 模式仅支持 .zip 文件");
+        return;
+      }
+      setExtracting(true);
+      setArchiveName(first.name);
+      try {
+        const extracted = extractWebArchive(new Uint8Array(await first.arrayBuffer()));
+        if (selectionVersionRef.current !== version) return;
+        const next = extracted.map(({ path, bytes }) => {
+          const copy = new Uint8Array(bytes.byteLength);
+          copy.set(bytes);
+          return {
+            path,
+            file: new File([copy.buffer], path.split("/").pop() || "asset", { type: webFileContentType(path) }),
+          };
+        });
+        setFiles(next);
+        setEntry(preferredWebEntry(next.map((file) => file.path)));
+      } catch (reason) {
+        if (selectionVersionRef.current === version) setError(errorMessage(reason));
+      } finally {
+        if (selectionVersionRef.current === version) setExtracting(false);
+      }
+      return;
     }
+
+    setArchiveName("");
+    const next = selected.map((file) => ({ file, path: file.webkitRelativePath || file.name }));
+    setFiles(next);
+    setEntry(preferredWebEntry(next.map((file) => file.path)));
   }
 
   async function submit(event: FormEvent) {
     event.preventDefault();
     if (files.length === 0) {
       setError(sourceType === "zip" ? "请选择 ZIP 静态网页包" : "请选择 HTML、JS 或网页资源文件");
-      return;
-    }
-    if (sourceType === "zip" && !/\.zip$/i.test(files[0].name)) {
-      setError("ZIP 模式仅支持 .zip 文件");
       return;
     }
     if (!title.trim()) {
@@ -2946,11 +2985,11 @@ function WebEmbedDialog({
     setUploading(true);
     setError("");
     try {
-      const result = await onUpload(files, {
+      const result = await onUpload(files.map((file) => file.file), {
         title: title.trim(),
         height,
         sourceType,
-        entry: sourceType === "html" ? entry : undefined,
+        entry: entry || undefined,
         paths,
       });
       onInsert(result);
@@ -2963,7 +3002,7 @@ function WebEmbedDialog({
 
   const accept = sourceType === "zip"
     ? ".zip,application/zip"
-    : ".html,.htm,.js,.mjs,.css,.json,.map,.txt,.xml,.csv,.wasm,.data,.bin,.webmanifest,.glb,.gltf,.obj,.mtl,.png,.jpg,.jpeg,.gif,.webp,.avif,.svg,.ico,.bmp,.woff,.woff2,.ttf,.otf,.eot,.mp3,.wav,.ogg,.oga,.mp4,.webm,.ogv";
+    : ".html,.htm,.js,.mjs,.css,.json,.map,.txt,.xml,.csv,.wasm,.data,.bin,.webmanifest,.glb,.gltf,.obj,.mtl,.png,.jpg,.jpeg,.gif,.webp,.avif,.svg,.ico,.bmp,.woff,.woff2,.ttf,.otf,.eot,.mp3,.wav,.ogg,.oga,.mp4,.webm,.ogv,.vtt,.unityweb,.mem,.bundle,.pak,.atlas,.fnt,.vert,.frag,.glsl,.wgsl";
 
   return (
     <div className="modal-backdrop resource-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
@@ -2984,38 +3023,41 @@ function WebEmbedDialog({
             type="file"
             accept={accept}
             multiple={sourceType === "html"}
-            onChange={(event) => selectFiles(Array.from(event.target.files || []))}
+            onChange={(event) => void selectFiles(Array.from(event.target.files || []))}
           />
           <button
             type="button"
             className={`resource-drop-zone ${files.length ? "selected" : ""}`}
+            disabled={extracting || uploading}
             onClick={() => inputRef.current?.click()}
             onDragOver={(event) => event.preventDefault()}
-            onDrop={(event) => { event.preventDefault(); selectFiles(Array.from(event.dataTransfer.files || [])); }}
+            onDrop={(event) => { event.preventDefault(); void selectFiles(Array.from(event.dataTransfer.files || [])); }}
           >
-            {files.length ? (
-              <><Check size={24} /><strong>{files.length === 1 ? files[0].name : `${files.length} 个网页文件`}</strong><span>{formatFileSize(files.reduce((total, file) => total + file.size, 0))} · 点击重新选择</span></>
+            {extracting ? (
+              <><LoaderCircle className="spin" size={24} /><strong>正在浏览器中解压 ZIP</strong><span>解压完成后将显示全部文件</span></>
+            ) : files.length ? (
+              <><Check size={24} /><strong>{sourceType === "zip" ? `${files.length} 个已解压文件` : files.length === 1 ? files[0].file.name : `${files.length} 个网页文件`}</strong><span>{sourceType === "zip" ? `${archiveName} · ` : ""}{formatFileSize(files.reduce((total, item) => total + item.file.size, 0))} · 点击重新选择</span></>
             ) : (
-              <><Upload size={24} /><strong>{sourceType === "zip" ? "选择 ZIP 静态站点" : "选择 HTML、JS 和关联资源"}</strong><span>{sourceType === "zip" ? "上传后自动安全解压" : "可同时选择多个文件"}</span></>
+              <><Upload size={24} /><strong>{sourceType === "zip" ? "选择 ZIP 静态站点" : "选择 HTML、JS 和关联资源"}</strong><span>{sourceType === "zip" ? "选择后在编辑器中解压并显示" : "可同时选择多个文件"}</span></>
             )}
           </button>
-          {files.length > 1 ? (
+          {files.length ? (
             <div className="web-file-summary" aria-label="已选择网页文件">
-              {paths.slice(0, 6).map((path) => <span key={path}>{path}</span>)}
-              {paths.length > 6 ? <span>另有 {paths.length - 6} 个文件</span> : null}
+              <p>{sourceType === "zip" ? `已解压 ${files.length} 个文件，仅上传以下内容` : `将上传 ${files.length} 个网页文件`}</p>
+              <div>{paths.map((path) => <span key={path}>{path}</span>)}</div>
             </div>
           ) : null}
           <label><span>网页标题 <b>*</b></span><input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={100} placeholder="请输入网页或游戏名称" /><small>{title.length}/100</small></label>
-          {sourceType === "html" && htmlEntries.length > 1 ? (
+          {htmlEntries.length > 1 ? (
             <label><span>入口文件 <b>*</b></span><select value={entry} onChange={(event) => setEntry(event.target.value)}><option value="">请选择 HTML 入口</option>{htmlEntries.map((path) => <option value={path} key={path}>{path}</option>)}</select></label>
           ) : null}
           <label className="web-height-field">
             <span>显示高度</span>
             <div className="web-height-control"><input aria-label="网页显示高度" type="range" min={WEB_EMBED_MIN_HEIGHT} max={WEB_EMBED_MAX_HEIGHT} step={20} value={height} onChange={(event) => setHeight(Number(event.target.value))} /><output>{height}px</output></div>
           </label>
-          <div className="web-embed-safety"><PanelsTopLeft size={15} /><span>网页和脚本将在隔离框架中运行</span></div>
+          <div className="web-embed-safety"><PanelsTopLeft size={15} /><span>保持目录结构和 ./ 相对引用，并在隔离框架中运行</span></div>
           {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
-          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={uploading || files.length === 0}>{uploading ? <LoaderCircle className="spin" size={15} /> : null} 上传并内嵌</button></footer>
+          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={extracting || uploading || files.length === 0}>{uploading ? <LoaderCircle className="spin" size={15} /> : null} 上传并内嵌</button></footer>
         </form>
       </section>
     </div>

@@ -3,6 +3,7 @@ import { existsSync } from "node:fs";
 import { mkdir } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import { join } from "node:path";
+import { zipSync } from "fflate";
 import { chromium } from "playwright-core";
 
 const chromeCandidates = [
@@ -123,7 +124,7 @@ const exampleDraftContent = exampleContent
   .replace("draft: false", "draft: true")
   .replace("pinned: true", "pinned: false");
 
-async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [], postContent = exampleContent } = {}) {
+async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [], postContent = exampleContent, webEmbedUploads = [] } = {}) {
   let postRecords = [examplePost];
   let draftRecords = includeDraft ? [exampleDraft] : [];
   await page.route("**/image/editor/visual-wide.svg", (route) => route.fulfill({
@@ -135,6 +136,11 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
     status: 200,
     contentType: "text/html; charset=utf-8",
     body: '<!doctype html><html><body style="margin:0;display:grid;place-items:center;min-height:100vh;font-family:sans-serif"><main><h1>像素游戏已运行</h1><p>HTML + JavaScript 静态网页</p></main><script>document.body.dataset.ready="true"</script></body></html>',
+  }));
+  await page.route("**/web-pages/editor/zip/0123456789abcdef01234567/game/index.html", (route) => route.fulfill({
+    status: 200,
+    contentType: "text/html; charset=utf-8",
+    body: '<!doctype html><html><body style="margin:0;display:grid;place-items:center;min-height:100vh;font-family:sans-serif"><main><h1>ZIP 游戏已运行</h1><p>./test.js 相对引用有效</p></main><script>document.body.dataset.ready="true"</script></body></html>',
   }));
   await page.route("**/api/**", async (route) => {
     const request = route.request();
@@ -251,16 +257,20 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       });
     }
     if (url.pathname === "/api/web-embeds" && request.method() === "POST") {
+      const multipart = request.postDataBuffer()?.toString("utf8") || "";
+      const sourceType = /name="sourceType"\r\n\r\nzip\r\n/.test(multipart) ? "zip" : "html";
+      webEmbedUploads.push({ sourceType, multipart });
+      const entry = sourceType === "zip" ? "game/index.html" : "index.html";
       return json({
         id: "0123456789abcdef01234567",
-        path: "public/web-pages/editor/html/0123456789abcdef01234567/index.html",
-        url: "/web-pages/editor/html/0123456789abcdef01234567/index.html",
-        title: "像素游戏",
-        entry: "index.html",
+        path: `public/web-pages/editor/${sourceType}/0123456789abcdef01234567/${entry}`,
+        url: `/web-pages/editor/${sourceType}/0123456789abcdef01234567/${entry}`,
+        title: sourceType === "zip" ? "相对路径游戏" : "像素游戏",
+        entry,
         height: 700,
-        fileCount: 2,
+        fileCount: sourceType === "zip" ? 3 : 2,
         totalSize: 2048,
-        sourceType: "html",
+        sourceType,
         reused: false,
       });
     }
@@ -273,8 +283,9 @@ async function openEditor(viewport, { existing = false, includeDraft = false, po
   const page = await context.newPage();
   const pageErrors = [];
   const mutations = [];
+  const webEmbedUploads = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
-  await mockStudioApi(page, { includeDraft, mutations, postContent });
+  await mockStudioApi(page, { includeDraft, mutations, postContent, webEmbedUploads });
   await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
   if (existing) {
     await page.locator(".editor-back-button").click();
@@ -283,7 +294,7 @@ async function openEditor(viewport, { existing = false, includeDraft = false, po
     await page.locator(".empty-editor button").click();
   }
   await page.locator(".csdn-editor-toolbar").waitFor();
-  return { context, page, pageErrors, mutations };
+  return { context, page, pageErrors, mutations, webEmbedUploads };
 }
 
 async function verifyPostListSurvivesDraftFailure() {
@@ -2161,7 +2172,7 @@ async function verifyLinkCardsAndLargeImages() {
 async function verifyWebEmbeds() {
   const screenshots = [];
   {
-    const { context, page, pageErrors } = await openEditor({ width: 1264, height: 720 }, { existing: true });
+    const { context, page, pageErrors, webEmbedUploads } = await openEditor({ width: 1264, height: 720 }, { existing: true });
     const webTool = page.locator(".csdn-toolbar-action").filter({ hasText: "网页" });
     await webTool.scrollIntoViewIfNeeded();
     await webTool.click();
@@ -2174,11 +2185,45 @@ async function verifyWebEmbeds() {
     assert.deepEqual(dialogRect, { top: 35, left: 261, width: 742, height: 650 });
 
     await dialog.getByRole("tab", { name: "ZIP 静态站点" }).click();
-    assert.match(await dialog.locator(".resource-drop-zone").textContent(), /选择 ZIP 静态站点.*自动安全解压/s);
+    assert.match(await dialog.locator(".resource-drop-zone").textContent(), /选择 ZIP 静态站点.*编辑器中解压并显示/s);
+    const archive = zipSync({
+      "game/index.html": Buffer.from('<link rel="stylesheet" href="./style.css"><main id="game"></main><script src="./test.js"></script>'),
+      "game/test.js": Buffer.from("document.querySelector('#game').textContent = 'ready'"),
+      "game/style.css": Buffer.from("body{margin:0}"),
+    });
+    await dialog.locator('input[type="file"]').setInputFiles({ name: "relative-game.zip", mimeType: "application/zip", buffer: Buffer.from(archive) });
+    await dialog.getByText("3 个已解压文件").waitFor();
+    const extractedSummary = await dialog.locator(".web-file-summary").textContent();
+    assert.match(extractedSummary, /仅上传以下内容/);
+    assert.match(extractedSummary, /game\/index\.html/);
+    assert.match(extractedSummary, /game\/test\.js/);
+    assert.match(extractedSummary, /game\/style\.css/);
+    assert.match(await dialog.locator(".web-embed-safety").textContent(), /\.\/ 相对引用/);
+    await dialog.getByPlaceholder("请输入网页或游戏名称").fill("相对路径游戏");
+    await dialog.getByLabel("网页显示高度").fill("700");
     const zipPath = join(outputDirectory, "desktop-1264-web-zip-dialog.png");
     await page.screenshot({ path: zipPath, animations: "disabled" });
     screenshots.push(zipPath);
+    await dialog.getByRole("button", { name: "上传并内嵌" }).click();
+    await dialog.waitFor({ state: "detached" });
+    const zipUpload = webEmbedUploads.find((upload) => upload.sourceType === "zip");
+    assert(zipUpload, "ZIP upload request must be recorded");
+    assert.match(zipUpload.multipart, /filename="index\.html"/);
+    assert.match(zipUpload.multipart, /filename="test\.js"/);
+    assert.match(zipUpload.multipart, /filename="style\.css"/);
+    assert.match(zipUpload.multipart, /game\/index\.html/);
+    assert.doesNotMatch(zipUpload.multipart, /relative-game\.zip/);
+    const zipEmbed = page.locator('.studio-rich-content a[title="astro-web-embed:700"]').last();
+    await zipEmbed.waitFor();
+    assert.equal(await zipEmbed.getAttribute("href"), "/web-pages/editor/zip/0123456789abcdef01234567/game/index.html");
 
+    await webTool.click();
+    await dialog.waitFor();
+    const modalLayerCheck = await dialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return document.elementFromPoint(rect.left + rect.width / 2, rect.top + rect.height * 0.78)?.closest(".web-embed-dialog") === element;
+    });
+    assert.equal(modalLayerCheck, true, "editor popovers must stay below the web upload dialog");
     await dialog.getByRole("tab", { name: "HTML / JS 文件" }).click();
     await dialog.locator('input[type="file"]').setInputFiles([
       { name: "index.html", mimeType: "text/html", buffer: Buffer.from('<main id="game"></main><script src="game.js"></script>') },
@@ -2193,7 +2238,7 @@ async function verifyWebEmbeds() {
     await dialog.getByRole("button", { name: "上传并内嵌" }).click();
     await dialog.waitFor({ state: "detached" });
 
-    const embedCard = page.locator('.studio-rich-content a[title="astro-web-embed:700"]');
+    const embedCard = page.locator('.studio-rich-content a[title="astro-web-embed:700"]').last();
     await embedCard.waitFor();
     assert.equal(await embedCard.getAttribute("href"), "/web-pages/editor/html/0123456789abcdef01234567/index.html");
     assert.equal(await embedCard.evaluate((element) => getComputedStyle(element).display), "grid");
@@ -2203,7 +2248,11 @@ async function verifyWebEmbeds() {
     await page.locator(".source-editor").waitFor();
     assert.match(await page.locator(".source-editor").inputValue(), /astro-web-embed:700/);
     await page.locator(".alternate-mode-toolbar").getByRole("button", { name: "预览" }).click();
-    const frame = page.locator(".preview-content .web-page-embed iframe");
+    const zipFrame = page.locator('.preview-content .web-page-embed iframe[src*="/zip/"]');
+    await zipFrame.waitFor();
+    assert.equal(await zipFrame.getAttribute("src"), "/web-pages/editor/zip/0123456789abcdef01234567/game/index.html");
+    await zipFrame.contentFrame().locator('body[data-ready="true"]').waitFor();
+    const frame = page.locator('.preview-content .web-page-embed iframe[src*="/html/"]');
     await frame.waitFor();
     const sandbox = await frame.getAttribute("sandbox") || "";
     assert.match(sandbox, /allow-scripts/);
@@ -2231,6 +2280,13 @@ async function verifyWebEmbeds() {
     });
     assert.deepEqual(rect, { top: 0, left: 0, width: 390, height: 844 });
     await dialog.getByRole("tab", { name: "ZIP 静态站点" }).click();
+    const mobileArchive = zipSync({
+      "game/index.html": Buffer.from('<script src="./test.js"></script>'),
+      "game/test.js": Buffer.from("document.body.dataset.ready = 'true'"),
+    });
+    await dialog.locator('input[type="file"]').setInputFiles({ name: "mobile-game.zip", mimeType: "application/zip", buffer: Buffer.from(mobileArchive) });
+    await dialog.getByText("2 个已解压文件").waitFor();
+    assert.equal(await dialog.evaluate((element) => element.scrollWidth), await dialog.evaluate((element) => element.clientWidth));
     const mobilePath = join(outputDirectory, "mobile-390-web-zip-dialog.png");
     await page.screenshot({ path: mobilePath, animations: "disabled" });
     screenshots.push(mobilePath);

@@ -1,5 +1,4 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { zipSync } from "fflate";
 import worker from "./index";
 
 function testEnv(assetFetch = vi.fn()) {
@@ -177,7 +176,7 @@ describe("web page uploads", () => {
     return response.headers.get("Set-Cookie")?.split(";", 1)[0] || "";
   }
 
-  it("unpacks a ZIP site and commits all static files in one Git commit", async () => {
+  it("commits the editor-extracted ZIP file tree and preserves dot-relative references", async () => {
     let blobIndex = 0;
     const requests: Array<{ path: string; method: string; body?: unknown }> = [];
     const githubFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
@@ -198,16 +197,15 @@ describe("web page uploads", () => {
     vi.stubGlobal("fetch", githubFetch);
     const env = testEnv();
     const cookie = await authenticatedCookie(env);
-    const archive = zipSync({
-      "game/index.html": new TextEncoder().encode('<script src="game.js"></script>'),
-      "game/game.js": new TextEncoder().encode("document.body.textContent = 'ready'"),
-      "game/style.css": new TextEncoder().encode("body{margin:0}"),
-    });
     const form = new FormData();
-    form.set("files", new File([archive], "game.zip", { type: "application/zip" }));
+    form.append("files", new File(['<link rel="stylesheet" href="./style.css"><script src="./test.js"></script>'], "index.html", { type: "text/html" }));
+    form.append("files", new File(["document.body.textContent = 'ready'"], "test.js", { type: "text/javascript" }));
+    form.append("files", new File(["body{margin:0}"], "style.css", { type: "text/css" }));
+    form.set("paths", JSON.stringify(["game/index.html", "game/test.js", "game/style.css"]));
     form.set("title", "网页小游戏");
     form.set("height", "700");
     form.set("sourceType", "zip");
+    form.set("entry", "game/index.html");
 
     const response = await worker.fetch(new Request("https://studio.example/api/web-embeds", {
       method: "POST",
@@ -227,6 +225,10 @@ describe("web page uploads", () => {
     const treeRequest = requests.find((entry) => entry.path.endsWith("/git/trees"));
     expect(JSON.stringify(treeRequest?.body)).not.toContain("content/posts");
     expect(JSON.stringify(treeRequest?.body)).toContain("public/web-pages/editor/zip/");
+    expect(JSON.stringify(treeRequest?.body)).toContain("/game/test.js");
+    expect(JSON.stringify(treeRequest?.body)).not.toContain(".zip");
+    const htmlBlob = requests.find((entry) => entry.path.endsWith("/git/blobs") && Buffer.from(String((entry.body as { content?: string })?.content || ""), "base64").toString().includes("<script"));
+    expect(Buffer.from(String((htmlBlob?.body as { content?: string })?.content || ""), "base64").toString()).toContain('src="./test.js"');
   });
 
   it("reuses an identical HTML upload without creating another commit", async () => {
@@ -258,14 +260,14 @@ describe("web page uploads", () => {
     expect(githubFetch).toHaveBeenCalledOnce();
   });
 
-  it("rejects archive traversal paths before contacting GitHub", async () => {
+  it("rejects extracted ZIP traversal paths before contacting GitHub", async () => {
     const githubFetch = vi.fn();
     vi.stubGlobal("fetch", githubFetch);
     const env = testEnv();
     const cookie = await authenticatedCookie(env);
-    const archive = zipSync({ "../escape.html": new TextEncoder().encode("unsafe") });
     const form = new FormData();
-    form.set("files", new File([archive], "unsafe.zip", { type: "application/zip" }));
+    form.set("files", new File(["unsafe"], "escape.html", { type: "text/html" }));
+    form.set("paths", JSON.stringify(["../escape.html"]));
     form.set("title", "不安全网页");
     form.set("sourceType", "zip");
 
@@ -277,6 +279,28 @@ describe("web page uploads", () => {
 
     expect(response.status).toBe(400);
     expect(await response.json()).toMatchObject({ error: expect.stringContaining("路径无效") });
+    expect(githubFetch).not.toHaveBeenCalled();
+  });
+
+  it("rejects a ZIP binary because only editor-extracted files may be uploaded", async () => {
+    const githubFetch = vi.fn();
+    vi.stubGlobal("fetch", githubFetch);
+    const env = testEnv();
+    const cookie = await authenticatedCookie(env);
+    const form = new FormData();
+    form.set("files", new File(["zip-bytes"], "game.zip", { type: "application/zip" }));
+    form.set("paths", JSON.stringify(["game.zip"]));
+    form.set("title", "未解压网页");
+    form.set("sourceType", "zip");
+
+    const response = await worker.fetch(new Request("https://studio.example/api/web-embeds", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+
+    expect(response.status).toBe(415);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("编辑器中解压") });
     expect(githubFetch).not.toHaveBeenCalled();
   });
 });
