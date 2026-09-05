@@ -1,0 +1,26 @@
+{{- $posts := where site.RegularPages "Section" "posts" -}}
+<div class="card-base category-bar p-3 onload-animation" id="category-bar" data-home-path="/" data-archive-path="/archive/">
+  <div class="category-bar-inner flex gap-2">
+    <a href="/" class="category-pill text-sm px-2 py-1 rounded-lg flex-shrink-0 transition-colors duration-200 flex items-center justify-center" data-category-name="" aria-label="主页">
+      <svg viewBox="0 0 24 24" aria-hidden="true"><path fill="currentColor" d="M4 21V9l8-6 8 6v12h-6v-7h-4v7z"/></svg>
+    </a>
+    <a href="/archive/" class="category-pill text-sm px-3 py-1 rounded-lg whitespace-nowrap flex-shrink-0 transition-colors duration-200 flex items-center justify-center" data-category-name="__archive__">
+      归档 <span class="text-xs opacity-60 ml-1">{{ len $posts }}</span>
+    </a>
+    <div class="category-divider flex-shrink-0"></div>
+    <div class="scroll-area relative">
+      <div class="scroll-fade scroll-fade-left" aria-hidden="true"></div>
+      <div class="category-scroll flex gap-2 overflow-x-auto">
+        {{- range ($posts.GroupByParam "category") -}}
+          {{- if .Key -}}
+          <a href="/archive/?category={{ .Key | urlquery }}" class="category-pill text-sm px-3 py-1 rounded-lg whitespace-nowrap transition-colors duration-200 flex items-center justify-center" data-category-name="{{ .Key }}">
+            {{ .Key }} <span class="text-xs opacity-60 ml-1">{{ len .Pages }}</span>
+          </a>
+          {{- end -}}
+        {{- end -}}
+      </div>
+      <div class="scroll-fade scroll-fade-right" aria-hidden="true"></div>
+    </div>
+  </div>
+</div>
+

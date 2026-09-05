@@ -1,0 +1,46 @@
+{{- $page := .page -}}
+{{- $index := .index -}}
+{{- $image := strings.TrimSpace ($page.Params.image | default "") -}}
+{{- $hasCover := ne $image "" -}}
+<div class="card-base hugo-post-card flex flex-col-reverse md:flex-col w-full rounded-[var(--radius-large)] overflow-hidden relative onload-animation" style="--i: {{ $index }}; --interval: 50ms; --coverWidth: 28%;">
+  <div class="pl-6 md:pl-9 pr-6 md:pr-2 pt-6 md:pt-7 pb-6 relative {{ if $hasCover }}w-full md:w-[calc(100%_-_var(--coverWidth)_-_0.75rem)]{{ else }}w-full md:w-[calc(100%_-_3.25rem_-_0.75rem)]{{ end }}">
+    <a href="{{ $page.RelPermalink }}" class="transition group w-full block font-bold mb-3 text-3xl text-90 hover:text-[var(--primary)] dark:hover:text-[var(--primary)] active:text-[var(--title-active)] dark:active:text-[var(--title-active)] before:w-1 before:h-5 before:rounded-md before:bg-[var(--primary)] before:absolute before:top-[2.1875rem] before:left-[1.125rem] before:hidden md:before:block">
+      {{- if $page.Params.pinned -}}
+      <svg viewBox="0 0 24 24" class="inline text-[var(--primary)] text-2xl mr-2 -translate-y-0.5" aria-label="置顶"><path fill="currentColor" d="m16 12 2 2v2h-5v6l-2-1v-5H6v-2l2-2V5H7V3h10v2h-1z"/></svg>
+      {{- end -}}
+      {{ $page.Title }}
+      {{- if and $page.Params.encrypted $page.Params.password -}}
+      <svg viewBox="0 0 24 24" class="inline text-2xl align-middle -translate-y-px ml-2" aria-label="加密"><path fill="currentColor" d="M6 22q-.825 0-1.412-.587T4 20V10q0-.825.588-1.412T6 8h1V6q0-2.075 1.463-3.537T12 1t3.538 1.463T17 6v2h1q.825 0 1.413.588T20 10v10q0 .825-.587 1.413T18 22zm3-14h6V6q0-1.25-.875-2.125T12 3t-2.125.875T9 6z"/></svg>
+      {{- end -}}
+      <svg viewBox="0 0 24 24" class="hugo-chevron inline text-[2rem] text-[var(--primary)] md:hidden translate-y-0.5 absolute" aria-hidden="true"><path fill="currentColor" d="m9.4 18-1.4-1.4 4.6-4.6L8 7.4 9.4 6l6 6z"/></svg>
+      <svg viewBox="0 0 24 24" class="hugo-chevron text-[var(--primary)] text-[2rem] transition hidden md:inline absolute translate-y-0.5 opacity-0 group-hover:opacity-100 -translate-x-1 group-hover:translate-x-0" aria-hidden="true"><path fill="currentColor" d="m9.4 18-1.4-1.4 4.6-4.6L8 7.4 9.4 6l6 6z"/></svg>
+    </a>
+    <div class="hugo-post-meta flex flex-wrap text-neutral-500 dark:text-neutral-400 items-center gap-4 gap-x-4 gap-y-2 mb-4">
+      <div class="flex items-center"><div class="meta-icon"><svg viewBox="0 0 24 24" class="text-xl" aria-hidden="true"><path fill="currentColor" d="M5 22q-.825 0-1.412-.587T3 20V6q0-.825.588-1.412T5 4h1V2h2v2h8V2h2v2h1q.825 0 1.413.588T21 6v14q0 .825-.587 1.413T19 22zm0-2h14V10H5zm0-12h14V6H5z"/></svg></div><span class="text-50 text-sm font-medium">{{ $page.Date.Format "2006-01-02" }}</span></div>
+      <div class="flex items-center"><div class="meta-icon"><svg viewBox="0 0 24 24" class="text-xl" aria-hidden="true"><path fill="currentColor" d="M6 22q-.825 0-1.412-.587T4 20V4q0-.825.588-1.412T6 2h12q.825 0 1.413.588T20 4v16q0 .825-.587 1.413T18 22zm0-2h12V4H6zm2-2h8v-2H8zm0-4h8v-2H8zm0-4h5V8H8z"/></svg></div><div class="flex flex-row flex-nowrap items-center"><a href="/archive/?category={{ $page.Params.category | default "未分类" | urlquery }}" class="link-lg transition text-50 text-sm font-medium hover:text-[var(--primary)] dark:hover:text-[var(--primary)] whitespace-nowrap">{{ $page.Params.category | default "未分类" }}</a></div></div>
+      {{- if gt $page.WordCount 0 }}<div class="flex items-center"><div class="meta-icon"><svg viewBox="0 0 24 24" class="text-xl" aria-hidden="true"><path fill="currentColor" d="M6 22q-.825 0-1.412-.587T4 20V4q0-.825.588-1.412T6 2h8l6 6v12q0 .825-.587 1.413T18 22zm7-13h5l-5-5zM8 17h8v-2H8zm0-4h8v-2H8z"/></svg></div><span class="text-50 text-sm font-medium">{{ $page.WordCount }} 字</span></div>{{ end -}}
+    </div>
+    <div class="transition text-75 mb-3.5 pr-4 {{ if not $page.Params.description }}line-clamp-2 md:line-clamp-1{{ end }}">
+      {{ with $page.Params.description }}{{ . | markdownify }}{{ else }}{{ $page.Summary | plainify | truncate 150 }}{{ end }}
+    </div>
+    <div class="flex flex-wrap gap-2 mt-2">
+      {{- with $page.Params.tags -}}
+        {{- range . -}}
+        <a href="/archive/?tag={{ . | urlquery }}" class="btn-regular h-6 text-xs px-2 rounded-lg" aria-label="查看标签 {{ . }} 的文章"><span># {{ strings.TrimSpace . }}</span></a>
+        {{- end -}}
+      {{- else -}}<span class="text-xs text-50">无标签</span>{{- end -}}
+    </div>
+  </div>
+  {{- if $hasCover -}}
+  <a href="{{ $page.RelPermalink }}" aria-label="{{ $page.Title }}" class="group max-h-[20vh] md:max-h-none mx-4 mt-4 -mb-2 md:mb-0 md:mx-0 md:mt-0 md:w-[var(--coverWidth)] relative md:absolute md:top-3 md:bottom-3 md:right-3 rounded-xl overflow-hidden active:scale-95">
+    <div class="absolute pointer-events-none z-10 w-full h-full group-hover:bg-black/30 group-active:bg-black/50 transition"></div>
+    <div class="absolute pointer-events-none z-20 w-full h-full flex items-center justify-center"><svg viewBox="0 0 24 24" class="hugo-chevron transition opacity-0 group-hover:opacity-100 scale-50 group-hover:scale-100 text-white text-5xl" aria-hidden="true"><path fill="currentColor" d="m9.4 18-1.4-1.4 4.6-4.6L8 7.4 9.4 6l6 6z"/></svg></div>
+    <img src="{{ $image | safeURL }}" alt="{{ $page.Title }}" class="w-full h-full object-cover" loading="lazy">
+  </a>
+  {{- else -}}
+  <a href="{{ $page.RelPermalink }}" aria-label="{{ $page.Title }}" class="!hidden md:!flex btn-regular w-[3.25rem] absolute right-3 top-3 bottom-3 rounded-xl bg-[var(--enter-btn-bg)] hover:bg-[var(--enter-btn-bg-hover)] active:bg-[var(--enter-btn-bg-active)] active:scale-95">
+    <svg viewBox="0 0 24 24" class="hugo-chevron transition text-[var(--primary)] text-4xl mx-auto" aria-hidden="true"><path fill="currentColor" d="m9.4 18-1.4-1.4 4.6-4.6L8 7.4 9.4 6l6 6z"/></svg>
+  </a>
+  {{- end -}}
+</div>
+<div class="transition border-t-[1px] border-dashed mx-6 border-black/10 dark:border-white/[0.15] last:border-t-0 md:hidden"></div>

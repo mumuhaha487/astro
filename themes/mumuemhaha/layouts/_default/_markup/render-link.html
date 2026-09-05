@@ -1,0 +1,14 @@
+{{- $title := .Title | default "" -}}
+{{- if strings.HasPrefix $title "astro-web-embed:" -}}
+  {{- $height := strings.TrimPrefix "astro-web-embed:" $title -}}
+  {{- $height = $height | default "700" -}}
+  <div class="web-page-embed" data-pagefind-ignore>
+    <iframe src="{{ .Destination | safeURL }}" title="{{ .Text | plainify }}" loading="lazy" sandbox="allow-scripts allow-forms allow-modals allow-popups allow-pointer-lock allow-downloads" style="height: {{ $height }}px"></iframe>
+    <a class="web-page-embed-open" href="{{ .Destination | safeURL }}" target="_blank" rel="noopener noreferrer">在新窗口打开</a>
+  </div>
+{{- else if eq $title "astro-link-card" -}}
+  <a class="hugo-link-card" href="{{ .Destination | safeURL }}" target="_blank" rel="noopener noreferrer">{{ .Text | safeHTML }}<span>↗</span></a>
+{{- else -}}
+  <a href="{{ .Destination | safeURL }}"{{ with .Title }} title="{{ . }}"{{ end }}{{ if or (strings.HasPrefix .Destination "http://") (strings.HasPrefix .Destination "https://") }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .Text | safeHTML }}</a>
+{{- end -}}
+

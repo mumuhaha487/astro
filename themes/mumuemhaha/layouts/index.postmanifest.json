@@ -1,0 +1,19 @@
+[
+{{- $posts := partial "sorted-posts.html" . -}}
+{{- range $index, $page := $posts -}}
+  {{- if $index }},{{ end -}}
+  {{- $url := strings.TrimSuffix "/" $page.RelPermalink -}}
+  {{- dict
+    "id" (path.Base $url)
+    "url" $page.RelPermalink
+    "title" $page.Title
+    "description" ($page.Params.description | default "")
+    "published" $page.Date.UnixMilli
+    "date" ($page.Date.Format "2006-01-02")
+    "category" ($page.Params.category | default "")
+    "password" (and ($page.Params.encrypted | default false) (ne ($page.Params.password | default "") ""))
+    "encryptionPassword" ($page.Params.password | default "")
+    "passwordHint" ($page.Params.passwordHint | default "")
+    | jsonify -}}
+{{- end -}}
+]

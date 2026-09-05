@@ -1,0 +1,9 @@
+{{ partial "category-bar.html" . }}
+{{- $posts := partial "sorted-posts.html" . -}}
+{{- $paginator := .Paginate $posts -}}
+<div id="post-list-container" class="transition-all duration-500 ease-in-out rounded-[var(--radius-large)] bg-[var(--card-bg)] md:bg-transparent mb-4 list-mode js-initialized" data-default-layout="list" data-both-sidebars="true">
+  {{- range $index, $page := $paginator.Pages -}}
+    {{ partial "post-card.html" (dict "page" $page "index" $index) }}
+  {{- end -}}
+</div>
+{{ partial "pagination.html" $paginator }}

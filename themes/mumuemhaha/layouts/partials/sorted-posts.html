@@ -1,0 +1,12 @@
+{{- $pinned := where (where site.RegularPages "Section" "posts") ".Params.pinned" true -}}
+{{- $pinned = $pinned.ByParam "priority" -}}
+{{- $regular := where (where site.RegularPages "Section" "posts") ".Params.pinned" "ne" true -}}
+{{- $posts := slice -}}
+{{- range $pinned -}}
+  {{- $posts = $posts | append . -}}
+{{- end -}}
+{{- range $regular.ByDate.Reverse -}}
+  {{- $posts = $posts | append . -}}
+{{- end -}}
+{{- return $posts -}}
+

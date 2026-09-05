@@ -1,6 +1,8 @@
 node_modules/
 dist/
 .astro/
+.hugo-test-dist/
+.hugo_build.lock
 
 .env
 .env.*

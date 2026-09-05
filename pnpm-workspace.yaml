@@ -1,6 +1,7 @@
-onlyBuiltDependencies:
-  - '@parcel/watcher'
-  - esbuild
-  - sharp
-  - swup
-  - ttf2woff2
+allowBuilds:
+  '@parcel/watcher': true
+  esbuild: true
+  hugo-bin: true
+  sharp: true
+  swup: true
+  ttf2woff2: true

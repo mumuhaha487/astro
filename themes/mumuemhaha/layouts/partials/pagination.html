@@ -1,0 +1,14 @@
+{{- if gt .TotalPages 1 -}}
+<nav class="hugo-pagination flex flex-row gap-3 justify-center mx-auto onload-animation" aria-label="文章分页">
+  {{- with .Prev -}}<a href="{{ .URL }}" aria-label="上一页" class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"><span aria-hidden="true">‹</span></a>{{- else -}}<span class="btn-card disabled overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"><span aria-hidden="true">‹</span></span>{{- end -}}
+  <div class="bg-[var(--card-bg)] flex flex-row rounded-lg items-center text-neutral-700 dark:text-neutral-300 font-bold">
+    {{- range .Pagers -}}
+      {{- if or (eq .PageNumber 1) (eq .PageNumber $.PageNumber) (eq .PageNumber $.TotalPages) (and (ge .PageNumber (sub $.PageNumber 2)) (le .PageNumber (add $.PageNumber 2))) -}}
+        {{- if eq .PageNumber $.PageNumber -}}<span class="h-11 w-11 rounded-lg bg-[var(--primary)] flex items-center justify-center font-bold text-white dark:text-black/70">{{ .PageNumber }}</span>{{- else -}}<a href="{{ .URL }}" class="btn-card w-11 h-11 rounded-lg overflow-hidden active:scale-[0.85]" aria-label="第 {{ .PageNumber }} 页">{{ .PageNumber }}</a>{{- end -}}
+      {{- end -}}
+    {{- end -}}
+  </div>
+  {{- with .Next -}}<a href="{{ .URL }}" aria-label="下一页" class="btn-card overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"><span aria-hidden="true">›</span></a>{{- else -}}<span class="btn-card disabled overflow-hidden rounded-lg text-[var(--primary)] w-11 h-11"><span aria-hidden="true">›</span></span>{{- end -}}
+</nav>
+{{- end -}}
+

@@ -17,6 +17,7 @@ export interface FrontmatterFields {
   password?: string;
   passwordHint?: string;
   permalink?: string;
+  url?: string;
   alias?: string;
   author?: string;
   sourceLink?: string;
@@ -88,6 +89,12 @@ export function parseDocument(content: string): ParsedDocument {
     lang: typeof parsed.lang === "string" ? parsed.lang : "zh-CN",
     comment: parsed.comment !== false,
     encrypted: parsed.encrypted === true,
+    permalink:
+      typeof parsed.permalink === "string"
+        ? parsed.permalink
+        : typeof parsed.url === "string"
+          ? parsed.url
+          : undefined,
   } satisfies FrontmatterFields;
 
   return { fields, body: content.slice(match[0].length) };
@@ -107,6 +114,7 @@ const preferredOrder = [
   "lang",
   "comment",
   "permalink",
+  "url",
   "alias",
   "author",
   "sourceLink",
@@ -137,15 +145,19 @@ function serializeFrontmatterValue(key: string, value: unknown): unknown {
 
 export function serializeDocument(fields: FrontmatterFields, body: string): string {
   const ordered: Record<string, unknown> = {};
+  const normalizedFields: FrontmatterFields = {
+    ...fields,
+    url: fields.permalink || undefined,
+  };
   for (const key of preferredOrder) {
-    const value = fields[key];
+    const value = normalizedFields[key];
     if (value === undefined || value === null || value === "") continue;
     if (Array.isArray(value) && value.length === 0) continue;
-    if (key === "priority" && fields.pinned !== true) continue;
-    if ((key === "password" || key === "passwordHint") && fields.encrypted !== true) continue;
+    if (key === "priority" && normalizedFields.pinned !== true) continue;
+    if ((key === "password" || key === "passwordHint") && normalizedFields.encrypted !== true) continue;
     ordered[key] = serializeFrontmatterValue(key, value);
   }
-  for (const [key, value] of Object.entries(fields)) {
+  for (const [key, value] of Object.entries(normalizedFields)) {
     if (!(key in ordered) && !preferredOrder.includes(key) && value !== undefined) {
       ordered[key] = value;
     }

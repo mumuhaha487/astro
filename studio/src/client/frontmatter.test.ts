@@ -99,5 +99,11 @@ Body`);
       passwordHint: "six letters",
       permalink: "/notes/drawer-settings/",
     });
+    expect(serializeDocument(parsed.fields, parsed.body)).toContain("url: '/notes/drawer-settings/'");
+  });
+
+  it("uses a Hugo url as the editor permalink when loading migrated content", () => {
+    const parsed = parseDocument("---\ntitle: Hugo URL\npublished: 2026-09-05\nurl: /notes/hugo-url/\n---\n\nBody");
+    expect(parsed.fields.permalink).toBe("/notes/hugo-url/");
   });
 });
