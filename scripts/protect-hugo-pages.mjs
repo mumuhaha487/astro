@@ -1,6 +1,6 @@
 import { existsSync } from "node:fs";
 import { readFile, writeFile } from "node:fs/promises";
-import { dirname, join, resolve } from "node:path";
+import { dirname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 import { parse, parseFragment, serialize } from "parse5";
@@ -58,9 +58,10 @@ console.log(`Protected ${protectedCount} encrypted Hugo page${protectedCount ===
 
 function resolveOutputPath(url) {
   const pathname = decodeURIComponent(new URL(url, "https://vmss.cn").pathname).replace(/^\/+/, "");
-  const relative = pathname.endsWith("/") ? join(pathname, "index.html") : pathname;
-  const target = resolve(outputRoot, relative);
-  if (!target.startsWith(`${outputRoot}\\`) && target !== outputRoot) throw new Error(`Unsafe page URL: ${url}`);
+  const relativePath = pathname.endsWith("/") ? join(pathname, "index.html") : pathname;
+  const target = resolve(outputRoot, relativePath);
+  const targetFromRoot = relative(outputRoot, target);
+  if (targetFromRoot === ".." || targetFromRoot.startsWith(`..${sep}`) || isAbsolute(targetFromRoot)) throw new Error(`Unsafe page URL: ${url}`);
   return target;
 }
 

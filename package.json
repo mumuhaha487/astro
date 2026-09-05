@@ -8,6 +8,7 @@
 		"dev": "hugo server --buildDrafts --disableFastRender",
 		"start": "hugo server --buildDrafts --disableFastRender",
 		"check": "hugo --renderToMemory",
+		"test:forum": "node --test tests/forum-edge.test.mjs",
 		"update-anime": "node scripts/update-anime.mjs",
 		"update-bangumi": "node scripts/update-bangumi.mjs",
 		"update-bilibili": "node scripts/update-bilibili.mjs",

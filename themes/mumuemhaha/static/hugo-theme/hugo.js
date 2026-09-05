@@ -1,176 +1,53 @@
 (() => {
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
+  const section = document.body.dataset.section || "home";
 
-  function initCategoryBar() {
-    const bar = $("#category-bar");
-    if (!bar) return;
-    const pathname = location.pathname.replace(/\/$/, "") || "/";
-    const params = new URLSearchParams(location.search);
-    const category = params.get("category") || "";
-    const isArchive = pathname === "/archive";
-    $$(".category-pill", bar).forEach((pill) => {
-      const name = pill.dataset.categoryName || "";
-      pill.toggleAttribute("data-active", isArchive ? (category ? name === category : name === "__archive__") : name === "");
-    });
-    const scroll = $(".category-scroll", bar);
-    if (!scroll || scroll.dataset.hugoReady) return;
-    scroll.dataset.hugoReady = "true";
-    const update = () => {
-      const overflow = scroll.scrollWidth > scroll.clientWidth + 1;
-      $(".scroll-fade-left", bar)?.toggleAttribute("data-visible", overflow && scroll.scrollLeft > 1);
-      $(".scroll-fade-right", bar)?.toggleAttribute("data-visible", overflow && scroll.scrollLeft + scroll.clientWidth < scroll.scrollWidth - 1);
-    };
-    scroll.addEventListener("wheel", (event) => {
-      if (scroll.scrollWidth <= scroll.clientWidth) return;
-      event.preventDefault();
-      scroll.scrollLeft += event.deltaY;
-    }, { passive: false });
-    scroll.addEventListener("scroll", update, { passive: true });
-    addEventListener("resize", update);
-    update();
+  $$(`[data-nav="${section === "posts" ? "blog" : section}"]`).forEach((node) => node.classList.add("active"));
+  if (section !== "discuss") $("[data-forum-auth-button]")?.addEventListener("click", () => { location.href = "/discuss/?auth=1"; });
+
+  const openSidebar = () => document.body.classList.add("sidebar-open", "no-scroll");
+  const closeSidebar = () => document.body.classList.remove("sidebar-open", "no-scroll");
+  $$("[data-sidebar-open]").forEach((button) => button.addEventListener("click", openSidebar));
+  $$("[data-sidebar-close]").forEach((button) => button.addEventListener("click", closeSidebar));
+
+  function initCursor() {
+    if (!matchMedia("(pointer:fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    const dot = $(".cursor-dot");
+    if (!dot) return;
+    addEventListener("pointermove", (event) => {
+      dot.style.left = `${event.clientX}px`;
+      dot.style.top = `${event.clientY}px`;
+      dot.classList.add("visible");
+    }, { passive: true });
+    document.addEventListener("pointerover", (event) => dot.classList.toggle("active", Boolean(event.target.closest("a,button,input,textarea,select"))));
+    document.addEventListener("pointerleave", () => dot.classList.remove("visible"));
   }
 
-  function initPostLayout() {
-    const container = $("#post-list-container");
-    if (!container) return;
-    const update = (layout) => {
-      const next = layout === "grid" && innerWidth >= 769 ? "grid" : "list";
-      container.classList.toggle("grid-mode", next === "grid");
-      container.classList.toggle("list-mode", next !== "grid");
-      $("#main-grid")?.setAttribute("data-layout-mode", next);
-      $(".right-sidebar-container")?.classList.toggle("hidden-in-grid-mode", next === "grid");
-    };
-    update(localStorage.getItem("postListLayout") || container.dataset.defaultLayout || "list");
-    addEventListener("layoutChange", (event) => update(event.detail?.layout));
-  }
-
-  function initArchive() {
-    const archive = $(".hugo-archive");
-    if (!archive) return;
-    const params = new URLSearchParams(location.search);
-    const categories = params.getAll("category");
-    const tags = params.getAll("tag");
-    let visibleTotal = 0;
-    $$(".archive-year", archive).forEach((year) => {
-      let count = 0;
-      $$(".archive-entry", year).forEach((entry) => {
-        const entryTags = (entry.dataset.tags || "").split("|").filter(Boolean);
-        const visible = (!categories.length || categories.includes(entry.dataset.category || "")) && (!tags.length || tags.some((tag) => entryTags.includes(tag)));
-        entry.hidden = !visible;
-        if (visible) count += 1;
-      });
-      year.hidden = count === 0;
-      const countNode = $("[data-year-count]", year);
-      if (countNode) countNode.textContent = String(count);
-      visibleTotal += count;
-    });
-    $("#archive-empty", archive)?.classList.toggle("hidden", visibleTotal !== 0);
-  }
-
-  function initArticleBanner() {
-    const image = document.documentElement.dataset.articleBanner;
-    if (!image) return;
-    const carousel = $("#banner-carousel");
-    if (!carousel) return;
-    carousel.dataset.mobileCount = "1";
-    carousel.dataset.desktopCount = "1";
-    $$("template", carousel).forEach((template) => template.remove());
-    $$("img", carousel).forEach((img) => { img.src = image; img.alt = document.title; });
-  }
-
-  function initArticleTools() {
-    const share = $("[data-hugo-share]");
-    if (share && !share.dataset.hugoReady) {
-      share.dataset.hugoReady = "true";
-      share.addEventListener("click", async () => {
-        const data = { title: document.title, url: location.href };
-        if (navigator.share) await navigator.share(data).catch(() => {});
-        else await navigator.clipboard?.writeText(location.href);
-      });
-    }
-    const toc = $("#hugo-toc-template");
-    const target = $("#toc-container");
-    if (toc && target && toc.innerHTML.trim()) target.innerHTML = toc.innerHTML;
-    $$("[data-lastmod]").forEach((node) => {
-      const elapsed = Math.max(0, Date.now() - new Date(node.dataset.lastmod).getTime());
-      const days = Math.floor(elapsed / 86_400_000);
-      node.textContent = days ? `${days} 天前` : "今天";
-    });
-    $$("[data-license-url]").forEach((node) => {
-      try { node.textContent = decodeURI(node.dataset.licenseUrl); } catch {}
-    });
-  }
-
-  function decodeBase64(value) {
-    return Uint8Array.from(atob(value), (character) => character.charCodeAt(0));
-  }
-
-  async function decryptArticle(payload, password) {
-    const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
-    const key = await crypto.subtle.deriveKey({
-      name: "PBKDF2",
-      hash: "SHA-256",
-      salt: decodeBase64(payload.salt),
-      iterations: payload.iterations,
-    }, material, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
-    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: decodeBase64(payload.iv) }, key, decodeBase64(payload.ciphertext));
-    return new TextDecoder().decode(plaintext);
-  }
-
-  function initEncryptedArticle() {
-    const content = $("#hugo-article-content");
-    const panel = $("[data-hugo-encrypted-panel]", content || document);
-    const payloadNode = $("[data-hugo-encrypted-payload]", content || document);
-    if (!content || !panel || !payloadNode || panel.dataset.hugoReady) return;
-    panel.dataset.hugoReady = "true";
-    const form = $("form", panel);
-    const input = $("input", panel);
-    const button = $("button", panel);
-    const error = $("[role=alert]", panel);
-    const storageKey = `hugo-password-${location.pathname}`;
-    let payload;
-    try { payload = JSON.parse(payloadNode.textContent || "{}"); } catch { return; }
-
-    const unlock = async (password, remember = true) => {
-      if (!password) return;
-      button.disabled = true;
-      button.textContent = "解锁中...";
-      error.textContent = "";
-      try {
-        const html = await decryptArticle(payload, password);
-        content.innerHTML = html;
-        if (remember) sessionStorage.setItem(storageKey, password);
-        $$(".hugo-protected-extras").forEach((node) => { node.hidden = false; });
-        document.dispatchEvent(new CustomEvent("password:decrypted"));
-      } catch {
-        error.textContent = "密码错误，请重试";
-        button.disabled = false;
-        button.textContent = "解锁";
-        if (remember) sessionStorage.removeItem(storageKey);
+  function initHome() {
+    const rain = $(".home-rain");
+    if (rain && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+      const fragment = document.createDocumentFragment();
+      for (let index = 0; index < 20; index += 1) {
+        const line = document.createElement("span");
+        line.className = "rain-line";
+        line.style.left = `${(index * 13 + 7) % 103}%`;
+        line.style.animationDuration = `${3.8 + (index % 6) * .65}s`;
+        line.style.animationDelay = `${-(index % 9) * .7}s`;
+        fragment.append(line);
       }
-    };
-    form?.addEventListener("submit", (event) => {
-      event.preventDefault();
-      unlock(input?.value || "");
-    });
-    const saved = sessionStorage.getItem(storageKey);
-    if (saved) unlock(saved, false);
-  }
-
-  function createVisitorRow(label, id, icon) {
-    const row = document.createElement("div");
-    row.className = "hugo-visitor-row flex items-center justify-between px-2 py-2";
-    row.innerHTML = `<div class="flex items-center gap-2.5 flex-1 min-w-0"><div class="text-[var(--primary)] text-xl shrink-0" aria-hidden="true">${icon}</div><span class="text-neutral-700 dark:text-neutral-300 font-medium text-sm break-words leading-tight">${label}</span></div><div class="flex items-center ml-3 shrink-0"><span class="visitor-state text-base font-bold text-neutral-900 dark:text-neutral-100" data-visitor-stat="${id}">--</span></div>`;
-    return row;
+      rain.append(fragment);
+    }
+    const clock = $("#home-clock");
+    if (clock) {
+      const update = () => { clock.textContent = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "medium", hour12: false }).format(new Date()); };
+      update();
+      setInterval(update, 1000);
+    }
+    if ($("#home-visitors")) updateVisitors();
   }
 
   async function updateVisitors() {
-    const stats = $("#site-stats .flex.flex-col.gap-1");
-    if (!stats) return;
-    if (!$("[data-visitor-stat]", stats)) {
-      stats.append(createVisitorRow("当前访客", "online", "◉"), createVisitorRow("累计访客", "total", "◎"));
-    }
     const visitorId = localStorage.getItem("mumuemhaha-visitor-id") || crypto.randomUUID();
     const sessionId = sessionStorage.getItem("mumuemhaha-session-id") || crypto.randomUUID();
     localStorage.setItem("mumuemhaha-visitor-id", visitorId);
@@ -179,24 +56,127 @@
       const response = await fetch("/api/visitors", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitorId, sessionId }), cache: "no-store" });
       if (!response.ok) throw new Error(String(response.status));
       const data = await response.json();
-      $$("[data-visitor-stat=online]").forEach((node) => { node.textContent = Number(data.online || 0).toLocaleString(); });
-      $$("[data-visitor-stat=total]").forEach((node) => { node.textContent = Number(data.total || 0).toLocaleString(); });
+      $$('[data-visitor-stat="online"]').forEach((node) => { node.textContent = Number(data.online || 0).toLocaleString(); });
+      $$('[data-visitor-stat="total"]').forEach((node) => { node.textContent = Number(data.total || 0).toLocaleString(); });
     } catch {
-      $$("[data-visitor-stat]").forEach((node) => { node.textContent = "--"; });
+      $$('[data-visitor-stat]').forEach((node) => { node.textContent = "--"; });
     }
   }
 
-  function init() {
-    initCategoryBar();
-    initPostLayout();
-    initArchive();
-    initArticleBanner();
-    initArticleTools();
-    initEncryptedArticle();
-    updateVisitors();
+  let pagefindPromise;
+  window.loadPagefind = () => {
+    if (!pagefindPromise) pagefindPromise = import("/pagefind/pagefind.js").then(async (module) => { await module.init(); return module; });
+    return pagefindPromise;
+  };
+
+  function initSearch() {
+    const dialog = $("#search-dialog");
+    const input = $("#search-input");
+    const results = $("#search-results");
+    const hint = $("#search-hint");
+    if (!dialog || !input || !results || !hint) return;
+    const open = () => { dialog.showModal(); window.loadPagefind().catch(() => {}); setTimeout(() => input.focus(), 20); };
+    $("#search-open")?.addEventListener("click", open);
+    $$("[data-search-trigger]").forEach((button) => button.addEventListener("click", open));
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    let request = 0;
+    input.addEventListener("input", async () => {
+      const query = input.value.trim();
+      const current = ++request;
+      results.replaceChildren();
+      hint.textContent = query ? "正在搜索..." : "输入关键词开始搜索";
+      if (!query) return;
+      try {
+        const pagefind = await window.loadPagefind();
+        const search = await pagefind.search(query);
+        if (current !== request) return;
+        const items = await Promise.all(search.results.slice(0, 12).map((result) => result.data()));
+        hint.textContent = items.length ? `找到 ${search.results.length} 个结果` : "没有找到相关内容";
+        for (const item of items) {
+          const link = document.createElement("a");
+          link.className = "search-result";
+          link.href = item.url;
+          const title = document.createElement("strong");
+          title.textContent = item.meta?.title || item.url;
+          const excerpt = document.createElement("p");
+          excerpt.innerHTML = item.excerpt || "";
+          link.append(title, excerpt);
+          results.append(link);
+        }
+      } catch {
+        hint.textContent = "搜索索引暂时不可用，请稍后重试";
+      }
+    });
   }
-  if (document.readyState === "loading") document.addEventListener("DOMContentLoaded", init, { once: true }); else init();
-  document.addEventListener("astro:page-load", init);
-  document.addEventListener("swup:contentReplaced", init);
-  setInterval(updateVisitors, 45_000);
+
+  function initTools() {
+    $$("[data-tool-tab]").forEach((button) => button.addEventListener("click", () => {
+      $$("[data-tool-tab]").forEach((node) => node.classList.toggle("active", node === button));
+      $$("[data-tool-panel]").forEach((node) => node.classList.toggle("active", node.dataset.toolPanel === button.dataset.toolTab));
+    }));
+    const jsonInput = $("[data-json-input]");
+    const jsonMessage = $("[data-json-message]");
+    const transformJson = (space) => {
+      try { jsonInput.value = JSON.stringify(JSON.parse(jsonInput.value), null, space); jsonMessage.textContent = "JSON 有效"; jsonMessage.classList.remove("error"); }
+      catch (error) { jsonMessage.textContent = `格式错误：${error.message}`; jsonMessage.classList.add("error"); }
+    };
+    $("[data-json-format]")?.addEventListener("click", () => transformJson(2));
+    $("[data-json-minify]")?.addEventListener("click", () => transformJson(0));
+    $("[data-time-to-date]")?.addEventListener("click", () => {
+      const raw = Number($("[data-time-input]")?.value);
+      const date = new Date(String(Math.trunc(raw)).length <= 10 ? raw * 1000 : raw);
+      const message = $("[data-time-message]");
+      if (!Number.isFinite(raw) || Number.isNaN(date.getTime())) { message.textContent = "请输入有效时间戳"; message.classList.add("error"); return; }
+      const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
+      $("[data-date-input]").value = local;
+      message.textContent = date.toLocaleString("zh-CN", { hour12: false });
+      message.classList.remove("error");
+    });
+    $("[data-date-to-time]")?.addEventListener("click", () => {
+      const date = new Date($("[data-date-input]")?.value || "");
+      const message = $("[data-time-message]");
+      if (Number.isNaN(date.getTime())) { message.textContent = "请选择有效日期"; message.classList.add("error"); return; }
+      const seconds = Math.floor(date.getTime() / 1000);
+      $("[data-time-input]").value = String(seconds);
+      message.textContent = `${seconds}（秒） / ${date.getTime()}（毫秒）`;
+      message.classList.remove("error");
+    });
+    $("[data-text-input]")?.addEventListener("input", (event) => {
+      const value = event.target.value;
+      const words = value.trim() ? (value.match(/[\p{Script=Han}]|[\p{L}\p{N}_'-]+/gu) || []).length : 0;
+      const values = { chars: [...value].length, words, lines: value ? value.split(/\r?\n/).length : 0, paragraphs: value.trim() ? value.trim().split(/\n\s*\n/).length : 0 };
+      Object.entries(values).forEach(([key, count]) => { const node = $(`[data-stat="${key}"]`); if (node) node.textContent = String(count); });
+    });
+  }
+
+  function decodeBase64(value) { return Uint8Array.from(atob(value), (character) => character.charCodeAt(0)); }
+  async function decryptArticle(payload, password) {
+    const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveKey"]);
+    const key = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: "SHA-256", salt: decodeBase64(payload.salt), iterations: payload.iterations }, material, { name: "AES-GCM", length: 256 }, false, ["decrypt"]);
+    const plaintext = await crypto.subtle.decrypt({ name: "AES-GCM", iv: decodeBase64(payload.iv) }, key, decodeBase64(payload.ciphertext));
+    return new TextDecoder().decode(plaintext);
+  }
+  function initArticle() {
+    $("[data-hugo-share]")?.addEventListener("click", async () => {
+      if (navigator.share) await navigator.share({ title: document.title, url: location.href }).catch(() => {});
+      else await navigator.clipboard?.writeText(location.href);
+    });
+    const content = $("#hugo-article-content");
+    const panel = $("[data-hugo-encrypted-panel]", content || document);
+    const payloadNode = $("[data-hugo-encrypted-payload]", content || document);
+    if (!content || !panel || !payloadNode) return;
+    const form = $("form", panel); const input = $("input", panel); const button = $("button", panel); const error = $("[role=alert]", panel);
+    let payload; try { payload = JSON.parse(payloadNode.textContent || "{}"); } catch { return; }
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault(); button.disabled = true; error.textContent = "";
+      try { content.innerHTML = await decryptArticle(payload, input.value); }
+      catch { error.textContent = "密码错误，请重试"; button.disabled = false; }
+    });
+  }
+
+  initCursor();
+  initHome();
+  initSearch();
+  initTools();
+  initArticle();
 })();

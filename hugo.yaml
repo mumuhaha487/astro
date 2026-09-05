@@ -9,9 +9,9 @@ staticDir: public
 enableRobotsTXT: true
 enableGitInfo: false
 summaryLength: 48
-disableKinds:
-  - taxonomy
-  - term
+taxonomies:
+  tag: tags
+  category: category
 
 pagination:
   pagerSize: 8

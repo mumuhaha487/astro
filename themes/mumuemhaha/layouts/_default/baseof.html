@@ -1,0 +1,90 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#101111">
+  <meta name="color-scheme" content="dark">
+  <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} | {{ site.Params.description }}{{ end }}</title>
+  <meta name="description" content="{{ .Description | default site.Params.description }}">
+  <meta name="author" content="{{ site.Params.author }}">
+  <meta property="og:title" content="{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }}{{ end }}">
+  <meta property="og:description" content="{{ .Description | default site.Params.description }}">
+  <meta property="og:url" content="{{ .Permalink }}">
+  <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+  <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
+  <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
+  <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
+  <link rel="stylesheet" href="/hugo-theme/hugo.css">
+</head>
+{{- $section := .Section -}}
+{{- if .IsHome }}{{ $section = "home" }}{{ end -}}
+<body data-section="{{ $section }}" data-pagefind-ignore>
+  <div class="site-shell">
+    <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="主导航">
+      <div class="workspace-brand">
+        <a href="/" aria-label="返回首页">
+          <img src="/images/demo-avatar.webp" alt="" width="42" height="42">
+          <span><strong>木木em哈哈</strong><small>个人工作区</small></span>
+        </a>
+        <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="关闭导航">{{ partial "icon.html" (dict "name" "x") }}</button>
+      </div>
+      <div class="workspace-label">工作区</div>
+      <nav class="workspace-nav">
+        <a href="/" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>首页</span></a>
+        <a href="/blog/" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>博客</span></a>
+        <a href="/discuss/" data-nav="discuss">{{ partial "icon.html" (dict "name" "messages") }}<span>论坛</span></a>
+        <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>工具箱</span></a>
+      </nav>
+      <div class="workspace-spacer"></div>
+      <nav class="workspace-nav workspace-nav-secondary">
+        <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span>GitHub</span>{{ partial "icon.html" (dict "name" "external-link" "class" "nav-tail") }}</a>
+        <a href="https://md.vmss.cn/" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "pencil") }}<span>写文章</span>{{ partial "icon.html" (dict "name" "external-link" "class" "nav-tail") }}</a>
+        <button type="button" data-forum-auth-button>{{ partial "icon.html" (dict "name" "user") }}<span>论坛账户</span></button>
+        <button type="button" data-forum-admin-nav hidden>{{ partial "icon.html" (dict "name" "shield") }}<span>论坛管理</span></button>
+      </nav>
+      <p class="workspace-foot">{{ site.Params.description }}<br><span>Hugo · EdgeOne</span></p>
+    </aside>
+    <div class="sidebar-backdrop" data-sidebar-close></div>
+    <section class="workspace-main">
+      <header class="workspace-topbar">
+        <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="打开导航">{{ partial "icon.html" (dict "name" "menu") }}</button>
+        <div class="topbar-title">
+          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (eq $section "posts") "book-open" (cond (eq $section "discuss") "messages" (cond (eq $section "tools") "wrench" "layout"))))) }}
+          <span>{{ if .IsHome }}首页{{ else if eq $section "posts" }}博客{{ else }}{{ .Title }}{{ end }}</span>
+        </div>
+        <div class="topbar-actions">
+          <button class="icon-button" id="search-open" type="button" aria-label="搜索文章" title="搜索文章">{{ partial "icon.html" (dict "name" "search") }}</button>
+          <a class="topbar-avatar" href="/" aria-label="木木em哈哈"><img src="/images/demo-avatar.webp" alt="" width="34" height="34"></a>
+        </div>
+      </header>
+      <main class="workspace-content" id="main-content">
+        {{ block "main" . }}{{ end }}
+      </main>
+    </section>
+  </div>
+
+  <dialog class="search-dialog" id="search-dialog">
+    <div class="search-panel">
+      <form class="search-input-row" method="dialog">
+        {{ partial "icon.html" (dict "name" "search") }}
+        <input id="search-input" type="search" placeholder="搜索标题、正文或标签" autocomplete="off" aria-label="搜索文章">
+        <button class="icon-button" value="cancel" aria-label="关闭搜索">{{ partial "icon.html" (dict "name" "x") }}</button>
+      </form>
+      <div class="search-hint" id="search-hint">输入关键词开始搜索</div>
+      <div class="search-results" id="search-results" aria-live="polite"></div>
+    </div>
+  </dialog>
+
+  <nav class="mobile-dock" aria-label="移动端导航">
+    <a href="/" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>首页</span></a>
+    <a href="/blog/" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>博客</span></a>
+    <a href="/discuss/" data-nav="discuss">{{ partial "icon.html" (dict "name" "messages") }}<span>论坛</span></a>
+    <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>工具</span></a>
+  </nav>
+  <div class="cursor-dot" aria-hidden="true"></div>
+  <script src="/hugo-theme/hugo.js"></script>
+  <script data-hugo-pagefind-preload>window.loadPagefind?.();</script>
+  {{ block "scripts" . }}{{ end }}
+</body>
+</html>

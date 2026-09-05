@@ -1,0 +1,48 @@
+{{ define "main" }}
+<section class="content-page discuss-page" id="forum-app">
+  <header class="page-heading page-heading-row">
+    <div><p>COMMUNITY</p><h1>论坛</h1><span>分享问题、经验和想法。</span></div>
+    <div class="forum-actions"><button class="button button-ghost" type="button" data-forum-login>{{ partial "icon.html" (dict "name" "log-in") }}登录</button><button class="button button-primary" type="button" data-forum-new hidden>{{ partial "icon.html" (dict "name" "plus") }}发表主题</button></div>
+  </header>
+  <div class="forum-account-bar" data-forum-account hidden></div>
+  <div class="forum-filter-bar">
+    <button class="active" type="button" data-forum-filter="all">全部</button>
+    <button type="button" data-forum-filter="question">问答</button>
+    <button type="button" data-forum-filter="share">分享</button>
+    <button type="button" data-forum-filter="chat">闲聊</button>
+  </div>
+  <div class="forum-layout">
+    <section class="forum-feed" data-forum-feed><div class="forum-loading">正在读取主题...</div></section>
+    <aside class="forum-aside"><section><div class="section-title">社区约定</div><p>尊重他人，清楚描述问题，不发布敏感信息。内容公开可见，请谨慎分享个人资料。</p></section><section><div class="forum-stat"><span>主题</span><strong data-forum-stat="topics">--</strong></div><div class="forum-stat"><span>回复</span><strong data-forum-stat="comments">--</strong></div><div class="forum-stat"><span>成员</span><strong data-forum-stat="users">--</strong></div></section></aside>
+  </div>
+  <section class="forum-admin" data-forum-admin hidden>
+    <header><div><p>ADMIN CONSOLE</p><h2>论坛管理</h2></div><button class="icon-button" type="button" data-forum-admin-close aria-label="关闭管理">{{ partial "icon.html" (dict "name" "x") }}</button></header>
+    <div class="admin-tabs"><button class="active" data-admin-tab="users" type="button">用户管理</button><button data-admin-tab="topics" type="button">帖子管理</button><button data-admin-tab="comments" type="button">评论管理</button></div>
+    <div data-admin-content></div>
+  </section>
+</section>
+
+<dialog class="modal" id="forum-auth-dialog"><form method="dialog" class="modal-card" data-auth-form>
+  <header><div><p>FORUM ACCOUNT</p><h2 data-auth-title>登录论坛</h2></div><button class="icon-button" value="cancel" aria-label="关闭">{{ partial "icon.html" (dict "name" "x") }}</button></header>
+  <div class="auth-tabs"><button type="button" class="active" data-auth-mode="login">登录</button><button type="button" data-auth-mode="register">注册</button></div>
+  <label data-auth-register hidden>用户名<input name="username" autocomplete="username" minlength="3" maxlength="24"></label>
+  <label data-auth-register hidden>邮箱<input name="email" type="email" autocomplete="email" placeholder="仅支持 qq.com / 163.com"></label>
+  <label data-auth-login>用户名或邮箱<input name="identity" autocomplete="username"></label>
+  <label>密码<input name="password" type="password" autocomplete="current-password" minlength="8" maxlength="128"></label>
+  <label data-auth-register hidden>确认密码<input name="confirmPassword" type="password" autocomplete="new-password" minlength="8" maxlength="128"></label>
+  <p class="form-note" data-auth-note>邮箱验证码当前不可用，注册采用用户名和密码；邮箱仅用于账户识别。</p>
+  <p class="form-error" data-auth-error role="alert"></p>
+  <button class="button button-primary full" type="submit" value="default" data-auth-submit>登录</button>
+</form></dialog>
+
+<dialog class="modal topic-editor-dialog" id="forum-editor-dialog"><div class="modal-card editor-modal-card">
+  <header><div><p>NEW TOPIC</p><h2 data-topic-editor-title>发表主题</h2></div><button class="icon-button" type="button" data-editor-close aria-label="关闭">{{ partial "icon.html" (dict "name" "x") }}</button></header>
+  <div class="topic-fields"><input data-topic-title maxlength="100" placeholder="主题标题"><select data-topic-category aria-label="主题分类"><option value="question">问答</option><option value="share">分享</option><option value="chat">闲聊</option></select></div>
+  <iframe class="forum-editor-frame" src="/forum-editor/forum.html" title="论坛 Markdown 编辑器"></iframe>
+  <p class="form-error" data-topic-error role="alert"></p>
+  <footer><span data-topic-count>0 / 64000</span><button class="button button-primary" type="button" data-topic-submit>{{ partial "icon.html" (dict "name" "send") }}发布主题</button></footer>
+</div></dialog>
+
+<dialog class="modal topic-view-dialog" id="forum-topic-dialog"><article class="modal-card topic-modal-card" data-topic-view></article></dialog>
+{{ end }}
+{{ define "scripts" }}<script src="/hugo-theme/forum.js" defer></script>{{ end }}

@@ -1,0 +1,22 @@
+{{- $posts := partial "sorted-posts.html" . -}}
+<section class="content-page blog-page">
+  <header class="page-heading page-heading-row">
+    <div><p>WRITING / NOTES</p><h1>博客</h1><span>共 {{ len $posts }} 篇文章，记录技术与生活。</span></div>
+    <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}搜索全部文章</button>
+  </header>
+  <div class="taxonomy-strip">
+    <a href="/blog/" class="active">全部 <span>{{ len $posts }}</span></a>
+    {{ range site.Taxonomies.category.ByCount }}<a href="{{ .Page.RelPermalink }}">{{ .Page.Title }} <span>{{ .Count }}</span></a>{{ end }}
+  </div>
+  <div class="blog-layout">
+    <div>
+      <div class="post-grid">
+        {{ range $posts }}{{ partial "post-card.html" (dict "page" .) }}{{ else }}<div class="empty-state">还没有发布文章。</div>{{ end }}
+      </div>
+    </div>
+    <aside class="blog-aside">
+      <section><div class="section-title">热门标签</div><div class="tag-cloud">{{ range first 24 site.Taxonomies.tags.ByCount }}<a href="{{ .Page.RelPermalink }}"># {{ .Page.Title }}<sup>{{ .Count }}</sup></a>{{ end }}</div></section>
+      <section><div class="section-title">写作入口</div><p>文章由 Studio 管理，保存后自动同步到本站。</p><a class="button button-primary full" href="https://md.vmss.cn/" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "pencil") }}打开 Studio</a></section>
+    </aside>
+  </div>
+</section>

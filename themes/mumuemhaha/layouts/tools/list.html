@@ -1,0 +1,24 @@
+{{ define "main" }}
+<section class="content-page tools-page">
+  <header class="page-heading"><p>LOCAL UTILITIES</p><h1>工具箱</h1><span>所有处理都只在当前浏览器中完成。</span></header>
+  <div class="tool-tabs" role="tablist">
+    <button class="active" type="button" data-tool-tab="json">JSON 格式化</button>
+    <button type="button" data-tool-tab="timestamp">时间戳转换</button>
+    <button type="button" data-tool-tab="text">文本统计</button>
+  </div>
+  <section class="tool-panel active" data-tool-panel="json">
+    <div class="tool-panel-head"><div><h2>JSON 格式化</h2><p>校验、格式化或压缩 JSON。</p></div><div><button class="button button-ghost" data-json-minify type="button">压缩</button><button class="button button-primary" data-json-format type="button">格式化</button></div></div>
+    <textarea data-json-input spellcheck="false" placeholder='{"hello":"world"}'></textarea><p class="tool-message" data-json-message></p>
+  </section>
+  <section class="tool-panel" data-tool-panel="timestamp">
+    <div class="tool-panel-head"><div><h2>时间戳转换</h2><p>在 Unix 时间戳与本地时间之间转换。</p></div></div>
+    <div class="form-grid"><label>时间戳<input data-time-input inputmode="numeric" placeholder="例如 1760000000"></label><label>本地时间<input data-date-input type="datetime-local"></label></div>
+    <div class="tool-actions"><button class="button button-primary" data-time-to-date type="button">转为日期</button><button class="button button-ghost" data-date-to-time type="button">转为时间戳</button></div><p class="tool-message" data-time-message></p>
+  </section>
+  <section class="tool-panel" data-tool-panel="text">
+    <div class="tool-panel-head"><div><h2>文本统计</h2><p>统计字数、字符、行数和段落。</p></div></div>
+    <textarea data-text-input placeholder="在这里粘贴文本..."></textarea>
+    <div class="text-stats"><div><strong data-stat="chars">0</strong><span>字符</span></div><div><strong data-stat="words">0</strong><span>字词</span></div><div><strong data-stat="lines">0</strong><span>行</span></div><div><strong data-stat="paragraphs">0</strong><span>段落</span></div></div>
+  </section>
+</section>
+{{ end }}

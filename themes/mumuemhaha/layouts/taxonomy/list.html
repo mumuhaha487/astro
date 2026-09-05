@@ -1,0 +1,6 @@
+{{ define "main" }}
+<section class="content-page">
+  <header class="page-heading"><p>TAXONOMY</p><h1>{{ .Title }}</h1><span>{{ len .Pages }} 篇文章</span></header>
+  <div class="post-grid">{{ range .Pages.ByDate.Reverse }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
+</section>
+{{ end }}

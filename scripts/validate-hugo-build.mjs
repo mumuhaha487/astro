@@ -18,9 +18,17 @@ const requiredFiles = [
   "pagefind/pagefind.js",
   "pagefind/pagefind-entry.json",
   "icons/search.svg",
+  "icons/lucide-sprite.svg",
   "assets/font/ZenMaruGothic-Medium.woff2",
   "assets/font/loli.woff2",
-  ...["about", "albums", "albums/AcgExample", "anime", "archive", "atom", "devices", "diary", "friends", "projects", "rss", "skills", "timeline"].map((route) => `${route}/index.html`),
+  "blog/index.html",
+  "discuss/index.html",
+  "tools/index.html",
+  "category/index.html",
+  "tags/index.html",
+  "forum-editor/forum.html",
+  "forum-editor/assets/forum-editor.js",
+  "hugo-theme/forum.js",
 ];
 
 for (const relative of requiredFiles) {
@@ -42,13 +50,20 @@ for (const post of posts) {
     `Unsafe post URL in manifest: ${post.url}`,
   );
   assert.ok(existsSync(target), `Missing rendered post: ${post.url}`);
-  assert.match(await readFile(target, "utf8"), /id="post-container"/, `Post shell is missing: ${post.url}`);
+  assert.match(await readFile(target, "utf8"), /id="hugo-article-content"/, `Post shell is missing: ${post.url}`);
 }
 
 const home = await readFile(join(outputRoot, "index.html"), "utf8");
-assert.equal((home.match(/hugo-post-card/g) || []).length, Math.min(8, posts.length), "Home pagination is incorrect");
+const blog = await readFile(join(outputRoot, "blog", "index.html"), "utf8");
+const discuss = await readFile(join(outputRoot, "discuss", "index.html"), "utf8");
+assert.match(home, /class="home-stage"/, "Home workspace is missing");
+assert.match(home, /data-visitor-stat="total"/, "Home visitor total is missing");
+assert.doesNotMatch(blog, /data-visitor-stat=/, "Visitor totals must only appear on the home page");
+assert.equal((blog.match(/class="post-card(?: |")/g) || []).length, posts.length, "Blog list did not preserve every post");
+assert.match(discuss, /id="forum-app"/, "Forum shell is missing");
+assert.match(discuss, /forum-editor\/forum\.html/, "Forum editor is not connected");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
-assert.match(home, /Mumuemhaha Blog - 木哈文轩/);
+assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
 
 const contentFiles = await listFiles(join(repositoryRoot, "content", "posts"));
@@ -65,7 +80,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} posts, search index, feeds, APIs, and specialty pages.`);
+console.log(`Validated Hugo output: ${posts.length} posts, dark workspace, forum editor, search, feeds, and APIs.`);
 
 async function listFiles(directory) {
   const files = [];

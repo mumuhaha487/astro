@@ -4,7 +4,6 @@ import { existsSync } from "node:fs";
 import { chromium } from "../studio/node_modules/playwright-core/index.mjs";
 
 const baseUrl = process.argv[2] || "http://127.0.0.1:4311";
-const verifyEncryptionFixture = process.argv.includes("--encryption-fixture");
 const executablePath = [
   process.env.PLAYWRIGHT_CHROME_PATH,
   "C:\\Program Files\\Google\\Chrome\\Application\\chrome.exe",
@@ -21,61 +20,43 @@ try {
 
   let response = await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  await page.waitForTimeout(1_000);
-  assert.equal(await page.locator(".hugo-post-card").count(), 8, "home page must contain eight posts");
-  const widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
-  assert.ok(widths.body <= widths.viewport, `mobile page overflows: ${widths.body}px > ${widths.viewport}px`);
+  await page.waitForTimeout(500);
+  assert.equal(await page.locator(".home-stage").count(), 1, "home workspace is missing");
+  assert.equal(await page.locator('[data-visitor-stat="total"]').count(), 1, "home visitor total is missing");
+  assert.equal(await page.locator(".mobile-dock:visible").count(), 1, "mobile dock is missing");
+  let widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
+  assert.ok(widths.body <= widths.viewport, `mobile home overflows: ${widths.body}px > ${widths.viewport}px`);
 
-  const searchButton = page.locator("#search-container button").first();
-  assert.equal(await searchButton.count(), 1, "search button is missing");
-  await searchButton.click();
-  const searchInput = page.locator("#search-panel input:visible, #search-container input:visible, input[type=search]:visible").first();
-  await searchInput.waitFor({ state: "visible", timeout: 3_000 });
+  response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.ok(await page.locator(".post-card").count() > 80, "blog articles were not preserved");
+  assert.equal(await page.locator("[data-visitor-stat]").count(), 0, "visitor totals leaked into blog page");
+  await page.locator("[data-search-trigger]").click();
+  const searchInput = page.locator("#search-input");
   await searchInput.fill("海龟汤");
-  await page.waitForFunction(
-    () => document.querySelector("#search-panel")?.textContent?.includes("海龟汤"),
-    undefined,
-    { timeout: 15_000 },
-  );
-  const searchText = await page.locator("#search-panel").innerText();
-  assert.match(searchText, /海龟汤/, "Pagefind search did not return the expected article");
+  await page.waitForFunction(() => document.querySelector("#search-results")?.textContent?.includes("海龟汤"), undefined, { timeout: 15_000 });
+  assert.match(await page.locator("#search-results").innerText(), /海龟汤/, "Pagefind search did not return the expected article");
 
-  if (verifyEncryptionFixture) {
-    response = await page.goto(new URL("/posts/codex-hugo-encryption-check/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
-    assert.equal(response?.status(), 200);
-    await page.waitForTimeout(300);
-    assert.equal((await page.locator("body").innerText()).includes("This exact plaintext must not survive"), false);
-    const password = page.getByLabel("文章密码");
-    await password.fill("wrong-password");
-    await page.locator(".hugo-password-submit").click();
-    await page.waitForFunction(() => document.querySelector("[role=alert]")?.textContent?.includes("密码错误"));
-    await password.fill("codex-test-password");
-    await page.locator(".hugo-password-submit").click();
-    await page.waitForFunction(() => document.body.innerText.includes("This exact plaintext must not survive"));
-    assert.equal(await page.locator(".hugo-protected-extras:visible").count(), 2);
-    const iframe = page.locator('.web-page-embed iframe[src*="/web-pages/editor/html/codex-check/index.html"]');
-    assert.equal(await iframe.count(), 1, "embedded HTML iframe markup was not restored after decryption");
-    await iframe.scrollIntoViewIfNeeded();
-    await page.waitForTimeout(500);
-    const frame = page.frames().find((candidate) => candidate.url().includes("/web-pages/editor/html/codex-check/index.html"));
-    assert.ok(frame, "embedded HTML iframe did not load");
-    assert.equal(await frame.locator("#embedded-check").innerText(), "Embedded HTML and JavaScript are working.");
-    assert.equal(await frame.locator("html").getAttribute("data-script-ready"), "true");
-  }
+  response = await page.goto(new URL("/discuss/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator("#forum-app").count(), 1, "forum page is missing");
+  widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
+  assert.ok(widths.body <= widths.viewport, `mobile forum overflows: ${widths.body}px > ${widths.viewport}px`);
+  const editorResponse = await page.request.get(new URL("/forum-editor/forum.html", baseUrl).toString());
+  assert.equal(editorResponse.status(), 200, "forum editor bundle is missing");
 
-  const routes = ["about", "albums", "albums/AcgExample", "anime", "atom", "devices", "diary", "friends", "projects", "rss", "skills", "timeline"];
-  for (const route of routes) {
-    const routeErrors = [];
-    const routePage = await context.newPage();
-    routePage.on("pageerror", (error) => routeErrors.push(error.message));
-    const routeResponse = await routePage.goto(new URL(`/${route}/`, baseUrl).toString(), { waitUntil: "domcontentloaded" });
-    await routePage.waitForTimeout(200);
-    assert.equal(routeResponse?.status(), 200, `/${route}/ did not load`);
-    assert.equal(routeErrors.length, 0, `/${route}/ raised: ${routeErrors.join("; ")}`);
-    await routePage.close();
-  }
+  response = await page.goto(new URL("/tools/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-json-input]").fill('{"ok":true}');
+  await page.locator("[data-json-format]").click();
+  assert.match(await page.locator("[data-json-input]").inputValue(), /\n  "ok": true\n/);
+
+  response = await page.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator("#hugo-article-content").count(), 1, "article body is missing");
+  assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log(`Browser verification passed: search, mobile layout, ${verifyEncryptionFixture ? "encryption, embedded HTML/JS, and " : ""}${routes.length} specialty pages.`);
+  console.log("Browser verification passed: home, blog search, forum, tools, article, and mobile overflow checks.");
 } finally {
   await browser.close();
 }

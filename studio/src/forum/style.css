@@ -1,0 +1,13 @@
+:root{color-scheme:light;font-family:"Microsoft YaHei",system-ui,sans-serif}
+html,body,#forum-editor-root{height:100%;margin:0}
+body.forum-editor-body{background:#fff;color:#202124;overflow:hidden}
+.forum-editor-app{position:relative;height:100%;display:grid;grid-template-columns:minmax(0,1fr);background:#fff}
+.forum-editor-app:has(.forum-editor-outline){grid-template-columns:minmax(0,1fr) 220px}
+.forum-editor-surface{min-width:0;height:100%;overflow:auto}
+.forum-editor-surface .csdn-editor-shell,.forum-editor-surface .mdxeditor{min-height:100%;border:0!important;border-radius:0!important}
+.forum-editor-surface [class*="toolbarRoot"]{position:sticky!important;top:0!important;z-index:50!important;overflow-x:auto!important;flex-wrap:nowrap!important;scrollbar-width:thin}
+.forum-source{display:block;width:100%;height:100%;padding:22px;border:0;outline:0;resize:none;font:14px/1.75 Consolas,"Microsoft YaHei",monospace;color:#222;background:#fff}
+.forum-rich-return{position:fixed;right:16px;bottom:14px;z-index:60;border:1px solid #d4d4d4;border-radius:6px;background:#fff;padding:8px 13px;color:#333;box-shadow:0 5px 18px rgba(0,0,0,.12)}
+.forum-editor-outline{border-left:1px solid #e5e5e5;background:#fafafa;padding:14px 9px;overflow:auto}.forum-editor-outline strong{display:block;padding:0 8px 8px}.forum-editor-outline button{display:block;width:100%;border:0;background:transparent;text-align:left;padding-top:5px;padding-bottom:5px;color:#555;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}.forum-editor-outline span{display:block;padding:8px;color:#999;font-size:12px}
+.forum-editor-notice{position:fixed;left:50%;bottom:16px;z-index:70;transform:translateX(-50%);padding:8px 13px;border-radius:6px;background:#252525;color:#fff;font-size:12px;box-shadow:0 6px 24px rgba(0,0,0,.18)}
+@media(max-width:720px){.forum-editor-app:has(.forum-editor-outline){grid-template-columns:1fr}.forum-editor-outline{display:none}.forum-editor-surface .csdn-toolbar-action span{display:none}.forum-editor-surface [class*="toolbarRoot"]{overflow-x:auto;flex-wrap:nowrap!important}}
