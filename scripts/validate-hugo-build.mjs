@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { existsSync } from "node:fs";
 import { readFile, readdir } from "node:fs/promises";
-import { dirname, extname, join, resolve } from "node:path";
+import { dirname, extname, isAbsolute, join, relative, resolve, sep } from "node:path";
 import { fileURLToPath } from "node:url";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
@@ -31,9 +31,13 @@ assert.equal(calendar.length, posts.length, "Post and calendar APIs disagree");
 
 for (const post of posts) {
   const pathname = decodeURIComponent(new URL(post.url, "https://vmss.cn").pathname).replace(/^\/+/, "");
-  const relative = pathname.endsWith("/") ? join(pathname, "index.html") : pathname;
-  const target = resolve(outputRoot, relative);
-  assert.ok(target.startsWith(`${outputRoot}\\`), `Unsafe post URL in manifest: ${post.url}`);
+  const outputPath = pathname.endsWith("/") ? join(pathname, "index.html") : pathname;
+  const target = resolve(outputRoot, outputPath);
+  const targetFromRoot = relative(outputRoot, target);
+  assert.ok(
+    targetFromRoot !== ".." && !targetFromRoot.startsWith(`..${sep}`) && !isAbsolute(targetFromRoot),
+    `Unsafe post URL in manifest: ${post.url}`,
+  );
   assert.ok(existsSync(target), `Missing rendered post: ${post.url}`);
   assert.match(await readFile(target, "utf8"), /id="post-container"/, `Post shell is missing: ${post.url}`);
 }
