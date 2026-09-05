@@ -228,5 +228,16 @@
   [authDialog, editorDialog, topicDialog].forEach((dialog) => dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); }));
   addEventListener("message", (event) => { if (event.origin !== location.origin || event.source !== editorFrame?.contentWindow || event.data?.source !== "mumu-forum-editor") return; if (event.data.type === "ready") postEditor({ type: "set-content", content: state.editorContent }); if (event.data.type === "change") { state.editorContent = String(event.data.content || ""); updateEditorCount(); } });
 
-  Promise.all([api("session"), api("topics")]).then(([session, data]) => { setSession(session); state.topics = data.topics || []; renderTopics(); if (new URLSearchParams(location.search).has("auth")) openAuth("login"); }).catch((error) => showFeedError(error.message));
+  Promise.all([api("session"), api("topics")]).then(async ([session, data]) => {
+    setSession(session); state.topics = data.topics || []; renderTopics();
+    const url = new URL(location.href);
+    if (url.searchParams.has("admin")) {
+      if (currentUser()?.role === "admin") await openAdmin();
+      else if (!currentUser()) openAuth("login");
+    } else if (url.searchParams.has("auth") && !currentUser()) openAuth("login");
+    if (url.searchParams.has("auth") || url.searchParams.has("admin")) {
+      url.searchParams.delete("auth"); url.searchParams.delete("admin");
+      history.replaceState(null, "", `${url.pathname}${url.search}${url.hash}`);
+    }
+  }).catch((error) => showFeedError(error.message));
 })();

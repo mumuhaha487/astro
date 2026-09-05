@@ -15,6 +15,14 @@ const browser = await chromium.launch({ executablePath, headless: true });
 try {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
+  const localRun = ["127.0.0.1", "localhost"].includes(new URL(baseUrl).hostname);
+  if (localRun) {
+    await page.route("**/api/forum/session", (route) => route.fulfill({
+      contentType: "application/json",
+      body: JSON.stringify({ authenticated: true, user: { id: "qa", username: "forum-qa", role: "admin" }, stats: { topics: 0, comments: 0, users: 1 } }),
+    }));
+    await page.route("**/api/forum/topics", (route) => route.fulfill({ contentType: "application/json", body: JSON.stringify({ topics: [] }) }));
+  }
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
@@ -28,6 +36,14 @@ try {
   assert.equal(await page.locator(".mobile-dock:visible").count(), 1, "mobile dock is missing");
   let widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
   assert.ok(widths.body <= widths.viewport, `mobile home overflows: ${widths.body}px > ${widths.viewport}px`);
+  if (localRun) {
+    await page.waitForFunction(() => document.querySelector("[data-forum-auth-button] span")?.textContent === "forum-qa");
+    await page.locator("[data-sidebar-open]").click();
+    await page.locator("[data-forum-auth-button]").click();
+    await page.waitForURL((url) => url.pathname === "/discuss/" && !url.searchParams.has("auth"));
+    await page.waitForFunction(() => document.querySelector("[data-forum-account]")?.hidden === false);
+    assert.equal(await page.locator("#forum-auth-dialog[open]").count(), 0, "authenticated user was asked to log in again");
+  }
 
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);

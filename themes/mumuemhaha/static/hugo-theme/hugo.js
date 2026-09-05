@@ -4,7 +4,25 @@
   const section = document.body.dataset.section || "home";
 
   $$(`[data-nav="${section === "posts" ? "blog" : section}"]`).forEach((node) => node.classList.add("active"));
-  if (section !== "discuss") $("[data-forum-auth-button]")?.addEventListener("click", () => { location.href = "/discuss/?auth=1"; });
+
+  function initForumAccount() {
+    if (section === "discuss") return;
+    const accountButton = $("[data-forum-auth-button]");
+    const adminButton = $("[data-forum-admin-nav]");
+    if (!accountButton) return;
+    let user = null;
+    accountButton.addEventListener("click", () => { location.href = user ? "/discuss/" : "/discuss/?auth=1"; });
+    adminButton?.addEventListener("click", () => { location.href = "/discuss/?admin=1"; });
+    fetch("/api/forum/session", { credentials: "same-origin", cache: "no-store", headers: { accept: "application/json" } })
+      .then((response) => response.ok ? response.json() : null)
+      .then((session) => {
+        user = session?.authenticated ? session.user : null;
+        const label = accountButton.querySelector("span");
+        if (label) label.textContent = user?.username || "论坛账户";
+        if (adminButton) adminButton.hidden = user?.role !== "admin";
+      })
+      .catch(() => {});
+  }
 
   const openSidebar = () => document.body.classList.add("sidebar-open", "no-scroll");
   const closeSidebar = () => document.body.classList.remove("sidebar-open", "no-scroll");
@@ -175,6 +193,7 @@
   }
 
   initCursor();
+  initForumAccount();
   initHome();
   initSearch();
   initTools();
