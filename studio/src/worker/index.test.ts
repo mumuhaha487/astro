@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { zipSync } from "fflate";
 import worker from "./index";
 
 function testEnv(assetFetch = vi.fn()) {
@@ -52,6 +53,29 @@ describe("editor asset proxy", () => {
     expect(response.headers.get("Content-Type")).toBe("image/png");
     expect(response.headers.get("Cache-Control")).toBe("no-store");
     expect(await response.text()).toBe("cover-bytes");
+  });
+
+  it("serves embedded HTML with an iframe-compatible content type and policy", async () => {
+    const upstreamFetch = vi.fn(async () => new Response("<!doctype html><title>Game</title>", {
+      headers: {
+        "Content-Disposition": "attachment",
+        "Content-Type": "text/plain",
+      },
+    }));
+    vi.stubGlobal("fetch", upstreamFetch);
+    const hash = "1".repeat(24);
+
+    const response = await worker.fetch(
+      new Request(`https://studio.example/web-pages/editor/html/${hash}/index.html`),
+      testEnv(),
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
+    expect(response.headers.get("Content-Disposition")).toBeNull();
+    expect(response.headers.get("X-Frame-Options")).toBeNull();
+    expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'self'");
+    expect(response.headers.get("Cache-Control")).toBe("public, max-age=31536000, immutable");
   });
 
   it("serves uploaded videos from the repository and forwards byte ranges", async () => {
@@ -140,5 +164,119 @@ describe("editor asset proxy", () => {
     expect(upstreamFetch).not.toHaveBeenCalled();
     expect(assetFetch).toHaveBeenCalledOnce();
     expect(await response.text()).toBe("studio-fallback");
+  });
+});
+
+describe("web page uploads", () => {
+  async function authenticatedCookie(env: ReturnType<typeof testEnv>): Promise<string> {
+    const response = await worker.fetch(new Request("https://studio.example/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: "https://studio.example" },
+      body: JSON.stringify({ password: "test-password" }),
+    }), env);
+    return response.headers.get("Set-Cookie")?.split(";", 1)[0] || "";
+  }
+
+  it("unpacks a ZIP site and commits all static files in one Git commit", async () => {
+    let blobIndex = 0;
+    const requests: Array<{ path: string; method: string; body?: unknown }> = [];
+    const githubFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = new URL(String(input));
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
+      requests.push({ path: url.pathname, method: init?.method || "GET", body });
+      if (url.pathname.includes("/contents/")) {
+        return new Response(JSON.stringify({ message: "Not Found" }), { status: 404, headers: { "Content-Type": "application/json" } });
+      }
+      if (url.pathname.includes("/git/ref/heads/")) return Response.json({ object: { sha: "a".repeat(40) } });
+      if (url.pathname.endsWith(`/git/commits/${"a".repeat(40)}`)) return Response.json({ tree: { sha: "b".repeat(40) } });
+      if (url.pathname.endsWith("/git/blobs")) return Response.json({ sha: String(++blobIndex).padStart(40, "0") });
+      if (url.pathname.endsWith("/git/trees")) return Response.json({ sha: "c".repeat(40) });
+      if (url.pathname.endsWith("/git/commits")) return Response.json({ sha: "d".repeat(40) });
+      if (url.pathname.includes("/git/refs/heads/")) return Response.json({ object: { sha: "d".repeat(40) } });
+      return new Response(JSON.stringify({ message: "Unexpected request" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", githubFetch);
+    const env = testEnv();
+    const cookie = await authenticatedCookie(env);
+    const archive = zipSync({
+      "game/index.html": new TextEncoder().encode('<script src="game.js"></script>'),
+      "game/game.js": new TextEncoder().encode("document.body.textContent = 'ready'"),
+      "game/style.css": new TextEncoder().encode("body{margin:0}"),
+    });
+    const form = new FormData();
+    form.set("files", new File([archive], "game.zip", { type: "application/zip" }));
+    form.set("title", "网页小游戏");
+    form.set("height", "700");
+    form.set("sourceType", "zip");
+
+    const response = await worker.fetch(new Request("https://studio.example/api/web-embeds", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+    const result = await response.json() as { path: string; url: string; fileCount: number; reused: boolean };
+
+    expect(response.status).toBe(200);
+    expect(result.path).toMatch(/^public\/web-pages\/editor\/zip\/[0-9a-f]{24}\/game\/index\.html$/);
+    expect(result.url).toMatch(/^\/web-pages\/editor\/zip\/[0-9a-f]{24}\/game\/index\.html$/);
+    expect(result.fileCount).toBe(3);
+    expect(result.reused).toBe(false);
+    expect(requests.filter((entry) => entry.path.endsWith("/git/blobs"))).toHaveLength(3);
+    expect(requests.filter((entry) => entry.path.endsWith("/git/trees"))).toHaveLength(1);
+    expect(requests.filter((entry) => entry.method === "PATCH" && entry.path.includes("/git/refs/heads/"))).toHaveLength(1);
+    const treeRequest = requests.find((entry) => entry.path.endsWith("/git/trees"));
+    expect(JSON.stringify(treeRequest?.body)).not.toContain("content/posts");
+    expect(JSON.stringify(treeRequest?.body)).toContain("public/web-pages/editor/zip/");
+  });
+
+  it("reuses an identical HTML upload without creating another commit", async () => {
+    const githubFetch = vi.fn(async (input: string | URL | Request) => {
+      const url = new URL(String(input));
+      if (url.pathname.includes("/contents/")) return Response.json({ sha: "e".repeat(40) });
+      return new Response(JSON.stringify({ message: "Unexpected request" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", githubFetch);
+    const env = testEnv();
+    const cookie = await authenticatedCookie(env);
+    const form = new FormData();
+    form.set("files", new File(["<!doctype html><title>Same</title>"], "index.html", { type: "text/html" }));
+    form.set("paths", JSON.stringify(["index.html"]));
+    form.set("title", "相同网页");
+    form.set("height", "640");
+    form.set("sourceType", "html");
+
+    const response = await worker.fetch(new Request("https://studio.example/api/web-embeds", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+    const result = await response.json() as { path: string; reused: boolean };
+
+    expect(response.status).toBe(200);
+    expect(result.reused).toBe(true);
+    expect(result.path).toMatch(/^public\/web-pages\/editor\/html\/[0-9a-f]{24}\/index\.html$/);
+    expect(githubFetch).toHaveBeenCalledOnce();
+  });
+
+  it("rejects archive traversal paths before contacting GitHub", async () => {
+    const githubFetch = vi.fn();
+    vi.stubGlobal("fetch", githubFetch);
+    const env = testEnv();
+    const cookie = await authenticatedCookie(env);
+    const archive = zipSync({ "../escape.html": new TextEncoder().encode("unsafe") });
+    const form = new FormData();
+    form.set("files", new File([archive], "unsafe.zip", { type: "application/zip" }));
+    form.set("title", "不安全网页");
+    form.set("sourceType", "zip");
+
+    const response = await worker.fetch(new Request("https://studio.example/api/web-embeds", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("路径无效") });
+    expect(githubFetch).not.toHaveBeenCalled();
   });
 });

@@ -62,6 +62,7 @@ import {
   Maximize2,
   MessageSquareQuote,
   MoreHorizontal,
+  PanelsTopLeft,
   Pencil,
   PlaySquare,
   Sigma,
@@ -112,6 +113,7 @@ export interface MdxEditorSlotProps {
   onInsertLink: () => void;
   onInsertTemplate: () => void;
   onInsertResource: () => void;
+  onInsertWebPage: () => void;
   onInsertTable: () => void;
   onResolveLinkTitle: (url: string) => Promise<string>;
   outlineVisible: boolean;
@@ -764,6 +766,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
     onInsertLink,
     onInsertTemplate,
     onInsertResource,
+    onInsertWebPage,
     onInsertTable,
     onResolveLinkTitle,
     outlineVisible,
@@ -858,6 +861,13 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
                   onClick={onInsertVideo}
                 />
                 <ToolbarAction
+                  className="csdn-web-page-action"
+                  label="网页"
+                  title="上传并内嵌 HTML 网页"
+                  icon={<PanelsTopLeft size={18} />}
+                  onClick={onInsertWebPage}
+                />
+                <ToolbarAction
                   label="公式"
                   title="插入数学公式"
                   icon={<Sigma size={18} />}
@@ -879,7 +889,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           ),
         }),
       ],
-      [imageUploadHandler, onHistory, onInsertFormula, onInsertImage, onInsertLink, onInsertResource, onInsertTable, onInsertTemplate, onInsertVideo, onResolveLinkTitle, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
+      [imageUploadHandler, onHistory, onInsertFormula, onInsertImage, onInsertLink, onInsertResource, onInsertTable, onInsertTemplate, onInsertVideo, onInsertWebPage, onResolveLinkTitle, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
     );
 
     return (

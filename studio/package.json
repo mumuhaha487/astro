@@ -20,6 +20,7 @@
     "@mdxeditor/editor": "^3.20.0",
     "@mdxeditor/gurx": "^1.2.4",
     "dompurify": "^3.4.14",
+    "fflate": "^0.8.3",
     "katex": "^0.18.5",
     "lexical": "0.35.0",
     "lucide-react": "^0.544.0",

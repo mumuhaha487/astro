@@ -60,6 +60,19 @@ export interface ScheduledPost {
   createdAt: string;
 }
 
+export interface WebEmbedRecord {
+  id: string;
+  path: string;
+  url: string;
+  title: string;
+  entry: string;
+  height: number;
+  fileCount: number;
+  totalSize: number;
+  sourceType: "html" | "zip";
+  reused: boolean;
+}
+
 export interface SessionInfo {
   authenticated: boolean;
   github: {

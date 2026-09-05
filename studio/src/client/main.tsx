@@ -24,6 +24,7 @@ import {
   LoaderCircle,
   Medal,
   MessageSquareText,
+  PanelsTopLeft,
   PencilLine,
   Pin,
   Play,
@@ -81,6 +82,7 @@ import type {
   PostMeta,
   PostRevision,
   SessionInfo,
+  WebEmbedRecord,
 } from "../shared/types";
 import {
   SCHEDULE_MAX_DELAY_MS,
@@ -88,6 +90,13 @@ import {
   validateScheduleTime,
 } from "../shared/schedule";
 import { LINK_CARD_MARKER } from "../shared/link-card";
+import {
+  buildWebEmbedMarker,
+  parseWebEmbedMarker,
+  WEB_EMBED_DEFAULT_HEIGHT,
+  WEB_EMBED_MAX_HEIGHT,
+  WEB_EMBED_MIN_HEIGHT,
+} from "../shared/web-embed";
 import "./styles.css";
 
 type EditorMode = "rich" | "source" | "preview";
@@ -95,7 +104,7 @@ type ListFilter = "all" | "published" | "draft" | "pinned";
 type SyncState = "idle" | "saving" | "saved" | "error";
 type MobilePanel = "outline" | null;
 type RunnableCodeTab = "html" | "css" | "javascript";
-type InsertPanel = "image" | "video" | "formula" | "link" | "template" | "resource" | "table" | null;
+type InsertPanel = "image" | "video" | "webpage" | "formula" | "link" | "template" | "resource" | "table" | null;
 
 interface SavedTemplate {
   id: string;
@@ -880,6 +889,40 @@ function App() {
     }
   }, []);
 
+  const uploadWebEmbed = useCallback(async (
+    files: File[],
+    options: {
+      title: string;
+      height: number;
+      sourceType: "html" | "zip";
+      entry?: string;
+      paths?: string[];
+    },
+  ) => {
+    setSyncState("saving");
+    setSyncLabel(options.sourceType === "zip" ? "正在解压并上传网页" : "正在上传网页");
+    try {
+      const result = await api.uploadWebEmbed(files, options);
+      setSyncState("saved");
+      setSyncLabel(result.reused ? "已复用相同网页" : "网页已写入静态目录");
+      showToast(
+        result.reused
+          ? "检测到相同网页，已复用现有静态文件"
+          : `网页已上传到 public/web-pages/editor/${result.sourceType}`,
+        "success",
+      );
+      return result;
+    } catch (error) {
+      setSyncState("error");
+      setSyncLabel(errorMessage(error));
+      showToast(errorMessage(error), "error");
+      if (error instanceof ApiError && error.code === "GITHUB_NOT_CONNECTED") {
+        setSettingsOpen(true);
+      }
+      throw error;
+    }
+  }, []);
+
   async function handleSourcePaste(event: ClipboardEvent<HTMLTextAreaElement>) {
     const images = Array.from(event.clipboardData.files).filter((file) =>
       file.type.startsWith("image/"),
@@ -1191,6 +1234,7 @@ function App() {
                           onRunnableCode={openRunnableCode}
                           onInsertImage={() => openInsertPanel("image")}
                           onInsertVideo={() => openInsertPanel("video")}
+                          onInsertWebPage={() => openInsertPanel("webpage")}
                           onInsertFormula={() => openInsertPanel("formula")}
                           onInsertLink={() => openInsertPanel("link")}
                           onInsertTemplate={() => openInsertPanel("template")}
@@ -1348,6 +1392,17 @@ function App() {
           onClose={() => setInsertPanel(null)}
           onUpload={uploadVideo}
           onInsert={(url, title) => insertMarkdownAtCursor(`\n<video controls preload="metadata" src="${escapeHtmlAttribute(url)}" title="${escapeHtmlAttribute(title || "视频")}"></video>\n`, "视频已插入正文")}
+        />
+      ) : null}
+
+      {insertPanel === "webpage" ? (
+        <WebEmbedDialog
+          onClose={() => setInsertPanel(null)}
+          onUpload={uploadWebEmbed}
+          onInsert={(webpage) => insertMarkdownAtCursor(
+            `\n[${escapeMarkdownInline(webpage.title)}](${webpage.url} "${buildWebEmbedMarker(webpage.height)}")\n`,
+            webpage.reused ? "已复用并插入现有网页" : "网页已内嵌到正文",
+          )}
         />
       ) : null}
 
@@ -2819,6 +2874,154 @@ function TemplateInsertDrawer({
   );
 }
 
+function WebEmbedDialog({
+  onClose,
+  onUpload,
+  onInsert,
+}: {
+  onClose: () => void;
+  onUpload: (
+    files: File[],
+    options: {
+      title: string;
+      height: number;
+      sourceType: "html" | "zip";
+      entry?: string;
+      paths?: string[];
+    },
+  ) => Promise<WebEmbedRecord>;
+  onInsert: (webpage: WebEmbedRecord) => void;
+}) {
+  const [sourceType, setSourceType] = useState<"html" | "zip">("html");
+  const [files, setFiles] = useState<File[]>([]);
+  const [title, setTitle] = useState("");
+  const [entry, setEntry] = useState("");
+  const [height, setHeight] = useState(WEB_EMBED_DEFAULT_HEIGHT);
+  const [uploading, setUploading] = useState(false);
+  const [error, setError] = useState("");
+  const inputRef = useRef<HTMLInputElement>(null);
+
+  const paths = files.map((file) => file.webkitRelativePath || file.name);
+  const htmlEntries = paths.filter((path) => /\.html?$/i.test(path));
+
+  function changeSource(next: "html" | "zip") {
+    setSourceType(next);
+    setFiles([]);
+    setEntry("");
+    setError("");
+    if (inputRef.current) inputRef.current.value = "";
+  }
+
+  function selectFiles(selected: File[]) {
+    const next = sourceType === "zip" ? selected.slice(0, 1) : selected;
+    setFiles(next);
+    setError("");
+    const nextPaths = next.map((file) => file.webkitRelativePath || file.name);
+    const entries = nextPaths.filter((path) => /\.html?$/i.test(path));
+    const preferred = entries.find((path) => /(^|\/)index\.html?$/i.test(path)) || (entries.length === 1 ? entries[0] : "");
+    setEntry(preferred);
+    if (!title.trim() && next[0]) {
+      setTitle(next[0].name.replace(/\.(?:zip|html?|js|mjs)$/i, "").slice(0, 100));
+    }
+  }
+
+  async function submit(event: FormEvent) {
+    event.preventDefault();
+    if (files.length === 0) {
+      setError(sourceType === "zip" ? "请选择 ZIP 静态网页包" : "请选择 HTML、JS 或网页资源文件");
+      return;
+    }
+    if (sourceType === "zip" && !/\.zip$/i.test(files[0].name)) {
+      setError("ZIP 模式仅支持 .zip 文件");
+      return;
+    }
+    if (!title.trim()) {
+      setError("请输入网页标题");
+      return;
+    }
+    if (htmlEntries.length > 1 && !entry) {
+      setError("请选择要内嵌的 HTML 入口");
+      return;
+    }
+    setUploading(true);
+    setError("");
+    try {
+      const result = await onUpload(files, {
+        title: title.trim(),
+        height,
+        sourceType,
+        entry: sourceType === "html" ? entry : undefined,
+        paths,
+      });
+      onInsert(result);
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setUploading(false);
+    }
+  }
+
+  const accept = sourceType === "zip"
+    ? ".zip,application/zip"
+    : ".html,.htm,.js,.mjs,.css,.json,.map,.txt,.xml,.csv,.wasm,.data,.bin,.webmanifest,.glb,.gltf,.obj,.mtl,.png,.jpg,.jpeg,.gif,.webp,.avif,.svg,.ico,.bmp,.woff,.woff2,.ttf,.otf,.eot,.mp3,.wav,.ogg,.oga,.mp4,.webm,.ogv";
+
+  return (
+    <div className="modal-backdrop resource-dialog-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="resource-binding-dialog web-embed-dialog" role="dialog" aria-modal="true" aria-labelledby="web-embed-dialog-title">
+        <header>
+          <div><PanelsTopLeft size={20} /><h2 id="web-embed-dialog-title">内嵌静态网页</h2></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <div className="resource-dialog-tabs" role="tablist" aria-label="网页上传方式">
+          <button className={sourceType === "html" ? "active" : ""} onClick={() => changeSource("html")} role="tab" aria-selected={sourceType === "html"}>HTML / JS 文件</button>
+          <button className={sourceType === "zip" ? "active" : ""} onClick={() => changeSource("zip")} role="tab" aria-selected={sourceType === "zip"}>ZIP 静态站点</button>
+        </div>
+        <form className="resource-upload-form web-embed-form" onSubmit={(event) => void submit(event)}>
+          <input
+            key={sourceType}
+            ref={inputRef}
+            className="visually-hidden"
+            type="file"
+            accept={accept}
+            multiple={sourceType === "html"}
+            onChange={(event) => selectFiles(Array.from(event.target.files || []))}
+          />
+          <button
+            type="button"
+            className={`resource-drop-zone ${files.length ? "selected" : ""}`}
+            onClick={() => inputRef.current?.click()}
+            onDragOver={(event) => event.preventDefault()}
+            onDrop={(event) => { event.preventDefault(); selectFiles(Array.from(event.dataTransfer.files || [])); }}
+          >
+            {files.length ? (
+              <><Check size={24} /><strong>{files.length === 1 ? files[0].name : `${files.length} 个网页文件`}</strong><span>{formatFileSize(files.reduce((total, file) => total + file.size, 0))} · 点击重新选择</span></>
+            ) : (
+              <><Upload size={24} /><strong>{sourceType === "zip" ? "选择 ZIP 静态站点" : "选择 HTML、JS 和关联资源"}</strong><span>{sourceType === "zip" ? "上传后自动安全解压" : "可同时选择多个文件"}</span></>
+            )}
+          </button>
+          {files.length > 1 ? (
+            <div className="web-file-summary" aria-label="已选择网页文件">
+              {paths.slice(0, 6).map((path) => <span key={path}>{path}</span>)}
+              {paths.length > 6 ? <span>另有 {paths.length - 6} 个文件</span> : null}
+            </div>
+          ) : null}
+          <label><span>网页标题 <b>*</b></span><input value={title} onChange={(event) => setTitle(event.target.value)} maxLength={100} placeholder="请输入网页或游戏名称" /><small>{title.length}/100</small></label>
+          {sourceType === "html" && htmlEntries.length > 1 ? (
+            <label><span>入口文件 <b>*</b></span><select value={entry} onChange={(event) => setEntry(event.target.value)}><option value="">请选择 HTML 入口</option>{htmlEntries.map((path) => <option value={path} key={path}>{path}</option>)}</select></label>
+          ) : null}
+          <label className="web-height-field">
+            <span>显示高度</span>
+            <div className="web-height-control"><input aria-label="网页显示高度" type="range" min={WEB_EMBED_MIN_HEIGHT} max={WEB_EMBED_MAX_HEIGHT} step={20} value={height} onChange={(event) => setHeight(Number(event.target.value))} /><output>{height}px</output></div>
+          </label>
+          <div className="web-embed-safety"><PanelsTopLeft size={15} /><span>网页和脚本将在隔离框架中运行</span></div>
+          {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
+          <footer><button type="button" className="secondary-button" onClick={onClose}>取消</button><button className="dialog-primary-button" disabled={uploading || files.length === 0}>{uploading ? <LoaderCircle className="spin" size={15} /> : null} 上传并内嵌</button></footer>
+        </form>
+      </section>
+    </div>
+  );
+}
+
 function ResourceBindingDialog({
   onClose,
   onUpload,
@@ -3296,9 +3499,50 @@ function safeHttpUrl(value: string): string | null {
   }
 }
 
+function safeWebEmbedUrl(value: string): string | null {
+  try {
+    const url = new URL(value, window.location.origin);
+    if (url.origin !== window.location.origin) return null;
+    const decoded = decodeURIComponent(url.pathname);
+    if (decoded.includes("\\") || decoded.split("/").includes("..")) return null;
+    if (!/^\/web-pages\/editor\/(?:html|zip)\/[0-9a-f]{24}\/.+\.html?$/i.test(decoded)) return null;
+    return `${url.pathname}${url.search}${url.hash}`;
+  } catch {
+    return null;
+  }
+}
+
 function enhancePreviewLinks(html: string): string {
   const document = new DOMParser().parseFromString(html, "text/html");
   for (const anchor of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const embedHeight = parseWebEmbedMarker(anchor.title);
+    const embedUrl = embedHeight === null ? null : safeWebEmbedUrl(anchor.getAttribute("href") || "");
+    if (embedUrl) {
+      const title = anchor.textContent?.trim() || "内嵌网页";
+      const parent = anchor.parentElement;
+      const standalone = parent?.tagName === "P" && parent.childNodes.length === 1;
+      const wrapper = document.createElement(standalone ? "div" : "span");
+      wrapper.className = "web-page-embed";
+      wrapper.dataset.webPageEmbed = "";
+      const header = document.createElement("span");
+      header.className = "web-page-embed-header";
+      const titleLine = document.createElement("strong");
+      titleLine.textContent = title;
+      header.replaceChildren(titleLine);
+      const frame = document.createElement("iframe");
+      frame.src = embedUrl;
+      frame.title = title;
+      frame.loading = "lazy";
+      frame.referrerPolicy = "no-referrer";
+      frame.setAttribute("sandbox", "allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-downloads");
+      frame.setAttribute("allow", "autoplay; fullscreen; gamepad");
+      frame.setAttribute("allowfullscreen", "");
+      frame.style.height = `${embedHeight}px`;
+      wrapper.replaceChildren(header, frame);
+      if (standalone && parent) parent.replaceWith(wrapper);
+      else anchor.replaceWith(wrapper);
+      continue;
+    }
     const href = safeHttpUrl(anchor.href);
     if (!href) continue;
     anchor.classList.add("external-link");

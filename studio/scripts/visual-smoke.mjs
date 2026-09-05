@@ -131,6 +131,11 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
     contentType: "image/svg+xml",
     body: '<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="1200"><rect width="6000" height="1200" fill="#e8f0fe"/><text x="120" y="620" font-size="180">Wide editor image</text></svg>',
   }));
+  await page.route("**/web-pages/editor/html/0123456789abcdef01234567/index.html", (route) => route.fulfill({
+    status: 200,
+    contentType: "text/html; charset=utf-8",
+    body: '<!doctype html><html><body style="margin:0;display:grid;place-items:center;min-height:100vh;font-family:sans-serif"><main><h1>像素游戏已运行</h1><p>HTML + JavaScript 静态网页</p></main><script>document.body.dataset.ready="true"</script></body></html>',
+  }));
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -243,6 +248,20 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
         description: "可运行的 Astro 示例代码",
         category: "code",
         tags: ["Astro", "示例"],
+      });
+    }
+    if (url.pathname === "/api/web-embeds" && request.method() === "POST") {
+      return json({
+        id: "0123456789abcdef01234567",
+        path: "public/web-pages/editor/html/0123456789abcdef01234567/index.html",
+        url: "/web-pages/editor/html/0123456789abcdef01234567/index.html",
+        title: "像素游戏",
+        entry: "index.html",
+        height: 700,
+        fileCount: 2,
+        totalSize: 2048,
+        sourceType: "html",
+        reused: false,
       });
     }
     return json({ error: `Unhandled visual test API: ${request.method()} ${url.pathname}` }, 404);
@@ -496,7 +515,7 @@ async function verifyDesktop() {
     [
       [36, 36], [82, 36], [128, 40], [191, 43], [241, 36], [287, 36], [333, 36], [374, 43],
       [441, 43], [491, 43], [541, 48], [599, 48], [660, 43], [709, 60], [779, 36], [841, 36],
-      [887, 36], [933, 36], [979, 36], [1025, 36], [1071, 36], [1117, 36], [1180, 97],
+      [887, 36], [933, 36], [979, 36], [1025, 36], [1071, 36], [1117, 36], [1163, 36], [1226, 97],
     ],
     "desktop toolbar controls must preserve the CSDN horizontal geometry",
   );
@@ -513,8 +532,8 @@ async function verifyDesktop() {
   assert.deepEqual(toolbarVisuals["文字颜色"].icon, { x: 293, y: 53, width: 24, height: 24 });
   assert.deepEqual(toolbarVisuals["其他样式"].icon, { x: 377, y: 53, width: 24, height: 24 });
   assert.deepEqual(toolbarVisuals["Insert thematic break"].icon, { x: 553, y: 53, width: 24, height: 24 });
-  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].icon, { x: 1217, y: 53, width: 24, height: 24 });
-  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].visibleLabel, { x: 1186, y: 78, width: 85, height: 18 });
+  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].icon, { x: 1263, y: 53, width: 24, height: 24 });
+  assert.deepEqual(toolbarVisuals["使用 Markdown 源码编辑器"].visibleLabel, { x: 1232, y: 78, width: 85, height: 18 });
   assert.deepEqual(
     { x: metrics.outline.x, y: metrics.outline.y, width: metrics.outline.width, bottom: metrics.outline.y + metrics.outline.height },
     { x: 24, y: 132, width: 280, bottom: 652 },
@@ -2139,6 +2158,91 @@ async function verifyLinkCardsAndLargeImages() {
   return { linkCardAndLargeImageScreenshots: screenshots };
 }
 
+async function verifyWebEmbeds() {
+  const screenshots = [];
+  {
+    const { context, page, pageErrors } = await openEditor({ width: 1264, height: 720 }, { existing: true });
+    const webTool = page.locator(".csdn-toolbar-action").filter({ hasText: "网页" });
+    await webTool.scrollIntoViewIfNeeded();
+    await webTool.click();
+    const dialog = page.locator(".web-embed-dialog");
+    await dialog.waitFor();
+    const dialogRect = await dialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
+    });
+    assert.deepEqual(dialogRect, { top: 35, left: 261, width: 742, height: 650 });
+
+    await dialog.getByRole("tab", { name: "ZIP 静态站点" }).click();
+    assert.match(await dialog.locator(".resource-drop-zone").textContent(), /选择 ZIP 静态站点.*自动安全解压/s);
+    const zipPath = join(outputDirectory, "desktop-1264-web-zip-dialog.png");
+    await page.screenshot({ path: zipPath, animations: "disabled" });
+    screenshots.push(zipPath);
+
+    await dialog.getByRole("tab", { name: "HTML / JS 文件" }).click();
+    await dialog.locator('input[type="file"]').setInputFiles([
+      { name: "index.html", mimeType: "text/html", buffer: Buffer.from('<main id="game"></main><script src="game.js"></script>') },
+      { name: "game.js", mimeType: "text/javascript", buffer: Buffer.from("document.querySelector('#game').textContent = 'ready'") },
+    ]);
+    await dialog.getByPlaceholder("请输入网页或游戏名称").fill("像素游戏");
+    await dialog.getByLabel("网页显示高度").fill("700");
+    await dialog.getByText("700px").waitFor();
+    const uploadPath = join(outputDirectory, "desktop-1264-web-files-dialog.png");
+    await page.screenshot({ path: uploadPath, animations: "disabled" });
+    screenshots.push(uploadPath);
+    await dialog.getByRole("button", { name: "上传并内嵌" }).click();
+    await dialog.waitFor({ state: "detached" });
+
+    const embedCard = page.locator('.studio-rich-content a[title="astro-web-embed:700"]');
+    await embedCard.waitFor();
+    assert.equal(await embedCard.getAttribute("href"), "/web-pages/editor/html/0123456789abcdef01234567/index.html");
+    assert.equal(await embedCard.evaluate((element) => getComputedStyle(element).display), "grid");
+
+    await page.locator(".csdn-source-action").scrollIntoViewIfNeeded();
+    await page.locator(".csdn-source-action").click();
+    await page.locator(".source-editor").waitFor();
+    assert.match(await page.locator(".source-editor").inputValue(), /astro-web-embed:700/);
+    await page.locator(".alternate-mode-toolbar").getByRole("button", { name: "预览" }).click();
+    const frame = page.locator(".preview-content .web-page-embed iframe");
+    await frame.waitFor();
+    const sandbox = await frame.getAttribute("sandbox") || "";
+    assert.match(sandbox, /allow-scripts/);
+    assert.doesNotMatch(sandbox, /allow-same-origin/);
+    assert.equal(await frame.getAttribute("src"), "/web-pages/editor/html/0123456789abcdef01234567/index.html");
+    assert.equal(await frame.evaluate((element) => Math.round(element.getBoundingClientRect().height)), 700);
+    await frame.contentFrame().locator('body[data-ready="true"]').waitFor();
+    const previewPath = join(outputDirectory, "desktop-1264-web-embed-preview.png");
+    await page.screenshot({ path: previewPath, animations: "disabled" });
+    screenshots.push(previewPath);
+    assert.deepEqual(pageErrors, [], `web embed desktop errors: ${pageErrors.join("; ")}`);
+    await context.close();
+  }
+
+  {
+    const { context, page, pageErrors } = await openEditor({ width: 390, height: 844 }, { existing: true });
+    const webTool = page.locator(".csdn-toolbar-action").filter({ hasText: "网页" });
+    await webTool.scrollIntoViewIfNeeded();
+    await webTool.click();
+    const dialog = page.locator(".web-embed-dialog");
+    await dialog.waitFor();
+    const rect = await dialog.evaluate((element) => {
+      const box = element.getBoundingClientRect();
+      return { top: Math.round(box.top), left: Math.round(box.left), width: Math.round(box.width), height: Math.round(box.height) };
+    });
+    assert.deepEqual(rect, { top: 0, left: 0, width: 390, height: 844 });
+    await dialog.getByRole("tab", { name: "ZIP 静态站点" }).click();
+    const mobilePath = join(outputDirectory, "mobile-390-web-zip-dialog.png");
+    await page.screenshot({ path: mobilePath, animations: "disabled" });
+    screenshots.push(mobilePath);
+    await dialog.getByTitle("关闭").click();
+    await dialog.waitFor({ state: "detached" });
+    assert.deepEqual(pageErrors, [], `web embed mobile errors: ${pageErrors.join("; ")}`);
+    await context.close();
+  }
+
+  return { webEmbedScreenshots: screenshots };
+}
+
 try {
   const results = [
     await verifyDesktop(),
@@ -2151,6 +2255,7 @@ try {
     await verifyScheduledPublish(),
     await verifyPostListSurvivesDraftFailure(),
     await verifyLinkCardsAndLargeImages(),
+    await verifyWebEmbeds(),
   ];
   console.log(JSON.stringify(results, null, 2));
 } finally {

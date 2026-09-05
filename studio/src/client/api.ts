@@ -7,6 +7,7 @@ import type {
   PostRevisionDocument,
   ScheduledPost,
   SessionInfo,
+  WebEmbedRecord,
 } from "../shared/types";
 import type { LinkPreview } from "../shared/link-preview";
 
@@ -120,6 +121,28 @@ export const api = {
     form.set("category", metadata.category || "");
     form.set("tags", JSON.stringify(metadata.tags || []));
     return request<{ path: string; url: string; name: string; size: number; description?: string; category?: string; tags?: string[] }>("/api/resources", {
+      method: "POST",
+      body: form,
+    });
+  },
+  uploadWebEmbed: async (
+    files: File[],
+    options: {
+      title: string;
+      height: number;
+      sourceType: "html" | "zip";
+      entry?: string;
+      paths?: string[];
+    },
+  ) => {
+    const form = new FormData();
+    for (const file of files) form.append("files", file);
+    form.set("title", options.title);
+    form.set("height", String(options.height));
+    form.set("sourceType", options.sourceType);
+    form.set("entry", options.entry || "");
+    form.set("paths", JSON.stringify(options.paths || files.map((file) => file.name)));
+    return request<WebEmbedRecord>("/api/web-embeds", {
       method: "POST",
       body: form,
     });
