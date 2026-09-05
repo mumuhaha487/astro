@@ -58,7 +58,7 @@
 		"node-html-parser": "^7.0.2",
 		"oddmisc": "1.1.5",
 		"overlayscrollbars": "^2.14.0",
-		"pagefind": "^1.4.0",
+		"pagefind": "1.4.0",
 		"qrcode": "^1.5.4",
 		"reading-time": "^1.5.0",
 		"rehype-autolink-headings": "^7.1.0",
