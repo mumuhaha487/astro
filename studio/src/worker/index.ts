@@ -12,6 +12,7 @@ import type {
   SessionInfo,
 } from "../shared/types";
 import { validateScheduleTime } from "../shared/schedule";
+import { fetchLinkPreview, LinkPreviewError } from "../shared/link-preview";
 
 export interface ObjectBucket {
   get(key: string): Promise<{ json<T>(): Promise<T> } | null>;
@@ -155,6 +156,14 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
 
   if (url.pathname === "/api/session" && request.method === "GET") {
     return json(await getSessionInfo(env));
+  }
+  if (url.pathname === "/api/link-preview" && request.method === "GET") {
+    try {
+      return json(await fetchLinkPreview(url.searchParams.get("url") || ""));
+    } catch (error) {
+      if (error instanceof LinkPreviewError) throw new HttpError(error.status, error.message);
+      throw error;
+    }
   }
   if (url.pathname === "/api/asset" && ["GET", "HEAD"].includes(request.method)) {
     const repositoryPath = repositoryPublicAssetPath(url.searchParams.get("path") || "");

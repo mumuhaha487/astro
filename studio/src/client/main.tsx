@@ -87,6 +87,7 @@ import {
   SCHEDULE_MIN_DELAY_MS,
   validateScheduleTime,
 } from "../shared/schedule";
+import { LINK_CARD_MARKER } from "../shared/link-card";
 import "./styles.css";
 
 type EditorMode = "rich" | "source" | "preview";
@@ -832,6 +833,11 @@ function App() {
     }
   }, []);
 
+  const resolveLinkTitle = useCallback(async (url: string) => {
+    const preview = await api.linkPreview(url);
+    return preview.title;
+  }, []);
+
   const uploadVideo = useCallback(async (file: File) => {
     setSyncState("saving");
     setSyncLabel("正在上传视频");
@@ -927,9 +933,9 @@ function App() {
 
   const previewHtml = useMemo(() => {
     const rendered = marked.parse(body) as string;
-    return DOMPurify.sanitize(rendered, {
-      ADD_ATTR: ["target", "rel", "class", "id"],
-    });
+    return enhancePreviewLinks(DOMPurify.sanitize(rendered, {
+      ADD_ATTR: ["target", "rel", "class", "id", "data-link-card"],
+    }));
   }, [body]);
 
   if (booting) {
@@ -1190,6 +1196,7 @@ function App() {
                           onInsertTemplate={() => openInsertPanel("template")}
                           onInsertResource={() => openInsertPanel("resource")}
                           onInsertTable={() => openInsertPanel("table")}
+                          onResolveLinkTitle={resolveLinkTitle}
                           onSourceMode={() => changeMode("source")}
                           onToggleOutline={toggleOutlinePanel}
                           onToggleWide={() => setWideEditor((value) => !value)}
@@ -1355,7 +1362,11 @@ function App() {
         <LinkInsertDialog
           initialText={plainText(linkSelection)}
           onClose={() => setInsertPanel(null)}
-          onInsert={(url, text) => insertMarkdownAtCursor(`[${escapeMarkdownInline(text || url)}](${url})`, "链接已插入正文")}
+          onResolveTitle={resolveLinkTitle}
+          onInsert={(url, text, card) => insertMarkdownAtCursor(
+            `[${escapeMarkdownInline(text || url)}](${url}${card ? ` "${LINK_CARD_MARKER}"` : ""})`,
+            card ? "链接卡片已插入正文" : "链接已插入正文",
+          )}
         />
       ) : null}
 
@@ -2547,15 +2558,48 @@ function FormulaDialog({ onClose, onInsert }: { onClose: () => void; onInsert: (
 function LinkInsertDialog({
   initialText,
   onClose,
+  onResolveTitle,
   onInsert,
 }: {
   initialText: string;
   onClose: () => void;
-  onInsert: (url: string, text: string) => void;
+  onResolveTitle: (url: string) => Promise<string>;
+  onInsert: (url: string, text: string, card: boolean) => void;
 }) {
   const [url, setUrl] = useState("");
   const [text, setText] = useState(initialText);
+  const [card, setCard] = useState(false);
+  const [resolving, setResolving] = useState(false);
   const [error, setError] = useState("");
+  const textRef = useRef(initialText);
+  const automaticTitleRef = useRef("");
+
+  useEffect(() => {
+    const normalized = safeHttpUrl(url.trim());
+    if (!normalized) {
+      setResolving(false);
+      return undefined;
+    }
+    let active = true;
+    const timer = window.setTimeout(() => {
+      setResolving(true);
+      void onResolveTitle(normalized)
+        .then((title) => {
+          if (!active || !title.trim()) return;
+          if (!textRef.current.trim() || textRef.current === automaticTitleRef.current || textRef.current === normalized) {
+            automaticTitleRef.current = title.trim();
+            textRef.current = title.trim();
+            setText(title.trim());
+          }
+        })
+        .catch(() => undefined)
+        .finally(() => { if (active) setResolving(false); });
+    }, 400);
+    return () => {
+      active = false;
+      window.clearTimeout(timer);
+    };
+  }, [onResolveTitle, url]);
 
   function insert(event: FormEvent) {
     event.preventDefault();
@@ -2564,7 +2608,7 @@ function LinkInsertDialog({
       setError("请输入有效的 HTTP 或 HTTPS 链接");
       return;
     }
-    onInsert(normalized, text.trim());
+    onInsert(normalized, text.trim(), card);
   }
 
   return (
@@ -2572,8 +2616,12 @@ function LinkInsertDialog({
       <section className="link-insert-dialog" role="dialog" aria-modal="true" aria-labelledby="link-dialog-title">
         <header><h2 id="link-dialog-title">插入链接</h2><button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button></header>
         <form onSubmit={insert}>
-          <label><span>插入URL：</span><input value={url} onChange={(event) => setUrl(event.target.value)} autoFocus /></label>
-          <label><span>替换文本：</span><input value={text} onChange={(event) => setText(event.target.value)} /></label>
+          <label><span>插入URL：</span><input value={url} onChange={(event) => { setUrl(event.target.value); setError(""); }} autoFocus /></label>
+          <label><span>替换文本：</span><input value={text} onChange={(event) => { textRef.current = event.target.value; setText(event.target.value); }} placeholder={resolving ? "正在获取网页标题..." : "链接名称"} /></label>
+          <div className="link-display-mode" role="group" aria-label="链接显示方式">
+            <button type="button" className={!card ? "active" : ""} onClick={() => setCard(false)}>普通链接</button>
+            <button type="button" className={card ? "active" : ""} onClick={() => setCard(true)}>链接卡片</button>
+          </div>
           {error ? <span className="insert-dialog-error"><AlertCircle size={15} /> {error}</span> : null}
           <footer><button className="dialog-primary-button">确定</button><button type="button" className="secondary-button" onClick={onClose}>取消</button></footer>
         </form>
@@ -3246,6 +3294,31 @@ function safeHttpUrl(value: string): string | null {
   } catch {
     return null;
   }
+}
+
+function enhancePreviewLinks(html: string): string {
+  const document = new DOMParser().parseFromString(html, "text/html");
+  for (const anchor of document.querySelectorAll<HTMLAnchorElement>("a[href]")) {
+    const href = safeHttpUrl(anchor.href);
+    if (!href) continue;
+    anchor.classList.add("external-link");
+    anchor.target = "_blank";
+    anchor.rel = "nofollow noopener noreferrer";
+    if (anchor.title !== LINK_CARD_MARKER) continue;
+
+    const title = anchor.textContent?.trim() || href;
+    anchor.removeAttribute("title");
+    anchor.classList.add("link-card");
+    anchor.dataset.linkCard = "";
+    const titleLine = document.createElement("span");
+    titleLine.className = "link-card-title";
+    titleLine.textContent = title;
+    const urlLine = document.createElement("span");
+    urlLine.className = "link-card-url";
+    urlLine.textContent = href;
+    anchor.replaceChildren(titleLine, urlLine);
+  }
+  return document.body.innerHTML;
 }
 
 function escapeMarkdownInline(value: string): string {

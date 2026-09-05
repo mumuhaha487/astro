@@ -9,8 +9,10 @@ import {
   InsertThematicBreak,
   MDXEditor,
   UndoRedo,
+  activeEditor$,
   applyFormat$,
   applyListType$,
+  cancelLinkEdit$,
   codeBlockPlugin,
   codeMirrorPlugin,
   convertSelectionToNode$,
@@ -19,13 +21,18 @@ import {
   insertCodeBlock$,
   insertMarkdown$,
   linkDialogPlugin,
+  linkDialogState$,
   linkPlugin,
   listsPlugin,
   markdownShortcutPlugin,
+  onWindowChange$,
   quotePlugin,
+  removeLink$,
+  switchFromPreviewToLinkEdit$,
   tablePlugin,
   thematicBreakPlugin,
   toolbarPlugin,
+  updateLink$,
   type ImageUploadHandler,
   type MDXEditorMethods,
   usePublisher,
@@ -39,6 +46,8 @@ import {
   Baseline,
   ChevronDown,
   Code2,
+  Copy,
+  ExternalLink,
   FileCode2,
   FileStack,
   FolderSymlink,
@@ -53,12 +62,14 @@ import {
   Maximize2,
   MessageSquareQuote,
   MoreHorizontal,
+  Pencil,
   PlaySquare,
   Sigma,
   SquareTerminal,
   Strikethrough,
   Table2,
   Underline,
+  Unlink2,
 } from "lucide-react";
 import {
   forwardRef,
@@ -68,11 +79,23 @@ import {
   useMemo,
   useRef,
   useState,
+  type FormEvent,
   type ReactNode,
 } from "react";
 import { createPortal } from "react-dom";
 import { $createHeadingNode } from "@lexical/rich-text";
-import { $createParagraphNode } from "lexical";
+import { $createLinkNode, $isLinkNode } from "@lexical/link";
+import { useCellValues } from "@mdxeditor/gurx";
+import {
+  $createParagraphNode,
+  $createTextNode,
+  $getNodeByKey,
+  $insertNodes,
+  $isTextNode,
+  COMMAND_PRIORITY_HIGH,
+  PASTE_COMMAND,
+} from "lexical";
+import { LINK_CARD_MARKER } from "../shared/link-card";
 
 export interface MdxEditorSlotProps {
   initialValue: string;
@@ -90,6 +113,7 @@ export interface MdxEditorSlotProps {
   onInsertTemplate: () => void;
   onInsertResource: () => void;
   onInsertTable: () => void;
+  onResolveLinkTitle: (url: string) => Promise<string>;
   outlineVisible: boolean;
   wide: boolean;
   readOnly?: boolean;
@@ -168,6 +192,215 @@ function escapeInlineHtml(value: string): string {
 
 function selectedTextOr(fallback: string): string {
   return window.getSelection()?.toString().trim() || fallback;
+}
+
+function pastedHttpUrl(value: string): string | null {
+  const trimmed = value.trim();
+  if (!trimmed || /\s/.test(trimmed)) return null;
+  try {
+    const url = new URL(trimmed);
+    return ["http:", "https:"].includes(url.protocol) ? url.toString() : null;
+  } catch {
+    return null;
+  }
+}
+
+function AutoLinkPaste({ onResolveTitle }: { onResolveTitle: (url: string) => Promise<string> }) {
+  const [activeEditor] = useCellValues(activeEditor$);
+
+  useEffect(() => {
+    if (!activeEditor) return undefined;
+    return activeEditor.registerCommand(
+      PASTE_COMMAND,
+      (event) => {
+        if (!(event instanceof ClipboardEvent)) return false;
+        const { clipboardData } = event;
+        if (!clipboardData || clipboardData.files.length > 0) return false;
+        const url = pastedHttpUrl(clipboardData.getData("text/plain"));
+        if (!url) return false;
+
+        event.preventDefault();
+        let linkNodeKey = "";
+        activeEditor.update(() => {
+          const link = $createLinkNode(url);
+          link.append($createTextNode(url));
+          $insertNodes([link]);
+          link.selectEnd();
+          linkNodeKey = link.getKey();
+        }, { discrete: true });
+
+        void onResolveTitle(url).then((title) => {
+          const resolvedTitle = title.trim();
+          if (!resolvedTitle || resolvedTitle === url) return;
+          activeEditor.update(() => {
+            const link = $getNodeByKey(linkNodeKey);
+            if (!$isLinkNode(link) || link.getURL() !== url || link.getTextContent() !== url) return;
+            const text = link.getFirstChild();
+            if ($isTextNode(text)) text.setTextContent(resolvedTitle);
+          });
+        }).catch(() => undefined);
+        return true;
+      },
+      COMMAND_PRIORITY_HIGH,
+    );
+  }, [activeEditor, onResolveTitle]);
+
+  return null;
+}
+
+function StudioLinkDialog({ onResolveTitle }: { onResolveTitle: (url: string) => Promise<string> }) {
+  const [linkDialogState, activeEditor] = useCellValues(linkDialogState$, activeEditor$);
+  const publishWindowChange = usePublisher(onWindowChange$);
+  const updateLink = usePublisher(updateLink$);
+  const cancelLinkEdit = usePublisher(cancelLinkEdit$);
+  const switchToEdit = usePublisher(switchFromPreviewToLinkEdit$);
+  const removeLink = usePublisher(removeLink$);
+  const [copied, setCopied] = useState(false);
+
+  useEffect(() => {
+    const updatePosition = () => {
+      activeEditor?.getEditorState().read(() => publishWindowChange(true));
+    };
+    window.addEventListener("resize", updatePosition);
+    window.addEventListener("scroll", updatePosition, true);
+    return () => {
+      window.removeEventListener("resize", updatePosition);
+      window.removeEventListener("scroll", updatePosition, true);
+    };
+  }, [activeEditor, publishWindowChange]);
+
+  if (linkDialogState.type === "inactive") return null;
+  const { rectangle } = linkDialogState;
+  const width = linkDialogState.type === "edit" ? 360 : 470;
+  const estimatedHeight = linkDialogState.type === "edit" ? 238 : 44;
+  const left = Math.max(10, Math.min(rectangle.left, window.innerWidth - width - 10));
+  const below = rectangle.top + rectangle.height + 8;
+  const top = below + estimatedHeight <= window.innerHeight - 10
+    ? below
+    : Math.max(10, rectangle.top - estimatedHeight - 8);
+
+  return createPortal(
+    <div
+      className={`studio-link-popover ${linkDialogState.type === "edit" ? "is-editing" : ""}`}
+      style={{ left, top, width }}
+      role="dialog"
+      aria-label={linkDialogState.type === "edit" ? "编辑链接" : "链接操作"}
+      onMouseDown={linkDialogState.type === "preview" ? (event) => event.preventDefault() : undefined}
+    >
+      {linkDialogState.type === "edit" ? (
+        <StudioLinkEditForm
+          key={linkDialogState.linkNodeKey}
+          initialUrl={linkDialogState.url}
+          initialText={linkDialogState.text}
+          initialTitle={linkDialogState.title}
+          onCancel={() => cancelLinkEdit()}
+          onResolveTitle={onResolveTitle}
+          onSave={(url, text, card) => updateLink({
+            url,
+            text,
+            title: card ? LINK_CARD_MARKER : (linkDialogState.title === LINK_CARD_MARKER ? "" : linkDialogState.title),
+          })}
+        />
+      ) : (
+        <>
+          <a href={linkDialogState.url} target="_blank" rel="noreferrer" title="在新窗口打开链接">
+            <span>{linkDialogState.url}</span><ExternalLink size={15} />
+          </a>
+          <button type="button" className="studio-link-icon-action" title="编辑链接" onClick={() => switchToEdit()}><Pencil size={16} /></button>
+          <button
+            type="button"
+            className="studio-link-icon-action"
+            title="复制链接"
+            onClick={() => {
+              void navigator.clipboard.writeText(linkDialogState.url).then(() => {
+                setCopied(true);
+                window.setTimeout(() => setCopied(false), 1000);
+              });
+            }}
+          ><Copy size={16} /><span className="sr-only">{copied ? "已复制" : "复制链接"}</span></button>
+          <button type="button" className="studio-link-icon-action" title="移除链接" onClick={() => removeLink()}><Unlink2 size={16} /></button>
+          <button
+            type="button"
+            className="studio-link-switch"
+            onClick={() => updateLink({
+              url: linkDialogState.url,
+              text: undefined,
+              title: linkDialogState.title === LINK_CARD_MARKER ? "" : LINK_CARD_MARKER,
+            })}
+          >{linkDialogState.title === LINK_CARD_MARKER ? "切换为链接" : "切换为卡片"}</button>
+        </>
+      )}
+    </div>,
+    document.body,
+  );
+}
+
+function StudioLinkEditForm({
+  initialUrl,
+  initialText,
+  initialTitle,
+  onCancel,
+  onResolveTitle,
+  onSave,
+}: {
+  initialUrl: string;
+  initialText: string;
+  initialTitle: string;
+  onCancel: () => void;
+  onResolveTitle: (url: string) => Promise<string>;
+  onSave: (url: string, text: string, card: boolean) => void;
+}) {
+  const [url, setUrl] = useState(initialUrl);
+  const [text, setText] = useState(initialText);
+  const [card, setCard] = useState(initialTitle === LINK_CARD_MARKER);
+  const [loading, setLoading] = useState(false);
+  const [error, setError] = useState("");
+  const textRef = useRef(initialText);
+  const automaticTitleRef = useRef("");
+
+  async function resolveTitle() {
+    const normalized = pastedHttpUrl(url);
+    if (!normalized) return;
+    setLoading(true);
+    try {
+      const title = await onResolveTitle(normalized);
+      if (
+        title
+        && (!textRef.current.trim() || textRef.current === initialUrl || textRef.current === automaticTitleRef.current)
+      ) {
+        automaticTitleRef.current = title;
+        textRef.current = title;
+        setText(title);
+      }
+    } catch {
+      // The entered link remains usable even when its metadata cannot be read.
+    } finally {
+      setLoading(false);
+    }
+  }
+
+  function submit(event: FormEvent) {
+    event.preventDefault();
+    const normalized = pastedHttpUrl(url);
+    if (!normalized) {
+      setError("请输入有效的 HTTP 或 HTTPS 链接");
+      return;
+    }
+    onSave(normalized, text.trim() || normalized, card);
+  }
+
+  return (
+    <form onSubmit={submit} onKeyDown={(event) => { if (event.key === "Escape") onCancel(); }}>
+      <label><span>URL</span><input value={url} onChange={(event) => { setUrl(event.target.value); setError(""); }} onBlur={() => void resolveTitle()} autoFocus /></label>
+      <label><span>显示文本</span><input value={text} onChange={(event) => { textRef.current = event.target.value; setText(event.target.value); }} placeholder={loading ? "正在获取网页标题..." : "链接名称"} /></label>
+      <div className="studio-link-mode" role="group" aria-label="链接显示方式">
+        <button type="button" className={!card ? "active" : ""} onClick={() => setCard(false)}>普通链接</button>
+        <button type="button" className={card ? "active" : ""} onClick={() => setCard(true)}>链接卡片</button>
+      </div>
+      {error ? <span className="studio-link-error">{error}</span> : null}
+      <footer><button type="submit" className="dialog-primary-button">保存</button><button type="button" className="secondary-button" onClick={onCancel}>取消</button></footer>
+    </form>
+  );
 }
 
 function ColorMenu({ background = false }: { background?: boolean }) {
@@ -532,6 +765,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
     onInsertTemplate,
     onInsertResource,
     onInsertTable,
+    onResolveLinkTitle,
     outlineVisible,
     wide,
     readOnly,
@@ -564,7 +798,10 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
         quotePlugin(),
         thematicBreakPlugin(),
         linkPlugin(),
-        linkDialogPlugin(),
+        linkDialogPlugin({
+          LinkDialog: () => <StudioLinkDialog onResolveTitle={onResolveLinkTitle} />,
+          showLinkTitleField: false,
+        }),
         tablePlugin(),
         imagePlugin({ imageUploadHandler }),
         codeBlockPlugin({ defaultCodeBlockLanguage: "" }),
@@ -585,6 +822,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           toolbarClassName: "csdn-editor-toolbar",
           toolbarContents: () => (
             <>
+              <AutoLinkPaste onResolveTitle={onResolveLinkTitle} />
               <span className="csdn-tool-group csdn-history-tools">
                 <UndoRedo />
                 <ToolbarAction className="csdn-history-action" label="历史" title="查看文章和草稿历史" icon={<History size={18} />} onClick={onHistory} />
@@ -641,7 +879,7 @@ export const MdxEditorSlot = forwardRef<MdxEditorSlotHandle, MdxEditorSlotProps>
           ),
         }),
       ],
-      [imageUploadHandler, onHistory, onInsertFormula, onInsertImage, onInsertLink, onInsertResource, onInsertTable, onInsertTemplate, onInsertVideo, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
+      [imageUploadHandler, onHistory, onInsertFormula, onInsertImage, onInsertLink, onInsertResource, onInsertTable, onInsertTemplate, onInsertVideo, onResolveLinkTitle, onRunnableCode, onSourceMode, onToggleOutline, onToggleWide, outlineVisible, wide],
     );
 
     return (

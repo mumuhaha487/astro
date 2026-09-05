@@ -8,6 +8,7 @@ import type {
   ScheduledPost,
   SessionInfo,
 } from "../shared/types";
+import type { LinkPreview } from "../shared/link-preview";
 
 export class ApiError extends Error {
   status: number;
@@ -54,6 +55,8 @@ export const api = {
       body: JSON.stringify({ password }),
     }),
   logout: () => request<void>("/api/logout", { method: "POST" }),
+  linkPreview: (url: string) =>
+    request<LinkPreview>(`/api/link-preview?url=${encodeURIComponent(url)}`),
   posts: () => request<{ posts: PostMeta[]; stale?: boolean }>("/api/posts"),
   post: (path: string) =>
     request<PostDocument>(`/api/post?path=${encodeURIComponent(path)}`),

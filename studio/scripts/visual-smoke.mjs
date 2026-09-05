@@ -123,9 +123,14 @@ const exampleDraftContent = exampleContent
   .replace("draft: false", "draft: true")
   .replace("pinned: true", "pinned: false");
 
-async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [] } = {}) {
+async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [], postContent = exampleContent } = {}) {
   let postRecords = [examplePost];
   let draftRecords = includeDraft ? [exampleDraft] : [];
+  await page.route("**/image/editor/visual-wide.svg", (route) => route.fulfill({
+    status: 200,
+    contentType: "image/svg+xml",
+    body: '<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="1200"><rect width="6000" height="1200" fill="#e8f0fe"/><text x="120" y="620" font-size="180">Wide editor image</text></svg>',
+  }));
   await page.route("**/api/**", async (route) => {
     const request = route.request();
     const url = new URL(request.url());
@@ -141,6 +146,13 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       });
     }
     if (url.pathname === "/api/asset" && request.method() === "GET") {
+      if (url.searchParams.get("path") === "/image/editor/visual-wide.svg") {
+        return route.fulfill({
+          status: 200,
+          contentType: "image/svg+xml",
+          body: '<svg xmlns="http://www.w3.org/2000/svg" width="6000" height="1200"><rect width="6000" height="1200" fill="#e8f0fe"/><text x="120" y="620" font-size="180">Wide editor image</text></svg>',
+        });
+      }
       return route.fulfill({
         status: 200,
         contentType: "image/png",
@@ -149,7 +161,10 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
     }
     if (url.pathname === "/api/posts") return json({ posts: postRecords });
     if (url.pathname === "/api/post" && request.method() === "GET") {
-      return json({ path: examplePost.path, sha: examplePost.sha, content: exampleContent });
+      return json({ path: examplePost.path, sha: examplePost.sha, content: postContent });
+    }
+    if (url.pathname === "/api/link-preview") {
+      return json({ url: url.searchParams.get("url"), title: "Astro Studio 测试标题", siteName: "Astro Studio" });
     }
     if (url.pathname === "/api/post" && request.method() === "PUT") {
       const body = request.postDataJSON();
@@ -234,13 +249,13 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
   });
 }
 
-async function openEditor(viewport, { existing = false, includeDraft = false } = {}) {
+async function openEditor(viewport, { existing = false, includeDraft = false, postContent = exampleContent } = {}) {
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
   const page = await context.newPage();
   const pageErrors = [];
   const mutations = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
-  await mockStudioApi(page, { includeDraft, mutations });
+  await mockStudioApi(page, { includeDraft, mutations, postContent });
   await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
   if (existing) {
     await page.locator(".editor-back-button").click();
@@ -983,7 +998,12 @@ async function verifyDesktop() {
     const rect = element.getBoundingClientRect();
     return { top: Math.round(rect.top), left: Math.round(rect.left), width: Math.round(rect.width), height: Math.round(rect.height) };
   });
-  assert.deepEqual(linkDialogRect, { top: 244, left: 390, width: 484, height: 232 });
+  assert.deepEqual(
+    { width: linkDialogRect.width, height: linkDialogRect.height },
+    { width: 484, height: 278 },
+  );
+  assert.equal(Math.abs(linkDialogRect.left - (1264 - linkDialogRect.width) / 2) <= 1, true);
+  assert.equal(Math.abs(linkDialogRect.top - (720 - linkDialogRect.height) / 2) <= 1, true);
   assert.equal(
     await page.locator(".link-dialog-backdrop").evaluate((element) => getComputedStyle(element).backgroundColor),
     "rgba(0, 0, 0, 0.25)",
@@ -997,9 +1017,12 @@ async function verifyDesktop() {
       input: { x: Math.round(inputRect.x), y: Math.round(inputRect.y), width: Math.round(inputRect.width), height: Math.round(inputRect.height) },
     };
   }));
-  assert.deepEqual(linkFieldRects, [
-    { label: { x: 414, y: 318, width: 436, height: 28 }, input: { x: 490, y: 318, width: 360, height: 28 } },
-    { label: { x: 414, y: 362, width: 436, height: 28 }, input: { x: 490, y: 362, width: 360, height: 28 } },
+  assert.deepEqual(linkFieldRects.map(({ label, input }) => ({
+    label: { width: label.width, height: label.height },
+    input: { width: input.width, height: input.height, offset: input.x - label.x },
+  })), [
+    { label: { width: 436, height: 28 }, input: { width: 360, height: 28, offset: 76 } },
+    { label: { width: 436, height: 28 }, input: { width: 360, height: 28, offset: 76 } },
   ]);
   const linkActionRects = await linkDialog.locator("footer button").evaluateAll((buttons) => buttons.map((button) => {
     const rect = button.getBoundingClientRect();
@@ -1015,9 +1038,9 @@ async function verifyDesktop() {
       disabled: button.disabled,
     };
   }));
-  assert.deepEqual(linkActionRects, [
-    { text: "确定", x: 670, y: 418, width: 82, height: 34, radius: "18px", background: "rgb(252, 85, 49)", disabled: false },
-    { text: "取消", x: 768, y: 418, width: 82, height: 34, radius: "18px", background: "rgb(255, 255, 255)", disabled: false },
+  assert.deepEqual(linkActionRects.map(({ text, width, height, radius, background, disabled }) => ({ text, width, height, radius, background, disabled })), [
+    { text: "确定", width: 82, height: 34, radius: "18px", background: "rgb(252, 85, 49)", disabled: false },
+    { text: "取消", width: 82, height: 34, radius: "18px", background: "rgb(255, 255, 255)", disabled: false },
   ]);
   await page.screenshot({ path: join(outputDirectory, "desktop-1264-link-dialog.png"), animations: "disabled" });
   await linkDialog.getByRole("button", { name: "确定" }).click();
@@ -1415,6 +1438,10 @@ async function verifyMobile(width) {
   await markdownButton.click();
   await page.locator(".source-editor").fill("## 背景\n\n这是移动端正文。\n\n~~~markdown\n# 代码块里的标题\n~~~\n\nSetext 标题\n---\n\n## 总结\n\n验证完成。");
   await page.getByRole("button", { name: "富文本" }).click();
+  await page.waitForFunction(() => {
+    const wrapper = document.querySelector('.studio-rich-content [class*="_codeMirrorWrapper_"]');
+    return Boolean(wrapper?.querySelector('[class*="_codeMirrorToolbar_"]') && wrapper.querySelector('.cm-editor'));
+  });
   const mobileCodeBlockLayout = await page.locator('.studio-rich-content [class*="_codeMirrorWrapper_"]').evaluate((wrapper) => {
     const toolbar = wrapper.querySelector('[class*="_codeMirrorToolbar_"]');
     const editor = wrapper.querySelector('.cm-editor');
@@ -2026,6 +2053,92 @@ async function verifyScheduledPublish() {
   return { schedulePath, scheduleMutation };
 }
 
+async function verifyLinkCardsAndLargeImages() {
+  const postContent = `${exampleContent}
+
+![超宽测试图片](/image/editor/visual-wide.svg)
+
+[Astro Studio 测试标题](https://md.vmss.cn/ "astro-link-card")
+
+编辑尾部`;
+  const screenshots = [];
+
+  for (const viewport of [{ width: 1264, height: 720 }, { width: 390, height: 844 }]) {
+    const { context, page, pageErrors } = await openEditor(viewport, { existing: true, postContent });
+    const editor = page.locator(".studio-rich-content[contenteditable='true']");
+    const image = editor.getByAltText("超宽测试图片");
+    await image.waitFor();
+    await page.waitForFunction(() => document.querySelector(".studio-rich-content img")?.naturalWidth === 6000);
+
+    const imageLayout = await editor.evaluate((element) => {
+      const imageElement = element.querySelector("img");
+      const wrapper = imageElement?.closest('[data-editor-block-type="image"]');
+      return {
+        editorClientWidth: element.clientWidth,
+        editorScrollWidth: element.scrollWidth,
+        imageWidth: Math.round(imageElement?.getBoundingClientRect().width || 0),
+        wrapperWidth: Math.round(wrapper?.getBoundingClientRect().width || 0),
+        bodyClientWidth: document.body.clientWidth,
+        bodyScrollWidth: document.body.scrollWidth,
+      };
+    });
+    assert.equal(imageLayout.editorScrollWidth, imageLayout.editorClientWidth, `${viewport.width}px editor must not overflow for a 6000px image`);
+    assert(imageLayout.imageWidth > 0 && imageLayout.imageWidth <= imageLayout.editorClientWidth, "large image must fit the editor canvas");
+    assert(imageLayout.wrapperWidth <= imageLayout.editorClientWidth, "image wrapper must fit the editor canvas");
+    assert.equal(imageLayout.bodyScrollWidth, imageLayout.bodyClientWidth, `${viewport.width}px body must not overflow for a large image`);
+
+    const card = editor.locator('a[title="astro-link-card"]');
+    await card.waitFor();
+    const cardLayout = await card.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { width: Math.round(rect.width), viewport: window.innerWidth, display: getComputedStyle(element).display };
+    });
+    assert.equal(cardLayout.display, "grid");
+    assert(cardLayout.width <= cardLayout.viewport - 20, "link card must fit the viewport");
+
+    if (viewport.width === 1264) {
+      await card.click();
+      const switchButton = page.getByRole("button", { name: "切换为链接" });
+      await switchButton.waitFor();
+      const popoverPath = join(outputDirectory, "link-card-popover-1264.png");
+      await page.screenshot({ path: popoverPath, animations: "disabled" });
+      screenshots.push(popoverPath);
+      await switchButton.click();
+      await page.waitForFunction(() => !document.querySelector('.studio-rich-content a[href="https://md.vmss.cn/"]')?.hasAttribute("title"));
+      const ordinaryLink = editor.locator('a[href="https://md.vmss.cn/"]');
+      await ordinaryLink.click();
+      await page.getByRole("button", { name: "切换为卡片" }).click();
+      await card.waitFor();
+      await page.waitForFunction(() => Object.keys(localStorage).some((key) => (localStorage.getItem(key) || "").includes("astro-link-card")));
+
+      await page.getByText("编辑尾部", { exact: true }).click();
+      await page.keyboard.press("End");
+      await page.keyboard.press("Enter");
+      await editor.evaluate((element) => {
+        const clipboardData = new DataTransfer();
+        clipboardData.setData("text/plain", "https://example.com/auto-title");
+        element.dispatchEvent(new ClipboardEvent("paste", { bubbles: true, cancelable: true, clipboardData }));
+      });
+      const resolvedLink = editor.getByRole("link", { name: "Astro Studio 测试标题" }).last();
+      await resolvedLink.waitFor();
+      assert.equal(await resolvedLink.getAttribute("href"), "https://example.com/auto-title");
+
+      const editorSurface = page.locator(".editor-surface");
+      await image.click();
+      await page.keyboard.press("Enter");
+      assert.equal(await editorSurface.evaluate((element) => element.scrollLeft), 0, "Enter after a large image must keep the viewport at the left edge");
+    }
+
+    const screenshotPath = join(outputDirectory, `link-card-image-${viewport.width}.png`);
+    await page.screenshot({ path: screenshotPath, animations: "disabled" });
+    screenshots.push(screenshotPath);
+    assert.deepEqual(pageErrors, [], `link/image page errors at ${viewport.width}px: ${pageErrors.join("; ")}`);
+    await context.close();
+  }
+
+  return { linkCardAndLargeImageScreenshots: screenshots };
+}
+
 try {
   const results = [
     await verifyDesktop(),
@@ -2037,6 +2150,7 @@ try {
     await verifyDraftPublishing(),
     await verifyScheduledPublish(),
     await verifyPostListSurvivesDraftFailure(),
+    await verifyLinkCardsAndLargeImages(),
   ];
   console.log(JSON.stringify(results, null, 2));
 } finally {
