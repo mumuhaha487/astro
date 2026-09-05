@@ -16,7 +16,6 @@
     </div>
     <aside class="blog-aside">
       <section><div class="section-title">热门标签</div><div class="tag-cloud">{{ range first 24 site.Taxonomies.tags.ByCount }}<a href="{{ .Page.RelPermalink }}"># {{ .Page.Title }}<sup>{{ .Count }}</sup></a>{{ end }}</div></section>
-      <section><div class="section-title">写作入口</div><p>文章由 Studio 管理，保存后自动同步到本站。</p><a class="button button-primary full" href="https://md.vmss.cn/" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "pencil") }}打开 Studio</a></section>
     </aside>
   </div>
 </section>

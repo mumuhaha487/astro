@@ -110,12 +110,12 @@
     event.preventDefault();
     const form = event.currentTarget; const mode = form.dataset.mode || "login"; const data = Object.fromEntries(new FormData(form)); const error = $("[data-auth-error]"); const button = $("[data-auth-submit]");
     if (mode === "register" && data.password !== data.confirmPassword) { error.textContent = "两次输入的密码不一致"; return; }
-    button.disabled = true; error.textContent = "";
+    button.disabled = true; button.textContent = mode === "register" ? "注册中..." : "登录中..."; error.textContent = "";
     try {
       await api(mode, { method: "POST", body: JSON.stringify(data) });
       const session = await api("session"); setSession(session); authDialog.close(); form.reset(); await loadTopics();
     } catch (exception) { error.textContent = exception.message; }
-    finally { button.disabled = false; }
+    finally { button.disabled = false; button.textContent = mode === "register" ? "创建账户" : "登录"; }
   }
 
   async function logout() { try { await api("logout", { method: "POST", body: "{}" }); setSession(await api("session")); } catch (error) { showFeedError(error.message); } }

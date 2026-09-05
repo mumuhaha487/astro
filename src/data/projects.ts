@@ -46,7 +46,6 @@ export const projectsData: Project[] = [
 		techStack: ["nodejs", "Python", "cloudfare", "markdown"],
 		status: "in-progress",
 		sourceCode: "https://github.com/mumuhaha487/09md_edit",
-		visitUrl: "http://md.vmss.cn/",
 		startDate: "2024-03-01",
 		featured: true,
 		tags: ["nodejs", "Python", "cloudfare", "markdown"],

@@ -1,5 +1,21 @@
 <!doctype html>
 <html lang="zh-CN">
+{{- $section := .Section -}}
+{{- if .IsHome }}{{ $section = "home" }}{{ end -}}
+{{- $wallpaperIndex := 5 -}}
+{{- if eq $section "home" -}}
+  {{- $wallpaperIndex = 0 -}}
+{{- else if or (eq $section "blog") (eq $section "posts") -}}
+  {{- $wallpaperIndex = 1 -}}
+{{- else if eq $section "discuss" -}}
+  {{- $wallpaperIndex = 2 -}}
+{{- else if eq $section "tools" -}}
+  {{- $wallpaperIndex = 3 -}}
+{{- else if or (eq .Kind "taxonomy") (eq .Kind "term") -}}
+  {{- $wallpaperIndex = 4 -}}
+{{- end -}}
+{{- $desktopWallpaper := index site.Params.wallpapers.desktop $wallpaperIndex -}}
+{{- $mobileWallpaper := index site.Params.wallpapers.mobile $wallpaperIndex -}}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -14,12 +30,18 @@
   <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
   <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
   <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
+  <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
+  <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
   <link rel="stylesheet" href="/hugo-theme/hugo.css">
 </head>
-{{- $section := .Section -}}
-{{- if .IsHome }}{{ $section = "home" }}{{ end -}}
 <body data-section="{{ $section }}" data-pagefind-ignore>
+  <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
+    <picture>
+      <source media="(max-width: 760px)" srcset="{{ $mobileWallpaper }}">
+      <img src="{{ $desktopWallpaper }}" alt="" decoding="async">
+    </picture>
+  </div>
   <div class="site-shell">
     <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="主导航">
       <div class="workspace-brand">
@@ -39,7 +61,6 @@
       <div class="workspace-spacer"></div>
       <nav class="workspace-nav workspace-nav-secondary">
         <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span>GitHub</span>{{ partial "icon.html" (dict "name" "external-link" "class" "nav-tail") }}</a>
-        <a href="https://md.vmss.cn/" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "pencil") }}<span>写文章</span>{{ partial "icon.html" (dict "name" "external-link" "class" "nav-tail") }}</a>
         <button type="button" data-forum-auth-button>{{ partial "icon.html" (dict "name" "user") }}<span>论坛账户</span></button>
         <button type="button" data-forum-admin-nav hidden>{{ partial "icon.html" (dict "name" "shield") }}<span>论坛管理</span></button>
       </nav>

@@ -65,3 +65,33 @@ params:
   description: 木哈文轩
   author: 木木em哈哈
   siteStartDate: 2023-04-01
+  wallpapers:
+    desktop:
+      - /assets/desktop-banner/1.webp
+      - /assets/desktop-banner/2.webp
+      - /assets/desktop-banner/3.webp
+      - /assets/desktop-banner/4.webp
+      - /assets/desktop-banner/5.webp
+      - /assets/desktop-banner/6.webp
+    mobile:
+      - /assets/mobile-banner/1.webp
+      - /assets/mobile-banner/2.webp
+      - /assets/mobile-banner/3.webp
+      - /assets/mobile-banner/4.webp
+      - /assets/mobile-banner/5.webp
+      - /assets/mobile-banner/6.webp
+  covers:
+    desktop:
+      - /image/h/132.webp
+      - /image/h/694.webp
+      - /image/h/129.webp
+      - /image/h/865.webp
+      - /image/h/276.webp
+      - /image/h/416.webp
+    mobile:
+      - /image/v/2870.webp
+      - /image/v/1878.webp
+      - /image/v/2675.webp
+      - /image/v/1769.webp
+      - /image/v/1779.webp
+      - /image/v/1127.webp

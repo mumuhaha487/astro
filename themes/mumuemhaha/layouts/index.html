@@ -1,6 +1,9 @@
 {{ define "main" }}
 <section class="home-stage">
-  <div class="home-backdrop" role="img" aria-label="深色插画背景"></div>
+  <picture class="home-backdrop" role="img" aria-label="深色插画背景">
+    <source media="(max-width: 760px)" srcset="{{ index site.Params.covers.mobile 0 }}">
+    <img src="{{ index site.Params.covers.desktop 0 }}" alt="" decoding="async">
+  </picture>
   <div class="home-rain" aria-hidden="true"></div>
   <div class="home-grid">
     <div class="home-left">
