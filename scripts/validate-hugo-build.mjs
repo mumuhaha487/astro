@@ -46,6 +46,7 @@ const home = await readFile(join(outputRoot, "index.html"), "utf8");
 assert.equal((home.match(/hugo-post-card/g) || []).length, Math.min(8, posts.length), "Home pagination is incorrect");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /Mumuemhaha Blog - 木哈文轩/);
+assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
 
 const contentFiles = await listFiles(join(repositoryRoot, "content", "posts"));
 const misplaced = contentFiles.filter((path) => [".html", ".htm", ".js", ".zip"].includes(extname(path).toLowerCase()));

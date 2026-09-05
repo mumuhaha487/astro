@@ -1,4 +1,4 @@
-import { cp, mkdir, readFile, rm, writeFile } from "node:fs/promises";
+import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
@@ -48,5 +48,22 @@ for (let page = 2; ; page += 1) {
   await cp(source, target, { force: true });
 }
 
+const pagefindPreload = '<script data-hugo-pagefind-preload>window.loadPagefind?.();</script>';
+for (const htmlPath of await listHtmlFiles(outputRoot)) {
+  const html = await readFile(htmlPath, "utf8");
+  if (!html.includes("window.loadPagefind") || html.includes("data-hugo-pagefind-preload")) continue;
+  await writeFile(htmlPath, html.replace("</body>", `${pagefindPreload}</body>`));
+}
+
 await rm(manifestPath);
 console.log(`Finalized Hugo output for ${posts.length} published posts.`);
+
+async function listHtmlFiles(directory) {
+  const files = [];
+  for (const entry of await readdir(directory, { withFileTypes: true })) {
+    const path = join(directory, entry.name);
+    if (entry.isDirectory()) files.push(...await listHtmlFiles(path));
+    else if (entry.name.endsWith(".html")) files.push(path);
+  }
+  return files;
+}

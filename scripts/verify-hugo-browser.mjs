@@ -32,7 +32,11 @@ try {
   const searchInput = page.locator("#search-panel input:visible, #search-container input:visible, input[type=search]:visible").first();
   await searchInput.waitFor({ state: "visible", timeout: 3_000 });
   await searchInput.fill("海龟汤");
-  await page.waitForTimeout(1_500);
+  await page.waitForFunction(
+    () => document.querySelector("#search-panel")?.textContent?.includes("海龟汤"),
+    undefined,
+    { timeout: 15_000 },
+  );
   const searchText = await page.locator("#search-panel").innerText();
   assert.match(searchText, /海龟汤/, "Pagefind search did not return the expected article");
 
