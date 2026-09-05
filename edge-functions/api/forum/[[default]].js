@@ -1,7 +1,9 @@
 const PREFIX = "forum_";
 const SESSION_COOKIE = "forum_session";
 const SESSION_SECONDS = 60 * 60 * 24 * 7;
-const PBKDF2_ITERATIONS = 120000;
+// EdgeOne Edge Functions have a 200 ms CPU slice. A KV-only pepper adds a
+// second secret boundary while keeping PBKDF2 within that runtime budget.
+const PBKDF2_ITERATIONS = 40000;
 const MAX_TOPIC_LENGTH = 64000;
 const MAX_COMMENT_LENGTH = 8000;
 const BOOTSTRAP_TOKEN_HASH = "53da21a4349ad909ecf2a51b39efb59e642a20cae24d82788e262ae759d3df34";
@@ -164,11 +166,12 @@ async function bootstrap(kv, request) {
   if (!constantTimeEqual(await sha256(String(body.token || "")), BOOTSTRAP_TOKEN_HASH)) throw new ApiError(403, "初始化凭据无效");
   const password = validatePassword(body.password);
   const pepper = randomToken(32);
-  await kv.put(`${PREFIX}config_security`, JSON.stringify({ pepper, version: 1, createdAt: new Date().toISOString() }));
   const username = "admin"; const normalized = "admin"; const email = "vrhjio4405@163.com";
   const salt = randomToken(18); const createdAt = new Date().toISOString();
-  const user = { id: randomToken(18), username, normalized, email, role: "admin", banned: false, salt, passwordHash: await passwordHash(password, salt, pepper), iterations: PBKDF2_ITERATIONS, createdAt, updatedAt: createdAt };
+  const hash = await passwordHash(password, salt, pepper);
+  const user = { id: randomToken(18), username, normalized, email, role: "admin", banned: false, salt, passwordHash: hash, iterations: PBKDF2_ITERATIONS, createdAt, updatedAt: createdAt };
   const key = await userKey(normalized);
+  await kv.put(`${PREFIX}config_security`, JSON.stringify({ pepper, version: 1, createdAt }));
   await kv.put(key, JSON.stringify(user));
   await kv.put(await emailKey(email), key);
   await kv.put(`${PREFIX}bootstrap_complete`, createdAt);
