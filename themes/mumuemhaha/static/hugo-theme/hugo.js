@@ -2,6 +2,17 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const section = document.body.dataset.section || "home";
+  const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+  const numberFormatter = new Intl.NumberFormat("zh-CN");
+  const statAnimations = new WeakMap();
+  const umami = {
+    origin: "https://umami.vmss.cn",
+    shareId: "hJgv7MWzlfs3JTnu",
+    websiteId: "993c6970-8f42-4804-a055-38b6b9c01810",
+    cacheKey: "mumu-umami-share-v1",
+    cacheLifetime: 30 * 60 * 1000,
+    shareRequest: null,
+  };
 
   $$(`[data-nav="${section === "posts" ? "blog" : section}"]`).forEach((node) => node.classList.add("active"));
 
@@ -11,7 +22,7 @@
   $$("[data-sidebar-close]").forEach((button) => button.addEventListener("click", closeSidebar));
 
   function initCursor() {
-    if (!matchMedia("(pointer:fine)").matches || matchMedia("(prefers-reduced-motion: reduce)").matches) return;
+    if (!matchMedia("(pointer:fine)").matches || reducedMotion.matches) return;
     const dot = $(".cursor-dot");
     if (!dot) return;
     addEventListener("pointermove", (event) => {
@@ -25,7 +36,7 @@
 
   function initHome() {
     const rain = $(".home-rain");
-    if (rain && !matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    if (rain && !reducedMotion.matches) {
       const fragment = document.createDocumentFragment();
       for (let index = 0; index < 20; index += 1) {
         const line = document.createElement("span");
@@ -43,35 +54,111 @@
       update();
       setInterval(update, 1000);
     }
+    initTypewriter();
     if ($("#home-visitors")) {
+      $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
       updateUmamiStats();
       setInterval(updateUmamiStats, 60_000);
     }
   }
 
-  async function updateUmamiStats() {
-    const origin = "https://umami.vmss.cn";
-    const shareId = "hJgv7MWzlfs3JTnu";
-    const websiteId = "993c6970-8f42-4804-a055-38b6b9c01810";
+  function initTypewriter() {
+    $$('[data-typewriter]').forEach((node) => {
+      const output = $("[data-typewriter-output]", node);
+      const characters = [...(node.dataset.typewriter || "")];
+      if (!output || !characters.length || reducedMotion.matches) return;
+      const typeInterval = 500;
+      const eraseInterval = 60;
+      let position = 0;
+      node.classList.add("is-typing");
+      output.textContent = "";
+      const type = () => {
+        position += 1;
+        output.textContent = characters.slice(0, position).join("");
+        if (position < characters.length) setTimeout(type, typeInterval);
+        else setTimeout(erase, 2_000);
+      };
+      const erase = () => {
+        position -= 1;
+        output.textContent = characters.slice(0, Math.max(0, position)).join("");
+        if (position > 0) setTimeout(erase, eraseInterval);
+        else setTimeout(type, typeInterval);
+      };
+      setTimeout(type, typeInterval);
+    });
+  }
+
+  function readCachedUmamiShare() {
     try {
-      const shareResponse = await fetch(`${origin}/api/share/${shareId}`, { cache: "no-store" });
-      if (!shareResponse.ok) throw new Error(String(shareResponse.status));
-      const share = await shareResponse.json();
-      if (share.websiteId !== websiteId || !share.token) throw new Error("Invalid Umami share response");
+      const cached = JSON.parse(sessionStorage.getItem(umami.cacheKey) || "null");
+      if (cached?.websiteId === umami.websiteId && cached.token && Date.now() - cached.cachedAt < umami.cacheLifetime) return cached;
+    } catch {}
+    return null;
+  }
+
+  function getUmamiShare() {
+    const cached = readCachedUmamiShare();
+    if (cached) return Promise.resolve(cached);
+    if (!umami.shareRequest) {
+      umami.shareRequest = fetch(`${umami.origin}/api/share/${umami.shareId}`, { cache: "force-cache" })
+        .then(async (response) => {
+          if (!response.ok) throw new Error(String(response.status));
+          const share = await response.json();
+          if (share.websiteId !== umami.websiteId || !share.token) throw new Error("Invalid Umami share response");
+          const cachedShare = { websiteId: share.websiteId, token: share.token, cachedAt: Date.now() };
+          try { sessionStorage.setItem(umami.cacheKey, JSON.stringify(cachedShare)); } catch {}
+          return cachedShare;
+        })
+        .catch((error) => { umami.shareRequest = null; throw error; });
+    }
+    return umami.shareRequest;
+  }
+
+  function animateStatistic(node, target) {
+    const safeTarget = Math.max(0, Number(target) || 0);
+    const previous = Number(node.dataset.umamiValue || 0);
+    const startValue = node.dataset.umamiReady === "true" ? previous : 0;
+    node.dataset.umamiValue = String(safeTarget);
+    node.dataset.umamiReady = "false";
+    const activeAnimation = statAnimations.get(node);
+    if (activeAnimation) cancelAnimationFrame(activeAnimation);
+    if (reducedMotion.matches || startValue === safeTarget) {
+      node.textContent = numberFormatter.format(safeTarget);
+      node.dataset.umamiReady = "true";
+      return;
+    }
+    const startedAt = performance.now();
+    const render = (now) => {
+      const progress = Math.min(1, (now - startedAt) / 3_000);
+      const eased = 1 - (1 - progress) ** 3;
+      const value = Math.round(startValue + (safeTarget - startValue) * eased);
+      node.textContent = numberFormatter.format(value);
+      if (progress < 1) statAnimations.set(node, requestAnimationFrame(render));
+      else {
+        statAnimations.delete(node);
+        node.dataset.umamiReady = "true";
+      }
+    };
+    statAnimations.set(node, requestAnimationFrame(render));
+  }
+
+  async function updateUmamiStats() {
+    try {
+      const share = await getUmamiShare();
       const headers = { "x-umami-share-token": share.token };
       const endAt = Date.now();
       const [activeResponse, statsResponse] = await Promise.all([
-        fetch(`${origin}/api/websites/${websiteId}/active`, { headers, cache: "no-store" }),
-        fetch(`${origin}/api/websites/${websiteId}/stats?startAt=0&endAt=${endAt}&timezone=Asia%2FShanghai&compare=false`, { headers, cache: "no-store" }),
+        fetch(`${umami.origin}/api/websites/${umami.websiteId}/active`, { headers, cache: "no-store" }),
+        fetch(`${umami.origin}/api/websites/${umami.websiteId}/stats?startAt=0&endAt=${endAt}&timezone=Asia%2FShanghai&compare=false`, { headers, cache: "no-store" }),
       ]);
       if (!activeResponse.ok || !statsResponse.ok) throw new Error("Umami statistics are unavailable");
       const [active, stats] = await Promise.all([activeResponse.json(), statsResponse.json()]);
       const values = { active: active.visitors, visitors: stats.visitors, visits: stats.visits };
       Object.entries(values).forEach(([key, value]) => {
-        $$(`[data-umami-stat="${key}"]`).forEach((node) => { node.textContent = Number(value || 0).toLocaleString("zh-CN"); });
+        $$(`[data-umami-stat="${key}"]`).forEach((node) => animateStatistic(node, value));
       });
     } catch {
-      $$('[data-umami-stat]').forEach((node) => { node.textContent = "--"; });
+      $$('[data-umami-stat]').forEach((node) => { node.textContent = "--"; node.dataset.umamiReady = "false"; });
     }
   }
 

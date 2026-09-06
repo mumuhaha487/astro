@@ -67,7 +67,16 @@ assert.match(home, /data-umami-stat="visits"/, "Home visit statistic is missing"
 assert.match(home, /当前访客/, "Current visitor label is missing");
 assert.match(home, /累计访客/, "Total visitor label is missing");
 assert.match(home, /累计访问次数/, "Total visit label is missing");
-assert.match(home, /<script defer src="https:\/\/umami\.vmss\.cn\/script\.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"><\/script>/, "Self-hosted Umami tracker is missing");
+assert.match(home, /data-typewriter="不乱于心，不困于情，不畏将来，不惧过去"/, "Looping homepage typewriter is missing");
+assert.match(home, /data-typewriter-output/, "Homepage typewriter output is missing");
+assert.match(home, /<link rel="preconnect" href="https:\/\/umami\.vmss\.cn" crossorigin>/, "Umami preconnect is missing");
+assert.match(home, /<link rel="preload" as="image" href="\/image\/v\/2870\.webp" media="\(max-width: 760px\)">/, "Optimized mobile home cover preload is missing");
+assert.match(home, /<link rel="preload" as="image" href="\/image\/h\/132\.webp" media="\(min-width: 761px\)">/, "Optimized desktop home cover preload is missing");
+assert.doesNotMatch(home, /id="site-wallpaper"/, "Duplicate homepage wallpaper layer remains");
+assert.match(home, /<script async fetchpriority="low" src="https:\/\/umami\.vmss\.cn\/script\.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"><\/script>/, "Non-blocking self-hosted Umami tracker is missing");
+for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
+  assert.match(page, /<a href="https:\/\/beian\.miit\.gov\.cn\/" target="_blank" rel="noopener noreferrer">赣ICP备2024038464号-3<\/a>/, `ICP filing link is missing on ${name}`);
+}
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");

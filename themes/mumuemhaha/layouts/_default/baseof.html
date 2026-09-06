@@ -14,6 +14,10 @@
 {{- end -}}
 {{- $desktopWallpaper := index site.Params.wallpapers.desktop $wallpaperIndex -}}
 {{- $mobileWallpaper := index site.Params.wallpapers.mobile $wallpaperIndex -}}
+{{- if .IsHome -}}
+  {{- $desktopWallpaper = index site.Params.covers.desktop 0 -}}
+  {{- $mobileWallpaper = index site.Params.covers.mobile 0 -}}
+{{- end -}}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -28,19 +32,23 @@
   <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
   <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
   <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
+  <link rel="dns-prefetch" href="//umami.vmss.cn">
+  <link rel="preconnect" href="https://umami.vmss.cn" crossorigin>
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
   <link rel="stylesheet" href="/hugo-theme/hugo.css">
-  <script defer src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
+  <script async fetchpriority="low" src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
 </head>
 <body data-section="{{ $section }}" data-pagefind-ignore>
-  <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
-    <picture>
-      <source media="(max-width: 760px)" srcset="{{ $mobileWallpaper }}">
-      <img src="{{ $desktopWallpaper }}" alt="" decoding="async">
-    </picture>
-  </div>
+  {{- if not .IsHome }}
+    <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
+      <picture>
+        <source media="(max-width: 760px)" srcset="{{ $mobileWallpaper }}">
+        <img src="{{ $desktopWallpaper }}" alt="" decoding="async" fetchpriority="high">
+      </picture>
+    </div>
+  {{- end }}
   <div class="site-shell">
     <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="主导航">
       <div class="workspace-brand">
@@ -78,6 +86,9 @@
       <main class="workspace-content" id="main-content">
         {{ block "main" . }}{{ end }}
       </main>
+      <footer class="site-footer">
+        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">赣ICP备2024038464号-3</a>
+      </footer>
     </section>
   </div>
 
