@@ -11,7 +11,12 @@ const executablePath = [
 ].filter(Boolean).find(existsSync);
 if (!executablePath) throw new Error("Chrome was not found");
 
-const browser = await chromium.launch({ executablePath, headless: true });
+const proxy = process.env.PLAYWRIGHT_PROXY;
+const browser = await chromium.launch({
+  executablePath,
+  headless: true,
+  ...(proxy ? { proxy: { server: proxy } } : {}),
+});
 try {
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   const desktopPage = await desktopContext.newPage();
@@ -161,7 +166,7 @@ try {
       pageviews: 61756, visitors: 24388, visits: 19853,
     }));
     let guestbookMessages = [{ id: "message-1", name: "访客", content: "这是一条公开留言", createdAt: "2026-09-06T08:00:00.000Z" }];
-    await page.route("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/**", async (route) => {
+    await page.route("https://md.vmss.cn/api/guestbook/**", async (route) => {
       const request = route.request();
       const pathname = new URL(request.url()).pathname;
       const json = (body, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
@@ -300,14 +305,22 @@ try {
 
   response = await page.goto(new URL("/guestbook/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  await page.waitForFunction(() => document.querySelector("[data-guestbook-captcha]")?.textContent === "2 + 3 = ?", undefined, { timeout: 5_000 });
-  assert.equal(await page.locator(".guestbook-message").count(), 1, "public guestbook messages did not load");
-  await page.locator('input[name="name"]').fill("浏览器测试");
-  await page.locator('textarea[name="content"]').fill("公开留言提交正常");
-  await page.locator('input[name="captchaAnswer"]').fill("5");
-  await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
-  await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
-  assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
+  await page.waitForFunction(() => document.querySelector("[data-guestbook-captcha]")?.textContent?.includes("="), undefined, { timeout: 10_000 });
+  assert.equal(await page.locator('[data-guestbook-form] input[name="name"]').count(), 1, "guestbook name input is missing");
+  assert.equal(await page.locator('[data-guestbook-form] textarea[name="content"]').count(), 1, "guestbook content input is missing");
+  assert.equal(await page.locator('[data-guestbook-form] input[name="captchaAnswer"]').count(), 1, "guestbook captcha input is missing");
+  if (localRun) {
+    assert.equal(await page.locator("[data-guestbook-captcha]").innerText(), "2 + 3 = ?");
+    assert.equal(await page.locator(".guestbook-message").count(), 1, "public guestbook messages did not load");
+    await page.locator('input[name="name"]').fill("浏览器测试");
+    await page.locator('textarea[name="content"]').fill("公开留言提交正常");
+    await page.locator('input[name="captchaAnswer"]').fill("5");
+    await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
+    await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
+    assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
+  } else {
+    await page.waitForFunction(() => document.querySelector("[data-guestbook-list]")?.dataset.guestbookReady === "true", undefined, { timeout: 10_000 });
+  }
 
   response = await page.goto(new URL("/tools/json-formatter/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);

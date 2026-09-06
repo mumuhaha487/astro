@@ -135,7 +135,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-home-friends/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260906-edgeone-guestbook/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -201,7 +201,7 @@ assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/new\/main\
 assert.doesNotMatch(friendsPage, /static\/friends|astro-island/, "Legacy generated friends page overrode the Hugo route");
 
 const guestbookPage = await readFile(join(outputRoot, "guestbook", "index.html"), "utf8");
-assert.match(guestbookPage, /data-guestbook-api="https:\/\/astro-blog-studio\.vrhjio4405\.workers\.dev"/, "Guestbook production API is missing");
+assert.match(guestbookPage, /data-guestbook-api="https:\/\/md\.vmss\.cn"/, "Guestbook production API is missing");
 assert.match(guestbookPage, /data-guestbook-form/, "Guestbook public form is missing");
 assert.match(guestbookPage, /data-guestbook-captcha/, "Guestbook captcha is missing");
 const giscusTheme = await readFile(join(outputRoot, "hugo-theme", "giscus-theme.css"), "utf8");

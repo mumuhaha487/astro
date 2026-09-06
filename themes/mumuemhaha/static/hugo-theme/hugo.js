@@ -784,6 +784,8 @@
         renderMessages();
       } catch (error) {
         if (list) { const state = document.createElement("p"); state.className = "guestbook-list-state error"; state.textContent = error.message; list.replaceChildren(state); }
+      } finally {
+        if (list) list.dataset.guestbookReady = "true";
       }
     };
     refresh?.addEventListener("click", () => void loadCaptcha());

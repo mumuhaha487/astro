@@ -21,7 +21,12 @@ const viewports = [
   { name: "desktop", width: 1440, height: 1000 },
   { name: "mobile", width: 390, height: 844 },
 ];
-const browser = await chromium.launch({ executablePath, headless: true });
+const proxy = process.env.PLAYWRIGHT_PROXY;
+const browser = await chromium.launch({
+  executablePath,
+  headless: true,
+  ...(proxy ? { proxy: { server: proxy } } : {}),
+});
 const report = [];
 
 try {
