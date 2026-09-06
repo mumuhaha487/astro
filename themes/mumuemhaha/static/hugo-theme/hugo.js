@@ -711,7 +711,33 @@
     const search = $("[data-friends-search]", page);
     const cards = $$('[data-friend-card]', page);
     const empty = $("[data-friends-empty]", page);
+    const dialog = $("[data-friends-apply-dialog]", page);
+    const open = $("[data-friends-apply-open]", page);
+    const copy = $("[data-friends-template-copy]", page);
+    const template = $("[data-friends-template]", page);
     $$('[data-friend-avatar]', page).forEach((image) => image.addEventListener("error", () => image.remove(), { once: true }));
+    const closeDialog = () => {
+      dialog?.close();
+      document.body.classList.remove("no-scroll");
+    };
+    open?.addEventListener("click", () => {
+      if (!dialog) return;
+      dialog.showModal();
+      document.body.classList.add("no-scroll");
+    });
+    $$('[data-friends-apply-close]', page).forEach((button) => button.addEventListener("click", closeDialog));
+    dialog?.addEventListener("cancel", () => document.body.classList.remove("no-scroll"));
+    dialog?.addEventListener("click", (event) => { if (event.target === dialog) closeDialog(); });
+    copy?.addEventListener("click", async () => {
+      const label = $("span", copy);
+      try {
+        await copyText(template?.textContent || "");
+        copy.replaceChildren(makeIcon("check"), Object.assign(document.createElement("span"), { textContent: page.dataset.friendsCopiedLabel || text.copied }));
+      } catch {
+        copy.replaceChildren(makeIcon("x"), Object.assign(document.createElement("span"), { textContent: text.copyFailed }));
+      }
+      setTimeout(() => copy.replaceChildren(makeIcon("copy"), Object.assign(document.createElement("span"), { textContent: page.dataset.friendsCopyLabel || label?.textContent || text.copyCode })), 1_500);
+    });
     const filter = () => {
       const query = (search?.value || "").trim().toLocaleLowerCase();
       let visible = 0;
@@ -730,14 +756,16 @@
     const page = $("[data-guestbook]");
     if (!page) return;
     const api = (page.dataset.guestbookApi || "").replace(/\/$/, "");
+    const siteKey = page.dataset.turnstileSiteKey || "";
     const form = $("[data-guestbook-form]", page);
     const list = $("[data-guestbook-list]", page);
     const count = $("[data-guestbook-count]", page);
-    const captchaText = $("[data-guestbook-captcha]", page);
-    const refresh = $("[data-guestbook-captcha-refresh]", page);
+    const turnstileContainer = $("[data-guestbook-turnstile]", page);
+    const turnstileScript = $("[data-turnstile-script]");
     const status = $("[data-guestbook-status]", page);
     const submit = $('button[type="submit"]', form || document);
-    let captchaId = "";
+    let turnstileToken = "";
+    let turnstileWidgetId;
     let messages = [];
     const request = async (path, options) => {
       const response = await fetch(`${api}${path}`, { cache: "no-store", ...options });
@@ -765,18 +793,49 @@
         return article;
       }));
     };
-    const loadCaptcha = async () => {
-      if (captchaText) captchaText.textContent = "...";
-      captchaId = "";
-      try {
-        const captcha = await request("/api/guestbook/captcha");
-        captchaId = captcha.id;
-        if (captchaText) captchaText.textContent = captcha.prompt;
-      } catch (error) {
-        if (captchaText) captchaText.textContent = "--";
-        if (status) { status.textContent = error.message; status.className = "error"; }
-      }
+    const updateSubmit = () => { if (submit) submit.disabled = !turnstileToken; };
+    const setTurnstileError = () => {
+      turnstileToken = "";
+      updateSubmit();
+      if (turnstileContainer) { turnstileContainer.dataset.turnstileState = "error"; turnstileContainer.textContent = page.dataset.error || ""; }
     };
+    const mountTurnstile = () => {
+      const service = globalThis.turnstile;
+      if (!service?.render || !turnstileContainer || !siteKey || turnstileWidgetId !== undefined) return false;
+      try {
+        turnstileContainer.replaceChildren();
+        turnstileContainer.dataset.turnstileState = "rendered";
+        turnstileWidgetId = service.render(turnstileContainer, {
+          sitekey: siteKey,
+          theme: "dark",
+          action: "guestbook",
+          callback(token) {
+            turnstileToken = token;
+            turnstileContainer.dataset.turnstileState = "ready";
+            updateSubmit();
+          },
+          "expired-callback"() {
+            turnstileToken = "";
+            turnstileContainer.dataset.turnstileState = "expired";
+            updateSubmit();
+          },
+          "error-callback"() { setTurnstileError(); },
+        });
+        return true;
+      } catch { setTurnstileError(); return false; }
+    };
+    updateSubmit();
+    if (!mountTurnstile()) {
+      turnstileScript?.addEventListener("load", mountTurnstile, { once: true });
+      let attempts = 0;
+      const timer = setInterval(() => {
+        attempts += 1;
+        if (mountTurnstile() || attempts >= 100) {
+          clearInterval(timer);
+          if (attempts >= 100 && turnstileWidgetId === undefined) setTurnstileError();
+        }
+      }, 100);
+    }
     const loadMessages = async () => {
       try {
         const result = await request("/api/guestbook/messages");
@@ -788,32 +847,36 @@
         if (list) list.dataset.guestbookReady = "true";
       }
     };
-    refresh?.addEventListener("click", () => void loadCaptcha());
     form?.addEventListener("submit", async (event) => {
       event.preventDefault();
-      if (!captchaId || !submit) return;
+      if (!submit) return;
+      if (!turnstileToken) {
+        if (status) { status.textContent = page.dataset.verificationRequired || ""; status.className = "error"; }
+        return;
+      }
       const values = new FormData(form);
+      const verificationToken = turnstileToken;
+      turnstileToken = "";
       submit.disabled = true;
       if (status) { status.textContent = ""; status.className = ""; }
       try {
         const created = await request("/api/guestbook/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), captchaId, captchaAnswer: Number(values.get("captchaAnswer")) }),
+          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), turnstileToken: verificationToken }),
         });
         messages = [created, ...messages.filter((message) => message.id !== created.id)].slice(0, 60);
         renderMessages();
         form.querySelector('textarea[name="content"]').value = "";
-        form.querySelector('input[name="captchaAnswer"]').value = "";
         if (status) { status.textContent = page.dataset.success || ""; status.className = "success"; }
       } catch (error) {
         if (status) { status.textContent = error.message; status.className = "error"; }
       } finally {
-        submit.disabled = false;
-        void loadCaptcha();
+        globalThis.turnstile?.reset?.(turnstileWidgetId);
+        updateSubmit();
       }
     });
-    void Promise.all([loadCaptcha(), loadMessages()]);
+    void loadMessages();
   }
 
   function initCodeBlocks(content) {

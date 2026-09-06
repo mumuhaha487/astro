@@ -120,12 +120,6 @@ export interface GuestbookMessage {
   createdAt: string;
 }
 
-export interface GuestbookCaptcha {
-  id: string;
-  prompt: string;
-  expiresAt: string;
-}
-
 export interface SessionInfo {
   authenticated: boolean;
   github: {

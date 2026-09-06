@@ -1,9 +1,16 @@
 {{ define "main" }}
 {{- $friends := hugo.Data.friends.items | default slice -}}
-<section class="content-page friends-page" data-friends-page>
+{{- $template := `{
+  "name": "你的站点名称",
+  "url": "https://你的域名/",
+  "avatar": "https://你的域名/avatar.png",
+  "description": "一句话介绍你的站点",
+  "tags": ["博客"]
+}` -}}
+<section class="content-page friends-page" data-friends-page data-friends-copy-label="{{ i18n "friends_copy" }}" data-friends-copied-label="{{ i18n "friends_copied" }}">
   <header class="page-heading page-heading-row">
     <div><p>CONNECTIONS</p><h1>{{ .Title }}</h1>{{ with .Description }}<span>{{ . }}</span>{{ end }}</div>
-    <a class="button button-primary" href="https://github.com/mumuhaha487/astro/new/main/friends/entries?filename=your-site.json" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "plus") }}{{ i18n "friends_apply" }}</a>
+    <button class="button button-primary" type="button" data-friends-apply-open>{{ partial "icon.html" (dict "name" "plus") }}{{ i18n "friends_apply" }}</button>
   </header>
 
   <section class="friends-apply-panel">
@@ -34,5 +41,23 @@
     {{ end }}
   </div>
   <p class="friends-empty" data-friends-empty hidden>{{ i18n "friends_empty" }}</p>
+
+  <dialog class="friends-apply-dialog" data-friends-apply-dialog aria-labelledby="friends-apply-title">
+    <div class="friends-dialog-panel">
+      <header>
+        <div><p>{{ i18n "friends_dialog_eyebrow" }}</p><h2 id="friends-apply-title">{{ i18n "friends_dialog_title" }}</h2><span>{{ i18n "friends_dialog_description" }}</span></div>
+        <button class="icon-button" type="button" data-friends-apply-close aria-label="{{ i18n "friends_close" }}" title="{{ i18n "friends_close" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
+      </header>
+      <section class="friends-template-shell">
+        <div class="friends-template-head"><span>JSON</span><button type="button" data-friends-template-copy>{{ partial "icon.html" (dict "name" "copy") }}<span>{{ i18n "friends_copy" }}</span></button></div>
+        <pre><code class="language-json" data-friends-template>{{ $template }}</code></pre>
+      </section>
+      <p class="friends-unique-note">{{ partial "icon.html" (dict "name" "info") }}<span>{{ i18n "friends_unique_name" }}</span></p>
+      <footer>
+        <button class="button button-ghost" type="button" data-friends-apply-close>{{ i18n "friends_close" }}</button>
+        <a class="button button-primary" href="https://github.com/mumuhaha487/astro/new/main/friends/entries" target="_blank" rel="noopener noreferrer">{{ i18n "friends_open_github" }}{{ partial "icon.html" (dict "name" "external-link") }}</a>
+      </footer>
+    </div>
+  </dialog>
 </section>
 {{ end }}

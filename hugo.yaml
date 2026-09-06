@@ -93,6 +93,7 @@ params:
   description: 木哈文轩
   author: 木木em哈哈
   guestbookApi: https://md.vmss.cn
+  guestbookTurnstileSiteKey: 0x4AAAAAAEqYCxmwdT2EkFet
   siteStartDate: 2023-04-01
   wallpapers:
     desktop:

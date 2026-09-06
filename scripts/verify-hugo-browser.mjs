@@ -19,6 +19,7 @@ const browser = await chromium.launch({
 });
 try {
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  await desktopContext.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseUrl).origin });
   const desktopPage = await desktopContext.newPage();
   let desktopResponse = await desktopPage.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -103,6 +104,7 @@ try {
   assert.match(await desktopPage.locator(".profile-overline").innerText(), /我の小小窝。/);
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487"]').count(), 1, "production GitHub contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"]').count(), 1, "production Bilibili contact is missing");
+  assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"] use[href="/icons/lucide-sprite.svg#bilibili"]').count(), 1, "Bilibili brand icon is missing");
   await desktopPage.waitForTimeout(500);
   const particleAlpha = await desktopPage.locator(".profile-particles").evaluate((canvas) => {
     const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
@@ -118,7 +120,17 @@ try {
   assert.equal(desktopResponse?.status(), 200);
   assert.equal(await desktopPage.locator(".friend-card").count(), 4, "validated friend entries are missing");
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/tree/main/friends"]').count(), 1, "friends repository uses a non-production URL");
-  assert.equal(await desktopPage.locator('a[href^="https://github.com/mumuhaha487/astro/new/main/friends/entries"]').count(), 1, "friend contribution URL is missing");
+  await desktopPage.locator("[data-friends-apply-open]").click();
+  assert.equal(await desktopPage.locator("[data-friends-apply-dialog]").getAttribute("open"), "", "friend application dialog did not open");
+  assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/new/main/friends/entries"]').count(), 1, "friend contribution URL is not filename-neutral");
+  assert.doesNotMatch(await desktopPage.locator("[data-friends-apply-dialog]").innerText(), /friend\.json|your-site-2026\.json/, "friend dialog suggests a fixed filename");
+  assert.match(await desktopPage.locator("[data-friends-template]").innerText(), /"name": "你的站点名称"[\s\S]*"tags": \["博客"\]/, "friend JSON template is incomplete");
+  await desktopPage.locator("[data-friends-template-copy]").click();
+  await desktopPage.waitForFunction(() => /已复制|Copied|コピー済み/.test(document.querySelector("[data-friends-template-copy]")?.textContent || ""));
+  assert.match(await desktopPage.locator("[data-friends-template-copy]").innerText(), /已复制|Copied|コピー済み/, "friend template copy did not confirm success");
+  assert.match(await desktopPage.evaluate(() => navigator.clipboard.readText()), /"name": "你的站点名称"[\s\S]*"tags": \["博客"\]/, "friend JSON template was not copied to the clipboard");
+  await desktopPage.locator("[data-friends-apply-close]").first().click();
+  assert.equal(await desktopPage.locator("[data-friends-apply-dialog]").getAttribute("open"), null, "friend application dialog did not close");
   await desktopPage.locator("[data-friends-search]").fill("Astro");
   assert.equal(await desktopPage.locator(".friend-card:visible").count(), 1, "friends search does not filter cards");
 
@@ -154,6 +166,10 @@ try {
   if (localRun) {
     await page.route("https://umami.vmss.cn/script.js", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
     await page.route("https://giscus.app/**", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
+    await page.route("https://challenges.cloudflare.com/turnstile/v0/api.js**", (route) => route.fulfill({
+      contentType: "application/javascript",
+      body: `globalThis.turnstile={render(container,options){const mock=document.createElement("div");mock.dataset.turnstileMock="true";mock.textContent="Cloudflare Turnstile";container.append(mock);queueMicrotask(()=>options.callback("test-turnstile-token"));return "mock-widget"},reset(){}};`,
+    }));
     const delayedFulfill = async (route, body) => {
       await new Promise((resolve) => setTimeout(resolve, 250));
       await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
@@ -168,9 +184,7 @@ try {
     let guestbookMessages = [{ id: "message-1", name: "访客", content: "这是一条公开留言", createdAt: "2026-09-06T08:00:00.000Z" }];
     await page.route("https://md.vmss.cn/api/guestbook/**", async (route) => {
       const request = route.request();
-      const pathname = new URL(request.url()).pathname;
       const json = (body, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
-      if (pathname.endsWith("/captcha")) return json({ id: "captcha-1", prompt: "2 + 3 = ?", expiresAt: "2026-09-06T09:00:00.000Z" });
       if (request.method() === "GET") return json({ messages: guestbookMessages });
       const body = request.postDataJSON();
       const created = { id: "message-2", name: body.name, content: body.content, createdAt: "2026-09-06T08:05:00.000Z" };
@@ -196,9 +210,25 @@ try {
   const typewriter = page.locator("[data-typewriter-output]");
   assert.equal(await typewriter.count(), 1, "homepage typewriter is missing");
   assert.equal(await page.locator('[data-typewriter="不乱于心，不困于情，不畏将来，不惧过去"]').count(), 1, "homepage typewriter text is incorrect");
+  assert.equal(await page.locator('.language-switch a[lang="ja"]', { hasText: "日本語" }).count(), 1, "Japanese language option is ambiguous");
   await page.waitForTimeout(1_100);
   const typedText = await typewriter.innerText();
   assert.ok([...typedText].length >= 1 && [...typedText].length <= 3, `typewriter pace is incorrect: ${typedText}`);
+  const mobileTypewriterLayout = await page.evaluate(() => {
+    const output = document.querySelector("[data-typewriter-output]");
+    const bio = document.querySelector(".profile-bio");
+    const button = document.querySelector(".profile-actions .button");
+    const initialButtonWidth = button?.getBoundingClientRect().width || 0;
+    if (output) output.textContent = "不乱于心，不困于情，不畏将来，不惧过去";
+    return {
+      initialButtonWidth,
+      fullButtonWidth: button?.getBoundingClientRect().width || 0,
+      bioClientWidth: bio?.clientWidth || 0,
+      bioScrollWidth: bio?.scrollWidth || 0,
+    };
+  });
+  assert.ok(Math.abs(mobileTypewriterLayout.initialButtonWidth - mobileTypewriterLayout.fullButtonWidth) < 1, "mobile read button changes width while the quote is typed");
+  assert.ok(mobileTypewriterLayout.bioScrollWidth <= mobileTypewriterLayout.bioClientWidth, "mobile typewriter text overflows its fixed region");
   if (localRun) {
     await page.waitForFunction(() => {
       const value = Number(document.querySelector('[data-umami-stat="visitors"]')?.textContent?.replaceAll(",", ""));
@@ -305,16 +335,18 @@ try {
 
   response = await page.goto(new URL("/guestbook/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  await page.waitForFunction(() => document.querySelector("[data-guestbook-captcha]")?.textContent?.includes("="), undefined, { timeout: 10_000 });
+  await page.waitForFunction(() => {
+    const container = document.querySelector("[data-guestbook-turnstile]");
+    return container?.dataset.turnstileState === "ready" || Boolean(container?.querySelector("iframe"));
+  }, undefined, { timeout: 15_000 });
   assert.equal(await page.locator('[data-guestbook-form] input[name="name"]').count(), 1, "guestbook name input is missing");
   assert.equal(await page.locator('[data-guestbook-form] textarea[name="content"]').count(), 1, "guestbook content input is missing");
-  assert.equal(await page.locator('[data-guestbook-form] input[name="captchaAnswer"]').count(), 1, "guestbook captcha input is missing");
+  assert.equal(await page.locator('[data-guestbook-form] input[name="captchaAnswer"], [data-guestbook-captcha]').count(), 0, "legacy arithmetic captcha remains");
   if (localRun) {
-    assert.equal(await page.locator("[data-guestbook-captcha]").innerText(), "2 + 3 = ?");
+    assert.equal(await page.locator('[data-turnstile-mock="true"]').count(), 1, "Turnstile test widget did not render");
     assert.equal(await page.locator(".guestbook-message").count(), 1, "public guestbook messages did not load");
     await page.locator('input[name="name"]').fill("浏览器测试");
     await page.locator('textarea[name="content"]').fill("公开留言提交正常");
-    await page.locator('input[name="captchaAnswer"]').fill("5");
     await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
     await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
     assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
@@ -407,7 +439,7 @@ try {
   response = await page.goto(new URL(`/ja${translatedPath}`, baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator("html").getAttribute("lang"), "ja-JP");
-  assert.equal(await page.locator(".language-switch a.active").innerText(), "日");
+  assert.equal(await page.locator(".language-switch a.active").innerText(), "日本語");
   assert.equal(await page.locator(".article-header h1").innerText(), "テスト記事のタイトル");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-term"), sharedCommentTerm);
 

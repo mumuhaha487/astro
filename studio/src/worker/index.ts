@@ -4,7 +4,6 @@ import seedPostIndex from "../../public/post-index.json";
 import type {
   DraftDocument,
   DraftSummary,
-  GuestbookCaptcha,
   GuestbookMessage,
   PostDocument,
   PostBundleResult,
@@ -60,6 +59,8 @@ export interface BlogStudioEnv {
   GITHUB_OWNER: string;
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
+  TURNSTILE_SECRET_KEY?: string;
+  TURNSTILE_VERIFY_URL?: string;
 }
 
 type Env = BlogStudioEnv;
@@ -115,11 +116,6 @@ interface StoredGuestbookMessage extends GuestbookMessage {
   ipHash: string;
 }
 
-interface StoredGuestbookCaptcha {
-  answer: number;
-  expiresAt: number;
-}
-
 interface GuestbookRateLimit {
   count: number;
   resetAt: number;
@@ -144,11 +140,13 @@ const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const MAX_RESOURCE_BYTES = 25 * 1024 * 1024;
 const GUESTBOOK_MESSAGE_PREFIX = "guestbook/messages/";
-const GUESTBOOK_CAPTCHA_PREFIX = "guestbook/captcha/";
 const GUESTBOOK_RATE_PREFIX = "guestbook/rate/";
 const GUESTBOOK_RATE_LIMIT = 3;
 const GUESTBOOK_RATE_WINDOW = 60 * 60_000;
-const GUESTBOOK_CAPTCHA_LIFETIME = 5 * 60_000;
+const TURNSTILE_SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
+const TURNSTILE_VERIFY_URL = "https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify";
+const TURNSTILE_ACTION = "guestbook";
+const TURNSTILE_HOSTNAMES = new Set(["vmss.cn", "www.vmss.cn"]);
 
 const webEmbedSecurityHeaders: Record<string, string> = {
   "Content-Security-Policy": [
@@ -224,9 +222,14 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   if (isPublicGuestbookRoute(url.pathname)) {
     assertGuestbookOrigin(request);
     if (request.method === "OPTIONS") return new Response(null, { status: 204 });
-    if (url.pathname === "/api/guestbook/captcha" && request.method === "GET") return json(await createGuestbookCaptcha(env));
     if (url.pathname === "/api/guestbook/messages" && request.method === "GET") return json({ messages: await listGuestbookMessages(env, false) });
     if (url.pathname === "/api/guestbook/messages" && request.method === "POST") return json(await createGuestbookMessage(request, env), 201);
+    if (url.pathname === "/api/guestbook/turnstile/verify" && request.method === "POST") {
+      if (!env.TURNSTILE_SECRET_KEY) throw new HttpError(503, "Turnstile 验证服务尚未配置", "TURNSTILE_UNAVAILABLE");
+      const body = await readJson<{ turnstileToken?: unknown }>(request);
+      await verifyTurnstileDirect(turnstileToken(body.turnstileToken), env.TURNSTILE_SECRET_KEY);
+      return json({ success: true });
+    }
     throw new HttpError(405, "请求方法不受支持");
   }
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
@@ -387,34 +390,11 @@ async function getSessionInfo(env: Env): Promise<SessionInfo> {
   };
 }
 
-async function createGuestbookCaptcha(env: Env): Promise<GuestbookCaptcha> {
-  const left = randomInteger(1, 9);
-  const right = randomInteger(1, 9);
-  const subtract = crypto.getRandomValues(new Uint8Array(1))[0] % 2 === 0;
-  const first = subtract ? Math.max(left, right) : left;
-  const second = subtract ? Math.min(left, right) : right;
-  const answer = subtract ? first - second : first + second;
-  const id = crypto.randomUUID().replaceAll("-", "");
-  const expiresAt = Date.now() + GUESTBOOK_CAPTCHA_LIFETIME;
-  await env.DRAFTS.put(`${GUESTBOOK_CAPTCHA_PREFIX}${id}`, JSON.stringify({ answer, expiresAt } satisfies StoredGuestbookCaptcha), {
-    httpMetadata: { contentType: "application/json" },
-  });
-  return { id, prompt: `${first} ${subtract ? "-" : "+"} ${second} = ?`, expiresAt: new Date(expiresAt).toISOString() };
-}
-
 async function createGuestbookMessage(request: Request, env: Env): Promise<GuestbookMessage> {
-  const body = await readJson<{ name?: unknown; content?: unknown; captchaId?: unknown; captchaAnswer?: unknown }>(request);
+  const body = await readJson<{ name?: unknown; content?: unknown; turnstileToken?: unknown }>(request);
   const name = cleanGuestbookText(body.name, "用户名", 1, 30, false);
   const content = cleanGuestbookText(body.content, "留言内容", 2, 600, true);
-  const captchaId = typeof body.captchaId === "string" && /^[a-f0-9]{32}$/.test(body.captchaId) ? body.captchaId : "";
-  if (!captchaId) throw new HttpError(400, "验证码已失效，请刷新后重试", "CAPTCHA_INVALID");
-  const captchaKey = `${GUESTBOOK_CAPTCHA_PREFIX}${captchaId}`;
-  const captcha = await readJsonObject<StoredGuestbookCaptcha>(env.DRAFTS, captchaKey);
-  await env.DRAFTS.delete(captchaKey);
-  const answer = typeof body.captchaAnswer === "number" ? body.captchaAnswer : Number(body.captchaAnswer);
-  if (!captcha || captcha.expiresAt <= Date.now() || !Number.isInteger(answer) || answer !== captcha.answer) {
-    throw new HttpError(400, "验证码不正确，请重新计算", "CAPTCHA_INVALID");
-  }
+  await verifyGuestbookTurnstile(turnstileToken(body.turnstileToken), env);
   const ip = clientIp(request);
   const ipHash = await sha256(ip);
   const rateKey = `${GUESTBOOK_RATE_PREFIX}${ipHash}`;
@@ -460,20 +440,54 @@ async function deleteGuestbookMessages(env: Env, value: unknown): Promise<number
 
 async function cleanupExpiredGuestbookState(env: Env): Promise<void> {
   const now = Date.now();
-  const [captchas, rates] = await Promise.all([
-    env.DRAFTS.list({ prefix: GUESTBOOK_CAPTCHA_PREFIX, limit: 500 }),
-    env.DRAFTS.list({ prefix: GUESTBOOK_RATE_PREFIX, limit: 500 }),
-  ]);
+  const rates = await env.DRAFTS.list({ prefix: GUESTBOOK_RATE_PREFIX, limit: 500 });
   const stale = [];
-  for (const entry of captchas.objects) {
-    const captcha = await readJsonObject<StoredGuestbookCaptcha>(env.DRAFTS, entry.key);
-    if (!captcha || captcha.expiresAt <= now) stale.push(entry.key);
-  }
   for (const entry of rates.objects) {
     const rate = await readJsonObject<GuestbookRateLimit>(env.DRAFTS, entry.key);
     if (!rate || rate.resetAt <= now) stale.push(entry.key);
   }
   await Promise.all(stale.map((key) => env.DRAFTS.delete(key)));
+}
+
+function turnstileToken(value: unknown): string {
+  if (typeof value !== "string") throw new HttpError(400, "请先完成 Cloudflare 验证", "CAPTCHA_INVALID");
+  const token = value.trim();
+  if (!token || token.length > 2048) throw new HttpError(400, "Cloudflare 验证已失效，请重试", "CAPTCHA_INVALID");
+  return token;
+}
+
+async function verifyGuestbookTurnstile(token: string, env: Env): Promise<void> {
+  if (env.TURNSTILE_SECRET_KEY) {
+    await verifyTurnstileDirect(token, env.TURNSTILE_SECRET_KEY);
+    return;
+  }
+  const response = await fetch(env.TURNSTILE_VERIFY_URL || TURNSTILE_VERIFY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ turnstileToken: token }),
+  });
+  const result = await response.json().catch(() => ({})) as { success?: boolean; error?: string };
+  if (!response.ok || result.success !== true) {
+    const unavailable = response.status >= 500;
+    throw new HttpError(
+      unavailable ? 503 : 400,
+      result.error || (unavailable ? "Cloudflare 验证服务暂时不可用" : "Cloudflare 验证未通过，请重试"),
+      unavailable ? "TURNSTILE_UNAVAILABLE" : "CAPTCHA_INVALID",
+    );
+  }
+}
+
+async function verifyTurnstileDirect(token: string, secret: string): Promise<void> {
+  const response = await fetch(TURNSTILE_SITEVERIFY_URL, {
+    method: "POST",
+    headers: { "Content-Type": "application/json" },
+    body: JSON.stringify({ secret, response: token, idempotency_key: crypto.randomUUID() }),
+  });
+  if (!response.ok) throw new HttpError(503, "Cloudflare 验证服务暂时不可用", "TURNSTILE_UNAVAILABLE");
+  const result = await response.json() as { success?: boolean; hostname?: string; action?: string };
+  if (!result.success || !result.hostname || !TURNSTILE_HOSTNAMES.has(result.hostname) || result.action !== TURNSTILE_ACTION) {
+    throw new HttpError(400, "Cloudflare 验证未通过，请重试", "CAPTCHA_INVALID");
+  }
 }
 
 function publicGuestbookMessage(message: StoredGuestbookMessage): GuestbookMessage {
@@ -490,10 +504,6 @@ function cleanGuestbookText(value: unknown, label: string, minimum: number, maxi
   const length = [...cleaned].length;
   if (length < minimum || length > maximum) throw new HttpError(400, `${label}需要 ${minimum}-${maximum} 个字符`);
   return cleaned;
-}
-
-function randomInteger(minimum: number, maximum: number): number {
-  return minimum + (crypto.getRandomValues(new Uint8Array(1))[0] % (maximum - minimum + 1));
 }
 
 function clientIp(request: Request): string {
@@ -2201,7 +2211,7 @@ function assertSameOrigin(request: Request, url: URL): void {
 }
 
 function isPublicGuestbookRoute(pathname: string): boolean {
-  return pathname === "/api/guestbook/captcha" || pathname === "/api/guestbook/messages";
+  return pathname === "/api/guestbook/messages" || pathname === "/api/guestbook/turnstile/verify";
 }
 
 function guestbookOrigin(request: Request): string | null {

@@ -576,6 +576,7 @@ describe("guestbook API", () => {
   function guestbookEnv() {
     const values = new Map<string, string>();
     const env = testEnv();
+    env.TURNSTILE_SECRET_KEY = "test-turnstile-secret";
     env.DRAFTS = {
       get: vi.fn(async (key: string) => {
         const value = values.get(key);
@@ -595,21 +596,20 @@ describe("guestbook API", () => {
     return { env, values };
   }
 
-  async function captcha(env: ReturnType<typeof guestbookEnv>["env"]) {
-    const response = await worker.fetch(new Request("https://studio.example/api/guestbook/captcha", {
-      headers: { Origin: "https://vmss.cn" },
-    }), env);
-    expect(response.status).toBe(200);
-    expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://vmss.cn");
-    const result = await response.json() as { id: string; prompt: string };
-    const match = result.prompt.match(/(\d+) ([+-]) (\d+)/);
-    expect(match).not.toBeNull();
-    const answer = match?.[2] === "+" ? Number(match[1]) + Number(match[3]) : Number(match?.[1]) - Number(match?.[3]);
-    return { id: result.id, answer };
+  function mockTurnstile(success = true) {
+    const turnstileFetch = vi.fn(async (input: string | URL | Request) => {
+      expect(String(input)).toBe("https://challenges.cloudflare.com/turnstile/v0/siteverify");
+      return new Response(JSON.stringify(success
+        ? { success: true, hostname: "vmss.cn", action: "guestbook" }
+        : { success: false, hostname: "vmss.cn", action: "guestbook" }), {
+        headers: { "Content-Type": "application/json" },
+      });
+    });
+    vi.stubGlobal("fetch", turnstileFetch);
+    return turnstileFetch;
   }
 
   async function postMessage(env: ReturnType<typeof guestbookEnv>["env"], index: number) {
-    const challenge = await captcha(env);
     return worker.fetch(new Request("https://studio.example/api/guestbook/messages", {
       method: "POST",
       headers: {
@@ -617,18 +617,20 @@ describe("guestbook API", () => {
         "CF-Connecting-IP": "203.0.113.42",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name: "访客", content: `第 ${index} 条测试留言`, captchaId: challenge.id, captchaAnswer: challenge.answer }),
+      body: JSON.stringify({ name: "访客", content: `第 ${index} 条测试留言`, turnstileToken: `test-turnstile-token-${index}` }),
     }), env);
   }
 
-  it("accepts plain-text messages with one-time captchas and returns CORS headers", async () => {
+  it("accepts plain-text messages after Turnstile validation and returns CORS headers", async () => {
+    const turnstileFetch = mockTurnstile();
     const { env, values } = guestbookEnv();
     const response = await postMessage(env, 1);
     expect(response.status).toBe(201);
     expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://vmss.cn");
     const created = await response.json() as { id: string; name: string; content: string };
     expect(created).toMatchObject({ name: "访客", content: "第 1 条测试留言" });
-    expect([...values.keys()].filter((key) => key.startsWith("guestbook/captcha/"))).toHaveLength(0);
+    expect(turnstileFetch).toHaveBeenCalledOnce();
+    expect([...values.keys()].filter((key) => key.startsWith("guestbook/messages/"))).toHaveLength(1);
 
     const listing = await worker.fetch(new Request("https://studio.example/api/guestbook/messages", {
       headers: { Origin: "https://vmss.cn" },
@@ -637,7 +639,29 @@ describe("guestbook API", () => {
     expect(await listing.json()).toMatchObject({ messages: [{ id: created.id }] });
   });
 
+  it("rejects messages when Turnstile validation fails", async () => {
+    mockTurnstile(false);
+    const { env, values } = guestbookEnv();
+    const response = await postMessage(env, 1);
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ code: "CAPTCHA_INVALID" });
+    expect([...values.keys()].filter((key) => key.startsWith("guestbook/messages/"))).toHaveLength(0);
+  });
+
+  it("uses the Cloudflare verifier when running on EdgeOne", async () => {
+    const verifierFetch = vi.fn(async (input: string | URL | Request) => {
+      expect(String(input)).toBe("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify");
+      return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
+    });
+    vi.stubGlobal("fetch", verifierFetch);
+    const { env } = guestbookEnv();
+    env.TURNSTILE_SECRET_KEY = undefined;
+    expect((await postMessage(env, 1)).status).toBe(201);
+    expect(verifierFetch).toHaveBeenCalledOnce();
+  });
+
   it("limits each IP to three messages per rolling hour", async () => {
+    mockTurnstile();
     const { env } = guestbookEnv();
     for (let index = 1; index <= 3; index += 1) expect((await postMessage(env, index)).status).toBe(201);
     const blocked = await postMessage(env, 4);
@@ -646,6 +670,7 @@ describe("guestbook API", () => {
   });
 
   it("lets an authenticated editor list and batch-delete messages", async () => {
+    mockTurnstile();
     const { env } = guestbookEnv();
     const created = await (await postMessage(env, 1)).json() as { id: string };
     const login = await worker.fetch(new Request("https://studio.example/api/login", {

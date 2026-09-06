@@ -122,6 +122,7 @@ assert.match(home, /一个可能特别有想法的博主。/, "Homepage status t
 assert.match(home, /我の小小窝。/, "Homepage workspace label is incorrect");
 assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub contact is missing");
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
+assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
 assert.match(home, /data-avatar-particles/, "Particle avatar stage is missing");
 const blogServerPageSize = 30;
 const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
@@ -135,7 +136,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-edgeone-guestbook/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260907-turnstile-friends/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -197,13 +198,20 @@ assert.match(dockerTool, /<iframe class="tool-service-frame" src="https:\/\/dock
 const friendsPage = await readFile(join(outputRoot, "friends", "index.html"), "utf8");
 assert.equal((friendsPage.match(/class="friend-card"/g) || []).length, 4, "Friends page did not render every validated entry");
 assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/tree\/main\/friends/, "Friends repository link is not production-ready");
-assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/new\/main\/friends\/entries\?filename=your-site\.json/, "Friends contribution link is not production-ready");
+assert.match(friendsPage, /href="https:\/\/github\.com\/mumuhaha487\/astro\/new\/main\/friends\/entries"/, "Friends contribution link is not filename-neutral");
+assert.doesNotMatch(friendsPage, /new\/main\/friends\/entries\?filename=/, "Friends contribution link still presets a conflicting filename");
+assert.match(friendsPage, /data-friends-apply-dialog/, "Friends application dialog is missing");
+assert.match(friendsPage, /data-friends-template/, "Friends JSON copy template is missing");
+assert.doesNotMatch(friendsPage, /friend\.json|your-site-2026\.json/, "Friends dialog suggests a fixed filename");
 assert.doesNotMatch(friendsPage, /static\/friends|astro-island/, "Legacy generated friends page overrode the Hugo route");
 
 const guestbookPage = await readFile(join(outputRoot, "guestbook", "index.html"), "utf8");
 assert.match(guestbookPage, /data-guestbook-api="https:\/\/md\.vmss\.cn"/, "Guestbook production API is missing");
 assert.match(guestbookPage, /data-guestbook-form/, "Guestbook public form is missing");
-assert.match(guestbookPage, /data-guestbook-captcha/, "Guestbook captcha is missing");
+assert.match(guestbookPage, /data-turnstile-site-key="0x4AAAAAAEqYCxmwdT2EkFet"/, "Guestbook Turnstile site key is missing");
+assert.match(guestbookPage, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/, "Guestbook Turnstile client is missing");
+assert.match(guestbookPage, /data-guestbook-turnstile/, "Guestbook Turnstile mount is missing");
+assert.doesNotMatch(guestbookPage, /captchaAnswer|data-guestbook-captcha|算术验证码/, "Legacy arithmetic captcha remains");
 const giscusTheme = await readFile(join(outputRoot, "hugo-theme", "giscus-theme.css"), "utf8");
 assert.match(giscusTheme, /--color-canvas-default:transparent/, "Giscus theme is not dark-theme compatible");
 assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
@@ -215,6 +223,7 @@ assert.match(englishHome, /<html lang="en-US">/);
 assert.match(englishHome, /aria-label="Switch language"/);
 assert.match(japaneseHome, /<html lang="ja-JP">/);
 assert.match(japaneseHome, /aria-label="言語を切り替える"/);
+assert.match(japaneseHome, /<a[^>]*lang="ja"[^>]*>日本語<\/a>/, "Japanese language option is not explicit");
 
 const contentFiles = await listFiles(join(repositoryRoot, "content", "posts"));
 const misplaced = contentFiles.filter((path) => [".html", ".htm", ".js", ".zip"].includes(extname(path).toLowerCase()));

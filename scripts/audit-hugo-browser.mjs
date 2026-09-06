@@ -7,6 +7,7 @@ import { join } from "node:path";
 import { chromium } from "../studio/node_modules/playwright-core/index.mjs";
 
 const baseUrl = new URL(process.argv[2] || "http://127.0.0.1:4321");
+const localRun = ["127.0.0.1", "localhost"].includes(baseUrl.hostname);
 const outputDirectory = process.argv[3] || join(tmpdir(), "astro-hugo-audit");
 const executablePath = [
   process.env.PLAYWRIGHT_CHROME_PATH,
@@ -33,6 +34,12 @@ try {
   for (const viewport of viewports) {
     const context = await browser.newContext({ viewport });
     const page = await context.newPage();
+    if (localRun) {
+      await page.route("https://challenges.cloudflare.com/turnstile/v0/api.js**", (route) => route.fulfill({
+        contentType: "application/javascript",
+        body: `globalThis.turnstile={render(container,options){const mock=document.createElement("div");mock.className="turnstile-visual-mock";mock.textContent="Cloudflare Turnstile";container.append(mock);queueMicrotask(()=>options.callback("visual-test-token"));return "visual-widget"},reset(){}};`,
+      }));
+    }
     for (const routePath of routes) {
       const failed = [];
       const httpErrors = [];
@@ -47,6 +54,13 @@ try {
       const startedAt = performance.now();
       const response = await page.goto(new URL(routePath, baseUrl).toString(), { waitUntil: "domcontentloaded", timeout: 30_000 });
       await page.waitForTimeout(1_500);
+      if (routePath === "/guestbook/") {
+        await page.waitForFunction(() => (
+          document.querySelector("[data-guestbook-list]")?.dataset.guestbookReady === "true"
+          && (document.querySelector("[data-guestbook-turnstile]")?.dataset.turnstileState === "ready"
+            || Boolean(document.querySelector("[data-guestbook-turnstile] iframe")))
+        ), undefined, { timeout: 15_000 });
+      }
       const elapsedMs = Math.round(performance.now() - startedAt);
       assert.equal(response?.status(), 200, `${routePath} returned ${response?.status()}`);
       const metrics = await page.evaluate(() => {
@@ -68,6 +82,12 @@ try {
       assert.ok(metrics.bodyWidth <= metrics.viewportWidth, `${viewport.name} ${routePath} overflows horizontally`);
       const slug = routePath === "/" ? "home" : routePath.split("/").filter(Boolean).join("-");
       await page.screenshot({ path: join(outputDirectory, `${viewport.name}-${slug}.png`), fullPage: false });
+      if (routePath === "/friends/") {
+        await page.locator("[data-friends-apply-open]").click();
+        await page.locator("[data-friends-apply-dialog][open]").waitFor();
+        await page.screenshot({ path: join(outputDirectory, `${viewport.name}-friends-dialog.png`), fullPage: false });
+        await page.locator("[data-friends-apply-close]").first().click();
+      }
       report.push({ viewport: viewport.name, path: routePath, elapsedMs, ...metrics, failed, httpErrors, consoleErrors });
 
       page.off("requestfailed", onFailed);

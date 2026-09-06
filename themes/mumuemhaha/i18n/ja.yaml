@@ -110,6 +110,22 @@
   translation: 該当するリンクはありません。
 - id: friends_no_description
   translation: 紹介文はまだありません。
+- id: friends_dialog_eyebrow
+  translation: リンク申請テンプレート
+- id: friends_dialog_title
+  translation: JSON をコピーして GitHub へ
+- id: friends_dialog_description
+  translation: テンプレートをコピーし、GitHub で重複しない名前の .json ファイルを作成して、Pull Request を送信してください。
+- id: friends_copy
+  translation: テンプレートをコピー
+- id: friends_copied
+  translation: コピー済み
+- id: friends_unique_name
+  translation: GitHub で未使用の .json ファイル名を入力してください。リンクでは名前を指定しません。
+- id: friends_open_github
+  translation: GitHub でファイルを作成
+- id: friends_close
+  translation: 閉じる
 - id: guestbook_loading
   translation: メッセージを読み込み中...
 - id: guestbook_empty
@@ -124,8 +140,8 @@
   translation: 投稿はプレーンテキストで表示し、HTML や外部リンクは実行しません。
 - id: guestbook_rule_limit
   translation: 同じ IP からの投稿は1時間に3件までです。
-- id: guestbook_rule_captcha
-  translation: 投稿ごとに計算問題への回答が必要です。
+- id: guestbook_rule_turnstile
+  translation: 投稿ごとに Cloudflare Turnstile の確認が必要です。
 - id: guestbook_name
   translation: お名前
 - id: guestbook_name_placeholder
@@ -134,12 +150,10 @@
   translation: メッセージ
 - id: guestbook_content_placeholder
   translation: 一言を残してください
-- id: guestbook_captcha
-  translation: 確認問題
-- id: guestbook_answer
-  translation: 答え
-- id: guestbook_refresh_captcha
-  translation: 別の問題
+- id: guestbook_turnstile
+  translation: Cloudflare 認証
+- id: guestbook_turnstile_required
+  translation: 先に Cloudflare 認証を完了してください。
 - id: guestbook_submit
   translation: 投稿する
 - id: guestbook_recent
