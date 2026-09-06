@@ -136,7 +136,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260907-turnstile-friends/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260907-turnstile-friends-motion/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -179,7 +179,7 @@ for (const article of translatedArticles) {
   assert.match(article, /data-category-id="DIC_kwDOPjTkdM4CuiIf"/, "Giscus category ID does not match the original Astro comments");
   assert.match(article, /data-mapping="specific"/, "Giscus must use a shared explicit discussion key");
   assert.ok(article.includes(`data-term="${expectedCommentTerm}"`), "Language variants do not share the Chinese discussion key");
-  assert.match(article, /data-theme="https:\/\/vmss\.cn\/hugo-theme\/giscus-theme\.css\?v=20260906"/, "Giscus dark theme is missing");
+  assert.match(article, /data-theme="https:\/\/vmss\.cn\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast"/, "Giscus high-contrast dark theme is missing");
   assert.match(article, /data-article-toc-nav/, "Article TOC shell is missing");
   assert.match(article, /data-mobile-actions-toggle/, "Mobile article action launcher is missing");
 }
@@ -209,11 +209,14 @@ const guestbookPage = await readFile(join(outputRoot, "guestbook", "index.html")
 assert.match(guestbookPage, /data-guestbook-api="https:\/\/md\.vmss\.cn"/, "Guestbook production API is missing");
 assert.match(guestbookPage, /data-guestbook-form/, "Guestbook public form is missing");
 assert.match(guestbookPage, /data-turnstile-site-key="0x4AAAAAAEqYCxmwdT2EkFet"/, "Guestbook Turnstile site key is missing");
+assert.match(guestbookPage, /data-turnstile-verifier="https:\/\/astro-blog-studio\.vrhjio4405\.workers\.dev\/api\/guestbook\/turnstile\/verify"/, "Guestbook Turnstile ticket verifier is missing");
 assert.match(guestbookPage, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/, "Guestbook Turnstile client is missing");
 assert.match(guestbookPage, /data-guestbook-turnstile/, "Guestbook Turnstile mount is missing");
 assert.doesNotMatch(guestbookPage, /captchaAnswer|data-guestbook-captcha|算术验证码/, "Legacy arithmetic captcha remains");
 const giscusTheme = await readFile(join(outputRoot, "hugo-theme", "giscus-theme.css"), "utf8");
 assert.match(giscusTheme, /--color-canvas-default:transparent/, "Giscus theme is not dark-theme compatible");
+assert.match(giscusTheme, /--color-canvas-subtle:#303131/, "Giscus comment panels do not use the readable gray surface");
+assert.match(giscusTheme, /--color-fg-default:#f5f3ef/, "Giscus comment text is not high contrast");
 assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
 const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
 assert.match(legacyCommentArticle, /data-term="posts\/20250825\/"/, "Existing Astro discussion mapping was not restored");

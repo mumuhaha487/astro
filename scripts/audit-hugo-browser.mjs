@@ -37,7 +37,7 @@ try {
     if (localRun) {
       await page.route("https://challenges.cloudflare.com/turnstile/v0/api.js**", (route) => route.fulfill({
         contentType: "application/javascript",
-        body: `globalThis.turnstile={render(container,options){const mock=document.createElement("div");mock.className="turnstile-visual-mock";mock.textContent="Cloudflare Turnstile";container.append(mock);queueMicrotask(()=>options.callback("visual-test-token"));return "visual-widget"},reset(){}};`,
+        body: `globalThis.turnstile={render(container,options){const mock=document.createElement("div");mock.className="turnstile-visual-mock";mock.dataset.turnstileMock="true";mock.textContent="Cloudflare Turnstile";container.append(mock);queueMicrotask(()=>options.callback("visual-test-token"));return "visual-widget"},reset(){}};`,
       }));
     }
     for (const routePath of routes) {
@@ -57,8 +57,10 @@ try {
       if (routePath === "/guestbook/") {
         await page.waitForFunction(() => (
           document.querySelector("[data-guestbook-list]")?.dataset.guestbookReady === "true"
-          && (document.querySelector("[data-guestbook-turnstile]")?.dataset.turnstileState === "ready"
-            || Boolean(document.querySelector("[data-guestbook-turnstile] iframe")))
+          && ["rendered", "ready"].includes(document.querySelector("[data-guestbook-turnstile]")?.dataset.turnstileState || "")
+          && (Boolean(document.querySelector('[data-guestbook-turnstile] input[name="cf-turnstile-response"]'))
+            || Boolean(document.querySelector("[data-guestbook-turnstile] iframe"))
+            || Boolean(document.querySelector('[data-guestbook-turnstile] [data-turnstile-mock="true"]')))
         ), undefined, { timeout: 15_000 });
       }
       const elapsedMs = Math.round(performance.now() - startedAt);
@@ -87,6 +89,13 @@ try {
         await page.locator("[data-friends-apply-dialog][open]").waitFor();
         await page.screenshot({ path: join(outputDirectory, `${viewport.name}-friends-dialog.png`), fullPage: false });
         await page.locator("[data-friends-apply-close]").first().click();
+      }
+      if (routePath === "/posts/20260326/") {
+        const comments = page.locator(".article-comments");
+        await comments.scrollIntoViewIfNeeded();
+        if (!localRun) await page.locator(".article-comments iframe.giscus-frame").waitFor({ timeout: 15_000 });
+        await page.waitForTimeout(localRun ? 100 : 1_500);
+        await comments.screenshot({ path: join(outputDirectory, `${viewport.name}-article-comments.png`) });
       }
       report.push({ viewport: viewport.name, path: routePath, elapsedMs, ...metrics, failed, httpErrors, consoleErrors });
 

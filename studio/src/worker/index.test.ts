@@ -573,6 +573,22 @@ describe("multilingual publishing", () => {
 });
 
 describe("guestbook API", () => {
+  async function ticketKeyPair() {
+    const pair = await crypto.subtle.generateKey(
+      { name: "ECDSA", namedCurve: "P-256" },
+      true,
+      ["sign", "verify"],
+    );
+    const [privateKey, publicKey] = await Promise.all([
+      crypto.subtle.exportKey("pkcs8", pair.privateKey),
+      crypto.subtle.exportKey("spki", pair.publicKey),
+    ]);
+    return {
+      privateKey: Buffer.from(privateKey).toString("base64"),
+      publicKey: Buffer.from(publicKey).toString("base64"),
+    };
+  }
+
   function guestbookEnv() {
     const values = new Map<string, string>();
     const env = testEnv();
@@ -609,7 +625,11 @@ describe("guestbook API", () => {
     return turnstileFetch;
   }
 
-  async function postMessage(env: ReturnType<typeof guestbookEnv>["env"], index: number) {
+  async function postMessage(
+    env: ReturnType<typeof guestbookEnv>["env"],
+    index: number,
+    verification: { turnstileToken?: string; turnstileTicket?: string } = { turnstileToken: `test-turnstile-token-${index}` },
+  ) {
     return worker.fetch(new Request("https://studio.example/api/guestbook/messages", {
       method: "POST",
       headers: {
@@ -617,7 +637,7 @@ describe("guestbook API", () => {
         "CF-Connecting-IP": "203.0.113.42",
         "Content-Type": "application/json",
       },
-      body: JSON.stringify({ name: "访客", content: `第 ${index} 条测试留言`, turnstileToken: `test-turnstile-token-${index}` }),
+      body: JSON.stringify({ name: "访客", content: `第 ${index} 条测试留言`, ...verification }),
     }), env);
   }
 
@@ -648,16 +668,31 @@ describe("guestbook API", () => {
     expect([...values.keys()].filter((key) => key.startsWith("guestbook/messages/"))).toHaveLength(0);
   });
 
-  it("uses the Cloudflare verifier when running on EdgeOne", async () => {
-    const verifierFetch = vi.fn(async (input: string | URL | Request) => {
-      expect(String(input)).toBe("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify");
-      return new Response(JSON.stringify({ success: true }), { headers: { "Content-Type": "application/json" } });
-    });
-    vi.stubGlobal("fetch", verifierFetch);
+  it("accepts a signed one-time Turnstile ticket on EdgeOne", async () => {
+    const keys = await ticketKeyPair();
+    mockTurnstile();
     const { env } = guestbookEnv();
+    env.TURNSTILE_TICKET_PRIVATE_KEY = keys.privateKey;
+    const verification = await worker.fetch(new Request("https://studio.example/api/guestbook/turnstile/verify", {
+      method: "POST",
+      headers: { Origin: "https://vmss.cn", "Content-Type": "application/json" },
+      body: JSON.stringify({ turnstileToken: "test-turnstile-token" }),
+    }), env);
+    expect(verification.status).toBe(200);
+    const { ticket } = await verification.json() as { ticket: string };
+    expect(ticket).toMatch(/^v1\.[A-Za-z0-9_-]+\.[A-Za-z0-9_-]+$/);
+
     env.TURNSTILE_SECRET_KEY = undefined;
-    expect((await postMessage(env, 1)).status).toBe(201);
-    expect(verifierFetch).toHaveBeenCalledOnce();
+    env.TURNSTILE_TICKET_PUBLIC_KEY = keys.publicKey;
+    expect((await postMessage(env, 1, { turnstileTicket: ticket })).status).toBe(201);
+    const replay = await postMessage(env, 2, { turnstileTicket: ticket });
+    expect(replay.status).toBe(400);
+    expect(await replay.json()).toMatchObject({ code: "CAPTCHA_INVALID" });
+
+    const tampered = `${ticket.slice(0, -1)}${ticket.endsWith("A") ? "B" : "A"}`;
+    const invalid = await postMessage(env, 3, { turnstileTicket: tampered });
+    expect(invalid.status).toBe(400);
+    expect(await invalid.json()).toMatchObject({ code: "CAPTCHA_INVALID" });
   });
 
   it("limits each IP to three messages per rolling hour", async () => {

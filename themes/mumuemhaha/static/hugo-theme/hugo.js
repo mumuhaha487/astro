@@ -757,6 +757,7 @@
     if (!page) return;
     const api = (page.dataset.guestbookApi || "").replace(/\/$/, "");
     const siteKey = page.dataset.turnstileSiteKey || "";
+    const verifier = page.dataset.turnstileVerifier || "";
     const form = $("[data-guestbook-form]", page);
     const list = $("[data-guestbook-list]", page);
     const count = $("[data-guestbook-count]", page);
@@ -772,6 +773,18 @@
       const payload = await response.json().catch(() => ({}));
       if (!response.ok) throw new Error(payload.error || page.dataset.error);
       return payload;
+    };
+    const exchangeTurnstileToken = async (token) => {
+      if (!verifier) throw new Error(page.dataset.error || "");
+      const response = await fetch(verifier, {
+        method: "POST",
+        cache: "no-store",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ turnstileToken: token }),
+      });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok || typeof payload.ticket !== "string" || !payload.ticket) throw new Error(payload.error || page.dataset.error || "");
+      return payload.ticket;
     };
     const renderMessages = () => {
       if (!list) return;
@@ -860,10 +873,11 @@
       submit.disabled = true;
       if (status) { status.textContent = ""; status.className = ""; }
       try {
+        const turnstileTicket = await exchangeTurnstileToken(verificationToken);
         const created = await request("/api/guestbook/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), turnstileToken: verificationToken }),
+          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), turnstileTicket }),
         });
         messages = [created, ...messages.filter((message) => message.id !== created.id)].slice(0, 60);
         renderMessages();

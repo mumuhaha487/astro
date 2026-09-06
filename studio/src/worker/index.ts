@@ -60,7 +60,8 @@ export interface BlogStudioEnv {
   GITHUB_REPO: string;
   GITHUB_BRANCH: string;
   TURNSTILE_SECRET_KEY?: string;
-  TURNSTILE_VERIFY_URL?: string;
+  TURNSTILE_TICKET_PRIVATE_KEY?: string;
+  TURNSTILE_TICKET_PUBLIC_KEY?: string;
 }
 
 type Env = BlogStudioEnv;
@@ -121,6 +122,19 @@ interface GuestbookRateLimit {
   resetAt: number;
 }
 
+interface TurnstileTicketPayload {
+  version: 1;
+  issuedAt: number;
+  expiresAt: number;
+  nonce: string;
+  hostname: string;
+  action: string;
+}
+
+interface StoredTurnstileTicket {
+  expiresAt: number;
+}
+
 class HttpError extends Error {
   status: number;
   code?: string;
@@ -141,12 +155,14 @@ const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const MAX_RESOURCE_BYTES = 25 * 1024 * 1024;
 const GUESTBOOK_MESSAGE_PREFIX = "guestbook/messages/";
 const GUESTBOOK_RATE_PREFIX = "guestbook/rate/";
+const GUESTBOOK_TURNSTILE_PREFIX = "guestbook/turnstile/";
 const GUESTBOOK_RATE_LIMIT = 3;
 const GUESTBOOK_RATE_WINDOW = 60 * 60_000;
 const TURNSTILE_SITEVERIFY_URL = "https://challenges.cloudflare.com/turnstile/v0/siteverify";
-const TURNSTILE_VERIFY_URL = "https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify";
 const TURNSTILE_ACTION = "guestbook";
 const TURNSTILE_HOSTNAMES = new Set(["vmss.cn", "www.vmss.cn"]);
+const TURNSTILE_TICKET_LIFETIME_SECONDS = 5 * 60;
+const TURNSTILE_TICKET_PUBLIC_KEY = "MFkwEwYHKoZIzj0CAQYIKoZIzj0DAQcDQgAEUkJR2yM5crNSroEnWUAl88frUv+9dJZVhIsBmCWk1tB5ogmn2gYGvYAUbWl7sRutV16g0ewslPLOLd8IdD+4yw==";
 
 const webEmbedSecurityHeaders: Record<string, string> = {
   "Content-Security-Policy": [
@@ -226,9 +242,10 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
     if (url.pathname === "/api/guestbook/messages" && request.method === "POST") return json(await createGuestbookMessage(request, env), 201);
     if (url.pathname === "/api/guestbook/turnstile/verify" && request.method === "POST") {
       if (!env.TURNSTILE_SECRET_KEY) throw new HttpError(503, "Turnstile 验证服务尚未配置", "TURNSTILE_UNAVAILABLE");
+      if (!env.TURNSTILE_TICKET_PRIVATE_KEY) throw new HttpError(503, "Turnstile 票据服务尚未配置", "TURNSTILE_UNAVAILABLE");
       const body = await readJson<{ turnstileToken?: unknown }>(request);
-      await verifyTurnstileDirect(turnstileToken(body.turnstileToken), env.TURNSTILE_SECRET_KEY);
-      return json({ success: true });
+      const validation = await verifyTurnstileDirect(turnstileToken(body.turnstileToken), env.TURNSTILE_SECRET_KEY);
+      return json({ success: true, ticket: await issueTurnstileTicket(env.TURNSTILE_TICKET_PRIVATE_KEY, validation) });
     }
     throw new HttpError(405, "请求方法不受支持");
   }
@@ -391,10 +408,10 @@ async function getSessionInfo(env: Env): Promise<SessionInfo> {
 }
 
 async function createGuestbookMessage(request: Request, env: Env): Promise<GuestbookMessage> {
-  const body = await readJson<{ name?: unknown; content?: unknown; turnstileToken?: unknown }>(request);
+  const body = await readJson<{ name?: unknown; content?: unknown; turnstileToken?: unknown; turnstileTicket?: unknown }>(request);
   const name = cleanGuestbookText(body.name, "用户名", 1, 30, false);
   const content = cleanGuestbookText(body.content, "留言内容", 2, 600, true);
-  await verifyGuestbookTurnstile(turnstileToken(body.turnstileToken), env);
+  await verifyGuestbookTurnstile(turnstileToken(body.turnstileTicket ?? body.turnstileToken), env);
   const ip = clientIp(request);
   const ipHash = await sha256(ip);
   const rateKey = `${GUESTBOOK_RATE_PREFIX}${ipHash}`;
@@ -440,11 +457,18 @@ async function deleteGuestbookMessages(env: Env, value: unknown): Promise<number
 
 async function cleanupExpiredGuestbookState(env: Env): Promise<void> {
   const now = Date.now();
-  const rates = await env.DRAFTS.list({ prefix: GUESTBOOK_RATE_PREFIX, limit: 500 });
+  const [rates, tickets] = await Promise.all([
+    env.DRAFTS.list({ prefix: GUESTBOOK_RATE_PREFIX, limit: 500 }),
+    env.DRAFTS.list({ prefix: GUESTBOOK_TURNSTILE_PREFIX, limit: 500 }),
+  ]);
   const stale = [];
   for (const entry of rates.objects) {
     const rate = await readJsonObject<GuestbookRateLimit>(env.DRAFTS, entry.key);
     if (!rate || rate.resetAt <= now) stale.push(entry.key);
+  }
+  for (const entry of tickets.objects) {
+    const ticket = await readJsonObject<StoredTurnstileTicket>(env.DRAFTS, entry.key);
+    if (!ticket || ticket.expiresAt <= now) stale.push(entry.key);
   }
   await Promise.all(stale.map((key) => env.DRAFTS.delete(key)));
 }
@@ -461,23 +485,16 @@ async function verifyGuestbookTurnstile(token: string, env: Env): Promise<void> 
     await verifyTurnstileDirect(token, env.TURNSTILE_SECRET_KEY);
     return;
   }
-  const response = await fetch(env.TURNSTILE_VERIFY_URL || TURNSTILE_VERIFY_URL, {
-    method: "POST",
-    headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ turnstileToken: token }),
+  const payload = await verifyTurnstileTicket(token, env.TURNSTILE_TICKET_PUBLIC_KEY || TURNSTILE_TICKET_PUBLIC_KEY);
+  const usedKey = `${GUESTBOOK_TURNSTILE_PREFIX}${payload.nonce}`;
+  const used = await readJsonObject<StoredTurnstileTicket>(env.DRAFTS, usedKey);
+  if (used?.expiresAt && used.expiresAt > Date.now()) throw new HttpError(400, "Cloudflare 验证已使用，请重新验证", "CAPTCHA_INVALID");
+  await env.DRAFTS.put(usedKey, JSON.stringify({ expiresAt: payload.expiresAt * 1000 } satisfies StoredTurnstileTicket), {
+    httpMetadata: { contentType: "application/json" },
   });
-  const result = await response.json().catch(() => ({})) as { success?: boolean; error?: string };
-  if (!response.ok || result.success !== true) {
-    const unavailable = response.status >= 500;
-    throw new HttpError(
-      unavailable ? 503 : 400,
-      result.error || (unavailable ? "Cloudflare 验证服务暂时不可用" : "Cloudflare 验证未通过，请重试"),
-      unavailable ? "TURNSTILE_UNAVAILABLE" : "CAPTCHA_INVALID",
-    );
-  }
 }
 
-async function verifyTurnstileDirect(token: string, secret: string): Promise<void> {
+async function verifyTurnstileDirect(token: string, secret: string): Promise<{ hostname: string; action: string }> {
   const response = await fetch(TURNSTILE_SITEVERIFY_URL, {
     method: "POST",
     headers: { "Content-Type": "application/json" },
@@ -488,6 +505,80 @@ async function verifyTurnstileDirect(token: string, secret: string): Promise<voi
   if (!result.success || !result.hostname || !TURNSTILE_HOSTNAMES.has(result.hostname) || result.action !== TURNSTILE_ACTION) {
     throw new HttpError(400, "Cloudflare 验证未通过，请重试", "CAPTCHA_INVALID");
   }
+  return { hostname: result.hostname, action: result.action };
+}
+
+async function issueTurnstileTicket(privateKeyValue: string, validation: { hostname: string; action: string }): Promise<string> {
+  const issuedAt = Math.floor(Date.now() / 1000);
+  const payload: TurnstileTicketPayload = {
+    version: 1,
+    issuedAt,
+    expiresAt: issuedAt + TURNSTILE_TICKET_LIFETIME_SECONDS,
+    nonce: crypto.randomUUID().replaceAll("-", ""),
+    hostname: validation.hostname,
+    action: validation.action,
+  };
+  const encoded = bytesToBase64Url(new TextEncoder().encode(JSON.stringify(payload)));
+  const privateKey = await crypto.subtle.importKey(
+    "pkcs8",
+    base64UrlToBytes(privateKeyValue),
+    { name: "ECDSA", namedCurve: "P-256" },
+    false,
+    ["sign"],
+  );
+  const signature = await crypto.subtle.sign({ name: "ECDSA", hash: "SHA-256" }, privateKey, new TextEncoder().encode(encoded));
+  return `v1.${encoded}.${bytesToBase64Url(new Uint8Array(signature))}`;
+}
+
+async function verifyTurnstileTicket(ticket: string, publicKeyValue: string): Promise<TurnstileTicketPayload> {
+  const [version, encoded, signature, extra] = ticket.split(".");
+  if (version !== "v1"
+    || !encoded
+    || !signature
+    || extra
+    || encoded.length > 1024
+    || signature.length > 256
+    || !/^[A-Za-z0-9_-]+$/.test(encoded)
+    || !/^[A-Za-z0-9_-]+$/.test(signature)) {
+    throw new HttpError(400, "Cloudflare 验证票据无效，请重试", "CAPTCHA_INVALID");
+  }
+  let decoded: unknown;
+  try {
+    decoded = JSON.parse(new TextDecoder().decode(base64UrlToBytes(encoded)));
+  } catch {
+    throw new HttpError(400, "Cloudflare 验证票据无效，请重试", "CAPTCHA_INVALID");
+  }
+  if (!decoded || typeof decoded !== "object") throw new HttpError(400, "Cloudflare 验证票据无效，请重试", "CAPTCHA_INVALID");
+  const payload = decoded as TurnstileTicketPayload;
+  const now = Math.floor(Date.now() / 1000);
+  const validPayload = payload.version === 1
+    && Number.isInteger(payload.issuedAt)
+    && Number.isInteger(payload.expiresAt)
+    && payload.issuedAt <= now + 30
+    && payload.expiresAt > now
+    && payload.expiresAt - payload.issuedAt === TURNSTILE_TICKET_LIFETIME_SECONDS
+    && /^[a-f0-9]{32}$/.test(payload.nonce)
+    && TURNSTILE_HOSTNAMES.has(payload.hostname)
+    && payload.action === TURNSTILE_ACTION;
+  if (!validPayload) throw new HttpError(400, "Cloudflare 验证票据已失效，请重新验证", "CAPTCHA_INVALID");
+  let validSignature = false;
+  try {
+    const publicKey = await crypto.subtle.importKey(
+      "spki",
+      base64UrlToBytes(publicKeyValue),
+      { name: "ECDSA", namedCurve: "P-256" },
+      false,
+      ["verify"],
+    );
+    validSignature = await crypto.subtle.verify(
+      { name: "ECDSA", hash: "SHA-256" },
+      publicKey,
+      base64UrlToBytes(signature),
+      new TextEncoder().encode(encoded),
+    );
+  } catch {}
+  if (!validSignature) throw new HttpError(400, "Cloudflare 验证票据无效，请重试", "CAPTCHA_INVALID");
+  return payload;
 }
 
 function publicGuestbookMessage(message: StoredGuestbookMessage): GuestbookMessage {

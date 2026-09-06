@@ -163,6 +163,7 @@ try {
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const localRun = ["127.0.0.1", "localhost"].includes(new URL(baseUrl).hostname);
+  let submittedGuestbookBody;
   if (localRun) {
     await page.route("https://umami.vmss.cn/script.js", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
     await page.route("https://giscus.app/**", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
@@ -181,12 +182,20 @@ try {
     await page.route("https://umami.vmss.cn/api/websites/993c6970-8f42-4804-a055-38b6b9c01810/stats?**", (route) => delayedFulfill(route, {
       pageviews: 61756, visitors: 24388, visits: 19853,
     }));
+    await page.route("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify", async (route) => {
+      assert.deepEqual(route.request().postDataJSON(), { turnstileToken: "test-turnstile-token" }, "browser sent the wrong Turnstile token to the verifier");
+      await route.fulfill({
+        contentType: "application/json",
+        body: JSON.stringify({ success: true, ticket: "v1.test-payload.test-signature" }),
+      });
+    });
     let guestbookMessages = [{ id: "message-1", name: "访客", content: "这是一条公开留言", createdAt: "2026-09-06T08:00:00.000Z" }];
     await page.route("https://md.vmss.cn/api/guestbook/**", async (route) => {
       const request = route.request();
       const json = (body, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
       if (request.method() === "GET") return json({ messages: guestbookMessages });
       const body = request.postDataJSON();
+      submittedGuestbookBody = body;
       const created = { id: "message-2", name: body.name, content: body.content, createdAt: "2026-09-06T08:05:00.000Z" };
       guestbookMessages = [created, ...guestbookMessages];
       return json(created, 201);
@@ -337,7 +346,8 @@ try {
   assert.equal(response?.status(), 200);
   await page.waitForFunction(() => {
     const container = document.querySelector("[data-guestbook-turnstile]");
-    return container?.dataset.turnstileState === "ready" || Boolean(container?.querySelector("iframe"));
+    return ["rendered", "ready"].includes(container?.dataset.turnstileState || "")
+      && (Boolean(container?.querySelector('input[name="cf-turnstile-response"]')) || Boolean(container?.querySelector("iframe")) || Boolean(container?.querySelector('[data-turnstile-mock="true"]')));
   }, undefined, { timeout: 15_000 });
   assert.equal(await page.locator('[data-guestbook-form] input[name="name"]').count(), 1, "guestbook name input is missing");
   assert.equal(await page.locator('[data-guestbook-form] textarea[name="content"]').count(), 1, "guestbook content input is missing");
@@ -349,6 +359,8 @@ try {
     await page.locator('textarea[name="content"]').fill("公开留言提交正常");
     await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
     await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
+    assert.equal(submittedGuestbookBody?.turnstileTicket, "v1.test-payload.test-signature", "signed Turnstile ticket was not sent to EdgeOne");
+    assert.equal("turnstileToken" in submittedGuestbookBody, false, "raw Turnstile token leaked to EdgeOne");
     assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
   } else {
     await page.waitForFunction(() => document.querySelector("[data-guestbook-list]")?.dataset.guestbookReady === "true", undefined, { timeout: 10_000 });
@@ -410,7 +422,12 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
-  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260906$/, "Giscus dark theme is missing");
+  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast$/, "Giscus high-contrast dark theme is missing");
+  const articleAnimation = await page.locator(".article-shell").evaluate((node) => ({ name: getComputedStyle(node).animationName, duration: getComputedStyle(node).animationDuration }));
+  assert.deepEqual(articleAnimation, { name: "workspace-page-enter", duration: "0.4s" }, "article does not use the 0.4-second side fade-in");
+  const commentSurface = await page.locator(".article-comments").evaluate((node) => ({ background: getComputedStyle(node).backgroundColor, color: getComputedStyle(node.querySelector("h2")).color }));
+  assert.equal(commentSurface.background, "rgba(48, 49, 49, 0.92)", "comment shell is not a readable gray panel");
+  assert.equal(commentSurface.color, "rgb(255, 255, 255)", "comment shell heading is not high contrast");
   const mobileHeadingCount = await page.locator("#hugo-article-content h1, #hugo-article-content h2").count();
   assert.equal(await page.locator("[data-mobile-toc-nav] [data-toc-id]").count(), mobileHeadingCount, "mobile TOC did not recognize H1/H2 headings");
   assert.equal(await page.locator(".article-toc-top-trigger:visible").count(), 1, "mobile top-right TOC button is missing");

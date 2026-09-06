@@ -1,5 +1,5 @@
 {{ define "main" }}
-<section class="content-page guestbook-page" data-guestbook data-guestbook-api="{{ site.Params.guestbookApi }}" data-turnstile-site-key="{{ site.Params.guestbookTurnstileSiteKey }}" data-loading="{{ i18n "guestbook_loading" }}" data-empty="{{ i18n "guestbook_empty" }}" data-success="{{ i18n "guestbook_success" }}" data-error="{{ i18n "guestbook_error" }}" data-verification-required="{{ i18n "guestbook_turnstile_required" }}">
+<section class="content-page guestbook-page" data-guestbook data-guestbook-api="{{ site.Params.guestbookApi }}" data-turnstile-site-key="{{ site.Params.guestbookTurnstileSiteKey }}" data-turnstile-verifier="{{ site.Params.guestbookTurnstileVerifier }}" data-loading="{{ i18n "guestbook_loading" }}" data-empty="{{ i18n "guestbook_empty" }}" data-success="{{ i18n "guestbook_success" }}" data-error="{{ i18n "guestbook_error" }}" data-verification-required="{{ i18n "guestbook_turnstile_required" }}">
   <header class="page-heading"><p>PUBLIC NOTES</p><h1>{{ .Title }}</h1>{{ with .Description }}<span>{{ . }}</span>{{ end }}</header>
   <div class="guestbook-layout">
     <aside class="guestbook-note">

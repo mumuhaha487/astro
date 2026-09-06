@@ -69,8 +69,6 @@ export async function handleEdgeOneRequest(context: EdgeOneContext): Promise<Res
     GITHUB_OWNER: context.env.GITHUB_OWNER || "mumuhaha487",
     GITHUB_REPO: context.env.GITHUB_REPO || "astro",
     GITHUB_BRANCH: context.env.GITHUB_BRANCH || "main",
-    TURNSTILE_SECRET_KEY: context.env.TURNSTILE_SECRET_KEY || undefined,
-    TURNSTILE_VERIFY_URL: context.env.TURNSTILE_VERIFY_URL || undefined,
   };
 
   if (!env.EDITOR_PASSWORD || !env.SESSION_SECRET) {
