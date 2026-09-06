@@ -1,0 +1,130 @@
+- id: workspace
+  translation: Workspace
+- id: personal_workspace
+  translation: Personal workspace
+- id: home
+  translation: Home
+- id: blog
+  translation: Blog
+- id: toolbox
+  translation: Toolbox
+- id: tools
+  translation: Tools
+- id: main_navigation
+  translation: Main navigation
+- id: mobile_navigation
+  translation: Mobile navigation
+- id: open_navigation
+  translation: Open navigation
+- id: close_navigation
+  translation: Close navigation
+- id: back_home
+  translation: Back to home
+- id: search_articles
+  translation: Search articles
+- id: search_all
+  translation: Search all articles
+- id: search_placeholder
+  translation: Search titles, content, or tags
+- id: search_hint
+  translation: Enter a keyword to search
+- id: close_search
+  translation: Close search
+- id: search_pagination
+  translation: Search result pages
+- id: language_switch
+  translation: Switch language
+- id: open_new_window
+  translation: Open in a new window
+- id: profile_avatar
+  translation: Mumuemhaha's avatar
+- id: todays_status
+  translation: Today's status
+- id: status_title
+  translation: Living thoughtfully and writing code with care.
+- id: status_description
+  translation: Notes on problems solved, projects built, and ideas worth keeping.
+- id: current_visitors
+  translation: Online now
+- id: total_visitors
+  translation: Visitors
+- id: total_visits
+  translation: Total visits
+- id: visitor_stats
+  translation: Visitor statistics
+- id: profile_workspace
+  translation: Personal workspace
+- id: profile_quote
+  translation: Stay calm, love freely, face the future, and release the past.
+- id: read_blog
+  translation: Read the blog
+- id: writing_notes
+  translation: Writing / Notes
+- id: blog_count
+  translation: '%d articles about technology and life.'
+- id: all
+  translation: All
+- id: no_posts
+  translation: No translated articles yet.
+- id: popular_tags
+  translation: Popular tags
+- id: read_article
+  translation: Read %s
+- id: article_pagination
+  translation: Article pages
+- id: previous_page
+  translation: Previous page
+- id: next_page
+  translation: Next page
+- id: page_number
+  translation: Page %d
+- id: page_summary
+  translation: Page %d of %d
+- id: archive
+  translation: Archive
+- id: archive_description
+  translation: Browse %d articles by date.
+- id: back_blog
+  translation: Back to blog
+- id: article_count
+  translation: '%d articles'
+- id: collection
+  translation: Collection
+- id: taxonomy
+  translation: Taxonomy
+- id: word_count
+  translation: '%d words'
+- id: reading_time
+  translation: '%d min read'
+- id: uncategorized
+  translation: Uncategorized
+- id: share
+  translation: Share
+- id: share_description
+  translation: If this article helped, share it with others.
+- id: author
+  translation: Author
+- id: published_on
+  translation: Published
+- id: license
+  translation: License
+- id: comments
+  translation: Comments
+- id: pinned
+  translation: Pinned
+- id: article_toc
+  translation: Contents
+- id: license_notice
+  translation: Published under CC BY-NC-SA 4.0
+- id: last_edited
+  translation: 'Last edited:'
+- id: outdated_notice
+  translation: Some information may be out of date
+- id: previous_article
+  translation: Previous
+- id: next_article
+  translation: Next
+- id: related_articles
+  translation: Related articles
+- id: random_articles
+  translation: Random articles

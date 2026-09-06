@@ -8,13 +8,13 @@
   <div class="post-card-body">
     <div class="post-card-top">
       <span>{{ $page.Date.Format "2006.01.02" }}</span>
-      {{ with $page.Params.category }}<a href="{{ printf "/category/%s/" (. | urlize) }}">{{ . }}</a>{{ end }}
+      {{ with $page.Params.category }}<a href="{{ printf "category/%s/" (. | urlize) | relLangURL }}">{{ . }}</a>{{ end }}
     </div>
     <h2><a href="{{ $page.RelPermalink }}">{{ if $page.Params.pinned }}{{ partial "icon.html" (dict "name" "pin") }}{{ end }}<span>{{ $page.Title }}</span></a></h2>
     <p>{{ with $page.Params.description }}{{ . | markdownify | plainify }}{{ else }}{{ $page.Summary | plainify | truncate 120 }}{{ end }}</p>
     <div class="post-card-foot">
-      <div>{{ range first 3 ($page.Params.tags | default slice) }}<a href="{{ printf "/tags/%s/" (. | urlize) }}">#{{ . }}</a>{{ end }}</div>
-      <a class="post-open" href="{{ $page.RelPermalink }}" aria-label="阅读 {{ $page.Title }}">{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+      <div>{{ range first 3 ($page.Params.tags | default slice) }}<a href="{{ printf "tags/%s/" (. | urlize) | relLangURL }}">#{{ . }}</a>{{ end }}</div>
+      <a class="post-open" href="{{ $page.RelPermalink }}" aria-label="{{ printf (i18n "read_article") $page.Title }}">{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
     </div>
   </div>
 </article>

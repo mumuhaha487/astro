@@ -304,3 +304,176 @@ describe("web page uploads", () => {
     expect(githubFetch).not.toHaveBeenCalled();
   });
 });
+
+describe("multilingual publishing", () => {
+  function memoryEnv() {
+    const values = new Map<string, string>();
+    const env = {
+      ...testEnv(),
+      DRAFTS: {
+        get: vi.fn(async (key: string) => {
+          const value = values.get(key);
+          return value === undefined ? null : { json: async <T>() => JSON.parse(value) as T };
+        }),
+        put: vi.fn(async (key: string, value: string | ArrayBuffer | ArrayBufferView | ReadableStream) => {
+          if (typeof value !== "string") throw new Error("This test bucket only accepts strings");
+          values.set(key, value);
+        }),
+        delete: vi.fn(async (key: string) => { values.delete(key); }),
+        list: vi.fn(async ({ prefix = "" }: { prefix?: string } = {}) => ({
+          objects: [...values.keys()].filter((key) => key.startsWith(prefix)).map((key) => ({ key })),
+        })),
+      },
+    } as unknown as Parameters<typeof worker.fetch>[1];
+    return { env, values };
+  }
+
+  async function loginCookie(env: Parameters<typeof worker.fetch>[1]): Promise<string> {
+    const response = await worker.fetch(new Request("https://studio.example/api/login", {
+      method: "POST",
+      headers: { "Content-Type": "application/json", Origin: "https://studio.example" },
+      body: JSON.stringify({ password: "test-password" }),
+    }), env);
+    return response.headers.get("Set-Cookie")?.split(";", 1)[0] || "";
+  }
+
+  it("encrypts the AI key and preserves protected Markdown during translation", async () => {
+    const { env, values } = memoryEnv();
+    const cookie = await loginCookie(env);
+    const apiKey = "test-api-key-that-is-never-returned";
+    const saveResponse = await worker.fetch(new Request("https://studio.example/api/settings/translation", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiUrl: "https://translation.example/",
+        apiKey,
+        model: "example/translator",
+      }),
+    }), env);
+    const settings = await saveResponse.json() as Record<string, unknown>;
+
+    expect(saveResponse.status).toBe(200);
+    expect(settings).toMatchObject({
+      apiUrl: "https://translation.example/",
+      model: "example/translator",
+      configured: true,
+    });
+    expect(JSON.stringify(settings)).not.toContain(apiKey);
+    expect(values.get("config/translation")).not.toContain(apiKey);
+
+    const providerFetch = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      const payload = JSON.parse(String(init?.body)) as { model: string; messages: Array<{ content: string }> };
+      const source = payload.messages.at(-1)?.content || "";
+      const translated = source
+        .replace("中文标题", "English title")
+        .replace("中文简介", "English description")
+        .replace("普通正文", "Translated paragraph");
+      return Response.json({ choices: [{ message: { content: translated } }] });
+    });
+    vi.stubGlobal("fetch", providerFetch);
+    const translateResponse = await worker.fetch(new Request("https://studio.example/api/translate", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "中文标题",
+        description: "中文简介",
+        body: "普通正文\n\n> 不翻译引用\n\n```sh\nnpm run build\n```",
+        languages: ["en"],
+      }),
+    }), env);
+    const result = await translateResponse.json() as {
+      translations: Array<{ title: string; description: string; body: string }>;
+    };
+
+    expect(translateResponse.status).toBe(200);
+    expect(result.translations[0]).toMatchObject({
+      title: "English title",
+      description: "English description",
+    });
+    expect(result.translations[0].body).toContain("Translated paragraph");
+    expect(result.translations[0].body).toContain("> 不翻译引用");
+    expect(result.translations[0].body).toContain("```sh\nnpm run build\n```");
+    expect(providerFetch).toHaveBeenCalledTimes(3);
+    for (const [url, init] of providerFetch.mock.calls) {
+      expect(String(url)).toBe("https://translation.example/v1/chat/completions");
+      expect(new Headers(init?.headers).get("Authorization")).toBe(`Bearer ${apiKey}`);
+      expect(JSON.parse(String(init?.body)).model).toBe("example/translator");
+    }
+  });
+
+  it("rejects private-network AI API endpoints", async () => {
+    const { env, values } = memoryEnv();
+    const cookie = await loginCookie(env);
+    const response = await worker.fetch(new Request("https://studio.example/api/settings/translation", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiUrl: "https://172.20.0.10/",
+        apiKey: "test-api-key-value",
+        model: "example/translator",
+      }),
+    }), env);
+
+    expect(response.status).toBe(400);
+    expect(await response.json()).toMatchObject({ error: expect.stringContaining("内网") });
+    expect(values.has("config/translation")).toBe(false);
+  });
+
+  it("writes the Chinese source and translations in one Git commit", async () => {
+    const { env } = memoryEnv();
+    const cookie = await loginCookie(env);
+    const sourceSha = "1".repeat(40);
+    const japaneseSha = "2".repeat(40);
+    let blobIndex = 0;
+    const requests: Array<{ path: string; method: string; body?: unknown }> = [];
+    const githubFetch = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = new URL(String(input));
+      const method = init?.method || "GET";
+      const body = typeof init?.body === "string" ? JSON.parse(init.body) : undefined;
+      requests.push({ path: url.pathname, method, body });
+      if (url.pathname.includes("/git/ref/heads/")) return Response.json({ object: { sha: "a".repeat(40) } });
+      if (url.pathname.endsWith(`/git/commits/${"a".repeat(40)}`)) return Response.json({ tree: { sha: "b".repeat(40) } });
+      if (method === "GET" && url.pathname.includes("/git/trees/")) return Response.json({
+        sha: "b".repeat(40),
+        truncated: false,
+        tree: [
+          { path: "content/posts/demo.md", type: "blob", sha: sourceSha },
+          { path: "content/posts/demo.ja.md", type: "blob", sha: japaneseSha },
+        ],
+      });
+      if (url.pathname.endsWith("/git/blobs")) return Response.json({ sha: String(++blobIndex).padStart(40, "0") });
+      if (url.pathname.endsWith("/git/trees")) return Response.json({ sha: "c".repeat(40) });
+      if (url.pathname.endsWith("/git/commits")) return Response.json({ sha: "d".repeat(40) });
+      if (method === "PATCH" && url.pathname.includes("/git/refs/heads/")) return Response.json({ object: { sha: "d".repeat(40) } });
+      return new Response(JSON.stringify({ message: "Unexpected request" }), { status: 500 });
+    });
+    vi.stubGlobal("fetch", githubFetch);
+
+    const sourceContent = "---\ntitle: 演示\npublished: 2026-09-06\ndraft: false\n---\n\n中文正文";
+    const englishContent = "---\ntitle: Demo\npublished: 2026-09-06\ndraft: false\n---\n\nEnglish body";
+    const response = await worker.fetch(new Request("https://studio.example/api/post/bundle", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        source: { path: "content/posts/demo.md", sha: sourceSha, content: sourceContent },
+        translations: [{ language: "en", path: "content/posts/demo.en.md", sha: "", content: englishContent }],
+        deleteTranslations: [{ language: "ja", path: "content/posts/demo.ja.md", sha: japaneseSha }],
+      }),
+    }), env);
+
+    expect(response.status).toBe(200);
+    expect(requests.filter((entry) => entry.path.endsWith("/git/blobs"))).toHaveLength(2);
+    expect(requests.filter((entry) => entry.path.endsWith("/git/trees"))).toHaveLength(1);
+    expect(requests.filter((entry) => entry.path.endsWith("/git/commits") && entry.method === "POST")).toHaveLength(1);
+    expect(requests.filter((entry) => entry.method === "PATCH")).toHaveLength(1);
+    const treeBody = requests.find((entry) => entry.path.endsWith("/git/trees"))?.body as {
+      tree: Array<{ path: string; sha: string | null }>;
+    };
+    expect(treeBody.tree.map((entry) => entry.path)).toEqual([
+      "content/posts/demo.md",
+      "content/posts/demo.en.md",
+      "content/posts/demo.ja.md",
+    ]);
+    expect(treeBody.tree.at(-1)?.sha).toBeNull();
+  });
+});

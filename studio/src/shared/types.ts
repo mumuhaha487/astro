@@ -23,6 +23,37 @@ export interface PostDocument {
   content: string;
 }
 
+export type TranslationLanguage = "en" | "ja";
+
+export interface TranslationDocument extends PostDocument {
+  language: TranslationLanguage;
+}
+
+export interface TranslationReference {
+  language: TranslationLanguage;
+  path: string;
+  sha: string;
+}
+
+export interface PostBundleResult {
+  source: PostDocument;
+  translations: TranslationDocument[];
+}
+
+export interface TranslationResult {
+  language: TranslationLanguage;
+  title: string;
+  description: string;
+  body: string;
+}
+
+export interface TranslationSettingsSummary {
+  apiUrl: string;
+  model: string;
+  configured: boolean;
+  updatedAt?: string;
+}
+
 export interface PostRevision {
   sha: string;
   message: string;
@@ -48,6 +79,8 @@ export interface DraftSummary {
 export interface DraftDocument extends DraftSummary {
   sha: string;
   content: string;
+  translations?: TranslationDocument[];
+  translationTargets?: TranslationLanguage[];
 }
 
 export interface ScheduledPost {
@@ -57,6 +90,8 @@ export interface ScheduledPost {
   title: string;
   publishAt: string;
   content: string;
+  translations?: TranslationDocument[];
+  deleteTranslations?: TranslationReference[];
   createdAt: string;
 }
 
@@ -81,6 +116,7 @@ export interface SessionInfo {
     repository: string;
     branch: string;
   };
+  translation: TranslationSettingsSummary;
 }
 
 export interface ApiErrorShape {

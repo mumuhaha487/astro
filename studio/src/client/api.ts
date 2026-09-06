@@ -2,11 +2,17 @@ import type {
   DraftDocument,
   DraftSummary,
   PostDocument,
+  PostBundleResult,
   PostMeta,
   PostRevision,
   PostRevisionDocument,
   ScheduledPost,
   SessionInfo,
+  TranslationDocument,
+  TranslationLanguage,
+  TranslationReference,
+  TranslationResult,
+  TranslationSettingsSummary,
   WebEmbedRecord,
 } from "../shared/types";
 import type { LinkPreview } from "../shared/link-preview";
@@ -61,6 +67,8 @@ export const api = {
   posts: () => request<{ posts: PostMeta[]; stale?: boolean }>("/api/posts"),
   post: (path: string) =>
     request<PostDocument>(`/api/post?path=${encodeURIComponent(path)}`),
+  postTranslations: (path: string) =>
+    request<{ translations: TranslationDocument[] }>(`/api/post/translations?path=${encodeURIComponent(path)}`),
   history: (path: string) =>
     request<{ revisions: PostRevision[] }>(`/api/history?path=${encodeURIComponent(path)}`),
   postRevision: (path: string, sha: string) =>
@@ -70,6 +78,15 @@ export const api = {
       method: "PUT",
       body: JSON.stringify({ ...document, message }),
     }),
+  savePostBundle: (
+    source: PostDocument,
+    translations: TranslationDocument[],
+    deleteTranslations: TranslationReference[],
+    message: string,
+  ) => request<PostBundleResult>("/api/post/bundle", {
+    method: "PUT",
+    body: JSON.stringify({ source, translations, deleteTranslations, message }),
+  }),
   deletePost: (path: string, sha: string) =>
     request<void>("/api/post", {
       method: "DELETE",
@@ -147,6 +164,15 @@ export const api = {
       body: form,
     });
   },
+  translate: (
+    title: string,
+    description: string,
+    body: string,
+    languages: TranslationLanguage[],
+  ) => request<{ translations: TranslationResult[] }>("/api/translate", {
+    method: "POST",
+    body: JSON.stringify({ title, description, body, languages }),
+  }),
   connectGitHub: (token: string) =>
     request<SessionInfo["github"]>("/api/settings/github", {
       method: "PUT",
@@ -154,6 +180,13 @@ export const api = {
     }),
   disconnectGitHub: () =>
     request<void>("/api/settings/github", { method: "DELETE" }),
+  saveTranslationSettings: (apiUrl: string, apiKey: string, model: string) =>
+    request<TranslationSettingsSummary>("/api/settings/translation", {
+      method: "PUT",
+      body: JSON.stringify({ apiUrl, apiKey, model }),
+    }),
+  clearTranslationSettings: () =>
+    request<void>("/api/settings/translation", { method: "DELETE" }),
   changePassword: (password: string) =>
     request<void>("/api/settings/password", {
       method: "PUT",

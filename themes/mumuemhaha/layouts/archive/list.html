@@ -2,7 +2,7 @@
 {{- $posts := partial "sorted-posts.html" . -}}
 {{- $paginator := .Paginate $posts 30 -}}
 <section class="content-page" data-responsive-post-list data-post-list-total="{{ len $posts }}" data-post-list-page="{{ $paginator.PageNumber }}">
-  <header class="page-heading page-heading-row"><div><p>ARCHIVE</p><h1>文章归档</h1><span>按时间查看 {{ len $posts }} 篇文章。</span></div><a class="button button-ghost" href="/blog/">返回博客</a></header>
+  <header class="page-heading page-heading-row"><div><p>ARCHIVE</p><h1>{{ i18n "archive" }}</h1><span>{{ printf (i18n "archive_description") (len $posts) }}</span></div><a class="button button-ghost" href="{{ "blog/" | relLangURL }}">{{ i18n "back_blog" }}</a></header>
   <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
   {{ partial "pagination.html" $paginator }}
 </section>

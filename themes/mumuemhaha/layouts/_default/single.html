@@ -1,18 +1,24 @@
 {{ define "main" }}
+{{- $sourcePage := . -}}
+{{- range .AllTranslations -}}{{- if eq .Language.Lang "zh" -}}{{- $sourcePage = . -}}{{- end -}}{{- end -}}
+{{- $commentTerm := strings.TrimPrefix "/" $sourcePage.RelPermalink -}}
+{{- $giscusLanguage := cond (eq site.Language.Lang "zh") "zh-CN" site.Language.Lang -}}
+{{- $commentsEnabled := true -}}
+{{- if isset .Params "comment" -}}{{- $commentsEnabled = .Params.comment -}}{{- end -}}
 <article class="article-shell">
   <header class="article-header">
-    <a class="back-link" href="/blog/">{{ partial "icon.html" (dict "name" "arrow-left") }}返回博客</a>
+    <a class="back-link" href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "back_blog" }}</a>
     <div class="article-labels">
-      {{ if .Params.pinned }}<span class="badge badge-accent">{{ partial "icon.html" (dict "name" "pin") }}置顶</span>{{ end }}
-      {{ with .Params.category }}<a class="badge" href="{{ printf "/category/%s/" (. | urlize) }}">{{ . }}</a>{{ end }}
+      {{ if .Params.pinned }}<span class="badge badge-accent">{{ partial "icon.html" (dict "name" "pin") }}{{ i18n "pinned" }}</span>{{ end }}
+      {{ with .Params.category }}<a class="badge" href="{{ printf "%s%s/" ("category/" | relLangURL) (. | urlize) }}">{{ . }}</a>{{ end }}
     </div>
     <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
     <div class="article-meta">
       <span>{{ partial "icon.html" (dict "name" "calendar") }}{{ .Date.Format "2006-01-02" }}</span>
-      <span>{{ partial "icon.html" (dict "name" "clock") }}{{ .ReadingTime }} 分钟</span>
-      <span>{{ partial "icon.html" (dict "name" "file-text") }}{{ .WordCount }} 字</span>
+      <span>{{ partial "icon.html" (dict "name" "clock") }}{{ printf (i18n "reading_time") .ReadingTime }}</span>
+      <span>{{ partial "icon.html" (dict "name" "file-text") }}{{ printf (i18n "word_count") .WordCount }}</span>
     </div>
-    {{ with .Params.tags }}<div class="tag-row">{{ range . }}<a href="{{ printf "/tags/%s/" (. | urlize) }}"># {{ . }}</a>{{ end }}</div>{{ end }}
+    {{ with .Params.tags }}<div class="tag-row">{{ range . }}<a href="{{ printf "%s%s/" ("tags/" | relLangURL) (. | urlize) }}"># {{ . }}</a>{{ end }}</div>{{ end }}
     <span class="visually-hidden" data-pagefind-body>{{ .Params.category }} {{ delimit (.Params.tags | default slice) " " }}</span>
   </header>
   {{ with .Params.image }}<figure class="article-cover"><img src="{{ . | safeURL }}" alt="{{ $.Title }}" loading="eager"></figure>{{ end }}
@@ -20,15 +26,21 @@
     <div class="article-main">
       <div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ $.Content }}</div>
       <footer class="article-footer">
-        <div><strong>木木em哈哈</strong><span>以 CC BY-NC-SA 4.0 许可发布</span></div>
-        <button class="button button-ghost" type="button" data-hugo-share>{{ partial "icon.html" (dict "name" "share") }}分享</button>
+        <div><strong>木木em哈哈</strong><span>{{ i18n "license_notice" }}</span></div>
+        <button class="button button-ghost" type="button" data-hugo-share>{{ partial "icon.html" (dict "name" "share") }}{{ i18n "share" }}</button>
       </footer>
       <nav class="article-neighbors">
-        {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><small>上一篇</small><strong>{{ .Title }}</strong></a>{{ else }}<span></span>{{ end }}
-        {{ with .NextInSection }}<a href="{{ .RelPermalink }}"><small>下一篇</small><strong>{{ .Title }}</strong></a>{{ end }}
+        {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><small>{{ i18n "previous_article" }}</small><strong>{{ .Title }}</strong></a>{{ else }}<span></span>{{ end }}
+        {{ with .NextInSection }}<a href="{{ .RelPermalink }}"><small>{{ i18n "next_article" }}</small><strong>{{ .Title }}</strong></a>{{ end }}
       </nav>
     </div>
-    {{ if .TableOfContents }}<aside class="article-toc"><span>文章目录</span>{{ .TableOfContents }}</aside>{{ end }}
+    {{ if .TableOfContents }}<aside class="article-toc"><span>{{ i18n "article_toc" }}</span>{{ .TableOfContents }}</aside>{{ end }}
   </div>
+  {{- if $commentsEnabled }}
+  <section class="article-comments" data-pagefind-ignore>
+    <h2>{{ i18n "comments" }}</h2>
+    <script src="https://giscus.app/client.js" data-repo="mumuhaha487/astro" data-repo-id="R_kgDOPjTkdA" data-category="Announcements" data-category-id="DIC_kwDOPjTkdM4CuiIf" data-mapping="specific" data-term="{{ $commentTerm }}" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="preferred_color_scheme" data-lang="{{ $giscusLanguage }}" data-loading="lazy" crossorigin="anonymous" async></script>
+  </section>
+  {{- end }}
 </article>
 {{ end }}

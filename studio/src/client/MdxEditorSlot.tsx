@@ -238,7 +238,10 @@ function AutoLinkPaste({ onResolveTitle }: { onResolveTitle: (url: string) => Pr
             const link = $getNodeByKey(linkNodeKey);
             if (!$isLinkNode(link) || link.getURL() !== url || link.getTextContent() !== url) return;
             const text = link.getFirstChild();
-            if ($isTextNode(text)) text.setTextContent(resolvedTitle);
+            if ($isTextNode(text)) {
+              text.setTextContent(resolvedTitle);
+              link.selectEnd();
+            }
           });
         }).catch(() => undefined);
         return true;

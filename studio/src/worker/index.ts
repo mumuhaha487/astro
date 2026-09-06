@@ -5,15 +5,32 @@ import type {
   DraftDocument,
   DraftSummary,
   PostDocument,
+  PostBundleResult,
   PostMeta,
   PostRevision,
   PostRevisionDocument,
   ScheduledPost,
   SessionInfo,
+  TranslationDocument,
+  TranslationLanguage,
+  TranslationReference,
+  TranslationResult,
+  TranslationSettingsSummary,
   WebEmbedRecord,
 } from "../shared/types";
 import { validateScheduleTime } from "../shared/schedule";
 import { fetchLinkPreview, LinkPreviewError } from "../shared/link-preview";
+import {
+  DEFAULT_TRANSLATION_API_URL,
+  DEFAULT_TRANSLATION_MODEL,
+  isTranslationLanguage,
+  isTranslationPath,
+  protectMarkdownForTranslation,
+  restoreProtectedMarkdown,
+  splitTranslationText,
+  TRANSLATION_LANGUAGES,
+  translationPath,
+} from "../shared/translation";
 import { clampWebEmbedHeight } from "../shared/web-embed";
 import {
   MAX_WEB_FILE_BYTES,
@@ -73,6 +90,14 @@ interface StoredGitHubToken {
   iv: string;
   cipher: string;
   login: string;
+  updatedAt: string;
+}
+
+interface StoredTranslationSettings {
+  apiUrl: string;
+  model: string;
+  iv: string;
+  cipher: string;
   updatedAt: string;
 }
 
@@ -209,6 +234,10 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
     const path = assertPostPath(url.searchParams.get("path"));
     return json(await getPost(env, path));
   }
+  if (url.pathname === "/api/post/translations" && request.method === "GET") {
+    const path = assertSourcePostPath(url.searchParams.get("path"));
+    return json({ translations: await getPostTranslations(env, path) });
+  }
   if (url.pathname === "/api/history" && request.method === "GET") {
     const path = assertPostPath(url.searchParams.get("path"));
     return json({ revisions: await listPostHistory(env, path) });
@@ -219,6 +248,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/post" && request.method === "PUT") {
     return json(await savePost(env, await readJson(request)));
+  }
+  if (url.pathname === "/api/post/bundle" && request.method === "PUT") {
+    return json(await savePostBundle(env, await readJson(request)));
   }
   if (url.pathname === "/api/post" && request.method === "DELETE") {
     await deletePost(env, await readJson(request));
@@ -256,11 +288,21 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   if (url.pathname === "/api/web-embeds" && request.method === "POST") {
     return json(await uploadWebEmbed(env, request));
   }
+  if (url.pathname === "/api/translate" && request.method === "POST") {
+    return json({ translations: await translateArticle(env, await readJson(request)) });
+  }
   if (url.pathname === "/api/settings/github" && request.method === "PUT") {
     return json(await connectGitHub(env, await readJson(request)));
   }
   if (url.pathname === "/api/settings/github" && request.method === "DELETE") {
     await env.DRAFTS.delete("config/github-token");
+    return new Response(null, { status: 204 });
+  }
+  if (url.pathname === "/api/settings/translation" && request.method === "PUT") {
+    return json(await saveTranslationSettings(env, await readJson(request)));
+  }
+  if (url.pathname === "/api/settings/translation" && request.method === "DELETE") {
+    await env.DRAFTS.delete("config/translation");
     return new Response(null, { status: 204 });
   }
   if (url.pathname === "/api/settings/password" && request.method === "PUT") {
@@ -288,6 +330,7 @@ async function login(request: Request, env: Env): Promise<Response> {
 
 async function getSessionInfo(env: Env): Promise<SessionInfo> {
   const stored = await readJsonObject<StoredGitHubToken>(env.DRAFTS, "config/github-token");
+  const translation = await getTranslationSettingsSummary(env);
   return {
     authenticated: true,
     github: {
@@ -296,6 +339,7 @@ async function getSessionInfo(env: Env): Promise<SessionInfo> {
       repository: `${env.GITHUB_OWNER}/${env.GITHUB_REPO}`,
       branch: env.GITHUB_BRANCH,
     },
+    translation,
   };
 }
 
@@ -329,7 +373,8 @@ async function listPosts(
       (item) =>
         item.type === "blob" &&
         item.path.startsWith(POST_PREFIX) &&
-        item.path.toLowerCase().endsWith(".md"),
+        item.path.toLowerCase().endsWith(".md") &&
+        !isTranslationPath(item.path),
     );
     const knownPosts = new Map(fallbackPosts.map((post) => [post.path, post]));
     const posts = await mapConcurrent(files, 8, async (file) => {
@@ -364,6 +409,19 @@ async function getPost(env: Env, path: string): Promise<PostDocument> {
     throw new HttpError(502, "GitHub 返回了不支持的文章编码");
   }
   return { path, sha: result.sha, content: fromBase64(result.content) };
+}
+
+async function getPostTranslations(env: Env, sourcePath: string): Promise<TranslationDocument[]> {
+  const translations = await Promise.all(TRANSLATION_LANGUAGES.map(async (language) => {
+    try {
+      const document = await getPost(env, translationPath(sourcePath, language));
+      return { ...document, language } satisfies TranslationDocument;
+    } catch (error) {
+      if (error instanceof HttpError && error.status === 404) return null;
+      throw error;
+    }
+  }));
+  return translations.filter((translation): translation is TranslationDocument => Boolean(translation));
 }
 
 async function listPostHistory(env: Env, path: string): Promise<PostRevision[]> {
@@ -420,22 +478,196 @@ async function savePost(env: Env, input: unknown): Promise<PostDocument> {
   return { path, sha: result.content.sha, content: body.content };
 }
 
-async function deletePost(env: Env, input: unknown): Promise<void> {
-  const body = input as { path?: string; sha?: string };
-  const path = assertPostPath(body.path);
-  if (!body.sha) throw new HttpError(400, "缺少文章版本信息");
+async function savePostBundle(env: Env, input: unknown): Promise<PostBundleResult> {
+  const body = input as {
+    source?: PostDocument;
+    translations?: TranslationDocument[];
+    deleteTranslations?: TranslationReference[];
+    message?: string;
+  };
+  if (!body.source) throw new HttpError(400, "缺少中文原文");
+  const sourcePath = assertSourcePostPath(body.source.path);
+  if (typeof body.source.content !== "string") throw new HttpError(400, "文章内容无效");
+  assertByteLength(body.source.content, MAX_DOCUMENT_BYTES, "文章内容不能超过 2 MB");
+  const languages = new Set<TranslationLanguage>();
+  const translations = (body.translations || []).map((document) => {
+    if (!isTranslationLanguage(document.language) || languages.has(document.language)) {
+      throw new HttpError(400, "翻译语言重复或无效");
+    }
+    languages.add(document.language);
+    const path = assertPostPath(document.path);
+    if (path !== translationPath(sourcePath, document.language)) {
+      throw new HttpError(400, "翻译文件路径与中文原文不匹配");
+    }
+    if (typeof document.content !== "string") throw new HttpError(400, "翻译内容无效");
+    assertByteLength(document.content, MAX_DOCUMENT_BYTES, "翻译文章不能超过 2 MB");
+    return { ...document, path };
+  });
+  const deleteTranslations = (body.deleteTranslations || []).map((document) => {
+    if (!isTranslationLanguage(document.language) || languages.has(document.language)) {
+      throw new HttpError(400, "待删除翻译语言重复或无效");
+    }
+    languages.add(document.language);
+    const path = assertPostPath(document.path);
+    if (path !== translationPath(sourcePath, document.language)) {
+      throw new HttpError(400, "待删除翻译路径与中文原文不匹配");
+    }
+    return { ...document, path };
+  });
+  const result = await commitPostBundle(
+    env,
+    { ...body.source, path: sourcePath },
+    translations,
+    deleteTranslations,
+    cleanCommitMessage(body.message, `更新多语言文章：${sourcePath.slice(POST_PREFIX.length)}`),
+  );
+  await upsertPostCache(env, parsePostMeta(result.source.path, result.source.sha, result.source.content));
+  return result;
+}
+
+async function commitPostBundle(
+  env: Env,
+  source: PostDocument,
+  translations: TranslationDocument[],
+  deleteTranslations: TranslationReference[],
+  message: string,
+): Promise<PostBundleResult> {
   const token = await requireGitHubToken(env);
+  const reference = await githubJson<{ object: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/ref/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "GET" },
+    token,
+  );
+  const parent = await githubJson<{ tree: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${reference.object.sha}`,
+    { method: "GET" },
+    token,
+  );
+  const currentTree = await githubJson<GitHubTreeResponse>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees/${parent.tree.sha}?recursive=1`,
+    { method: "GET" },
+    token,
+  );
+  if (currentTree.truncated) throw new HttpError(502, "仓库文件树过大，无法安全提交多语言文章");
+  const currentFiles = new Map(currentTree.tree.filter((entry) => entry.type === "blob").map((entry) => [entry.path, entry.sha]));
+  const writes: Array<PostDocument | TranslationDocument> = [source, ...translations];
+  for (const document of writes) {
+    const currentSha = currentFiles.get(document.path);
+    if ((document.sha && currentSha !== document.sha) || (!document.sha && currentSha)) {
+      throw new HttpError(409, "仓库内容已变化，请刷新后再试", "GITHUB_CONFLICT");
+    }
+  }
+  for (const document of deleteTranslations) {
+    const currentSha = currentFiles.get(document.path);
+    if (document.sha && currentSha && currentSha !== document.sha) {
+      throw new HttpError(409, "翻译文件已变化，请刷新后再试", "GITHUB_CONFLICT");
+    }
+  }
+
+  const blobs = await mapConcurrent(writes, 4, async (document) => {
+    const blob = await githubJson<{ sha: string }>(
+      env,
+      `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/blobs`,
+      { method: "POST", body: JSON.stringify({ content: toBase64(document.content), encoding: "base64" }) },
+      token,
+    );
+    return { document, sha: blob.sha };
+  });
+  const treeEntries: Array<{ path: string; mode: string; type: string; sha: string | null }> = [
+    ...blobs.map(({ document, sha }) => ({ path: document.path, mode: "100644", type: "blob", sha })),
+    ...deleteTranslations
+      .filter((document) => currentFiles.has(document.path))
+      .map((document) => ({ path: document.path, mode: "100644", type: "blob", sha: null })),
+  ];
+  const tree = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
+    { method: "POST", body: JSON.stringify({ base_tree: parent.tree.sha, tree: treeEntries }) },
+    token,
+  );
+  const commit = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
+    { method: "POST", body: JSON.stringify({ message, tree: tree.sha, parents: [reference.object.sha] }) },
+    token,
+  );
   await githubJson(
     env,
-    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(path)}`,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) },
+    token,
+  );
+  const byPath = new Map(blobs.map((blob) => [blob.document.path, blob.sha]));
+  return {
+    source: { ...source, sha: byPath.get(source.path) || "" },
+    translations: translations.map((document) => ({
+      ...document,
+      sha: byPath.get(document.path) || "",
+    })),
+  };
+}
+
+async function deletePost(env: Env, input: unknown): Promise<void> {
+  const body = input as { path?: string; sha?: string };
+  const path = assertSourcePostPath(body.path);
+  if (!body.sha) throw new HttpError(400, "缺少文章版本信息");
+  const token = await requireGitHubToken(env);
+  const reference = await githubJson<{ object: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/ref/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "GET" },
+    token,
+  );
+  const parent = await githubJson<{ tree: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${reference.object.sha}`,
+    { method: "GET" },
+    token,
+  );
+  const currentTree = await githubJson<GitHubTreeResponse>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees/${parent.tree.sha}?recursive=1`,
+    { method: "GET" },
+    token,
+  );
+  const files = new Map(currentTree.tree.filter((entry) => entry.type === "blob").map((entry) => [entry.path, entry.sha]));
+  if (files.get(path) !== body.sha) {
+    throw new HttpError(409, "仓库内容已变化，请刷新后再试", "GITHUB_CONFLICT");
+  }
+  const familyPaths = [path, ...TRANSLATION_LANGUAGES.map((language) => translationPath(path, language))]
+    .filter((entry) => files.has(entry));
+  const tree = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
     {
-      method: "DELETE",
+      method: "POST",
       body: JSON.stringify({
-        message: `删除文章：${path.slice(POST_PREFIX.length)}`,
-        sha: body.sha,
-        branch: env.GITHUB_BRANCH,
+        base_tree: parent.tree.sha,
+        tree: familyPaths.map((entry) => ({ path: entry, mode: "100644", type: "blob", sha: null })),
       }),
     },
+    token,
+  );
+  const commit = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        message: `删除多语言文章：${path.slice(POST_PREFIX.length)}`,
+        tree: tree.sha,
+        parents: [reference.object.sha],
+      }),
+    },
+    token,
+  );
+  await githubJson(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) },
     token,
   );
   await removePostFromCache(env, path);
@@ -470,6 +702,12 @@ async function saveDraft(env: Env, input: unknown): Promise<DraftSummary> {
   if (path && !path.startsWith("draft:") && !isPostPath(path)) {
     throw new HttpError(400, "草稿路径无效");
   }
+  const translationTargets = [...new Set((body.translationTargets || []).filter(isTranslationLanguage))];
+  const translations = (body.translations || []).filter((translation) => {
+    if (!isTranslationLanguage(translation.language) || typeof translation.content !== "string") return false;
+    assertByteLength(translation.content, MAX_DOCUMENT_BYTES, "翻译草稿不能超过 2 MB");
+    return true;
+  }).slice(0, TRANSLATION_LANGUAGES.length);
   const document: DraftDocument = {
     key,
     path,
@@ -478,11 +716,19 @@ async function saveDraft(env: Env, input: unknown): Promise<DraftSummary> {
     updatedAt: new Date().toISOString(),
     isNew: body.isNew === true,
     content: body.content,
+    translations,
+    translationTargets,
   };
   await env.DRAFTS.put(`drafts/${key}`, JSON.stringify(document), {
     httpMetadata: { contentType: "application/json" },
   });
-  const { content: _content, sha: _sha, ...summary } = document;
+  const {
+    content: _content,
+    sha: _sha,
+    translations: _translations,
+    translationTargets: _translationTargets,
+    ...summary
+  } = document;
   return summary;
 }
 
@@ -492,7 +738,7 @@ async function deleteDraft(env: Env, key: string | undefined): Promise<void> {
 
 async function saveScheduledPost(env: Env, input: unknown): Promise<ScheduledPost> {
   const body = input as Partial<ScheduledPost>;
-  const path = assertPostPath(body.path);
+  const path = assertSourcePostPath(body.path);
   if (typeof body.content !== "string") throw new HttpError(400, "定时发布内容无效");
   assertByteLength(body.content, MAX_DOCUMENT_BYTES, "文章内容不能超过 2 MB");
   const publishAt = typeof body.publishAt === "string" ? new Date(body.publishAt) : new Date(Number.NaN);
@@ -504,6 +750,20 @@ async function saveScheduledPost(env: Env, input: unknown): Promise<ScheduledPos
     throw new HttpError(400, "定时发布时间不能超过 7 天");
   }
   await requireGitHubToken(env);
+  const translations = (body.translations || []).map((document) => {
+    if (!isTranslationLanguage(document.language) || document.path !== translationPath(path, document.language)) {
+      throw new HttpError(400, "定时翻译文件无效");
+    }
+    if (typeof document.content !== "string") throw new HttpError(400, "定时翻译内容无效");
+    assertByteLength(document.content, MAX_DOCUMENT_BYTES, "定时翻译内容不能超过 2 MB");
+    return document;
+  });
+  const deleteTranslations = (body.deleteTranslations || []).map((document) => {
+    if (!isTranslationLanguage(document.language) || document.path !== translationPath(path, document.language)) {
+      throw new HttpError(400, "待删除定时翻译文件无效");
+    }
+    return document;
+  });
   const schedule: ScheduledPost = {
     key: crypto.randomUUID().replaceAll("-", ""),
     path,
@@ -511,6 +771,8 @@ async function saveScheduledPost(env: Env, input: unknown): Promise<ScheduledPos
     title: typeof body.title === "string" ? body.title.slice(0, 200) : "未命名文章",
     publishAt: publishAt.toISOString(),
     content: body.content,
+    translations,
+    deleteTranslations,
     createdAt: new Date().toISOString(),
   };
   await env.DRAFTS.put(`schedules/${schedule.key}`, JSON.stringify(schedule), {
@@ -525,11 +787,11 @@ async function publishScheduledPosts(env: Env): Promise<void> {
   await mapConcurrent(listing.objects, 3, async (entry) => {
     const schedule = await readJsonObject<ScheduledPost>(env.DRAFTS, entry.key);
     if (!schedule || new Date(schedule.publishAt).getTime() > now) return;
-    await savePost(env, {
-      path: schedule.path,
-      sha: schedule.sha,
-      content: schedule.content,
-      message: `定时发布文章：${schedule.title}`,
+    await savePostBundle(env, {
+      source: { path: schedule.path, sha: schedule.sha, content: schedule.content },
+      translations: schedule.translations || [],
+      deleteTranslations: schedule.deleteTranslations || [],
+      message: `定时发布多语言文章：${schedule.title}`,
     });
     await env.DRAFTS.delete(entry.key);
   });
@@ -980,6 +1242,201 @@ async function connectGitHub(
   };
 }
 
+async function getTranslationSettingsSummary(env: Env): Promise<TranslationSettingsSummary> {
+  const stored = await readJsonObject<StoredTranslationSettings>(env.DRAFTS, "config/translation");
+  return {
+    apiUrl: stored?.apiUrl || DEFAULT_TRANSLATION_API_URL,
+    model: stored?.model || DEFAULT_TRANSLATION_MODEL,
+    configured: Boolean(stored?.cipher),
+    updatedAt: stored?.updatedAt,
+  };
+}
+
+async function saveTranslationSettings(env: Env, input: unknown): Promise<TranslationSettingsSummary> {
+  const body = input as { apiUrl?: string; apiKey?: string; model?: string };
+  const existing = await readJsonObject<StoredTranslationSettings>(env.DRAFTS, "config/translation");
+  const apiUrl = normalizeTranslationApiUrl(body.apiUrl ?? existing?.apiUrl ?? DEFAULT_TRANSLATION_API_URL);
+  const model = normalizeTranslationModel(body.model ?? existing?.model ?? DEFAULT_TRANSLATION_MODEL);
+  const apiKey = typeof body.apiKey === "string" ? body.apiKey.trim() : "";
+  let encrypted = existing ? { iv: existing.iv, cipher: existing.cipher } : null;
+  if (apiKey) {
+    if (apiKey.length < 12 || apiKey.length > 1000) throw new HttpError(400, "AI API 密钥格式无效");
+    encrypted = await encryptSecret(env, apiKey);
+  }
+  if (!encrypted) throw new HttpError(400, "请填写 AI API 密钥");
+  const stored: StoredTranslationSettings = {
+    apiUrl,
+    model,
+    ...encrypted,
+    updatedAt: new Date().toISOString(),
+  };
+  await env.DRAFTS.put("config/translation", JSON.stringify(stored), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  return { apiUrl, model, configured: true, updatedAt: stored.updatedAt };
+}
+
+async function requireTranslationSettings(env: Env): Promise<StoredTranslationSettings & { apiKey: string }> {
+  const stored = await readJsonObject<StoredTranslationSettings>(env.DRAFTS, "config/translation");
+  if (!stored?.cipher) {
+    throw new HttpError(428, "请先在设置中填写 AI API 密钥", "TRANSLATION_NOT_CONFIGURED");
+  }
+  try {
+    return { ...stored, apiKey: await decryptSecret(env, stored) };
+  } catch {
+    throw new HttpError(500, "AI API 密钥无法解密，请在设置中重新保存");
+  }
+}
+
+async function translateArticle(env: Env, input: unknown): Promise<TranslationResult[]> {
+  const body = input as {
+    title?: string;
+    description?: string;
+    body?: string;
+    languages?: unknown[];
+  };
+  const title = typeof body.title === "string" ? body.title.trim() : "";
+  const description = typeof body.description === "string" ? body.description.trim() : "";
+  const markdown = typeof body.body === "string" ? body.body : "";
+  if (!title) throw new HttpError(400, "请先填写文章标题");
+  assertByteLength(markdown, MAX_DOCUMENT_BYTES, "待翻译正文不能超过 2 MB");
+  const languages = [...new Set((body.languages || []).filter(isTranslationLanguage))];
+  if (!languages.length) throw new HttpError(400, "请至少选择一种翻译语言");
+  const settings = await requireTranslationSettings(env);
+
+  return mapConcurrent(languages, 2, async (language) => ({
+    language,
+    title: await translateProtectedValue(settings, title, language, "文章标题"),
+    description: description
+      ? await translateProtectedValue(settings, description, language, "文章简介")
+      : "",
+    body: markdown
+      ? await translateProtectedValue(settings, markdown, language, "Markdown 正文")
+      : "",
+  }));
+}
+
+async function translateProtectedValue(
+  settings: StoredTranslationSettings & { apiKey: string },
+  source: string,
+  language: TranslationLanguage,
+  contentType: string,
+): Promise<string> {
+  const protectedMarkdown = protectMarkdownForTranslation(source);
+  const chunks = splitTranslationText(protectedMarkdown.text);
+  const translatedChunks = await mapConcurrent(chunks, 2, (chunk) =>
+    requestTranslation(settings, chunk.text, language, contentType));
+  const translated = translatedChunks.map((chunk, index) => `${chunk}${chunks[index].separator}`).join("");
+  try {
+    return restoreProtectedMarkdown(translated, protectedMarkdown).trim();
+  } catch (error) {
+    throw new HttpError(
+      502,
+      error instanceof Error ? error.message : "翻译结果没有完整保留受保护内容，请重试",
+    );
+  }
+}
+
+async function requestTranslation(
+  settings: StoredTranslationSettings & { apiKey: string },
+  source: string,
+  language: TranslationLanguage,
+  contentType: string,
+): Promise<string> {
+  const languageName = language === "en" ? "English" : "Japanese";
+  const endpoint = translationChatEndpoint(settings.apiUrl);
+  let response: Response;
+  try {
+    response = await fetch(endpoint, {
+      method: "POST",
+      headers: {
+        Authorization: `Bearer ${settings.apiKey}`,
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({
+        model: settings.model,
+        temperature: 0.1,
+        stream: false,
+        messages: [
+          {
+            role: "system",
+            content: [
+              `Translate Chinese ${contentType} into natural ${languageName}.`,
+              "Return only the translated content without commentary or wrapper fences.",
+              "Keep Markdown structure, whitespace-sensitive syntax, and all placeholder tokens exactly unchanged.",
+              "Never translate, edit, remove, duplicate, or reorder tokens beginning with __ASTRO_TRANSLATION_PROTECTED.",
+              "Keep product names, commands, identifiers, and technical terminology accurate.",
+            ].join(" "),
+          },
+          { role: "user", content: source },
+        ],
+      }),
+    });
+  } catch {
+    throw new HttpError(502, "无法连接 AI 翻译服务，请检查 API 地址");
+  }
+  if (!response.ok) {
+    if (response.status === 401 || response.status === 403) {
+      throw new HttpError(502, "AI API 密钥无效或没有模型权限");
+    }
+    if (response.status === 429) throw new HttpError(502, "AI 翻译请求过于频繁，请稍后重试");
+    throw new HttpError(502, `AI 翻译服务返回错误 (${response.status})`);
+  }
+  const payload = await response.json().catch(() => null) as {
+    choices?: Array<{ message?: { content?: unknown } }>;
+  } | null;
+  const content = payload?.choices?.[0]?.message?.content;
+  if (typeof content !== "string" || !content.trim()) {
+    throw new HttpError(502, "AI 翻译服务没有返回有效内容");
+  }
+  return cleanTranslationOutput(content);
+}
+
+function normalizeTranslationApiUrl(value: string): string {
+  let url: URL;
+  try {
+    url = new URL(value.trim());
+  } catch {
+    throw new HttpError(400, "AI API 地址无效");
+  }
+  if (url.protocol !== "https:" || url.username || url.password) {
+    throw new HttpError(400, "AI API 地址必须使用 HTTPS");
+  }
+  const host = url.hostname.toLowerCase();
+  const privateIpv4 = /^(?:0\.|127\.|10\.|169\.254\.|192\.168\.)/.test(host)
+    || /^172\.(?:1[6-9]|2\d|3[01])\./.test(host)
+    || /^100\.(?:6[4-9]|[7-9]\d|1[01]\d|12[0-7])\./.test(host);
+  const privateIpv6 = ["[::]", "[::1]"].includes(host)
+    || /^\[(?:fc|fd|fe[89ab])/i.test(host);
+  if (host === "localhost" || host.endsWith(".local") || privateIpv4 || privateIpv6) {
+    throw new HttpError(400, "AI API 地址不能指向本地或内网");
+  }
+  url.hash = "";
+  url.search = "";
+  return url.toString();
+}
+
+function normalizeTranslationModel(value: string): string {
+  const model = value.trim();
+  if (!/^[a-zA-Z0-9._:/-]{2,160}$/.test(model)) throw new HttpError(400, "AI 模型名称无效");
+  return model;
+}
+
+function translationChatEndpoint(apiUrl: string): string {
+  const url = new URL(apiUrl);
+  const path = url.pathname.replace(/\/+$/, "");
+  if (/\/chat\/completions$/i.test(path)) return url.toString();
+  url.pathname = /\/v1$/i.test(path) ? `${path}/chat/completions` : `${path}/v1/chat/completions`;
+  return url.toString();
+}
+
+function cleanTranslationOutput(value: string): string {
+  let output = value.trim().replace(/^<think>[\s\S]*?<\/think>\s*/i, "");
+  const fenced = output.match(/^```(?:markdown|md|text)?\s*\r?\n([\s\S]*?)\r?\n```$/i);
+  if (fenced) output = fenced[1];
+  return output.trim();
+}
+
 async function changePassword(env: Env, input: unknown): Promise<void> {
   const body = input as { password?: string };
   const password = typeof body.password === "string" ? body.password : "";
@@ -1245,6 +1702,12 @@ function assertPostPath(value: unknown): string {
     throw new HttpError(400, "文章路径无效");
   }
   return value;
+}
+
+function assertSourcePostPath(value: unknown): string {
+  const path = assertPostPath(value);
+  if (isTranslationPath(path)) throw new HttpError(400, "请选择中文原文，而不是语言文件");
+  return path;
 }
 
 function assertCommitSha(value: string | null): string {

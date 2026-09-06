@@ -9,7 +9,7 @@ const postsRoot = path.join(repositoryRoot, "content", "posts");
 const outputPath = path.join(studioRoot, "public", "post-index.json");
 
 const files = (await readdir(postsRoot, { recursive: true, withFileTypes: true }))
-  .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".md"))
+  .filter((entry) => entry.isFile() && entry.name.toLowerCase().endsWith(".md") && !/\.(?:en|ja)\.md$/i.test(entry.name))
   .map((entry) => path.join(entry.parentPath, entry.name));
 
 const posts = await Promise.all(

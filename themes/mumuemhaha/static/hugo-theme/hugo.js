@@ -2,8 +2,36 @@
   const $ = (selector, root = document) => root.querySelector(selector);
   const $$ = (selector, root = document) => [...root.querySelectorAll(selector)];
   const section = document.body.dataset.section || "home";
+  const language = document.body.dataset.lang || "zh";
+  const locale = language === "ja" ? "ja-JP" : language === "en" ? "en-US" : "zh-CN";
+  const messages = {
+    zh: {
+      searchLoading: "正在搜索...", searchHint: "输入关键词开始搜索", searchCount: (count) => `找到 ${count} 个结果`,
+      searchEmpty: "没有找到相关内容", searchError: "搜索索引暂时不可用，请稍后重试",
+      previous: "上一页", next: "下一页", page: (page) => `第 ${page} 页`, pageSummary: (page, total) => `第 ${page} / ${total} 页`,
+      articlePagination: "文章分页", passwordError: "密码错误，请重试",
+    },
+    en: {
+      searchLoading: "Searching...", searchHint: "Enter a keyword to search", searchCount: (count) => `${count} results found`,
+      searchEmpty: "No matching content", searchError: "The search index is temporarily unavailable",
+      previous: "Previous page", next: "Next page", page: (page) => `Page ${page}`, pageSummary: (page, total) => `Page ${page} of ${total}`,
+      articlePagination: "Article pages", passwordError: "Incorrect password. Please try again.",
+    },
+    ja: {
+      searchLoading: "検索中...", searchHint: "キーワードを入力してください", searchCount: (count) => `${count} 件見つかりました`,
+      searchEmpty: "該当する内容がありません", searchError: "検索インデックスを一時的に利用できません",
+      previous: "前のページ", next: "次のページ", page: (page) => `${page} ページ`, pageSummary: (page, total) => `${page} / ${total} ページ`,
+      articlePagination: "記事ページ", passwordError: "パスワードが違います。もう一度お試しください。",
+    },
+  }[language] || null;
+  const text = messages || {
+    searchLoading: "Searching...", searchHint: "Enter a keyword to search", searchCount: (count) => `${count} results found`,
+    searchEmpty: "No matching content", searchError: "The search index is temporarily unavailable",
+    previous: "Previous page", next: "Next page", page: (page) => `Page ${page}`, pageSummary: (page, total) => `Page ${page} of ${total}`,
+    articlePagination: "Article pages", passwordError: "Incorrect password. Please try again.",
+  };
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
-  const numberFormatter = new Intl.NumberFormat("zh-CN");
+  const numberFormatter = new Intl.NumberFormat(locale);
   const statAnimations = new WeakMap();
   const umami = {
     origin: "https://umami.vmss.cn",
@@ -51,7 +79,7 @@
     }
     const clock = $("#home-clock");
     if (clock) {
-      const update = () => { clock.textContent = new Intl.DateTimeFormat("zh-CN", { dateStyle: "medium", timeStyle: "medium", hour12: false }).format(new Date()); };
+      const update = () => { clock.textContent = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium", hour12: false }).format(new Date()); };
       update();
       setInterval(update, 1000);
     }
@@ -209,7 +237,7 @@
         results.append(link);
       }
       pagination.hidden = totalPages <= 1;
-      pageStatus.textContent = `第 ${page} / ${Math.max(1, totalPages)} 页`;
+      pageStatus.textContent = text.pageSummary(page, Math.max(1, totalPages));
       previousButton.disabled = page <= 1;
       nextButton.disabled = page >= totalPages;
       results.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
@@ -233,18 +261,18 @@
       searchPage = 1;
       results.replaceChildren();
       pagination.hidden = true;
-      hint.textContent = query ? "正在搜索..." : "输入关键词开始搜索";
+      hint.textContent = query ? text.searchLoading : text.searchHint;
       if (!query) return;
       try {
         const pagefind = await window.loadPagefind();
         const search = await pagefind.search(query);
         if (current !== request) return;
         searchResults = search.results;
-        hint.textContent = searchResults.length ? `找到 ${searchResults.length} 个结果` : "没有找到相关内容";
+        hint.textContent = searchResults.length ? text.searchCount(searchResults.length) : text.searchEmpty;
         await renderSearchPage(current);
       } catch {
         if (current !== request) return;
-        hint.textContent = "搜索索引暂时不可用，请稍后重试";
+        hint.textContent = text.searchError;
       }
     });
   }
@@ -268,7 +296,7 @@
       if (!navigation && totalItems > mobilePageSize) {
         navigation = document.createElement("nav");
         navigation.className = "hugo-pagination";
-        navigation.setAttribute("aria-label", "文章分页");
+        navigation.setAttribute("aria-label", text.articlePagination);
         grid.after(navigation);
       }
 
@@ -295,7 +323,7 @@
       };
 
       const control = (direction, page, disabled) => {
-        const label = direction === "prev" ? "上一页" : "下一页";
+        const label = direction === "prev" ? text.previous : text.next;
         const node = document.createElement(disabled ? "span" : "a");
         node.className = `pagination-control${disabled ? " disabled" : ""}`;
         if (disabled) node.setAttribute("aria-hidden", "true");
@@ -333,7 +361,7 @@
           if (page === current) node.setAttribute("aria-current", "page");
           else {
             node.href = pageUrl(page);
-            node.setAttribute("aria-label", `第 ${page} 页`);
+            node.setAttribute("aria-label", text.page(page));
           }
           pages.append(node);
           previousPage = page;
@@ -341,7 +369,7 @@
 
         const summary = document.createElement("span");
         summary.className = "pagination-summary";
-        summary.textContent = `第 ${current} / ${total} 页`;
+        summary.textContent = text.pageSummary(current, total);
         navigation.replaceChildren(
           control("prev", current - 1, current <= 1),
           pages,
@@ -444,7 +472,7 @@
     form?.addEventListener("submit", async (event) => {
       event.preventDefault(); button.disabled = true; error.textContent = "";
       try { content.innerHTML = await decryptArticle(payload, input.value); }
-      catch { error.textContent = "密码错误，请重试"; button.disabled = false; }
+      catch { error.textContent = text.passwordError; button.disabled = false; }
     });
   }
 

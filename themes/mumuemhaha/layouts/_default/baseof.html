@@ -1,5 +1,5 @@
 <!doctype html>
-<html lang="zh-CN">
+<html lang="{{ site.Language.Locale }}">
 {{- $section := .Section -}}
 {{- if .IsHome }}{{ $section = "home" }}{{ end -}}
 {{- $wallpaperIndex := 5 -}}
@@ -30,6 +30,7 @@
   <meta property="og:description" content="{{ .Description | default site.Params.description }}">
   <meta property="og:url" content="{{ .Permalink }}">
   <meta property="og:type" content="{{ if .IsPage }}article{{ else }}website{{ end }}">
+  {{ range .AllTranslations }}<link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}">{{ end }}
   <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
   <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
   <link rel="dns-prefetch" href="//umami.vmss.cn">
@@ -37,10 +38,10 @@
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260906-responsive-30">
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260906-i18n">
   <script async fetchpriority="low" src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
 </head>
-<body data-section="{{ $section }}" data-pagefind-ignore>
+<body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-pagefind-ignore>
   {{- if not .IsHome }}
     <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
       <picture>
@@ -50,19 +51,19 @@
     </div>
   {{- end }}
   <div class="site-shell">
-    <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="主导航">
+    <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="{{ i18n "main_navigation" }}">
       <div class="workspace-brand">
-        <a href="/" aria-label="返回首页">
+        <a href="{{ site.Home.RelPermalink }}" aria-label="{{ i18n "back_home" }}">
           <img src="/images/demo-avatar.webp" alt="" width="42" height="42">
-          <span><strong>木木em哈哈</strong><small>个人工作区</small></span>
+          <span><strong>木木em哈哈</strong><small>{{ i18n "personal_workspace" }}</small></span>
         </a>
-        <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="关闭导航">{{ partial "icon.html" (dict "name" "x") }}</button>
+        <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="{{ i18n "close_navigation" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
       </div>
-      <div class="workspace-label">工作区</div>
+      <div class="workspace-label">{{ i18n "workspace" }}</div>
       <nav class="workspace-nav">
-        <a href="/" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>首页</span></a>
-        <a href="/blog/" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>博客</span></a>
-        <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>工具箱</span></a>
+        <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
+        <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
+        <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
       </nav>
       <div class="workspace-spacer"></div>
       <nav class="workspace-nav workspace-nav-secondary">
@@ -73,14 +74,15 @@
     <div class="sidebar-backdrop" data-sidebar-close></div>
     <section class="workspace-main">
       <header class="workspace-topbar">
-        <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="打开导航">{{ partial "icon.html" (dict "name" "menu") }}</button>
+        <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="{{ i18n "open_navigation" }}">{{ partial "icon.html" (dict "name" "menu") }}</button>
         <div class="topbar-title">
           {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (eq $section "posts") "book-open" (cond (eq $section "tools") "wrench" "layout")))) }}
-          <span>{{ if .IsHome }}首页{{ else if eq $section "posts" }}博客{{ else }}{{ .Title }}{{ end }}</span>
+          <span>{{ if .IsHome }}{{ i18n "home" }}{{ else if eq $section "posts" }}{{ i18n "blog" }}{{ else }}{{ .Title }}{{ end }}</span>
         </div>
         <div class="topbar-actions">
-          <button class="icon-button" id="search-open" type="button" aria-label="搜索文章" title="搜索文章">{{ partial "icon.html" (dict "name" "search") }}</button>
-          <a class="topbar-avatar" href="/" aria-label="木木em哈哈"><img src="/images/demo-avatar.webp" alt="" width="34" height="34"></a>
+          {{ partial "language-switch.html" . }}
+          <button class="icon-button" id="search-open" type="button" aria-label="{{ i18n "search_articles" }}" title="{{ i18n "search_articles" }}">{{ partial "icon.html" (dict "name" "search") }}</button>
+          <a class="topbar-avatar" href="{{ site.Home.RelPermalink }}" aria-label="木木em哈哈"><img src="/images/demo-avatar.webp" alt="" width="34" height="34"></a>
         </div>
       </header>
       <main class="workspace-content" id="main-content">
@@ -96,26 +98,26 @@
     <div class="search-panel">
       <form class="search-input-row" method="dialog">
         {{ partial "icon.html" (dict "name" "search") }}
-        <input id="search-input" type="search" placeholder="搜索标题、正文或标签" autocomplete="off" aria-label="搜索文章">
-        <button class="icon-button" value="cancel" aria-label="关闭搜索">{{ partial "icon.html" (dict "name" "x") }}</button>
+        <input id="search-input" type="search" placeholder="{{ i18n "search_placeholder" }}" autocomplete="off" aria-label="{{ i18n "search_articles" }}">
+        <button class="icon-button" value="cancel" aria-label="{{ i18n "close_search" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
       </form>
-      <div class="search-hint" id="search-hint">输入关键词开始搜索</div>
+      <div class="search-hint" id="search-hint">{{ i18n "search_hint" }}</div>
       <div class="search-results" id="search-results" aria-live="polite"></div>
-      <nav class="search-pagination" id="search-pagination" aria-label="搜索结果分页" hidden>
-        <button class="pagination-control" type="button" data-search-prev aria-label="上一页">{{ partial "icon.html" (dict "name" "chevron-left") }}</button>
-        <span id="search-page-status">第 1 / 1 页</span>
-        <button class="pagination-control" type="button" data-search-next aria-label="下一页">{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
+      <nav class="search-pagination" id="search-pagination" aria-label="{{ i18n "search_pagination" }}" hidden>
+        <button class="pagination-control" type="button" data-search-prev aria-label="{{ i18n "previous_page" }}">{{ partial "icon.html" (dict "name" "chevron-left") }}</button>
+        <span id="search-page-status">{{ printf (i18n "page_summary") 1 1 }}</span>
+        <button class="pagination-control" type="button" data-search-next aria-label="{{ i18n "next_page" }}">{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
       </nav>
     </div>
   </dialog>
 
-  <nav class="mobile-dock" aria-label="移动端导航">
-    <a href="/" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>首页</span></a>
-    <a href="/blog/" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>博客</span></a>
-    <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>工具</span></a>
+  <nav class="mobile-dock" aria-label="{{ i18n "mobile_navigation" }}">
+    <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
+    <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
+    <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "tools" }}</span></a>
   </nav>
   <div class="cursor-dot" aria-hidden="true"></div>
-  <script src="/hugo-theme/hugo.js?v=20260906-responsive-30"></script>
+  <script src="/hugo-theme/hugo.js?v=20260906-i18n"></script>
   <script data-hugo-pagefind-preload>window.loadPagefind?.();</script>
   {{ block "scripts" . }}{{ end }}
 </body>

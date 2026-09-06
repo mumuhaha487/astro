@@ -1,6 +1,6 @@
 {{ define "main" }}
 <section class="home-stage">
-  <picture class="home-backdrop" role="img" aria-label="深色插画背景">
+  <picture class="home-backdrop" role="img" aria-label="{{ i18n "profile_workspace" }}">
     <source media="(max-width: 760px)" srcset="{{ index site.Params.covers.mobile 0 }}">
     <img src="{{ index site.Params.covers.desktop 0 }}" alt="" decoding="async" fetchpriority="high">
   </picture>
@@ -9,29 +9,29 @@
     <div class="home-left">
       <p class="home-kicker">WELCOME / {{ now.Format "2006" }}</p>
       <section class="glass-panel status-panel">
-        <span class="panel-eyebrow">今日小状态</span>
-        <h2>正在认真生活，也认真写代码。</h2>
-        <p>把踩过的坑、做过的项目和偶然冒出的想法，留在这个小站里。</p>
+        <span class="panel-eyebrow">{{ i18n "todays_status" }}</span>
+        <h2>{{ i18n "status_title" }}</h2>
+        <p>{{ i18n "status_description" }}</p>
         <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
       </section>
-      <nav class="glass-panel home-shortcuts" aria-label="快捷入口">
-        <a href="/blog/">{{ partial "icon.html" (dict "name" "book-open") }}博客</a>
-        <a href="/tools/">{{ partial "icon.html" (dict "name" "wrench") }}工具箱</a>
+      <nav class="glass-panel home-shortcuts" aria-label="{{ i18n "workspace" }}">
+        <a href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "book-open") }}{{ i18n "blog" }}</a>
+        <a href="/tools/">{{ partial "icon.html" (dict "name" "wrench") }}{{ i18n "toolbox" }}</a>
         <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}GitHub</a>
       </nav>
-      <section class="visitor-strip" id="home-visitors" aria-label="访问统计">
-        <div><span class="visitor-dot online"></span><small>当前访客</small><strong data-umami-stat="active">0</strong></div>
-        <div><span class="visitor-dot"></span><small>累计访客</small><strong data-umami-stat="visitors">0</strong></div>
-        <div><span class="visitor-dot"></span><small>累计访问次数</small><strong data-umami-stat="visits">0</strong></div>
+      <section class="visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}">
+        <div><span class="visitor-dot online"></span><small>{{ i18n "current_visitors" }}</small><strong data-umami-stat="active">0</strong></div>
+        <div><span class="visitor-dot"></span><small>{{ i18n "total_visitors" }}</small><strong data-umami-stat="visitors">0</strong></div>
+        <div><span class="visitor-dot"></span><small>{{ i18n "total_visits" }}</small><strong data-umami-stat="visits">0</strong></div>
       </section>
     </div>
     <div class="home-profile">
-      <img class="profile-avatar" src="/images/demo-avatar.webp" alt="木木em哈哈的头像" width="176" height="176">
-      <p class="profile-overline">PERSONAL WORKSPACE</p>
+      <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176">
+      <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
       <h1>木木em哈哈</h1>
-      <p class="profile-bio" data-typewriter="不乱于心，不困于情，不畏将来，不惧过去" aria-label="不乱于心，不困于情，不畏将来，不惧过去"><span data-typewriter-output aria-hidden="true">不乱于心，不困于情，不畏将来，不惧过去</span></p>
+      <p class="profile-bio" data-typewriter="{{ i18n "profile_quote" }}" aria-label="{{ i18n "profile_quote" }}"><span data-typewriter-output aria-hidden="true">{{ i18n "profile_quote" }}</span></p>
       <div class="profile-actions">
-        <a class="button button-primary" href="/blog/">阅读博客{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+        <a class="button button-primary" href="{{ "blog/" | relLangURL }}">{{ i18n "read_blog" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
       </div>
     </div>
   </div>

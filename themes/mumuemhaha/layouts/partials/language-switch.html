@@ -1,0 +1,17 @@
+{{- $page := . -}}
+{{- $current := site.Language.Lang -}}
+<nav class="language-switch" aria-label="{{ i18n "language_switch" }}">
+  {{- range (slice (dict "lang" "zh" "label" "中" "name" "简体中文") (dict "lang" "en" "label" "EN" "name" "English") (dict "lang" "ja" "label" "日" "name" "日本語")) -}}
+    {{- $language := .lang -}}
+    {{- $target := "" -}}
+    {{- if eq $language $current -}}
+      {{- $target = $page.RelPermalink -}}
+    {{- else -}}
+      {{- range $page.AllTranslations -}}
+        {{- if eq .Language.Lang $language -}}{{- $target = .RelPermalink -}}{{- end -}}
+      {{- end -}}
+    {{- end -}}
+    {{- if not $target -}}{{- $target = cond (eq $language "zh") "/" (printf "/%s/" $language) -}}{{- end -}}
+    <a href="{{ $target }}" hreflang="{{ $language }}" lang="{{ $language }}" title="{{ .name }}"{{ if eq $language $current }} class="active" aria-current="true"{{ end }}>{{ .label }}</a>
+  {{- end -}}
+</nav>

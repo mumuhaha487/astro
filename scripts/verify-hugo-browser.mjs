@@ -72,6 +72,7 @@ try {
   const localRun = ["127.0.0.1", "localhost"].includes(new URL(baseUrl).hostname);
   if (localRun) {
     await page.route("https://umami.vmss.cn/script.js", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
+    await page.route("https://giscus.app/**", (route) => route.fulfill({ contentType: "application/javascript", body: "" }));
     const delayedFulfill = async (route, body) => {
       await new Promise((resolve) => setTimeout(resolve, 250));
       await route.fulfill({ contentType: "application/json", body: JSON.stringify(body) });
@@ -204,8 +205,35 @@ try {
   assert.equal(await page.locator("#hugo-article-content").count(), 1, "article body is missing");
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
+  assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
+
+  const translatedPath = `/posts/${encodeURIComponent("测试文章标题")}/`;
+  response = await page.goto(new URL(`/en${translatedPath}`, baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator("html").getAttribute("lang"), "en-US");
+  assert.equal(await page.locator(".language-switch a.active").innerText(), "EN");
+  assert.equal(await page.locator(".article-header h1").innerText(), "Test Article Title");
+  assert.match(await page.locator("#hugo-article-content").innerText(), /Does this count as another kind of editor\?/);
+  const sharedCommentTerm = await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-term");
+  assert.equal(sharedCommentTerm, "posts/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0%E6%A0%87%E9%A2%98/");
+  assert.equal(await page.locator('.language-switch a[lang="ja"]').getAttribute("href"), `/ja${translatedPath}`);
+  widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
+  assert.ok(widths.body <= widths.viewport, `mobile English article overflows: ${widths.body}px > ${widths.viewport}px`);
+
+  response = await page.goto(new URL(`/ja${translatedPath}`, baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator("html").getAttribute("lang"), "ja-JP");
+  assert.equal(await page.locator(".language-switch a.active").innerText(), "日");
+  assert.equal(await page.locator(".article-header h1").innerText(), "テスト記事のタイトル");
+  assert.equal(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-term"), sharedCommentTerm);
+
+  response = await page.goto(new URL("/en/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".language-switch a.active").innerText(), "EN");
+  assert.equal(await page.locator(".post-card h2", { hasText: "Test Article Title" }).count(), 1, "English blog does not show its translated article");
+  assert.equal(await page.locator(".post-card h2", { hasText: "测试文章标题" }).count(), 0, "English blog shows the Chinese variant at the same time");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: 30-item desktop list pages in three columns; 10-item mobile list and search pagination; custom cursor, home, tools, article, and overflow checks.");
+  console.log("Browser verification passed: 30-item desktop and 10-item mobile pagination, three-language UI/content switching, shared Giscus comments, custom cursor, home, tools, article, and overflow checks.");
 } finally {
   await browser.close();
 }

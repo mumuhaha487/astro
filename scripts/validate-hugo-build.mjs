@@ -22,6 +22,12 @@ const requiredFiles = [
   "assets/font/ZenMaruGothic-Medium.woff2",
   "assets/font/loli.woff2",
   "blog/index.html",
+  "en/index.html",
+  "en/blog/index.html",
+  "en/posts/测试文章标题/index.html",
+  "ja/index.html",
+  "ja/blog/index.html",
+  "ja/posts/测试文章标题/index.html",
   "tools/index.html",
   "category/index.html",
   "tags/index.html",
@@ -92,7 +98,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-responsive-30/, "Responsive pagination asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260906-i18n/, "Multilingual asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -116,6 +122,35 @@ assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
 
+const translatedArticleFiles = [
+  join(outputRoot, "posts", "测试文章标题", "index.html"),
+  join(outputRoot, "en", "posts", "测试文章标题", "index.html"),
+  join(outputRoot, "ja", "posts", "测试文章标题", "index.html"),
+];
+const translatedArticles = await Promise.all(translatedArticleFiles.map((path) => readFile(path, "utf8")));
+assert.match(translatedArticles[0], /<html lang="zh-CN">/);
+assert.match(translatedArticles[1], /<html lang="en-US">/);
+assert.match(translatedArticles[1], /<h1[^>]*>Test Article Title<\/h1>/);
+assert.match(translatedArticles[1], /Does this count as another kind of editor\?/);
+assert.doesNotMatch(translatedArticles[1], /这算不算另外一种编辑器呢/);
+assert.match(translatedArticles[2], /<html lang="ja-JP">/);
+assert.match(translatedArticles[2], /<h1[^>]*>テスト記事のタイトル<\/h1>/);
+const expectedCommentTerm = "posts/%E6%B5%8B%E8%AF%95%E6%96%87%E7%AB%A0%E6%A0%87%E9%A2%98/";
+for (const article of translatedArticles) {
+  assert.match(article, /data-repo-id="R_kgDOPjTkdA"/, "Giscus repository ID does not match the original Astro comments");
+  assert.match(article, /data-category-id="DIC_kwDOPjTkdM4CuiIf"/, "Giscus category ID does not match the original Astro comments");
+  assert.match(article, /data-mapping="specific"/, "Giscus must use a shared explicit discussion key");
+  assert.ok(article.includes(`data-term="${expectedCommentTerm}"`), "Language variants do not share the Chinese discussion key");
+}
+const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
+assert.match(legacyCommentArticle, /data-term="posts\/20250825\/"/, "Existing Astro discussion mapping was not restored");
+const englishHome = await readFile(join(outputRoot, "en", "index.html"), "utf8");
+const japaneseHome = await readFile(join(outputRoot, "ja", "index.html"), "utf8");
+assert.match(englishHome, /<html lang="en-US">/);
+assert.match(englishHome, /aria-label="Switch language"/);
+assert.match(japaneseHome, /<html lang="ja-JP">/);
+assert.match(japaneseHome, /aria-label="言語を切り替える"/);
+
 const contentFiles = await listFiles(join(repositoryRoot, "content", "posts"));
 const misplaced = contentFiles.filter((path) => [".html", ".htm", ".js", ".zip"].includes(extname(path).toLowerCase()));
 assert.deepEqual(misplaced, [], `Web page assets must not be stored with Markdown posts: ${misplaced.join(", ")}`);
@@ -130,7 +165,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} posts with 30-item desktop and 10-item mobile list pagination, 10-item search pagination, feeds, and isolated web pages.`);
+console.log(`Validated Hugo output: ${posts.length} Chinese posts, English/Japanese variants with shared comments, 30-item desktop and 10-item mobile list pagination, 10-item search pagination, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];

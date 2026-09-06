@@ -154,6 +154,12 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       return json({
         authenticated: true,
         github: { connected: true, login: "visual-test", repository: "mumuhaha487/astro", branch: "main" },
+        translation: {
+          apiUrl: "https://deepseek.inc.re/",
+          model: "deepseek/deepseek-v4-flash",
+          configured: true,
+          updatedAt: "2026-09-06T08:00:00Z",
+        },
       });
     }
     if (url.pathname === "/api/asset" && request.method() === "GET") {
@@ -174,6 +180,9 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
     if (url.pathname === "/api/post" && request.method() === "GET") {
       return json({ path: examplePost.path, sha: examplePost.sha, content: postContent });
     }
+    if (url.pathname === "/api/post/translations" && request.method() === "GET") {
+      return json({ translations: [] });
+    }
     if (url.pathname === "/api/link-preview") {
       return json({ url: url.searchParams.get("url"), title: "Astro Studio 测试标题", siteName: "Astro Studio" });
     }
@@ -181,6 +190,14 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       const body = request.postDataJSON();
       mutations.push({ method: "PUT", path: url.pathname, body });
       return json({ path: body.path, sha: "d".repeat(40), content: body.content });
+    }
+    if (url.pathname === "/api/post/bundle" && request.method() === "PUT") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "PUT", path: url.pathname, body });
+      return json({
+        source: { ...body.source, sha: "d".repeat(40) },
+        translations: (body.translations || []).map((translation) => ({ ...translation, sha: "e".repeat(40) })),
+      });
     }
     if (url.pathname === "/api/post" && request.method() === "DELETE") {
       const body = request.postDataJSON();
@@ -235,6 +252,21 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       const body = request.postDataJSON();
       mutations.push({ method: "PUT", path: url.pathname, body });
       return json({ ...body, key: "visual-schedule", createdAt: new Date().toISOString() });
+    }
+    if (url.pathname === "/api/translate" && request.method() === "POST") {
+      const body = request.postDataJSON();
+      return json({
+        translations: body.languages.map((language) => ({
+          language,
+          title: language === "en" ? "Translated article title" : "翻訳記事のタイトル",
+          description: language === "en" ? "Translated article description" : "翻訳記事の概要",
+          body: language === "en" ? "Translated article body." : "翻訳記事の本文です。",
+        })),
+      });
+    }
+    if (url.pathname === "/api/settings/translation" && request.method() === "PUT") {
+      const body = request.postDataJSON();
+      return json({ apiUrl: body.apiUrl, model: body.model, configured: true, updatedAt: new Date().toISOString() });
     }
     if (url.pathname === "/api/image" && request.method() === "POST") {
       return json({ path: "public/image/editor/2026/09/visual-test.png", url: "/image/editor/2026/09/visual-test.png" });
@@ -629,6 +661,11 @@ async function verifyDesktop() {
   await page.locator(".connection-pill").click();
   const connectionSettings = page.getByRole("dialog", { name: "设置" });
   await connectionSettings.waitFor();
+  assert.equal(await connectionSettings.getByText("AI 翻译", { exact: true }).count(), 1);
+  assert.equal(await connectionSettings.getByLabel("API URL").inputValue(), "https://deepseek.inc.re/");
+  assert.equal(await connectionSettings.getByLabel("模型").inputValue(), "deepseek/deepseek-v4-flash");
+  assert.equal(await connectionSettings.getByLabel("API Key").inputValue(), "", "saved AI keys must never be returned to the browser");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-global-settings.png"), animations: "disabled" });
   await connectionSettings.getByTitle("关闭").click();
   await connectionSettings.waitFor({ state: "detached" });
 
@@ -719,9 +756,10 @@ async function verifyDesktop() {
   for (const removedLabel of ["文章类型", "创作声明", "文章备份", "可见范围", "文章模板", "多平台发布", "参与活动 /话题"]) {
     assert.equal(await settingsDrawer.getByText(removedLabel, { exact: true }).count(), 0, `${removedLabel} must not be exposed`);
   }
-  for (const controlName of ["标题", "封面 URL 或路径", "简介", "标签", "分类", "发布日期", "语言", "更新日期", "固定链接"]) {
+  for (const controlName of ["标题", "封面 URL 或路径", "简介", "标签", "分类", "发布日期", "更新日期", "固定链接"]) {
     assert.equal(await settingsDrawer.getByLabel(controlName, { exact: true }).count(), 1, `${controlName} must be editable`);
   }
+  assert.equal(await settingsDrawer.getByRole("group", { name: "支持语言" }).count(), 1, "translation language controls are missing");
 
   await settingsDrawer.getByLabel("标题", { exact: true }).fill("抽屉设置验证文章");
   await settingsDrawer.getByLabel("封面 URL 或路径").fill("/image/manual-cover.webp");
@@ -750,7 +788,18 @@ async function verifyDesktop() {
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "草稿" }).locator("input").check({ force: true });
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "置顶" }).locator("input").check({ force: true });
   await settingsDrawer.getByLabel("置顶优先级").fill("2");
-  await settingsDrawer.getByLabel("语言").selectOption("en");
+  await settingsDrawer.getByLabel("English").check();
+  await settingsDrawer.getByRole("button", { name: "AI 翻译" }).click();
+  const translationDialog = page.getByRole("dialog", { name: "检查译文" });
+  await translationDialog.waitFor();
+  assert.equal(await translationDialog.getByRole("tab", { name: /English/ }).getAttribute("aria-selected"), "true");
+  assert.equal(await translationDialog.getByLabel("译文标题").inputValue(), "Translated article title");
+  assert.equal(await translationDialog.getByLabel("译文正文（Markdown）").inputValue(), "Translated article body.");
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-translation-review.png"), animations: "disabled" });
+  await translationDialog.getByTitle("关闭").click();
+  await translationDialog.waitFor({ state: "detached" });
+  await publishingSettingsButton.click();
+  await settingsDrawer.waitFor();
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "允许评论" }).locator("input").uncheck({ force: true });
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "文章加密" }).locator("input").check({ force: true });
   await settingsDrawer.getByLabel("文章密码").fill("drawer-secret");
@@ -812,7 +861,8 @@ async function verifyDesktop() {
   ]) {
     assert(savedSettingsDraft.includes(persistedValue), `settings draft must persist ${persistedValue}: ${savedSettingsDraft}`);
   }
-  assert.match(savedSettingsDraft, /lang:\s+['"]?en['"]?/);
+  assert.match(savedSettingsDraft, /lang:\s+['"]?zh-CN['"]?/);
+  assert.match(savedSettingsDraft, /translationTargets[\s\S]*en/);
   await settingsDrawer.evaluate((element) => { element.scrollTop = 0; });
   const advancedPath = join(outputDirectory, "desktop-1264-publishing-settings.png");
   await page.screenshot({ path: advancedPath, animations: "disabled" });
@@ -2036,15 +2086,15 @@ async function verifyDraftPublishing() {
   await page.getByRole("button", { name: "发布博客" }).click();
   await page.locator(".toast", { hasText: "文章已发布" }).waitFor();
 
-  const postMutation = mutations.find((mutation) => mutation.method === "PUT" && mutation.path === "/api/post");
+  const postMutation = mutations.find((mutation) => mutation.method === "PUT" && mutation.path === "/api/post/bundle");
   assert(postMutation, "publishing a cloud draft must save the article to GitHub");
-  assert.equal(postMutation.body.path, `content/posts/${exampleDraft.title}.md`);
-  assert.match(postMutation.body.content, /draft: false/);
+  assert.equal(postMutation.body.source.path, `content/posts/${exampleDraft.title}.md`);
+  assert.match(postMutation.body.source.content, /draft: false/);
 
   const finalDraftSave = mutations.find((mutation) =>
     mutation.method === "PUT"
     && mutation.path === "/api/draft"
-    && mutation.body.path === postMutation.body.path
+    && mutation.body.path === postMutation.body.source.path
     && mutation.body.sha === "d".repeat(40));
   const draftDelete = mutations.find((mutation) => mutation.method === "DELETE" && mutation.path === "/api/draft");
   assert.equal(finalDraftSave, undefined, "ordinary publishing must not retain the cloud draft");

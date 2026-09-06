@@ -12,6 +12,8 @@ export interface FrontmatterFields {
   pinned: boolean;
   priority?: number;
   lang: string;
+  translationKey?: string;
+  translationOf?: string;
   comment: boolean;
   encrypted: boolean;
   password?: string;
@@ -112,6 +114,8 @@ const preferredOrder = [
   "pinned",
   "priority",
   "lang",
+  "translationKey",
+  "translationOf",
   "comment",
   "permalink",
   "url",

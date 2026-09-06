@@ -20,6 +20,7 @@ import {
   GitBranch,
   ImagePlus,
   KeyRound,
+  Languages,
   Link2,
   ListTree,
   LoaderCircle,
@@ -84,6 +85,10 @@ import type {
   PostMeta,
   PostRevision,
   SessionInfo,
+  TranslationDocument,
+  TranslationLanguage,
+  TranslationReference,
+  TranslationResult,
   WebEmbedRecord,
 } from "../shared/types";
 import {
@@ -92,6 +97,10 @@ import {
   validateScheduleTime,
 } from "../shared/schedule";
 import { LINK_CARD_MARKER } from "../shared/link-card";
+import {
+  translationKeyFromPath,
+  translationPath,
+} from "../shared/translation";
 import {
   buildWebEmbedMarker,
   parseWebEmbedMarker,
@@ -156,6 +165,11 @@ interface WorkingDocument extends PostDocument {
   isNew: boolean;
 }
 
+interface EditableTranslation extends TranslationResult {
+  path: string;
+  sha: string;
+}
+
 interface ToastMessage {
   text: string;
   tone: "success" | "error" | "info";
@@ -216,6 +230,10 @@ function App() {
   const [publishedRevision, setPublishedRevision] = useState(0);
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [publishing, setPublishing] = useState(false);
+  const [translationOpen, setTranslationOpen] = useState(false);
+  const [translating, setTranslating] = useState(false);
+  const [translationTargets, setTranslationTargets] = useState<TranslationLanguage[]>([]);
+  const [translations, setTranslations] = useState<Partial<Record<TranslationLanguage, EditableTranslation>>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
   const editorRef = useRef<MdxEditorSlotHandle>(null);
 
@@ -252,6 +270,50 @@ function App() {
     return normalizedFields ? serializeDocument(normalizedFields, body) : "";
   }, [body, currentFields]);
 
+  function sourceFieldsForPath(sourcePath: string, value: FrontmatterFields): FrontmatterFields {
+    return {
+      ...value,
+      lang: "zh-CN",
+      translationKey: translationKeyFromPath(sourcePath),
+      translationOf: undefined,
+    };
+  }
+
+  function translationDocument(
+    translation: EditableTranslation,
+    sourcePath: string,
+    sourceFields: FrontmatterFields,
+  ): TranslationDocument {
+    const translatedFields: FrontmatterFields = {
+      ...sourceFields,
+      title: translation.title,
+      description: translation.description,
+      lang: translation.language === "en" ? "en-US" : "ja-JP",
+      translationKey: translationKeyFromPath(sourcePath),
+      translationOf: sourcePath,
+      permalink: undefined,
+      url: undefined,
+      alias: undefined,
+    };
+    return {
+      language: translation.language,
+      path: translationPath(sourcePath, translation.language),
+      sha: translation.sha,
+      content: serializeDocument(translatedFields, translation.body),
+    };
+  }
+
+  function currentTranslationDocuments(
+    sourcePath: string,
+    sourceFields: FrontmatterFields,
+    selectedOnly = false,
+  ): TranslationDocument[] {
+    const allowed = selectedOnly ? new Set(translationTargets) : null;
+    return (Object.values(translations).filter(Boolean) as EditableTranslation[])
+      .filter((translation) => !allowed || allowed.has(translation.language))
+      .map((translation) => translationDocument(translation, sourcePath, sourceFields));
+  }
+
   const isDirty = revision !== publishedRevision;
   const richModeBlocked = hasUnsafeRichContent(body);
 
@@ -259,6 +321,8 @@ function App() {
 
   useEffect(() => {
     if (!working || !fields || revision === 0) return;
+    const draftSourcePath = working.isNew ? "content/posts/draft.md" : working.path;
+    const draftFields = sourceFieldsForPath(draftSourcePath, currentFields() || fields);
     const snapshot = {
       path: working.path,
       sha: working.sha,
@@ -266,9 +330,11 @@ function App() {
       updatedAt: new Date().toISOString(),
       isNew: working.isNew,
       content: currentContent(),
+      translations: currentTranslationDocuments(draftSourcePath, draftFields),
+      translationTargets,
     };
     window.localStorage.setItem(`astro-studio:${working.path}`, JSON.stringify(snapshot));
-  }, [body, currentContent, fields, revision, tagsText, working]);
+  }, [body, currentContent, fields, revision, tagsText, translationTargets, translations, working]);
 
   useEffect(() => {
     if (!working || !fields || deletingKey || revision === 0 || revision === draftSyncedRevision) return;
@@ -277,6 +343,8 @@ function App() {
       setSyncState("saving");
       setSyncLabel("正在同步草稿");
       try {
+        const draftSourcePath = working.isNew ? "content/posts/draft.md" : working.path;
+        const draftFields = sourceFieldsForPath(draftSourcePath, currentFields() || fields);
         const saved = await api.saveDraft({
           key: working.draftKey,
           path: working.path,
@@ -285,6 +353,8 @@ function App() {
           updatedAt: new Date().toISOString(),
           isNew: working.isNew,
           content: currentContent(),
+          translations: currentTranslationDocuments(draftSourcePath, draftFields),
+          translationTargets,
         });
         setWorking((current) =>
           current ? { ...current, draftKey: saved.key } : current,
@@ -302,7 +372,7 @@ function App() {
       }
     }, 8_000);
     return () => window.clearTimeout(timer);
-  }, [currentContent, deletingKey, draftSyncedRevision, fields, revision, working]);
+  }, [currentContent, deletingKey, draftSyncedRevision, fields, revision, translationTargets, translations, working]);
 
   async function loadPostsAndDrafts(force = false) {
     setLoadingPosts(true);
@@ -363,6 +433,8 @@ function App() {
     setSyncState("saving");
     setSyncLabel("正在保存草稿");
     try {
+      const draftSourcePath = working.isNew ? "content/posts/draft.md" : working.path;
+      const draftFields = sourceFieldsForPath(draftSourcePath, currentFields() || fields);
       const saved = await api.saveDraft({
         key: working.draftKey,
         path: working.path,
@@ -371,6 +443,8 @@ function App() {
         updatedAt: new Date().toISOString(),
         isNew: working.isNew,
         content: currentContent(),
+        translations: currentTranslationDocuments(draftSourcePath, draftFields),
+        translationTargets,
       });
       setWorking((current) => current ? { ...current, draftKey: saved.key } : current);
       setDraftSyncedRevision(revision);
@@ -504,12 +578,32 @@ function App() {
     showToast("可运行代码已插入正文", "success");
   }
 
-  function hydrateDocument(document: WorkingDocument, restored = false) {
+  function hydrateDocument(
+    document: WorkingDocument,
+    restored = false,
+    translationDocuments: TranslationDocument[] = [],
+    selectedLanguages?: TranslationLanguage[],
+  ) {
     const parsed = parseDocument(document.content);
+    const editableTranslations: Partial<Record<TranslationLanguage, EditableTranslation>> = {};
+    for (const translation of translationDocuments) {
+      const translated = parseDocument(translation.content);
+      editableTranslations[translation.language] = {
+        language: translation.language,
+        path: translation.path,
+        sha: translation.sha,
+        title: translated.fields.title,
+        description: translated.fields.description,
+        body: translated.body,
+      };
+    }
     setWorking(document);
     setFields(parsed.fields);
     setBody(parsed.body);
     setTagsText("");
+    setTranslations(editableTranslations);
+    setTranslationTargets(selectedLanguages ?? translationDocuments.map((translation) => translation.language));
+    setTranslationOpen(false);
     const blocked = hasUnsafeRichContent(parsed.body);
     setMode(blocked ? "source" : "rich");
     setAdvancedOpen(false);
@@ -541,9 +635,10 @@ function App() {
     try {
       setSyncLabel("正在打开");
       const remoteDraft = drafts.find((draft) => draft.path === post.path);
-      const [document, restoredDraft] = await Promise.all([
+      const [document, restoredDraft, translated] = await Promise.all([
         api.post(post.path),
         remoteDraft ? api.draft(remoteDraft.key) : Promise.resolve(null),
+        api.postTranslations(post.path),
       ]);
       const local = readLocalDraft(post.path);
       const bestDraft = pickNewestDraft(restoredDraft, local);
@@ -557,9 +652,11 @@ function App() {
             isNew: false,
           },
           true,
+          bestDraft.translations?.length ? bestDraft.translations : translated.translations,
+          bestDraft.translationTargets,
         );
       } else {
-        hydrateDocument({ ...document, isNew: false });
+        hydrateDocument({ ...document, isNew: false }, false, translated.translations);
       }
     } catch (error) {
       showToast(errorMessage(error), "error");
@@ -579,6 +676,8 @@ function App() {
           isNew: document.isNew,
         },
         true,
+        document.translations || [],
+        document.translationTargets,
       );
     } catch (error) {
       showToast(errorMessage(error), "error");
@@ -613,6 +712,73 @@ function App() {
     setSyncLabel("等待同步");
   }
 
+  async function translateSelectedLanguages() {
+    if (!fields || !translationTargets.length) {
+      showToast("请先选择英文或日文", "info");
+      return;
+    }
+    if (!session?.translation.configured) {
+      setSettingsOpen(true);
+      showToast("请先在设置中填写 AI API 密钥", "info");
+      return;
+    }
+    const normalizedFields = currentFields() || fields;
+    const titleError = validateTitle(normalizedFields.title);
+    if (titleError) {
+      showToast(titleError, "error");
+      return;
+    }
+    setTranslating(true);
+    try {
+      const result = await api.translate(
+        normalizedFields.title,
+        normalizedFields.description,
+        body,
+        translationTargets,
+      );
+      setTranslations((current) => {
+        const next = { ...current };
+        for (const translation of result.translations) {
+          const existing = current[translation.language];
+          next[translation.language] = {
+            ...translation,
+            path: existing?.path || "",
+            sha: existing?.sha || "",
+          };
+        }
+        return next;
+      });
+      markChanged();
+      setAdvancedOpen(false);
+      setTranslationOpen(true);
+      showToast(`已生成 ${result.translations.length} 个语言版本，请检查后发布`, "success");
+    } catch (error) {
+      showToast(errorMessage(error), "error");
+      if (error instanceof ApiError && error.code === "TRANSLATION_NOT_CONFIGURED") {
+        setSettingsOpen(true);
+      }
+    } finally {
+      setTranslating(false);
+    }
+  }
+
+  function updateTranslation(language: TranslationLanguage, patch: Partial<TranslationResult>) {
+    setTranslations((current) => {
+      const translation = current[language];
+      return translation
+        ? { ...current, [language]: { ...translation, ...patch, language } }
+        : current;
+    });
+    markChanged();
+  }
+
+  function setTranslationTarget(language: TranslationLanguage, enabled: boolean) {
+    setTranslationTargets((current) => enabled
+      ? [...new Set([...current, language])]
+      : current.filter((entry) => entry !== language));
+    markChanged();
+  }
+
   async function publishPost(draftOverride?: boolean) {
     if (!working || !fields) return;
     const current = currentFields();
@@ -625,33 +791,65 @@ function App() {
       showToast(validationError, "error");
       return;
     }
+    const missingTranslations = translationTargets.filter((language) => !translations[language]);
+    if (missingTranslations.length) {
+      showToast("选中的语言尚未生成翻译，请先运行 AI 翻译", "error");
+      return;
+    }
 
     setPublishing(true);
     setSyncState("saving");
     setSyncLabel("正在提交 GitHub");
     const path = working.isNew ? makePostPath(normalizedFields.title) : working.path;
+    const sourceFields = sourceFieldsForPath(path, normalizedFields);
+    const translationDocuments = currentTranslationDocuments(path, sourceFields, true);
+    const selectedLanguages = new Set(translationTargets);
+    const deleteTranslations: TranslationReference[] = (Object.values(translations).filter(Boolean) as EditableTranslation[])
+      .filter((translation) => !selectedLanguages.has(translation.language) && Boolean(translation.sha))
+      .map((translation) => ({
+        language: translation.language,
+        path: translationPath(path, translation.language),
+        sha: translation.sha,
+      }));
     try {
-      const saved = await api.savePost(
+      const bundle = await api.savePostBundle(
         {
           path,
           sha: working.isNew ? "" : working.sha,
-          content: serializeDocument(normalizedFields, body),
+          content: serializeDocument(sourceFields, body),
         },
+        translationDocuments,
+        deleteTranslations,
         working.isNew
-          ? `发布文章：${normalizedFields.title}`
-          : `更新文章：${normalizedFields.title}`,
+          ? `发布多语言文章：${normalizedFields.title}`
+          : `更新多语言文章：${normalizedFields.title}`,
       );
+      const saved = bundle.source;
+      const savedTranslations: Partial<Record<TranslationLanguage, EditableTranslation>> = {};
+      for (const document of bundle.translations) {
+        const parsed = parseDocument(document.content);
+        savedTranslations[document.language] = {
+          language: document.language,
+          path: document.path,
+          sha: document.sha,
+          title: parsed.fields.title,
+          description: parsed.fields.description,
+          body: parsed.body,
+        };
+      }
       let backupFailed = false;
-      if (working.draftKey && normalizedFields.backup === true) {
+      if (working.draftKey && sourceFields.backup === true) {
         try {
           const savedDraft = await api.saveDraft({
             key: working.draftKey,
             path: saved.path,
             sha: saved.sha,
-            title: normalizedFields.title,
+            title: sourceFields.title,
             updatedAt: new Date().toISOString(),
             isNew: false,
-            content: serializeDocument({ ...normalizedFields, draft: true }, body),
+            content: serializeDocument({ ...sourceFields, draft: true }, body),
+            translations: bundle.translations,
+            translationTargets,
           });
           setDrafts((currentDrafts) => [
             savedDraft,
@@ -669,7 +867,8 @@ function App() {
         isNew: false,
         ...(normalizedFields.backup === true && working.draftKey ? { draftKey: working.draftKey } : {}),
       });
-      setFields(normalizedFields);
+      setFields(sourceFields);
+      setTranslations(savedTranslations);
       setRevision(0);
       setPublishedRevision(0);
       setDraftSyncedRevision(0);
@@ -678,7 +877,7 @@ function App() {
       showToast(
         backupFailed
           ? "文章已发布，但云端草稿保留失败"
-          : normalizedFields.draft
+          : sourceFields.draft
             ? "草稿已保存到 GitHub"
             : "文章已发布，EdgeOne 正在构建",
         backupFailed ? "error" : "success",
@@ -705,13 +904,26 @@ function App() {
       showToast(validationError, "error");
       return;
     }
+    if (translationTargets.some((language) => !translations[language])) {
+      showToast("选中的语言尚未生成翻译，请先运行 AI 翻译", "error");
+      return;
+    }
     const path = working.isNew ? makePostPath(current.title) : working.path;
-    const scheduledFields = {
+    const scheduledFields = sourceFieldsForPath(path, {
       ...current,
       published: localDateValue(new Date(publishAt)),
       draft: false,
       scheduledAt: publishAt,
-    };
+    });
+    const selectedLanguages = new Set(translationTargets);
+    const scheduledTranslations = currentTranslationDocuments(path, scheduledFields, true);
+    const deleteTranslations: TranslationReference[] = (Object.values(translations).filter(Boolean) as EditableTranslation[])
+      .filter((translation) => !selectedLanguages.has(translation.language) && Boolean(translation.sha))
+      .map((translation) => ({
+        language: translation.language,
+        path: translationPath(path, translation.language),
+        sha: translation.sha,
+      }));
     setPublishing(true);
     setSyncState("saving");
     setSyncLabel("正在设置定时发布");
@@ -722,6 +934,8 @@ function App() {
         title: current.title,
         publishAt,
         content: serializeDocument(scheduledFields, body),
+        translations: scheduledTranslations,
+        deleteTranslations,
       });
       setScheduleOpen(false);
       setSyncState("saved");
@@ -741,6 +955,9 @@ function App() {
     setFields(null);
     setBody("");
     setTagsText("");
+    setTranslations({});
+    setTranslationTargets([]);
+    setTranslationOpen(false);
     setMode("rich");
     setRevision(0);
     setPublishedRevision(0);
@@ -1290,6 +1507,15 @@ function App() {
                     setField("description", summary);
                     showToast(summary ? "已从正文提取摘要" : "正文中还没有可提取的内容", summary ? "success" : "info");
                   }}
+                  translationTargets={translationTargets}
+                  translations={translations}
+                  translating={translating}
+                  onTranslationTarget={setTranslationTarget}
+                  onTranslate={() => void translateSelectedLanguages()}
+                  onReviewTranslations={() => {
+                    setAdvancedOpen(false);
+                    setTranslationOpen(true);
+                  }}
                   onClose={() => setAdvancedOpen(false)}
                 />
               ) : null}
@@ -1356,6 +1582,17 @@ function App() {
           onClose={() => setSettingsOpen(false)}
           onSessionChange={setSession}
           showToast={showToast}
+        />
+      ) : null}
+
+      {translationOpen && translationTargets.length ? (
+        <TranslationDialog
+          targets={translationTargets}
+          translations={translations}
+          translating={translating}
+          onChange={updateTranslation}
+          onRegenerate={() => void translateSelectedLanguages()}
+          onClose={() => setTranslationOpen(false)}
         />
       ) : null}
 
@@ -1553,6 +1790,12 @@ function AdvancedFields({
   onTagsChange,
   onUploadImage,
   onExtractSummary,
+  translationTargets,
+  translations,
+  translating,
+  onTranslationTarget,
+  onTranslate,
+  onReviewTranslations,
   onClose,
 }: {
   fields: FrontmatterFields;
@@ -1561,6 +1804,12 @@ function AdvancedFields({
   onTagsChange: (tags: string[], pending: string) => void;
   onUploadImage: (file: File) => Promise<string>;
   onExtractSummary: () => void;
+  translationTargets: TranslationLanguage[];
+  translations: Partial<Record<TranslationLanguage, EditableTranslation>>;
+  translating: boolean;
+  onTranslationTarget: (language: TranslationLanguage, enabled: boolean) => void;
+  onTranslate: () => void;
+  onReviewTranslations: () => void;
   onClose: () => void;
 }) {
   const coverInputRef = useRef<HTMLInputElement>(null);
@@ -1755,14 +2004,32 @@ function AdvancedFields({
         </SettingRow>
       ) : null}
 
-      <SettingRow label="语言">
-        <select value={fields.lang} onChange={(event) => setField("lang", event.target.value)} aria-label="语言">
-          <option value="">跟随站点默认</option>
-          <option value="zh-CN">简体中文</option>
-          <option value="zh-TW">繁体中文</option>
-          <option value="en">English</option>
-          <option value="ja">日本語</option>
-        </select>
+      <SettingRow label="翻译">
+        <div className="translation-setting">
+          <div className="translation-options" role="group" aria-label="支持语言">
+            {(["en", "ja"] as TranslationLanguage[]).map((language) => (
+              <label className="check-option" key={language}>
+                <input
+                  type="checkbox"
+                  checked={translationTargets.includes(language)}
+                  onChange={(event) => onTranslationTarget(language, event.target.checked)}
+                />
+                <span>{language === "en" ? "English" : "日本語"}</span>
+                {translations[language] ? <Check size={13} aria-label="已有翻译" /> : null}
+              </label>
+            ))}
+          </div>
+          <div className="translation-actions">
+            <button type="button" className="secondary-button" onClick={onTranslate} disabled={translating || !translationTargets.length}>
+              {translating ? <LoaderCircle className="spin" size={15} /> : <Languages size={15} />}
+              {translating ? "正在翻译" : "AI 翻译"}
+            </button>
+            {translationTargets.some((language) => translations[language]) ? (
+              <button type="button" className="text-button" onClick={onReviewTranslations}>检查译文</button>
+            ) : null}
+          </div>
+          <small>翻译标题、简介和普通正文；代码、引用、公式、HTML、链接及资源路径保持原文。</small>
+        </div>
       </SettingRow>
 
       <div className="astro-settings-divider"><span>博客功能</span></div>
@@ -3580,6 +3847,78 @@ function ArticlePreview({
   );
 }
 
+function TranslationDialog({
+  targets,
+  translations,
+  translating,
+  onChange,
+  onRegenerate,
+  onClose,
+}: {
+  targets: TranslationLanguage[];
+  translations: Partial<Record<TranslationLanguage, EditableTranslation>>;
+  translating: boolean;
+  onChange: (language: TranslationLanguage, patch: Partial<TranslationResult>) => void;
+  onRegenerate: () => void;
+  onClose: () => void;
+}) {
+  const [activeLanguage, setActiveLanguage] = useState<TranslationLanguage>(targets[0] || "en");
+  const active = translations[activeLanguage];
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="translation-dialog" role="dialog" aria-modal="true" aria-labelledby="translation-title">
+        <header>
+          <div>
+            <h2 id="translation-title"><Languages size={19} /> 检查译文</h2>
+            <span>发布时会与中文原文一起提交</span>
+          </div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <div className="translation-tabs" role="tablist" aria-label="译文语言">
+          {targets.map((language) => (
+            <button
+              type="button"
+              role="tab"
+              aria-selected={language === activeLanguage}
+              className={language === activeLanguage ? "active" : ""}
+              onClick={() => setActiveLanguage(language)}
+              key={language}
+            >
+              {language === "en" ? "English" : "日本語"}
+              {translations[language] ? <Check size={13} /> : <AlertCircle size={13} />}
+            </button>
+          ))}
+        </div>
+        {active ? (
+          <div className="translation-editor">
+            <label>
+              <span>译文标题</span>
+              <input value={active.title} onChange={(event) => onChange(activeLanguage, { title: event.target.value })} maxLength={160} />
+            </label>
+            <label>
+              <span>译文简介</span>
+              <textarea value={active.description} onChange={(event) => onChange(activeLanguage, { description: event.target.value })} rows={3} maxLength={480} />
+            </label>
+            <label className="translation-body-field">
+              <span>译文正文（Markdown）</span>
+              <textarea value={active.body} onChange={(event) => onChange(activeLanguage, { body: event.target.value })} spellCheck={false} />
+            </label>
+          </div>
+        ) : (
+          <div className="translation-empty"><AlertCircle size={22} /><span>这个语言还没有译文，请运行 AI 翻译。</span></div>
+        )}
+        <footer>
+          <button className="secondary-button" type="button" onClick={onRegenerate} disabled={translating}>
+            {translating ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
+            {translating ? "正在翻译" : "重新翻译已选语言"}
+          </button>
+          <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
+        </footer>
+      </section>
+    </div>
+  );
+}
+
 function SettingsDialog({
   session,
   onClose,
@@ -3593,7 +3932,10 @@ function SettingsDialog({
 }) {
   const [token, setToken] = useState("");
   const [password, setPassword] = useState("");
-  const [busy, setBusy] = useState<"github" | "password" | "disconnect" | null>(null);
+  const [translationApiUrl, setTranslationApiUrl] = useState(session.translation.apiUrl);
+  const [translationApiKey, setTranslationApiKey] = useState("");
+  const [translationModel, setTranslationModel] = useState(session.translation.model);
+  const [busy, setBusy] = useState<"github" | "password" | "disconnect" | "translation" | "translation-clear" | null>(null);
 
   async function connect(event: FormEvent) {
     event.preventDefault();
@@ -3637,6 +3979,44 @@ function SettingsDialog({
     }
   }
 
+  async function saveTranslation(event: FormEvent) {
+    event.preventDefault();
+    setBusy("translation");
+    try {
+      const translation = await api.saveTranslationSettings(
+        translationApiUrl,
+        translationApiKey,
+        translationModel,
+      );
+      onSessionChange({ ...session, translation });
+      setTranslationApiUrl(translation.apiUrl);
+      setTranslationModel(translation.model);
+      setTranslationApiKey("");
+      showToast("AI 翻译设置已加密保存", "success");
+    } catch (error) {
+      showToast(errorMessage(error), "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
+  async function clearTranslation() {
+    setBusy("translation-clear");
+    try {
+      await api.clearTranslationSettings();
+      onSessionChange({
+        ...session,
+        translation: { ...session.translation, configured: false, updatedAt: undefined },
+      });
+      setTranslationApiKey("");
+      showToast("AI API 密钥已移除", "success");
+    } catch (error) {
+      showToast(errorMessage(error), "error");
+    } finally {
+      setBusy(null);
+    }
+  }
+
   return (
     <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
       <section className="settings-dialog" role="dialog" aria-modal="true" aria-labelledby="settings-title">
@@ -3673,6 +4053,46 @@ function SettingsDialog({
               </div>
             </form>
           )}
+        </div>
+
+        <div className="settings-section">
+          <div className="settings-section-title">
+            <Languages size={18} />
+            <div>
+              <strong>AI 翻译</strong>
+              <span>{session.translation.configured ? "API 密钥已加密保存" : "尚未配置 API 密钥"}</span>
+            </div>
+          </div>
+          <form onSubmit={(event) => void saveTranslation(event)}>
+            <label>
+              <span>API URL</span>
+              <input type="url" value={translationApiUrl} onChange={(event) => setTranslationApiUrl(event.target.value)} required placeholder="https://example.com/" />
+            </label>
+            <label>
+              <span>API Key</span>
+              <input
+                type="password"
+                value={translationApiKey}
+                onChange={(event) => setTranslationApiKey(event.target.value)}
+                autoComplete="off"
+                placeholder={session.translation.configured ? "留空可保留现有密钥" : "请输入 API 密钥"}
+              />
+            </label>
+            <label>
+              <span>模型</span>
+              <input value={translationModel} onChange={(event) => setTranslationModel(event.target.value)} required />
+            </label>
+            <div className="form-actions split">
+              {session.translation.configured ? (
+                <button className="text-button danger-text" type="button" onClick={() => void clearTranslation()} disabled={Boolean(busy)}>
+                  {busy === "translation-clear" ? <LoaderCircle className="spin" size={15} /> : null} 移除密钥
+                </button>
+              ) : <span />}
+              <button className="secondary-button" disabled={busy === "translation" || !translationApiUrl || !translationModel || (!session.translation.configured && !translationApiKey)}>
+                {busy === "translation" ? <LoaderCircle className="spin" size={16} /> : null} 保存翻译设置
+              </button>
+            </div>
+          </form>
         </div>
 
         <div className="settings-section">

@@ -1,9 +1,9 @@
 {{- if gt .TotalPages 1 -}}
 {{- $current := .PageNumber -}}
 {{- $total := .TotalPages -}}
-<nav class="hugo-pagination" aria-label="文章分页" data-current-page="{{ $current }}" data-total-pages="{{ $total }}">
+<nav class="hugo-pagination" aria-label="{{ i18n "article_pagination" }}" data-current-page="{{ $current }}" data-total-pages="{{ $total }}">
   {{- with .Prev -}}
-    <a class="pagination-control" href="{{ .URL }}" rel="prev" aria-label="上一页">{{ partial "icon.html" (dict "name" "chevron-left") }}</a>
+    <a class="pagination-control" href="{{ .URL }}" rel="prev" aria-label="{{ i18n "previous_page" }}">{{ partial "icon.html" (dict "name" "chevron-left") }}</a>
   {{- else -}}
     <span class="pagination-control disabled" aria-hidden="true">{{ partial "icon.html" (dict "name" "chevron-left") }}</span>
   {{- end -}}
@@ -11,21 +11,21 @@
     {{- range .Pagers -}}
       {{- $number := .PageNumber -}}
       {{- if eq $number 1 -}}
-        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="第 {{ $number }} 页">{{ $number }}</a>{{- end -}}
+        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="{{ printf (i18n "page_number") $number }}">{{ $number }}</a>{{- end -}}
         {{- if gt $current 3 }}<span class="pagination-gap" aria-hidden="true">...</span>{{ end -}}
       {{- else if eq $number $total -}}
         {{- if lt $current (sub $total 2) }}<span class="pagination-gap" aria-hidden="true">...</span>{{ end -}}
-        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="第 {{ $number }} 页">{{ $number }}</a>{{- end -}}
+        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="{{ printf (i18n "page_number") $number }}">{{ $number }}</a>{{- end -}}
       {{- else if and (ge $number (sub $current 1)) (le $number (add $current 1)) -}}
-        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="第 {{ $number }} 页">{{ $number }}</a>{{- end -}}
+        {{- if eq $number $current -}}<span class="pagination-page active" aria-current="page">{{ $number }}</span>{{- else -}}<a class="pagination-page" href="{{ .URL }}" aria-label="{{ printf (i18n "page_number") $number }}">{{ $number }}</a>{{- end -}}
       {{- end -}}
     {{- end -}}
   </div>
   {{- with .Next -}}
-    <a class="pagination-control" href="{{ .URL }}" rel="next" aria-label="下一页">{{ partial "icon.html" (dict "name" "chevron-right") }}</a>
+    <a class="pagination-control" href="{{ .URL }}" rel="next" aria-label="{{ i18n "next_page" }}">{{ partial "icon.html" (dict "name" "chevron-right") }}</a>
   {{- else -}}
     <span class="pagination-control disabled" aria-hidden="true">{{ partial "icon.html" (dict "name" "chevron-right") }}</span>
   {{- end -}}
-  <span class="pagination-summary">第 {{ $current }} / {{ $total }} 页</span>
+  <span class="pagination-summary">{{ printf (i18n "page_summary") $current $total }}</span>
 </nav>
 {{- end -}}
