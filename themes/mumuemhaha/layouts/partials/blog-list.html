@@ -1,4 +1,5 @@
 {{- $posts := partial "sorted-posts.html" . -}}
+{{- $paginator := .Paginate $posts 7 -}}
 <section class="content-page blog-page">
   <header class="page-heading page-heading-row">
     <div><p>WRITING / NOTES</p><h1>博客</h1><span>共 {{ len $posts }} 篇文章，记录技术与生活。</span></div>
@@ -11,8 +12,9 @@
   <div class="blog-layout">
     <div>
       <div class="post-grid">
-        {{ range $posts }}{{ partial "post-card.html" (dict "page" .) }}{{ else }}<div class="empty-state">还没有发布文章。</div>{{ end }}
+        {{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ else }}<div class="empty-state">还没有发布文章。</div>{{ end }}
       </div>
+      {{ partial "pagination.html" $paginator }}
     </div>
     <aside class="blog-aside">
       <section><div class="section-title">热门标签</div><div class="tag-cloud">{{ range first 24 site.Taxonomies.tags.ByCount }}<a href="{{ .Page.RelPermalink }}"># {{ .Page.Title }}<sup>{{ .Count }}</sup></a>{{ end }}</div></section>

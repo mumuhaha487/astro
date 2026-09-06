@@ -80,7 +80,10 @@ try {
 
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.ok(await page.locator(".post-card").count() > 80, "blog articles were not preserved");
+  assert.equal(await page.locator(".post-card").count(), 7, "blog page does not contain exactly seven articles");
+  const firstPageTitles = await page.locator(".post-card h2").allInnerTexts();
+  assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "1", "blog first page is not active");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/page\/2\/$/, "blog next-page URL is incorrect");
   assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/2.webp"]').count(), 1, "mobile blog wallpaper is missing");
   assert.equal(await page.locator('a[href*="md.vmss.cn"]').count(), 0, "private writing entry is exposed");
   assert.equal(await page.locator("[data-umami-stat]").count(), 0, "homepage statistics leaked into blog page");
@@ -90,6 +93,12 @@ try {
   await searchInput.fill("海龟汤");
   await page.waitForFunction(() => document.querySelector("#search-results")?.textContent?.includes("海龟汤"), undefined, { timeout: 15_000 });
   assert.match(await page.locator("#search-results").innerText(), /海龟汤/, "Pagefind search did not return the expected article");
+
+  response = await page.goto(new URL("/blog/page/2/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".post-card").count(), 7, "blog second page does not contain exactly seven articles");
+  assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "2", "blog second page is not active");
+  assert.notDeepEqual(await page.locator(".post-card h2").allInnerTexts(), firstPageTitles, "blog second page repeated the first page");
 
   const forumResponse = await page.request.get(new URL("/discuss/", baseUrl).toString());
   assert.equal(forumResponse.status(), 404, "removed forum page is still published");

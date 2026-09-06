@@ -80,7 +80,17 @@ for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
-assert.equal((blog.match(/class="post-card(?: |")/g) || []).length, posts.length, "Blog list did not preserve every post");
+const blogPageSize = 7;
+const blogPageCount = Math.ceil(posts.length / blogPageSize);
+for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
+  const pagePath = pageNumber === 1 ? join(outputRoot, "blog", "index.html") : join(outputRoot, "blog", "page", String(pageNumber), "index.html");
+  assert.ok(existsSync(pagePath), `Missing blog page ${pageNumber}`);
+  const pageHtml = await readFile(pagePath, "utf8");
+  const expectedCards = Math.min(blogPageSize, posts.length - ((pageNumber - 1) * blogPageSize));
+  assert.equal((pageHtml.match(/class="post-card(?: |")/g) || []).length, expectedCards, `Blog page ${pageNumber} has the wrong number of posts`);
+  assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
+}
+assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
