@@ -9,9 +9,11 @@ import type {
   ScheduledPost,
   SessionInfo,
   TranslationDocument,
+  TranslationContentType,
   TranslationLanguage,
   TranslationReference,
   TranslationResult,
+  TranslationSegmentResult,
   TranslationSettingsSummary,
   WebEmbedRecord,
 } from "../shared/types";
@@ -173,6 +175,28 @@ export const api = {
     method: "POST",
     body: JSON.stringify({ title, description, body, languages }),
   }),
+  translateSegment: async (
+    text: string,
+    language: TranslationLanguage,
+    contentType: TranslationContentType,
+  ): Promise<TranslationSegmentResult> => {
+    let lastError: unknown;
+    for (let attempt = 0; attempt < 3; attempt += 1) {
+      try {
+        return await request<TranslationSegmentResult>("/api/translate/segment", {
+          method: "POST",
+          body: JSON.stringify({ text, language, contentType }),
+        });
+      } catch (error) {
+        lastError = error;
+        const transient = error instanceof ApiError
+          && (error.status === 408 || error.status === 429 || error.status >= 500);
+        if (!transient || attempt === 2) throw error;
+        await new Promise((resolve) => window.setTimeout(resolve, 500 * (2 ** attempt)));
+      }
+    }
+    throw lastError;
+  },
   connectGitHub: (token: string) =>
     request<SessionInfo["github"]>("/api/settings/github", {
       method: "PUT",

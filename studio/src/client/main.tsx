@@ -60,6 +60,7 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 import { ApiError, api } from "./api";
+import { translateArticleBySegments } from "./translation";
 import {
   type FrontmatterFields,
   hasUnsafeRichContent,
@@ -232,6 +233,7 @@ function App() {
   const [publishing, setPublishing] = useState(false);
   const [translationOpen, setTranslationOpen] = useState(false);
   const [translating, setTranslating] = useState(false);
+  const [translationStatus, setTranslationStatus] = useState<string | null>(null);
   const [translationTargets, setTranslationTargets] = useState<TranslationLanguage[]>([]);
   const [translations, setTranslations] = useState<Partial<Record<TranslationLanguage, EditableTranslation>>>({});
   const [toast, setToast] = useState<ToastMessage | null>(null);
@@ -713,7 +715,7 @@ function App() {
   }
 
   async function translateSelectedLanguages() {
-    if (!fields || !translationTargets.length) {
+    if (!working || !fields || !translationTargets.length) {
       showToast("请先选择英文或日文", "info");
       return;
     }
@@ -729,29 +731,64 @@ function App() {
       return;
     }
     setTranslating(true);
+    setTranslationStatus("正在准备分段");
     try {
-      const result = await api.translate(
+      const sourceContent = currentContent();
+      const result = await translateArticleBySegments(
         normalizedFields.title,
         normalizedFields.description,
         body,
         translationTargets,
+        async (text, language, contentType) => (
+          await api.translateSegment(text, language, contentType)
+        ).text,
+        (completed, total) => {
+          setTranslationStatus(total ? `正在分段翻译 ${completed}/${total}` : "正在准备分段");
+        },
       );
-      setTranslations((current) => {
-        const next = { ...current };
-        for (const translation of result.translations) {
-          const existing = current[translation.language];
-          next[translation.language] = {
-            ...translation,
-            path: existing?.path || "",
-            sha: existing?.sha || "",
-          };
-        }
-        return next;
-      });
+      const nextTranslations = { ...translations };
+      for (const translation of result) {
+        const existing = translations[translation.language];
+        nextTranslations[translation.language] = {
+          ...translation,
+          path: existing?.path || "",
+          sha: existing?.sha || "",
+        };
+      }
+      setTranslations(nextTranslations);
       markChanged();
       setAdvancedOpen(false);
       setTranslationOpen(true);
-      showToast(`已生成 ${result.translations.length} 个语言版本，请检查后发布`, "success");
+      setTranslationStatus("正在保存译文");
+      setSyncState("saving");
+      setSyncLabel("正在保存翻译草稿");
+      try {
+        const draftSourcePath = working.isNew ? "content/posts/draft.md" : working.path;
+        const draftFields = sourceFieldsForPath(draftSourcePath, normalizedFields);
+        const translationDocuments = (Object.values(nextTranslations).filter(Boolean) as EditableTranslation[])
+          .map((translation) => translationDocument(translation, draftSourcePath, draftFields));
+        const saved = await api.saveDraft({
+          key: working.draftKey,
+          path: working.path,
+          sha: working.sha,
+          title: normalizedFields.title || "未命名文章",
+          updatedAt: new Date().toISOString(),
+          isNew: working.isNew,
+          content: sourceContent,
+          translations: translationDocuments,
+          translationTargets,
+        });
+        setWorking((current) => current ? { ...current, draftKey: saved.key } : current);
+        setDraftSyncedRevision((current) => Math.max(current, revision + 1));
+        setSyncState("saved");
+        setSyncLabel(`云端草稿 ${formatTime(saved.updatedAt)}`);
+        setDrafts((current) => [saved, ...current.filter((draft) => draft.key !== saved.key)]);
+        showToast(`已生成 ${result.length} 个语言版本并保存到云端草稿`, "success");
+      } catch (error) {
+        setSyncState("error");
+        setSyncLabel(errorMessage(error));
+        showToast(`译文已生成，但云端草稿保存失败：${errorMessage(error)}`, "error");
+      }
     } catch (error) {
       showToast(errorMessage(error), "error");
       if (error instanceof ApiError && error.code === "TRANSLATION_NOT_CONFIGURED") {
@@ -759,6 +796,7 @@ function App() {
       }
     } finally {
       setTranslating(false);
+      setTranslationStatus(null);
     }
   }
 
@@ -1510,6 +1548,7 @@ function App() {
                   translationTargets={translationTargets}
                   translations={translations}
                   translating={translating}
+                  translationStatus={translationStatus}
                   onTranslationTarget={setTranslationTarget}
                   onTranslate={() => void translateSelectedLanguages()}
                   onReviewTranslations={() => {
@@ -1590,6 +1629,7 @@ function App() {
           targets={translationTargets}
           translations={translations}
           translating={translating}
+          translationStatus={translationStatus}
           onChange={updateTranslation}
           onRegenerate={() => void translateSelectedLanguages()}
           onClose={() => setTranslationOpen(false)}
@@ -1793,6 +1833,7 @@ function AdvancedFields({
   translationTargets,
   translations,
   translating,
+  translationStatus,
   onTranslationTarget,
   onTranslate,
   onReviewTranslations,
@@ -1807,6 +1848,7 @@ function AdvancedFields({
   translationTargets: TranslationLanguage[];
   translations: Partial<Record<TranslationLanguage, EditableTranslation>>;
   translating: boolean;
+  translationStatus: string | null;
   onTranslationTarget: (language: TranslationLanguage, enabled: boolean) => void;
   onTranslate: () => void;
   onReviewTranslations: () => void;
@@ -2022,7 +2064,7 @@ function AdvancedFields({
           <div className="translation-actions">
             <button type="button" className="secondary-button" onClick={onTranslate} disabled={translating || !translationTargets.length}>
               {translating ? <LoaderCircle className="spin" size={15} /> : <Languages size={15} />}
-              {translating ? "正在分段翻译" : "AI 翻译"}
+              {translating ? translationStatus || "正在准备分段" : "AI 翻译"}
             </button>
             {translationTargets.some((language) => translations[language]) ? (
               <button type="button" className="text-button" onClick={onReviewTranslations}>检查译文</button>
@@ -3851,6 +3893,7 @@ function TranslationDialog({
   targets,
   translations,
   translating,
+  translationStatus,
   onChange,
   onRegenerate,
   onClose,
@@ -3858,6 +3901,7 @@ function TranslationDialog({
   targets: TranslationLanguage[];
   translations: Partial<Record<TranslationLanguage, EditableTranslation>>;
   translating: boolean;
+  translationStatus: string | null;
   onChange: (language: TranslationLanguage, patch: Partial<TranslationResult>) => void;
   onRegenerate: () => void;
   onClose: () => void;
@@ -3910,7 +3954,7 @@ function TranslationDialog({
         <footer>
           <button className="secondary-button" type="button" onClick={onRegenerate} disabled={translating}>
             {translating ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
-            {translating ? "正在分段翻译" : "重新翻译已选语言"}
+            {translating ? translationStatus || "正在准备分段" : "重新翻译已选语言"}
           </button>
           <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
         </footer>

@@ -12,6 +12,7 @@ import type {
   ScheduledPost,
   SessionInfo,
   TranslationDocument,
+  TranslationContentType,
   TranslationLanguage,
   TranslationReference,
   TranslationResult,
@@ -28,6 +29,7 @@ import {
   protectMarkdownForTranslation,
   restoreProtectedMarkdown,
   splitTranslationText,
+  TRANSLATION_CHUNK_MAX_LENGTH,
   TRANSLATION_LANGUAGES,
   translationPath,
 } from "../shared/translation";
@@ -290,6 +292,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/translate" && request.method === "POST") {
     return json({ translations: await translateArticle(env, await readJson(request)) });
+  }
+  if (url.pathname === "/api/translate/segment" && request.method === "POST") {
+    return json(await translateSegment(env, await readJson(request)));
   }
   if (url.pathname === "/api/settings/github" && request.method === "PUT") {
     return json(await connectGitHub(env, await readJson(request)));
@@ -1320,6 +1325,28 @@ async function translateArticle(env: Env, input: unknown): Promise<TranslationRe
         : "",
     };
   });
+}
+
+async function translateSegment(env: Env, input: unknown): Promise<{ text: string }> {
+  const body = input as {
+    text?: string;
+    language?: unknown;
+    contentType?: unknown;
+  };
+  const text = typeof body.text === "string" ? body.text : "";
+  const language = isTranslationLanguage(body.language) ? body.language : null;
+  const allowedContentTypes: TranslationContentType[] = ["文章标题", "文章简介", "Markdown 正文"];
+  const contentType = allowedContentTypes.includes(body.contentType as TranslationContentType)
+    ? body.contentType as TranslationContentType
+    : null;
+  if (!text.trim()) throw new HttpError(400, "待翻译分段不能为空");
+  if (text.length > TRANSLATION_CHUNK_MAX_LENGTH) {
+    throw new HttpError(413, `单个翻译分段不能超过 ${TRANSLATION_CHUNK_MAX_LENGTH} 个字符`);
+  }
+  if (!language) throw new HttpError(400, "翻译语言无效");
+  if (!contentType) throw new HttpError(400, "翻译内容类型无效");
+  const settings = await requireTranslationSettings(env);
+  return { text: await requestTranslation(settings, text, language, contentType) };
 }
 
 async function translateProtectedValue(

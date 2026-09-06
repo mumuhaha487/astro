@@ -24,6 +24,7 @@ export interface PostDocument {
 }
 
 export type TranslationLanguage = "en" | "ja";
+export type TranslationContentType = "文章标题" | "文章简介" | "Markdown 正文";
 
 export interface TranslationDocument extends PostDocument {
   language: TranslationLanguage;
@@ -45,6 +46,10 @@ export interface TranslationResult {
   title: string;
   description: string;
   body: string;
+}
+
+export interface TranslationSegmentResult {
+  text: string;
 }
 
 export interface TranslationSettingsSummary {

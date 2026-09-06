@@ -253,6 +253,16 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       mutations.push({ method: "PUT", path: url.pathname, body });
       return json({ ...body, key: "visual-schedule", createdAt: new Date().toISOString() });
     }
+    if (url.pathname === "/api/translate/segment" && request.method() === "POST") {
+      const body = request.postDataJSON();
+      if (body.contentType === "文章标题") {
+        return json({ text: body.language === "en" ? "Translated article title" : "翻訳記事のタイトル" });
+      }
+      if (body.contentType === "文章简介") {
+        return json({ text: body.language === "en" ? "Translated article description" : "翻訳記事の概要" });
+      }
+      return json({ text: body.language === "en" ? "Translated article body." : "翻訳記事の本文です。" });
+    }
     if (url.pathname === "/api/translate" && request.method() === "POST") {
       const body = request.postDataJSON();
       return json({
@@ -725,6 +735,7 @@ async function verifyDesktop() {
   await historyDialog.waitFor({ state: "detached" });
   assert.equal(await page.evaluate(() => document.documentElement.style.overflow), "");
 
+  await page.locator(".studio-rich-content[contenteditable='true']").fill("需要翻译的正文。");
   const publishingSettingsButton = page.locator(".publish-bar-meta button");
   await publishingSettingsButton.click();
   const settingsDrawer = page.locator(".advanced-fields");

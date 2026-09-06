@@ -459,6 +459,42 @@ describe("multilingual publishing", () => {
     expect(providerSources.every((source) => source.length <= 1_800)).toBe(true);
   });
 
+  it("translates one browser-managed segment and enforces the segment limit", async () => {
+    const { env } = memoryEnv();
+    const cookie = await loginCookie(env);
+    await worker.fetch(new Request("https://studio.example/api/settings/translation", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiUrl: "https://translation.example/",
+        apiKey: "test-browser-api-key",
+        model: "example/translator",
+      }),
+    }), env);
+    const providerFetch = vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      const payload = JSON.parse(String(init?.body)) as { messages: Array<{ content: string }> };
+      return Response.json({ choices: [{ message: { content: payload.messages.at(-1)?.content.replace("正文", "body") } }] });
+    });
+    vi.stubGlobal("fetch", providerFetch);
+
+    const translated = await worker.fetch(new Request("https://studio.example/api/translate/segment", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "一段正文", language: "en", contentType: "Markdown 正文" }),
+    }), env);
+    expect(translated.status).toBe(200);
+    expect(await translated.json()).toEqual({ text: "一段body" });
+    expect(providerFetch).toHaveBeenCalledTimes(1);
+
+    const oversized = await worker.fetch(new Request("https://studio.example/api/translate/segment", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "x".repeat(1_801), language: "en", contentType: "Markdown 正文" }),
+    }), env);
+    expect(oversized.status).toBe(413);
+    expect(providerFetch).toHaveBeenCalledTimes(1);
+  });
+
   it("rejects private-network AI API endpoints", async () => {
     const { env, values } = memoryEnv();
     const cookie = await loginCookie(env);
