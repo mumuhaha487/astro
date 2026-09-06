@@ -1,12 +1,16 @@
 {{- $page := .page -}}{{- $image := strings.TrimSpace ($page.Params.image | default "") -}}
 <article class="post-card{{ if not $image }} no-cover{{ end }}" data-pagefind-ignore>
-  {{ if $image }}<a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img src="{{ $image | safeURL }}" alt="" loading="lazy"></a>{{ end }}
+  {{ if $image }}
+    <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img src="{{ $image | safeURL }}" alt="" loading="lazy" decoding="async"></a>
+  {{ else }}
+    <a class="post-cover post-cover-placeholder" href="{{ $page.RelPermalink }}" tabindex="-1" aria-hidden="true">{{ partial "icon.html" (dict "name" "book-open") }}</a>
+  {{ end }}
   <div class="post-card-body">
     <div class="post-card-top">
       <span>{{ $page.Date.Format "2006.01.02" }}</span>
       {{ with $page.Params.category }}<a href="{{ printf "/category/%s/" (. | urlize) }}">{{ . }}</a>{{ end }}
     </div>
-    <h2><a href="{{ $page.RelPermalink }}">{{ if $page.Params.pinned }}{{ partial "icon.html" (dict "name" "pin") }}{{ end }}{{ $page.Title }}</a></h2>
+    <h2><a href="{{ $page.RelPermalink }}">{{ if $page.Params.pinned }}{{ partial "icon.html" (dict "name" "pin") }}{{ end }}<span>{{ $page.Title }}</span></a></h2>
     <p>{{ with $page.Params.description }}{{ . | markdownify | plainify }}{{ else }}{{ $page.Summary | plainify | truncate 120 }}{{ end }}</p>
     <div class="post-card-foot">
       <div>{{ range first 3 ($page.Params.tags | default slice) }}<a href="{{ printf "/tags/%s/" (. | urlize) }}">#{{ . }}</a>{{ end }}</div>

@@ -25,6 +25,7 @@
     if (!matchMedia("(pointer:fine)").matches || reducedMotion.matches) return;
     const dot = $(".cursor-dot");
     if (!dot) return;
+    document.body.classList.add("has-custom-cursor");
     addEventListener("pointermove", (event) => {
       dot.style.left = `${event.clientX}px`;
       dot.style.top = `${event.clientY}px`;

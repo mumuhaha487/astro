@@ -13,6 +13,58 @@ if (!executablePath) throw new Error("Chrome was not found");
 
 const browser = await chromium.launch({ executablePath, headless: true });
 try {
+  const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
+  const desktopPage = await desktopContext.newPage();
+  let desktopResponse = await desktopPage.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(desktopResponse?.status(), 200);
+  assert.equal(await desktopPage.locator(".post-card").count(), 10, "desktop blog page does not contain exactly ten articles");
+  const desktopLayout = await desktopPage.evaluate(() => {
+    const cards = [...document.querySelectorAll(".post-card")];
+    const covers = [...document.querySelectorAll(".post-cover")];
+    const gridStyle = getComputedStyle(document.querySelector(".post-grid"));
+    const titleOverflow = cards.some((card) => {
+      const title = card.querySelector("h2 a span");
+      const summary = card.querySelector(".post-card-body > p");
+      const cardRect = card.getBoundingClientRect();
+      return [title, summary].some((node) => {
+        if (!node) return false;
+        const rect = node.getBoundingClientRect();
+        const style = getComputedStyle(node);
+        return rect.left < cardRect.left - 1 || rect.right > cardRect.right + 1 || rect.bottom > cardRect.bottom + 1 || style.overflow !== "hidden";
+      });
+    });
+    return {
+      columns: gridStyle.gridTemplateColumns.split(" ").filter(Boolean).length,
+      cardWidths: cards.map((card) => Math.round(card.getBoundingClientRect().width)),
+      cardHeights: cards.map((card) => Math.round(card.getBoundingClientRect().height)),
+      coverRatios: covers.map((cover) => {
+        const rect = cover.getBoundingClientRect();
+        return rect.width / rect.height;
+      }),
+      titleOverflow,
+      hasCustomCursor: document.body.classList.contains("has-custom-cursor"),
+      nativeCursor: getComputedStyle(document.body).cursor,
+      cursorSize: (() => {
+        const cursor = document.querySelector(".cursor-dot");
+        if (!cursor) return null;
+        const style = getComputedStyle(cursor);
+        const center = getComputedStyle(cursor, "::after");
+        return { width: parseFloat(style.width), height: parseFloat(style.height), centerWidth: parseFloat(center.width) };
+      })(),
+    };
+  });
+  assert.equal(desktopLayout.columns, 3, "desktop blog must use a three-column card grid");
+  assert.equal(new Set(desktopLayout.cardWidths).size, 1, `desktop card widths differ: ${desktopLayout.cardWidths.join(", ")}`);
+  assert.equal(new Set(desktopLayout.cardHeights).size, 1, `desktop card heights differ: ${desktopLayout.cardHeights.join(", ")}`);
+  assert.ok(desktopLayout.coverRatios.every((ratio) => Math.abs(ratio - 16 / 9) < 0.02), `desktop covers must be cropped to 16:9: ${desktopLayout.coverRatios.join(", ")}`);
+  assert.equal(desktopLayout.titleOverflow, false, "desktop card text overflows its container");
+  assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
+  assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
+  assert.ok(desktopLayout.cursorSize?.width >= 32 && desktopLayout.cursorSize?.centerWidth >= 3, "custom cursor must include a large ring and a small center point");
+  await desktopPage.mouse.move(420, 320);
+  assert.equal(await desktopPage.locator(".cursor-dot.visible").count(), 1, "custom cursor does not follow pointer movement");
+  await desktopContext.close();
+
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
   const page = await context.newPage();
   const localRun = ["127.0.0.1", "localhost"].includes(new URL(baseUrl).hostname);
@@ -136,7 +188,7 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: 10-item blog, tag, category, and search pagination plus home, tools, article, and mobile overflow checks.");
+  console.log("Browser verification passed: desktop three-column fixed cards and custom cursor; 10-item blog, tag, category, and search pagination; home, tools, article, and mobile overflow checks.");
 } finally {
   await browser.close();
 }

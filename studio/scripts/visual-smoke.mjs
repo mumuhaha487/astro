@@ -762,6 +762,31 @@ async function verifyDesktop() {
     mimeType: "image/png",
     buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
   });
+  const cropDialog = page.getByRole("dialog", { name: "裁切文章封面" });
+  await cropDialog.waitFor();
+  assert.equal(await cropDialog.getByText("图片比例不同，建议裁切", { exact: true }).count(), 1, "non-16:9 covers must show the crop recommendation");
+  const cropFrame = cropDialog.getByRole("application", { name: "封面裁切区域，可拖动图片调整取景" });
+  const cropFrameRatio = await cropFrame.evaluate((element) => {
+    const rect = element.getBoundingClientRect();
+    return rect.width / rect.height;
+  });
+  assert.ok(Math.abs(cropFrameRatio - 16 / 9) < 0.02, `cover crop frame must remain 16:9, received ${cropFrameRatio}`);
+  await cropDialog.getByLabel("缩放").fill("1.4");
+  assert.equal(await cropDialog.locator("output").innerText(), "140%", "cover zoom control must update its value");
+  const cropImage = cropDialog.locator(".cover-crop-frame img");
+  const transformBeforeDrag = await cropImage.evaluate((element) => getComputedStyle(element).transform);
+  const cropBounds = await cropFrame.boundingBox();
+  assert(cropBounds, "cover crop frame must be visible");
+  await page.mouse.move(cropBounds.x + cropBounds.width / 2, cropBounds.y + cropBounds.height / 2);
+  await page.mouse.down();
+  await page.mouse.move(cropBounds.x + cropBounds.width / 2, cropBounds.y + cropBounds.height / 2 - 42, { steps: 4 });
+  await page.mouse.up();
+  const transformAfterDrag = await cropImage.evaluate((element) => getComputedStyle(element).transform);
+  assert.notEqual(transformAfterDrag, transformBeforeDrag, "cover crop image must be draggable");
+  const cropPath = join(outputDirectory, "desktop-1264-cover-crop.png");
+  await page.screenshot({ path: cropPath, animations: "disabled" });
+  await cropDialog.getByRole("button", { name: "使用此裁切" }).click();
+  await cropDialog.waitFor({ state: "detached" });
   await page.waitForFunction(() => {
     const image = document.querySelector('.cover-preview-box img');
     return image?.getAttribute("src")?.startsWith("blob:") && image.naturalWidth > 0;
@@ -1532,6 +1557,23 @@ async function verifyMobile(width) {
     return { left: Math.round(rect.left), right: Math.round(rect.right), width: Math.round(rect.width) };
   });
   assert(mobileTagRect.left >= 14 && mobileTagRect.right <= width - 14, `mobile tag input must fit the settings drawer: ${JSON.stringify(mobileTagRect)}`);
+  if (width === 390) {
+    await page.locator('.cover-setting input[type="file"]').setInputFiles({
+      name: "mobile-cover.png",
+      mimeType: "image/png",
+      buffer: Buffer.from("iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAQAAAC1HAwCAAAAC0lEQVR42mNk+A8AAQUBAScY42YAAAAASUVORK5CYII=", "base64"),
+    });
+    const mobileCropDialog = page.getByRole("dialog", { name: "裁切文章封面" });
+    await mobileCropDialog.waitFor();
+    const mobileCropRect = await mobileCropDialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return { left: Math.round(rect.left), right: Math.round(rect.right), bottom: Math.round(rect.bottom), width: Math.round(rect.width) };
+    });
+    assert.deepEqual(mobileCropRect, { left: 0, right: width, bottom: height, width }, "mobile cover crop dialog must fit the viewport as a bottom sheet");
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-cover-crop.png"), animations: "disabled" });
+    await mobileCropDialog.getByTitle("关闭封面裁切").click();
+    await mobileCropDialog.waitFor({ state: "detached" });
+  }
   const settingsPath = join(outputDirectory, `mobile-${width}-settings.png`);
   await page.screenshot({ path: settingsPath, animations: "disabled" });
   await page.locator(".mobile-settings-head button").click();

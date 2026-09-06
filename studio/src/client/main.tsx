@@ -11,6 +11,7 @@ import {
   Clock3,
   Cloud,
   Code2,
+  Crop,
   ExternalLink,
   Eye,
   FileArchive,
@@ -48,6 +49,7 @@ import {
   type CSSProperties,
   type FormEvent,
   type KeyboardEvent as ReactKeyboardEvent,
+  type PointerEvent as ReactPointerEvent,
   type ReactNode,
   useCallback,
   useEffect,
@@ -1565,6 +1567,7 @@ function AdvancedFields({
   const coverPreviewRef = useRef<string | null>(null);
   const [coverUploading, setCoverUploading] = useState(false);
   const [coverPreview, setCoverPreview] = useState<string | null>(null);
+  const [coverCropFile, setCoverCropFile] = useState<File | null>(null);
 
   useEffect(() => () => {
     if (coverPreviewRef.current) URL.revokeObjectURL(coverPreviewRef.current);
@@ -1621,6 +1624,7 @@ function AdvancedFields({
   }
 
   return (
+    <>
     <section className="advanced-fields" aria-label="发文设置">
       <header className="mobile-settings-head">
         <div><strong>发文设置</strong><span>文章属性会随内容保存</span></div>
@@ -1656,14 +1660,18 @@ function AdvancedFields({
               className="visually-hidden"
               type="file"
               accept="image/png,image/jpeg,image/gif,image/webp,image/avif,image/bmp"
-              onChange={(event) => void uploadCover(event.target.files?.[0])}
+              onChange={(event) => {
+                const file = event.target.files?.[0];
+                if (file) setCoverCropFile(file);
+                event.currentTarget.value = "";
+              }}
             />
             <div className="cover-actions">
               <button className="cover-upload-button" onClick={() => coverInputRef.current?.click()} disabled={coverUploading}>
                 {coverUploading ? <LoaderCircle className="spin" size={17} /> : <ImagePlus size={17} />}
                 <span>{coverUploading ? "正在上传" : "本地上传"}</span>
               </button>
-              {fields.image || coverPreview ? <button className="cover-clear-button" onClick={() => { replaceCoverPreview(null); setField("image", ""); }}>移除封面</button> : null}
+              {fields.image || coverPreview ? <button className="cover-clear-button" onClick={() => { setCoverCropFile(null); replaceCoverPreview(null); setField("image", ""); }}>移除封面</button> : null}
             </div>
           </div>
           <div className="cover-preview-box">
@@ -1783,6 +1791,228 @@ function AdvancedFields({
         <input aria-label="固定链接" value={fields.permalink || ""} onChange={(event) => setField("permalink", event.target.value || undefined)} placeholder="例如 /notes/astro-editor/" />
       </SettingRow>
     </section>
+    {coverCropFile ? (
+      <CoverCropDialog
+        key={`${coverCropFile.name}-${coverCropFile.lastModified}-${coverCropFile.size}`}
+        file={coverCropFile}
+        onCancel={() => setCoverCropFile(null)}
+        onConfirm={(file) => {
+          setCoverCropFile(null);
+          void uploadCover(file);
+        }}
+      />
+    ) : null}
+    </>
+  );
+}
+
+const COVER_ASPECT_RATIO = 16 / 9;
+
+type CropSize = { width: number; height: number };
+type CropOffset = { x: number; y: number };
+
+function clampCoverOffset(offset: CropOffset, frame: CropSize, natural: CropSize, zoom: number): CropOffset {
+  if (!frame.width || !frame.height || !natural.width || !natural.height) return { x: 0, y: 0 };
+  const scale = Math.max(frame.width / natural.width, frame.height / natural.height) * zoom;
+  const maximumX = Math.max(0, (natural.width * scale - frame.width) / 2);
+  const maximumY = Math.max(0, (natural.height * scale - frame.height) / 2);
+  return {
+    x: Math.max(-maximumX, Math.min(maximumX, offset.x)),
+    y: Math.max(-maximumY, Math.min(maximumY, offset.y)),
+  };
+}
+
+function croppedCoverName(file: File, mimeType: string) {
+  const baseName = file.name.replace(/\.[^.]+$/, "") || "cover";
+  return `${baseName}-cover.${mimeType === "image/png" ? "png" : "webp"}`;
+}
+
+function CoverCropDialog({
+  file,
+  onCancel,
+  onConfirm,
+}: {
+  file: File;
+  onCancel: () => void;
+  onConfirm: (file: File) => void;
+}) {
+  const [sourceUrl] = useState(() => URL.createObjectURL(file));
+  const [natural, setNatural] = useState<CropSize>({ width: 0, height: 0 });
+  const [frame, setFrame] = useState<CropSize>({ width: 0, height: 0 });
+  const [zoom, setZoom] = useState(1);
+  const [offset, setOffset] = useState<CropOffset>({ x: 0, y: 0 });
+  const [processing, setProcessing] = useState(false);
+  const [cropError, setCropError] = useState("");
+  const frameRef = useRef<HTMLDivElement>(null);
+  const imageRef = useRef<HTMLImageElement>(null);
+  const dragRef = useRef<{ pointerId: number; x: number; y: number; offset: CropOffset } | null>(null);
+  const onCancelRef = useRef(onCancel);
+
+  useEffect(() => {
+    onCancelRef.current = onCancel;
+  }, [onCancel]);
+
+  useEffect(() => {
+    const root = document.documentElement;
+    const previousOverflow = root.style.overflow;
+    root.style.overflow = "hidden";
+    function closeOnEscape(event: KeyboardEvent) {
+      if (event.key === "Escape") onCancelRef.current();
+    }
+    window.addEventListener("keydown", closeOnEscape);
+    return () => {
+      root.style.overflow = previousOverflow;
+      window.removeEventListener("keydown", closeOnEscape);
+      URL.revokeObjectURL(sourceUrl);
+    };
+  }, [sourceUrl]);
+
+  useEffect(() => {
+    const element = frameRef.current;
+    if (!element) return;
+    const update = () => {
+      const rect = element.getBoundingClientRect();
+      setFrame({ width: rect.width, height: rect.height });
+    };
+    update();
+    const observer = new ResizeObserver(update);
+    observer.observe(element);
+    return () => observer.disconnect();
+  }, []);
+
+  useEffect(() => {
+    setOffset((current) => clampCoverOffset(current, frame, natural, zoom));
+  }, [frame, natural, zoom]);
+
+  const renderScale = frame.width && natural.width
+    ? Math.max(frame.width / natural.width, frame.height / natural.height) * zoom
+    : 1;
+  const needsCrop = natural.width > 0 && Math.abs(natural.width / natural.height - COVER_ASPECT_RATIO) > 0.015;
+
+  function moveCrop(next: CropOffset) {
+    setOffset(clampCoverOffset(next, frame, natural, zoom));
+  }
+
+  function handlePointerDown(event: ReactPointerEvent<HTMLDivElement>) {
+    event.currentTarget.setPointerCapture(event.pointerId);
+    dragRef.current = { pointerId: event.pointerId, x: event.clientX, y: event.clientY, offset };
+  }
+
+  function handlePointerMove(event: ReactPointerEvent<HTMLDivElement>) {
+    const drag = dragRef.current;
+    if (!drag || drag.pointerId !== event.pointerId) return;
+    moveCrop({ x: drag.offset.x + event.clientX - drag.x, y: drag.offset.y + event.clientY - drag.y });
+  }
+
+  function handlePointerEnd(event: ReactPointerEvent<HTMLDivElement>) {
+    if (dragRef.current?.pointerId === event.pointerId) dragRef.current = null;
+  }
+
+  function handleCropKeys(event: ReactKeyboardEvent<HTMLDivElement>) {
+    const movement = event.shiftKey ? 12 : 3;
+    const directions: Record<string, CropOffset> = {
+      ArrowLeft: { x: movement, y: 0 },
+      ArrowRight: { x: -movement, y: 0 },
+      ArrowUp: { x: 0, y: movement },
+      ArrowDown: { x: 0, y: -movement },
+    };
+    const direction = directions[event.key];
+    if (!direction) return;
+    event.preventDefault();
+    moveCrop({ x: offset.x + direction.x, y: offset.y + direction.y });
+  }
+
+  async function confirmCrop() {
+    const image = imageRef.current;
+    if (!image || !natural.width || !frame.width || processing) return;
+    setProcessing(true);
+    setCropError("");
+    try {
+      const scale = Math.max(frame.width / natural.width, frame.height / natural.height) * zoom;
+      const sourceWidth = frame.width / scale;
+      const sourceHeight = frame.height / scale;
+      const sourceX = natural.width / 2 - sourceWidth / 2 - offset.x / scale;
+      const sourceY = natural.height / 2 - sourceHeight / 2 - offset.y / scale;
+      const outputWidth = Math.max(1, Math.min(1600, Math.round(sourceWidth)));
+      const outputHeight = Math.max(1, Math.round(outputWidth / COVER_ASPECT_RATIO));
+      const canvas = document.createElement("canvas");
+      canvas.width = outputWidth;
+      canvas.height = outputHeight;
+      const context = canvas.getContext("2d");
+      if (!context) throw new Error("浏览器无法创建图片裁切画布");
+      context.drawImage(image, sourceX, sourceY, sourceWidth, sourceHeight, 0, 0, outputWidth, outputHeight);
+      const mimeType = file.type === "image/png" ? "image/png" : "image/webp";
+      const blob = await new Promise<Blob>((resolve, reject) => canvas.toBlob(
+        (value) => value ? resolve(value) : reject(new Error("图片裁切失败")),
+        mimeType,
+        mimeType === "image/webp" ? 0.9 : undefined,
+      ));
+      setProcessing(false);
+      onConfirm(new File([blob], croppedCoverName(file, mimeType), { type: mimeType, lastModified: Date.now() }));
+    } catch (error) {
+      setCropError(error instanceof Error ? error.message : "图片裁切失败，请重新选择");
+      setProcessing(false);
+    }
+  }
+
+  return (
+    <div className="modal-backdrop cover-crop-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onCancel(); }}>
+      <section className="cover-crop-dialog" role="dialog" aria-modal="true" aria-labelledby="cover-crop-title">
+        <header>
+          <div>
+            <h2 id="cover-crop-title"><Crop size={18} /> 裁切文章封面</h2>
+            <span className={needsCrop ? "crop-status needs-crop" : "crop-status"}>
+              {!natural.width ? "正在读取图片比例" : needsCrop ? "图片比例不同，建议裁切" : "比例符合，可调整取景"}
+            </span>
+          </div>
+          <button className="icon-button" type="button" onClick={onCancel} title="关闭封面裁切"><X size={18} /></button>
+        </header>
+        <div className="cover-crop-body">
+          <div
+            ref={frameRef}
+            className="cover-crop-frame"
+            role="application"
+            aria-label="封面裁切区域，可拖动图片调整取景"
+            tabIndex={0}
+            onKeyDown={handleCropKeys}
+            onPointerDown={handlePointerDown}
+            onPointerMove={handlePointerMove}
+            onPointerUp={handlePointerEnd}
+            onPointerCancel={handlePointerEnd}
+          >
+            <img
+              ref={imageRef}
+              src={sourceUrl}
+              alt="待裁切封面"
+              draggable={false}
+              onLoad={(event) => setNatural({ width: event.currentTarget.naturalWidth, height: event.currentTarget.naturalHeight })}
+              onError={() => setCropError("图片无法读取，请重新选择")}
+              style={{
+                width: natural.width ? `${natural.width * renderScale}px` : "auto",
+                height: natural.height ? `${natural.height * renderScale}px` : "auto",
+                transform: `translate(-50%, -50%) translate(${offset.x}px, ${offset.y}px)`,
+              }}
+            />
+            <span className="crop-grid-line vertical first" /><span className="crop-grid-line vertical second" />
+            <span className="crop-grid-line horizontal first" /><span className="crop-grid-line horizontal second" />
+          </div>
+          <div className="cover-crop-controls">
+            <label htmlFor="cover-crop-zoom">缩放</label>
+            <input id="cover-crop-zoom" type="range" min="1" max="3" step="0.01" value={zoom} onChange={(event) => setZoom(Number(event.target.value))} />
+            <output htmlFor="cover-crop-zoom">{Math.round(zoom * 100)}%</output>
+            <button className="icon-button" type="button" title="重置封面取景" onClick={() => { setZoom(1); setOffset({ x: 0, y: 0 }); }}><RefreshCw size={16} /></button>
+          </div>
+          {cropError ? <div className="cover-crop-error" role="alert"><AlertCircle size={14} /> {cropError}</div> : null}
+        </div>
+        <footer>
+          <button className="secondary-button" type="button" onClick={onCancel}>取消</button>
+          <button className="cover-crop-confirm" type="button" disabled={!natural.width || processing} onClick={() => void confirmCrop()}>
+            {processing ? <LoaderCircle className="spin" size={16} /> : <Crop size={16} />}
+            使用此裁切
+          </button>
+        </footer>
+      </section>
+    </div>
   );
 }
 
