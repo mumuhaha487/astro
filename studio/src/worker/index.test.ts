@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import type { TranslationResult } from "../shared/types";
 import worker from "./index";
 
 function testEnv(assetFetch = vi.fn()) {
@@ -399,6 +400,63 @@ describe("multilingual publishing", () => {
       expect(new Headers(init?.headers).get("Authorization")).toBe(`Bearer ${apiKey}`);
       expect(JSON.parse(String(init?.body)).model).toBe("example/translator");
     }
+  });
+
+  it("segments long articles and retries transient upstream 504 responses", async () => {
+    const { env } = memoryEnv();
+    const cookie = await loginCookie(env);
+    await worker.fetch(new Request("https://studio.example/api/settings/translation", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiUrl: "https://translation.example/",
+        apiKey: "test-segment-api-key",
+        model: "example/translator",
+      }),
+    }), env);
+
+    const body = Array.from({ length: 24 }, (_, index) =>
+      `## 第 ${index + 1} 节\n\n${"这是需要翻译的长文章段落。".repeat(10)}`).join("\n\n");
+    const bodyAttempts = new Map<string, number>();
+    const providerSources: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (_input: string | URL | Request, init?: RequestInit) => {
+      const payload = JSON.parse(String(init?.body)) as { messages: Array<{ content: string }> };
+      const system = payload.messages[0]?.content || "";
+      const source = payload.messages.at(-1)?.content || "";
+      providerSources.push(source);
+      if (system.includes("Markdown 正文")) {
+        const attempts = (bodyAttempts.get(source) || 0) + 1;
+        bodyAttempts.set(source, attempts);
+        if (attempts === 1) return new Response("Gateway Timeout", { status: 504 });
+      }
+      const translated = source
+        .replaceAll("中文标题", "English title")
+        .replaceAll("中文简介", "English description")
+        .replaceAll("需要翻译", "translated");
+      return Response.json({ choices: [{ message: { content: translated } }] });
+    }));
+
+    const response = await worker.fetch(new Request("https://studio.example/api/translate", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        title: "中文标题",
+        description: "中文简介",
+        body,
+        languages: ["en"],
+      }),
+    }), env);
+    const result = await response.json() as { translations: TranslationResult[] };
+
+    expect(response.status).toBe(200);
+    expect(result.translations[0]).toMatchObject({
+      title: "English title",
+      description: "English description",
+    });
+    expect(result.translations[0].body).toContain("translated");
+    expect(bodyAttempts.size).toBeGreaterThan(1);
+    expect([...bodyAttempts.values()].every((attempts) => attempts === 2)).toBe(true);
+    expect(providerSources.every((source) => source.length <= 1_800)).toBe(true);
   });
 
   it("rejects private-network AI API endpoints", async () => {

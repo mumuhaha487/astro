@@ -1,4 +1,9 @@
 {
-  "mainlandRegions": ["ap-shanghai"],
-  "overseasRegions": ["ap-hongkong"]
+  "cloudFunctions": {
+    "mainlandRegions": ["ap-shanghai"],
+    "overseasRegions": ["ap-hongkong"],
+    "nodejs": {
+      "maxDuration": 120
+    }
+  }
 }

@@ -1304,16 +1304,22 @@ async function translateArticle(env: Env, input: unknown): Promise<TranslationRe
   if (!languages.length) throw new HttpError(400, "请至少选择一种翻译语言");
   const settings = await requireTranslationSettings(env);
 
-  return mapConcurrent(languages, 2, async (language) => ({
-    language,
-    title: await translateProtectedValue(settings, title, language, "文章标题"),
-    description: description
-      ? await translateProtectedValue(settings, description, language, "文章简介")
-      : "",
-    body: markdown
-      ? await translateProtectedValue(settings, markdown, language, "Markdown 正文")
-      : "",
-  }));
+  return mapConcurrent(languages, 2, async (language) => {
+    const [translatedTitle, translatedDescription] = await Promise.all([
+      translateProtectedValue(settings, title, language, "文章标题"),
+      description
+        ? translateProtectedValue(settings, description, language, "文章简介")
+        : Promise.resolve(""),
+    ]);
+    return {
+      language,
+      title: translatedTitle,
+      description: translatedDescription,
+      body: markdown
+        ? await translateProtectedValue(settings, markdown, language, "Markdown 正文")
+        : "",
+    };
+  });
 }
 
 async function translateProtectedValue(
@@ -1338,6 +1344,36 @@ async function translateProtectedValue(
 }
 
 async function requestTranslation(
+  settings: StoredTranslationSettings & { apiKey: string },
+  source: string,
+  language: TranslationLanguage,
+  contentType: string,
+): Promise<string> {
+  let lastError: unknown;
+  for (let attempt = 0; attempt < 3; attempt += 1) {
+    try {
+      const translated = await requestTranslationOnce(settings, source, language, contentType);
+      assertTranslationTokens(source, translated);
+      return translated;
+    } catch (error) {
+      lastError = error;
+      if (!(error instanceof HttpError) || error.code !== "TRANSLATION_UPSTREAM_TRANSIENT") {
+        throw error;
+      }
+      if (attempt === 2) {
+        throw new HttpError(
+          502,
+          `${error.message.replace(/[，,]?正在重试$/, "")}；已自动重试 3 次，请稍后再试`,
+          "TRANSLATION_UPSTREAM_FAILED",
+        );
+      }
+      await delay(400 * (2 ** attempt));
+    }
+  }
+  throw lastError;
+}
+
+async function requestTranslationOnce(
   settings: StoredTranslationSettings & { apiKey: string },
   source: string,
   language: TranslationLanguage,
@@ -1371,15 +1407,22 @@ async function requestTranslation(
           { role: "user", content: source },
         ],
       }),
+      signal: AbortSignal.timeout(25_000),
     });
   } catch {
-    throw new HttpError(502, "无法连接 AI 翻译服务，请检查 API 地址");
+    throw new HttpError(502, "AI 翻译分段连接失败，正在重试", "TRANSLATION_UPSTREAM_TRANSIENT");
   }
   if (!response.ok) {
     if (response.status === 401 || response.status === 403) {
       throw new HttpError(502, "AI API 密钥无效或没有模型权限");
     }
-    if (response.status === 429) throw new HttpError(502, "AI 翻译请求过于频繁，请稍后重试");
+    if (response.status === 408 || response.status === 429 || response.status >= 500) {
+      throw new HttpError(
+        502,
+        `AI 翻译分段暂时失败 (${response.status})，正在重试`,
+        "TRANSLATION_UPSTREAM_TRANSIENT",
+      );
+    }
     throw new HttpError(502, `AI 翻译服务返回错误 (${response.status})`);
   }
   const payload = await response.json().catch(() => null) as {
@@ -1387,9 +1430,26 @@ async function requestTranslation(
   } | null;
   const content = payload?.choices?.[0]?.message?.content;
   if (typeof content !== "string" || !content.trim()) {
-    throw new HttpError(502, "AI 翻译服务没有返回有效内容");
+    throw new HttpError(502, "AI 翻译分段没有返回有效内容，正在重试", "TRANSLATION_UPSTREAM_TRANSIENT");
   }
   return cleanTranslationOutput(content);
+}
+
+function assertTranslationTokens(source: string, translated: string): void {
+  const pattern = /__ASTRO_TRANSLATION_PROTECTED(?:_X)*_\d{5}__/g;
+  const expected = source.match(pattern) || [];
+  const actual = translated.match(pattern) || [];
+  if (expected.length !== actual.length || expected.some((token, index) => token !== actual[index])) {
+    throw new HttpError(
+      502,
+      "翻译分段没有完整保留代码、引用或资源标记，正在重试",
+      "TRANSLATION_UPSTREAM_TRANSIENT",
+    );
+  }
+}
+
+function delay(milliseconds: number): Promise<void> {
+  return new Promise((resolve) => setTimeout(resolve, milliseconds));
 }
 
 function normalizeTranslationApiUrl(value: string): string {

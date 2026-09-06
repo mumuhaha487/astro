@@ -5,6 +5,7 @@ import {
   protectMarkdownForTranslation,
   restoreProtectedMarkdown,
   splitTranslationText,
+  TRANSLATION_CHUNK_MAX_LENGTH,
   translationKeyFromPath,
   translationPath,
 } from "./translation";
@@ -80,6 +81,15 @@ describe("Markdown translation protection", () => {
     const source = `${"长句内容。".repeat(20)}END`;
     const chunks = splitTranslationText(source, 30);
     expect(chunks.length).toBeGreaterThan(1);
+    expect(chunks.map((chunk) => `${chunk.text}${chunk.separator}`).join("")).toBe(source);
+  });
+
+  it("uses gateway-safe segments for a full-length blog article", () => {
+    const source = Array.from({ length: 60 }, (_, index) =>
+      `## 第 ${index + 1} 节\n\n${"这是一段需要翻译的正文。".repeat(12)}`).join("\n\n");
+    const chunks = splitTranslationText(source);
+    expect(chunks.length).toBeGreaterThan(2);
+    expect(chunks.every((chunk) => chunk.text.length <= TRANSLATION_CHUNK_MAX_LENGTH)).toBe(true);
     expect(chunks.map((chunk) => `${chunk.text}${chunk.separator}`).join("")).toBe(source);
   });
 });

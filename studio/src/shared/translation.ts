@@ -3,6 +3,7 @@ import type { TranslationLanguage } from "./types";
 export const TRANSLATION_LANGUAGES: readonly TranslationLanguage[] = ["en", "ja"];
 export const DEFAULT_TRANSLATION_API_URL = "https://deepseek.inc.re/";
 export const DEFAULT_TRANSLATION_MODEL = "deepseek/deepseek-v4-flash";
+export const TRANSLATION_CHUNK_MAX_LENGTH = 1_800;
 
 export interface ProtectedMarkdown {
   text: string;
@@ -79,7 +80,7 @@ export function restoreProtectedMarkdown(translated: string, protectedMarkdown: 
   return restored;
 }
 
-export function splitTranslationText(value: string, maximumLength = 12_000): TranslationTextChunk[] {
+export function splitTranslationText(value: string, maximumLength = TRANSLATION_CHUNK_MAX_LENGTH): TranslationTextChunk[] {
   if (!value) return [];
   if (value.length <= maximumLength) return [{ text: value, separator: "" }];
   const units: TranslationTextChunk[] = [];

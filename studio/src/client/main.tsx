@@ -2022,7 +2022,7 @@ function AdvancedFields({
           <div className="translation-actions">
             <button type="button" className="secondary-button" onClick={onTranslate} disabled={translating || !translationTargets.length}>
               {translating ? <LoaderCircle className="spin" size={15} /> : <Languages size={15} />}
-              {translating ? "正在翻译" : "AI 翻译"}
+              {translating ? "正在分段翻译" : "AI 翻译"}
             </button>
             {translationTargets.some((language) => translations[language]) ? (
               <button type="button" className="text-button" onClick={onReviewTranslations}>检查译文</button>
@@ -3910,7 +3910,7 @@ function TranslationDialog({
         <footer>
           <button className="secondary-button" type="button" onClick={onRegenerate} disabled={translating}>
             {translating ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
-            {translating ? "正在翻译" : "重新翻译已选语言"}
+            {translating ? "正在分段翻译" : "重新翻译已选语言"}
           </button>
           <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
         </footer>
