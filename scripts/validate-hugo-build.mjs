@@ -29,6 +29,14 @@ const requiredFiles = [
   "ja/blog/index.html",
   "ja/posts/测试文章标题/index.html",
   "tools/index.html",
+  "tools/json-formatter/index.html",
+  "tools/timestamp/index.html",
+  "tools/text-stats/index.html",
+  "tools/base64/index.html",
+  "tools/uuid/index.html",
+  "tools/beast-translator/index.html",
+  "tools/docker-accelerator/index.html",
+  "hugo-theme/giscus-theme.css",
   "category/index.html",
   "tags/index.html",
 ];
@@ -98,7 +106,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-i18n/, "Multilingual asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260906-tools-toc/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -141,7 +149,21 @@ for (const article of translatedArticles) {
   assert.match(article, /data-category-id="DIC_kwDOPjTkdM4CuiIf"/, "Giscus category ID does not match the original Astro comments");
   assert.match(article, /data-mapping="specific"/, "Giscus must use a shared explicit discussion key");
   assert.ok(article.includes(`data-term="${expectedCommentTerm}"`), "Language variants do not share the Chinese discussion key");
+  assert.match(article, /data-theme="https:\/\/vmss\.cn\/hugo-theme\/giscus-theme\.css\?v=20260906"/, "Giscus dark theme is missing");
+  assert.match(article, /data-article-toc-nav/, "Article TOC shell is missing");
+  assert.match(article, /data-mobile-actions-toggle/, "Mobile article action launcher is missing");
 }
+
+const toolsIndex = await readFile(join(outputRoot, "tools", "index.html"), "utf8");
+assert.equal((toolsIndex.match(/class="tool-card"/g) || []).length, 7, "Toolbox does not contain seven routed tool cards");
+for (const route of ["json-formatter", "timestamp", "text-stats", "base64", "uuid", "beast-translator", "docker-accelerator"]) {
+  assert.ok(toolsIndex.includes(`href="/tools/${route}/"`), `Tool card route is missing: ${route}`);
+}
+const dockerTool = await readFile(join(outputRoot, "tools", "docker-accelerator", "index.html"), "utf8");
+assert.match(dockerTool, /<iframe class="tool-service-frame" src="https:\/\/docker\.0ha\.top\/"/, "Docker accelerator iframe is missing");
+const giscusTheme = await readFile(join(outputRoot, "hugo-theme", "giscus-theme.css"), "utf8");
+assert.match(giscusTheme, /--color-canvas-default:transparent/, "Giscus theme is not dark-theme compatible");
+assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
 const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
 assert.match(legacyCommentArticle, /data-term="posts\/20250825\/"/, "Existing Astro discussion mapping was not restored");
 const englishHome = await readFile(join(outputRoot, "en", "index.html"), "utf8");

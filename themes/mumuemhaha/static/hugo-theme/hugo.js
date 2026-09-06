@@ -10,18 +10,24 @@
       searchEmpty: "没有找到相关内容", searchError: "搜索索引暂时不可用，请稍后重试",
       previous: "上一页", next: "下一页", page: (page) => `第 ${page} 页`, pageSummary: (page, total) => `第 ${page} / ${total} 页`,
       articlePagination: "文章分页", passwordError: "密码错误，请重试",
+      copyCode: "复制全部代码", copied: "已复制", copyFailed: "复制失败",
+      expandCode: "展开全部代码", collapseCode: "收起代码",
     },
     en: {
       searchLoading: "Searching...", searchHint: "Enter a keyword to search", searchCount: (count) => `${count} results found`,
       searchEmpty: "No matching content", searchError: "The search index is temporarily unavailable",
       previous: "Previous page", next: "Next page", page: (page) => `Page ${page}`, pageSummary: (page, total) => `Page ${page} of ${total}`,
       articlePagination: "Article pages", passwordError: "Incorrect password. Please try again.",
+      copyCode: "Copy all code", copied: "Copied", copyFailed: "Copy failed",
+      expandCode: "Expand code", collapseCode: "Collapse code",
     },
     ja: {
       searchLoading: "検索中...", searchHint: "キーワードを入力してください", searchCount: (count) => `${count} 件見つかりました`,
       searchEmpty: "該当する内容がありません", searchError: "検索インデックスを一時的に利用できません",
       previous: "前のページ", next: "次のページ", page: (page) => `${page} ページ`, pageSummary: (page, total) => `${page} / ${total} ページ`,
       articlePagination: "記事ページ", passwordError: "パスワードが違います。もう一度お試しください。",
+      copyCode: "コードをすべてコピー", copied: "コピー済み", copyFailed: "コピーできませんでした",
+      expandCode: "コードを展開", collapseCode: "コードを折りたたむ",
     },
   }[language] || null;
   const text = messages || {
@@ -29,6 +35,8 @@
     searchEmpty: "No matching content", searchError: "The search index is temporarily unavailable",
     previous: "Previous page", next: "Next page", page: (page) => `Page ${page}`, pageSummary: (page, total) => `Page ${page} of ${total}`,
     articlePagination: "Article pages", passwordError: "Incorrect password. Please try again.",
+    copyCode: "Copy all code", copied: "Copied", copyFailed: "Copy failed",
+    expandCode: "Expand code", collapseCode: "Collapse code",
   };
   const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
   const numberFormatter = new Intl.NumberFormat(locale);
@@ -42,6 +50,31 @@
     shareRequest: null,
   };
 
+  function makeIcon(name) {
+    const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+    svg.setAttribute("class", "icon");
+    svg.setAttribute("aria-hidden", "true");
+    const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+    use.setAttribute("href", `/icons/lucide-sprite.svg#${name}`);
+    svg.append(use);
+    return svg;
+  }
+
+  async function copyText(value) {
+    if (navigator.clipboard?.writeText && window.isSecureContext) {
+      try { await navigator.clipboard.writeText(value); return; } catch {}
+    }
+    const helper = document.createElement("textarea");
+    helper.value = value;
+    helper.setAttribute("readonly", "");
+    helper.style.cssText = "position:fixed;inset:auto auto 0 -9999px";
+    document.body.append(helper);
+    helper.select();
+    const copied = document.execCommand("copy");
+    helper.remove();
+    if (!copied) throw new Error("Clipboard unavailable");
+  }
+
   $$(`[data-nav="${section === "posts" ? "blog" : section}"]`).forEach((node) => node.classList.add("active"));
 
   const openSidebar = () => document.body.classList.add("sidebar-open", "no-scroll");
@@ -52,15 +85,34 @@
   function initCursor() {
     if (!matchMedia("(pointer:fine)").matches || reducedMotion.matches) return;
     const dot = $(".cursor-dot");
-    if (!dot) return;
+    const ring = $(".cursor-ring");
+    if (!dot || !ring) return;
     document.body.classList.add("has-custom-cursor");
+    const trail = [];
+    const lag = 900;
+    let ringFrame = 0;
+    const renderRing = (now) => {
+      const cutoff = now - lag;
+      while (trail.length > 2 && trail[1].time <= cutoff) trail.shift();
+      let point = trail[0];
+      if (trail.length > 1 && point.time <= cutoff) {
+        const next = trail[1];
+        const progress = Math.max(0, Math.min(1, (cutoff - point.time) / Math.max(1, next.time - point.time)));
+        point = { x: point.x + ((next.x - point.x) * progress), y: point.y + ((next.y - point.y) * progress) };
+      }
+      if (point) ring.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
+      ringFrame = requestAnimationFrame(renderRing);
+    };
     addEventListener("pointermove", (event) => {
-      dot.style.left = `${event.clientX}px`;
-      dot.style.top = `${event.clientY}px`;
-      dot.classList.add("visible");
+      const point = { x: event.clientX, y: event.clientY, time: performance.now() };
+      dot.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
+      trail.push(point);
+      if (trail.length > 240) trail.splice(0, trail.length - 240);
+      dot.classList.add("visible"); ring.classList.add("visible");
+      if (!ringFrame) ringFrame = requestAnimationFrame(renderRing);
     }, { passive: true });
-    document.addEventListener("pointerover", (event) => dot.classList.toggle("active", Boolean(event.target.closest("a,button,input,textarea,select"))));
-    document.addEventListener("pointerleave", () => dot.classList.remove("visible"));
+    document.addEventListener("pointerover", (event) => ring.classList.toggle("active", Boolean(event.target.closest("a,button,input,textarea,select,iframe"))));
+    document.addEventListener("pointerleave", () => { dot.classList.remove("visible"); ring.classList.remove("visible"); });
   }
 
   function initHome() {
@@ -312,16 +364,6 @@
         return `${url.pathname}${url.search}`;
       };
 
-      const icon = (name) => {
-        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
-        svg.setAttribute("class", "icon");
-        svg.setAttribute("aria-hidden", "true");
-        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
-        use.setAttribute("href", `/icons/lucide-sprite.svg#${name}`);
-        svg.append(use);
-        return svg;
-      };
-
       const control = (direction, page, disabled) => {
         const label = direction === "prev" ? text.previous : text.next;
         const node = document.createElement(disabled ? "span" : "a");
@@ -332,7 +374,7 @@
           node.rel = direction;
           node.setAttribute("aria-label", label);
         }
-        node.append(icon(direction === "prev" ? "chevron-left" : "chevron-right"));
+        node.append(makeIcon(direction === "prev" ? "chevron-left" : "chevron-right"));
         return node;
       };
 
@@ -412,43 +454,202 @@
   }
 
   function initTools() {
-    $$("[data-tool-tab]").forEach((button) => button.addEventListener("click", () => {
-      $$("[data-tool-tab]").forEach((node) => node.classList.toggle("active", node === button));
-      $$("[data-tool-panel]").forEach((node) => node.classList.toggle("active", node.dataset.toolPanel === button.dataset.toolTab));
-    }));
     const jsonInput = $("[data-json-input]");
     const jsonMessage = $("[data-json-message]");
     const transformJson = (space) => {
+      if (!jsonInput || !jsonMessage) return;
       try { jsonInput.value = JSON.stringify(JSON.parse(jsonInput.value), null, space); jsonMessage.textContent = "JSON 有效"; jsonMessage.classList.remove("error"); }
       catch (error) { jsonMessage.textContent = `格式错误：${error.message}`; jsonMessage.classList.add("error"); }
     };
     $("[data-json-format]")?.addEventListener("click", () => transformJson(2));
     $("[data-json-minify]")?.addEventListener("click", () => transformJson(0));
     $("[data-time-to-date]")?.addEventListener("click", () => {
-      const raw = Number($("[data-time-input]")?.value);
+      const timeInput = $("[data-time-input]"); const dateInput = $("[data-date-input]");
+      const raw = Number(timeInput?.value);
       const date = new Date(String(Math.trunc(raw)).length <= 10 ? raw * 1000 : raw);
       const message = $("[data-time-message]");
-      if (!Number.isFinite(raw) || Number.isNaN(date.getTime())) { message.textContent = "请输入有效时间戳"; message.classList.add("error"); return; }
+      if (!message || !dateInput || !Number.isFinite(raw) || Number.isNaN(date.getTime())) { if (message) { message.textContent = "请输入有效时间戳"; message.classList.add("error"); } return; }
       const local = new Date(date.getTime() - date.getTimezoneOffset() * 60000).toISOString().slice(0, 16);
-      $("[data-date-input]").value = local;
+      dateInput.value = local;
       message.textContent = date.toLocaleString("zh-CN", { hour12: false });
       message.classList.remove("error");
     });
     $("[data-date-to-time]")?.addEventListener("click", () => {
       const date = new Date($("[data-date-input]")?.value || "");
       const message = $("[data-time-message]");
-      if (Number.isNaN(date.getTime())) { message.textContent = "请选择有效日期"; message.classList.add("error"); return; }
+      const timeInput = $("[data-time-input]");
+      if (!message || !timeInput || Number.isNaN(date.getTime())) { if (message) { message.textContent = "请选择有效日期"; message.classList.add("error"); } return; }
       const seconds = Math.floor(date.getTime() / 1000);
-      $("[data-time-input]").value = String(seconds);
+      timeInput.value = String(seconds);
       message.textContent = `${seconds}（秒） / ${date.getTime()}（毫秒）`;
       message.classList.remove("error");
     });
-    $("[data-text-input]")?.addEventListener("input", (event) => {
-      const value = event.target.value;
+    const updateTextStats = (value) => {
       const words = value.trim() ? (value.match(/[\p{Script=Han}]|[\p{L}\p{N}_'-]+/gu) || []).length : 0;
       const values = { chars: [...value].length, words, lines: value ? value.split(/\r?\n/).length : 0, paragraphs: value.trim() ? value.trim().split(/\n\s*\n/).length : 0 };
       Object.entries(values).forEach(([key, count]) => { const node = $(`[data-stat="${key}"]`); if (node) node.textContent = String(count); });
+    };
+    const textInput = $("[data-text-input]");
+    if (textInput) { textInput.addEventListener("input", () => updateTextStats(textInput.value)); updateTextStats(textInput.value); }
+
+    const base64Source = $("[data-base64-source]"); const base64Result = $("[data-base64-result]"); const base64Message = $("[data-base64-message]");
+    const setBase64Result = (transform) => {
+      if (!base64Source || !base64Result || !base64Message) return;
+      try { base64Result.value = transform(base64Source.value.trim()); base64Message.textContent = "转换完成"; base64Message.classList.remove("error"); }
+      catch { base64Result.value = ""; base64Message.textContent = "输入内容不是有效的 Base64 数据"; base64Message.classList.add("error"); }
+    };
+    $(`[data-base64-encode]`)?.addEventListener("click", () => setBase64Result((value) => {
+      const bytes = new TextEncoder().encode(value); let binary = "";
+      for (let index = 0; index < bytes.length; index += 0x8000) binary += String.fromCharCode(...bytes.subarray(index, index + 0x8000));
+      return btoa(binary);
+    }));
+    $(`[data-base64-decode]`)?.addEventListener("click", () => setBase64Result((value) => new TextDecoder("utf-8", { fatal: true }).decode(decodeBase64(value.replace(/\s+/g, "")))));
+
+    const uuidResult = $("[data-uuid-result]"); const uuidMessage = $("[data-uuid-message]");
+    const generateUuid = () => {
+      if (!uuidResult || !uuidMessage) return;
+      const countNode = $("[data-uuid-count]");
+      const count = Math.max(1, Math.min(100, Math.trunc(Number(countNode?.value) || 1)));
+      if (countNode) countNode.value = String(count);
+      uuidResult.value = Array.from({ length: count }, () => crypto.randomUUID()).join("\n");
+      uuidMessage.textContent = `已生成 ${count} 个 UUID`;
+    };
+    $("[data-uuid-generate]")?.addEventListener("click", generateUuid);
+    if (uuidResult) generateUuid();
+
+    const beastSource = $("[data-beast-source]"); const beastResult = $("[data-beast-result]"); const beastMessage = $("[data-beast-message]");
+    const beastDictionary = () => {
+      const dictionary = [...($("[data-beast-dictionary]")?.value || "")];
+      if (dictionary.length !== 4 || new Set(dictionary).size !== 4) throw new Error("字典必须是 4 个互不重复的字符");
+      return dictionary;
+    };
+    const runBeast = (mode) => {
+      if (!beastSource || !beastResult || !beastMessage) return;
+      try {
+        const dictionary = beastDictionary();
+        if (mode === "encode") {
+          let hexadecimal = "";
+          for (let index = 0; index < beastSource.value.length; index += 1) hexadecimal += beastSource.value.charCodeAt(index).toString(16).padStart(4, "0");
+          beastResult.value = [...hexadecimal].map((value, index) => {
+            const shifted = (Number.parseInt(value, 16) + (index % 16)) % 16;
+            return dictionary[Math.floor(shifted / 4)] + dictionary[shifted % 4];
+          }).join("");
+        } else {
+          const symbols = [...beastSource.value.trim()];
+          if (!symbols.length || symbols.length % 8 !== 0 || symbols.some((symbol) => !dictionary.includes(symbol))) throw new Error("密文与当前四字符字典不匹配");
+          let hexadecimal = "";
+          for (let index = 0; index < symbols.length; index += 2) {
+            let value = (dictionary.indexOf(symbols[index]) * 4) + dictionary.indexOf(symbols[index + 1]) - ((index / 2) % 16);
+            if (value < 0) value += 16;
+            hexadecimal += value.toString(16);
+          }
+          let decoded = "";
+          for (let index = 0; index < hexadecimal.length; index += 4) decoded += String.fromCharCode(Number.parseInt(hexadecimal.slice(index, index + 4), 16));
+          beastResult.value = decoded;
+        }
+        beastMessage.textContent = mode === "encode" ? "已转换为兽音" : "已还原为普通文本";
+        beastMessage.classList.remove("error");
+      } catch (error) { beastResult.value = ""; beastMessage.textContent = error.message; beastMessage.classList.add("error"); }
+    };
+    $("[data-beast-encode]")?.addEventListener("click", () => runBeast("encode"));
+    $("[data-beast-decode]")?.addEventListener("click", () => runBeast("decode"));
+
+    $$('[data-copy-target]').forEach((button) => button.addEventListener("click", async () => {
+      const target = $(button.dataset.copyTarget || "");
+      if (!target) return;
+      const original = button.innerHTML;
+      try { await copyText(target.value || target.textContent || ""); button.textContent = text.copied; }
+      catch { button.textContent = text.copyFailed; }
+      setTimeout(() => { button.innerHTML = original; }, 1_500);
+    }));
+  }
+
+  function initCodeBlocks(content) {
+    $$('pre', content).forEach((pre) => {
+      if (pre.parentElement?.classList.contains("code-block-shell")) return;
+      const code = $("code", pre);
+      const shell = document.createElement("div");
+      shell.className = "code-block-shell";
+      pre.before(shell); shell.append(pre);
+      const copyButton = document.createElement("button");
+      copyButton.className = "code-copy-button"; copyButton.type = "button"; copyButton.title = text.copyCode; copyButton.setAttribute("aria-label", text.copyCode);
+      copyButton.append(makeIcon("copy"), document.createTextNode(text.copyCode));
+      copyButton.addEventListener("click", async () => {
+        try { await copyText(code?.textContent || pre.textContent || ""); copyButton.replaceChildren(makeIcon("check"), document.createTextNode(text.copied)); }
+        catch { copyButton.textContent = text.copyFailed; }
+        setTimeout(() => copyButton.replaceChildren(makeIcon("copy"), document.createTextNode(text.copyCode)), 1_500);
+      });
+      shell.append(copyButton);
+      const lineCount = (code?.textContent || pre.textContent || "").split("\n").length;
+      if (lineCount > 18 || pre.scrollHeight > 520) {
+        shell.classList.add("is-collapsible", "is-collapsed");
+        const toggle = document.createElement("button");
+        toggle.className = "code-expand-button"; toggle.type = "button"; toggle.setAttribute("aria-expanded", "false");
+        const render = () => {
+          const collapsed = shell.classList.contains("is-collapsed");
+          toggle.replaceChildren(makeIcon(collapsed ? "chevron-down" : "chevron-up"), document.createTextNode(collapsed ? text.expandCode : text.collapseCode));
+          toggle.setAttribute("aria-expanded", String(!collapsed));
+        };
+        toggle.addEventListener("click", () => { shell.classList.toggle("is-collapsed"); render(); });
+        render(); shell.append(toggle);
+      }
     });
+  }
+
+  function initArticleNavigation(content) {
+    const headings = $$('h1,h2', content);
+    const desktopToc = $("[data-article-toc]"); const desktopNav = $("[data-article-toc-nav]"); const mobileNav = $("[data-mobile-toc-nav]");
+    const tocDialog = $("#article-toc-dialog"); const floatControls = $("[data-article-float]");
+    if (!headings.length) {
+      desktopToc?.setAttribute("hidden", ""); tocDialog?.setAttribute("hidden", "");
+      $$('[data-toc-open]').forEach((button) => button.setAttribute("hidden", ""));
+    } else {
+      desktopToc?.removeAttribute("hidden"); tocDialog?.removeAttribute("hidden");
+      $$('[data-toc-open]').forEach((button) => button.removeAttribute("hidden"));
+      const usedIds = new Set();
+      headings.forEach((heading, index) => {
+        let id = heading.id || `section-${index + 1}`;
+        const base = id; let suffix = 2;
+        while (usedIds.has(id)) id = `${base}-${suffix++}`;
+        heading.id = id; usedIds.add(id);
+      });
+      const createNav = () => {
+        const nav = document.createElement("nav"); nav.className = "generated-article-toc";
+        headings.forEach((heading) => {
+          const link = document.createElement("a"); link.href = `#${heading.id}`; link.textContent = heading.textContent.trim(); link.dataset.tocId = heading.id;
+          link.className = heading.tagName === "H1" ? "toc-level-1" : "toc-level-2";
+          link.addEventListener("click", (event) => { event.preventDefault(); heading.scrollIntoView({ behavior: reducedMotion.matches ? "auto" : "smooth", block: "start" }); history.replaceState(null, "", `#${heading.id}`); tocDialog?.close(); document.body.classList.remove("mobile-article-actions-open"); });
+          nav.append(link);
+        });
+        return nav;
+      };
+      desktopNav?.replaceChildren(createNav()); mobileNav?.replaceChildren(createNav());
+      const updateActive = () => {
+        let active = headings[0];
+        headings.forEach((heading) => { if (heading.getBoundingClientRect().top <= 130) active = heading; });
+        $$('[data-toc-id]').forEach((link) => { const current = link.dataset.tocId === active.id; link.classList.toggle("active", current); if (current) link.setAttribute("aria-current", "location"); else link.removeAttribute("aria-current"); });
+      };
+      let pending = 0;
+      addEventListener("scroll", () => { if (!pending) pending = requestAnimationFrame(() => { pending = 0; updateActive(); }); }, { passive: true });
+      updateActive();
+    }
+    if (document.body.dataset.articleNavigationBound !== "true") {
+      document.body.dataset.articleNavigationBound = "true";
+      $$('[data-toc-open]').forEach((button) => button.addEventListener("click", () => { if ($$('[data-toc-id]').length && tocDialog && !tocDialog.open) tocDialog.showModal(); }));
+      $("[data-toc-close]")?.addEventListener("click", () => tocDialog?.close());
+      tocDialog?.addEventListener("click", (event) => { if (event.target === tocDialog) tocDialog.close(); });
+      $$('[data-back-to-top]').forEach((button) => button.addEventListener("click", () => scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" })));
+      $("[data-mobile-actions-toggle]")?.addEventListener("click", (event) => {
+        const open = document.body.classList.toggle("mobile-article-actions-open"); event.currentTarget.setAttribute("aria-expanded", String(open));
+      });
+      const updateFloat = () => floatControls?.classList.toggle("is-visible", scrollY > 240);
+      addEventListener("scroll", updateFloat, { passive: true }); updateFloat();
+    }
+  }
+
+  function enhanceArticle(content) {
+    initCodeBlocks(content);
+    initArticleNavigation(content);
   }
 
   function decodeBase64(value) { return Uint8Array.from(atob(value), (character) => character.charCodeAt(0)); }
@@ -464,6 +665,7 @@
       else await navigator.clipboard?.writeText(location.href);
     });
     const content = $("#hugo-article-content");
+    if (content) enhanceArticle(content);
     const panel = $("[data-hugo-encrypted-panel]", content || document);
     const payloadNode = $("[data-hugo-encrypted-payload]", content || document);
     if (!content || !panel || !payloadNode) return;
@@ -471,7 +673,7 @@
     let payload; try { payload = JSON.parse(payloadNode.textContent || "{}"); } catch { return; }
     form?.addEventListener("submit", async (event) => {
       event.preventDefault(); button.disabled = true; error.textContent = "";
-      try { content.innerHTML = await decryptArticle(payload, input.value); }
+      try { content.innerHTML = await decryptArticle(payload, input.value); enhanceArticle(content); }
       catch { error.textContent = text.passwordError; button.disabled = false; }
     });
   }

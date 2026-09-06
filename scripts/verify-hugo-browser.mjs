@@ -47,11 +47,10 @@ try {
       hasCustomCursor: document.body.classList.contains("has-custom-cursor"),
       nativeCursor: getComputedStyle(document.body).cursor,
       cursorSize: (() => {
-        const cursor = document.querySelector(".cursor-dot");
-        if (!cursor) return null;
-        const style = getComputedStyle(cursor);
-        const center = getComputedStyle(cursor, "::after");
-        return { width: parseFloat(style.width), height: parseFloat(style.height), centerWidth: parseFloat(center.width) };
+        const dot = document.querySelector(".cursor-dot");
+        const ring = document.querySelector(".cursor-ring");
+        if (!dot || !ring) return null;
+        return { dot: parseFloat(getComputedStyle(dot).width), ring: parseFloat(getComputedStyle(ring).width) };
       })(),
     };
   });
@@ -62,9 +61,43 @@ try {
   assert.equal(desktopLayout.titleOverflow, false, "desktop card text overflows its container");
   assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
   assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
-  assert.ok(desktopLayout.cursorSize?.width >= 32 && desktopLayout.cursorSize?.centerWidth >= 3, "custom cursor must include a large ring and a small center point");
-  await desktopPage.mouse.move(420, 320);
+  assert.ok(desktopLayout.cursorSize?.ring >= 32 && desktopLayout.cursorSize?.dot >= 4, "custom cursor must include a large ring and a small center point");
+  await desktopPage.mouse.move(260, 220);
+  await desktopPage.waitForTimeout(1_000);
+  await desktopPage.mouse.move(760, 520);
   assert.equal(await desktopPage.locator(".cursor-dot.visible").count(), 1, "custom cursor does not follow pointer movement");
+  const cursorPositions = await desktopPage.evaluate(() => {
+    const dot = document.querySelector(".cursor-dot").getBoundingClientRect();
+    const ring = document.querySelector(".cursor-ring").getBoundingClientRect();
+    return { dot: { x: dot.x + dot.width / 2, y: dot.y + dot.height / 2 }, ring: { x: ring.x + ring.width / 2, y: ring.y + ring.height / 2 } };
+  });
+  assert.ok(Math.abs(cursorPositions.dot.x - 760) < 5, "cursor center dot is not immediate");
+  assert.ok(cursorPositions.ring.x < 500, "cursor ring does not retain the requested delayed trail");
+
+  desktopResponse = await desktopPage.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(desktopResponse?.status(), 200);
+  const headingCount = await desktopPage.locator("#hugo-article-content h1, #hugo-article-content h2").count();
+  assert.ok(headingCount >= 2, "article fixture does not contain enough headings");
+  assert.equal(await desktopPage.locator("[data-article-toc-nav] [data-toc-id]").count(), headingCount, "desktop TOC did not recognize every H1/H2 heading");
+  assert.equal(await desktopPage.locator("[data-article-float]").evaluate((node) => node.classList.contains("is-visible")), false, "desktop back-to-top button is visible before scrolling");
+  await desktopPage.evaluate(() => scrollTo(0, 900));
+  await desktopPage.waitForTimeout(250);
+  assert.equal(await desktopPage.locator("[data-article-float]").evaluate((node) => node.classList.contains("is-visible")), true, "desktop back-to-top button does not appear after scrolling");
+  assert.equal(await desktopPage.locator(".mobile-article-action:visible").count(), 0, "mobile article controls leaked into desktop layout");
+  await desktopPage.locator(".desktop-back-to-top").click();
+  await desktopPage.waitForFunction(() => scrollY < 20, undefined, { timeout: 2_000 });
+
+  desktopResponse = await desktopPage.goto(new URL("/posts/2022蓝桥杯题目山/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(desktopResponse?.status(), 200);
+  assert.ok(await desktopPage.locator(".code-copy-button").count() > 0, "code copy buttons were not added");
+  await desktopPage.locator(".code-copy-button").first().click();
+  await desktopPage.waitForFunction(() => document.querySelector(".code-copy-button")?.textContent?.includes("已复制"), undefined, { timeout: 2_000 });
+  assert.match(await desktopPage.locator(".code-copy-button").first().innerText(), /已复制/, "code copy button did not confirm the copy action");
+  const collapsibleCode = desktopPage.locator(".code-block-shell.is-collapsible").first();
+  assert.equal(await collapsibleCode.count(), 1, "long code blocks are not collapsible");
+  assert.equal(await collapsibleCode.evaluate((node) => node.classList.contains("is-collapsed")), true, "long code block is not collapsed initially");
+  await collapsibleCode.locator(".code-expand-button").click();
+  assert.equal(await collapsibleCode.evaluate((node) => node.classList.contains("is-collapsed")), false, "long code block cannot be expanded");
   await desktopContext.close();
 
   const context = await browser.newContext({ viewport: { width: 390, height: 844 } });
@@ -196,9 +229,57 @@ try {
   response = await page.goto(new URL("/tools/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/4.webp"]').count(), 1, "mobile tools wallpaper is missing");
+  assert.equal(await page.locator(".tool-card").count(), 7, "toolbox cards are missing");
+
+  response = await page.goto(new URL("/tools/json-formatter/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
   await page.locator("[data-json-input]").fill('{"ok":true}');
   await page.locator("[data-json-format]").click();
   assert.match(await page.locator("[data-json-input]").inputValue(), /\n  "ok": true\n/);
+
+  response = await page.goto(new URL("/tools/timestamp/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-time-input]").fill("1760000000");
+  await page.locator("[data-time-to-date]").click();
+  assert.match(await page.locator("[data-date-input]").inputValue(), /^2025-/);
+
+  response = await page.goto(new URL("/tools/text-stats/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-text-input]").fill("你好 world\n\n第二段");
+  assert.equal(await page.locator('[data-stat="paragraphs"]').innerText(), "2");
+
+  response = await page.goto(new URL("/tools/base64/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-base64-source]").fill("你好 Astro");
+  await page.locator("[data-base64-encode]").click();
+  const encodedBase64 = await page.locator("[data-base64-result]").inputValue();
+  assert.ok(encodedBase64.length > 8, "Base64 encoder returned no data");
+  await page.locator("[data-base64-source]").fill(encodedBase64);
+  await page.locator("[data-base64-decode]").click();
+  assert.equal(await page.locator("[data-base64-result]").inputValue(), "你好 Astro");
+
+  response = await page.goto(new URL("/tools/uuid/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-uuid-count]").fill("3");
+  await page.locator("[data-uuid-generate]").click();
+  const uuids = (await page.locator("[data-uuid-result]").inputValue()).split("\n");
+  assert.equal(uuids.length, 3, "UUID generator ignored the configured count");
+  assert.equal(new Set(uuids).size, 3, "UUID generator produced duplicates");
+  assert.ok(uuids.every((uuid) => /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(uuid)), "UUID generator returned an invalid v4 UUID");
+
+  response = await page.goto(new URL("/tools/beast-translator/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.locator("[data-beast-source]").fill("你好 Astro");
+  await page.locator("[data-beast-encode]").click();
+  const beastText = await page.locator("[data-beast-result]").inputValue();
+  assert.match(beastText, /^[嗷呜啊~]+$/, "beast translator returned invalid symbols");
+  await page.locator("[data-beast-source]").fill(beastText);
+  await page.locator("[data-beast-decode]").click();
+  assert.equal(await page.locator("[data-beast-result]").inputValue(), "你好 Astro");
+
+  response = await page.goto(new URL("/tools/docker-accelerator/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator('iframe.tool-service-frame[src="https://docker.0ha.top/"]').count(), 1, "Docker accelerator is not embedded");
 
   response = await page.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
@@ -206,6 +287,18 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
+  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260906$/, "Giscus dark theme is missing");
+  const mobileHeadingCount = await page.locator("#hugo-article-content h1, #hugo-article-content h2").count();
+  assert.equal(await page.locator("[data-mobile-toc-nav] [data-toc-id]").count(), mobileHeadingCount, "mobile TOC did not recognize H1/H2 headings");
+  assert.equal(await page.locator(".article-toc-top-trigger:visible").count(), 1, "mobile top-right TOC button is missing");
+  await page.evaluate(() => scrollTo(0, 700));
+  await page.waitForTimeout(250);
+  await page.locator("[data-mobile-actions-toggle]").click();
+  assert.equal(await page.locator(".mobile-article-action:visible").count(), 2, "mobile article launcher did not expose TOC and back-to-top actions");
+  await page.locator(".mobile-article-action[data-toc-open]").click();
+  assert.equal(await page.locator("#article-toc-dialog").getAttribute("open"), "", "mobile TOC dialog did not open");
+  await page.locator("[data-mobile-toc-nav] [data-toc-id]").nth(1).click();
+  assert.equal(await page.locator("#article-toc-dialog").getAttribute("open"), null, "mobile TOC dialog did not close after a heading jump");
 
   const translatedPath = `/posts/${encodeURIComponent("测试文章标题")}/`;
   response = await page.goto(new URL(`/en${translatedPath}`, baseUrl).toString(), { waitUntil: "domcontentloaded" });

@@ -1,0 +1,35 @@
+{{ define "main" }}
+<section class="content-page tool-detail-page" data-tool="{{ .Params.tool }}">
+  <a class="back-link tool-back" href="/tools/">{{ partial "icon.html" (dict "name" "arrow-left") }}返回工具箱</a>
+  <header class="page-heading tool-detail-heading"><p>LOCAL UTILITY</p><h1>{{ .Title }}</h1><span>{{ .Description }}</span></header>
+  <section class="tool-workspace">
+    {{- if eq .Params.tool "json" }}
+      <div class="tool-panel-head"><div><h2>输入 JSON</h2><p>格式化结果会直接回写到输入框。</p></div><div><button class="button button-ghost" data-json-minify type="button">压缩</button><button class="button button-primary" data-json-format type="button">格式化</button></div></div>
+      <textarea data-json-input spellcheck="false" placeholder='{"hello":"world"}'></textarea><p class="tool-message" data-json-message aria-live="polite"></p>
+    {{- else if eq .Params.tool "timestamp" }}
+      <div class="tool-panel-head"><div><h2>双向转换</h2><p>自动识别秒级或毫秒级 Unix 时间戳。</p></div></div>
+      <div class="form-grid"><label>时间戳<input data-time-input inputmode="numeric" placeholder="例如 1760000000"></label><label>本地时间<input data-date-input type="datetime-local"></label></div>
+      <div class="tool-actions"><button class="button button-primary" data-time-to-date type="button">转为日期</button><button class="button button-ghost" data-date-to-time type="button">转为时间戳</button></div><p class="tool-message" data-time-message aria-live="polite"></p>
+    {{- else if eq .Params.tool "text" }}
+      <div class="tool-panel-head"><div><h2>粘贴文本</h2><p>输入时实时更新统计结果。</p></div></div>
+      <textarea data-text-input placeholder="在这里粘贴文本..."></textarea>
+      <div class="text-stats"><div><strong data-stat="chars">0</strong><span>字符</span></div><div><strong data-stat="words">0</strong><span>字词</span></div><div><strong data-stat="lines">0</strong><span>行</span></div><div><strong data-stat="paragraphs">0</strong><span>段落</span></div></div>
+    {{- else if eq .Params.tool "base64" }}
+      <div class="tool-split"><label>原文<textarea id="base64-source" data-base64-source placeholder="输入需要编码或解码的内容"></textarea></label><label>结果<textarea id="base64-result" data-base64-result readonly placeholder="结果会显示在这里"></textarea></label></div>
+      <div class="tool-actions"><button class="button button-primary" data-base64-encode type="button">编码</button><button class="button button-ghost" data-base64-decode type="button">解码</button><button class="button button-ghost" data-copy-target="#base64-result" type="button">{{ partial "icon.html" (dict "name" "copy") }}复制结果</button></div><p class="tool-message" data-base64-message aria-live="polite"></p>
+    {{- else if eq .Params.tool "uuid" }}
+      <div class="tool-panel-head"><div><h2>随机 UUID v4</h2><p>可一次生成 1 到 100 个，逐行输出。</p></div></div>
+      <div class="uuid-control"><label>生成数量<input data-uuid-count type="number" min="1" max="100" step="1" value="5"></label><button class="button button-primary" data-uuid-generate type="button">{{ partial "icon.html" (dict "name" "refresh-cw") }}生成</button><button class="button button-ghost" data-copy-target="#uuid-result" type="button">{{ partial "icon.html" (dict "name" "copy") }}复制全部</button></div>
+      <textarea id="uuid-result" data-uuid-result readonly></textarea><p class="tool-message" data-uuid-message aria-live="polite"></p>
+    {{- else if eq .Params.tool "beast" }}
+      <div class="beast-dictionary"><label>四字符字典<input data-beast-dictionary value="嗷呜啊~" maxlength="8" aria-describedby="beast-dictionary-hint"></label><small id="beast-dictionary-hint">需要恰好 4 个互不重复的字符。</small></div>
+      <div class="tool-split"><label>输入<textarea id="beast-source" data-beast-source placeholder="输入普通文本或兽音密文"></textarea></label><label>结果<textarea id="beast-result" data-beast-result readonly placeholder="转换结果会显示在这里"></textarea></label></div>
+      <div class="tool-actions"><button class="button button-primary" data-beast-encode type="button">转为兽音</button><button class="button button-ghost" data-beast-decode type="button">还原文本</button><button class="button button-ghost" data-copy-target="#beast-result" type="button">{{ partial "icon.html" (dict "name" "copy") }}复制结果</button></div><p class="tool-message" data-beast-message aria-live="polite"></p>
+      <p class="tool-source">兼容 <a href="https://github.com/SycAlright/beast_sdk" target="_blank" rel="noopener noreferrer">beast_sdk 开源实现</a>，算法在本页浏览器中运行。</p>
+    {{- else if eq .Params.tool "docker" }}
+      <div class="embed-toolbar"><div><strong>docker.0ha.top</strong><span>GitHub 与 Docker 镜像加速服务</span></div><a class="button button-ghost" href="https://docker.0ha.top/" target="_blank" rel="noopener noreferrer">新窗口打开{{ partial "icon.html" (dict "name" "external-link") }}</a></div>
+      <iframe class="tool-service-frame" src="https://docker.0ha.top/" title="GitHub 与 Docker 加速" loading="eager" referrerpolicy="no-referrer"></iframe>
+    {{- end }}
+  </section>
+</section>
+{{ end }}

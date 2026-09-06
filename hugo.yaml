@@ -54,6 +54,10 @@ frontmatter:
     - published
 
 markup:
+  tableOfContents:
+    startLevel: 1
+    endLevel: 2
+    ordered: false
   goldmark:
     parser:
       attribute:

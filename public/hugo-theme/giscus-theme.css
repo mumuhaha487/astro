@@ -1,0 +1,3 @@
+:host,html{--font-family-sans:ZenMaru,"Microsoft YaHei",system-ui,sans-serif;--font-family-monospace:"JetBrains Mono",Consolas,monospace}
+html,body,body *{cursor:url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='32' height='32' viewBox='0 0 32 32'%3E%3Ccircle cx='16' cy='16' r='14' fill='%23d97e5c' fill-opacity='.04' stroke='%23efa284' stroke-opacity='.82'/%3E%3Ccircle cx='16' cy='16' r='2.5' fill='%23ed926e'/%3E%3C/svg%3E") 16 16,auto!important}
+main{--color-canvas-default:transparent;--color-canvas-subtle:#191a1a;--color-canvas-overlay:#202121;--color-border-default:#3b3c3c;--color-border-muted:#303131;--color-fg-default:#f4f1ec;--color-fg-muted:#aaa7a2;--color-accent-fg:#ed926e;--color-accent-emphasis:#d97e5c}
