@@ -116,7 +116,7 @@ const {
     async function fetchPageViews() {
         const container = document.querySelector('.umami-page-views');
         
-        if (!window.oddmisc) {
+        if (!window.mumuUmami) {
             container?.classList.add('hidden');
             return;
         }
@@ -125,7 +125,7 @@ const {
         if (!id) {return;}
 
         try {
-            const stats = await window.oddmisc.getStats(`/posts/${id}/`);
+            const stats = await window.mumuUmami.getStats(`/posts/${id}/`);
             const pageViews = stats.pageviews || 0;
             const visits = stats.visits || 0;
 

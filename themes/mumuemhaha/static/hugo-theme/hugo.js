@@ -5,25 +5,6 @@
 
   $$(`[data-nav="${section === "posts" ? "blog" : section}"]`).forEach((node) => node.classList.add("active"));
 
-  function initForumAccount() {
-    if (section === "discuss") return;
-    const accountButton = $("[data-forum-auth-button]");
-    const adminButton = $("[data-forum-admin-nav]");
-    if (!accountButton) return;
-    let user = null;
-    accountButton.addEventListener("click", () => { location.href = user ? "/discuss/" : "/discuss/?auth=1"; });
-    adminButton?.addEventListener("click", () => { location.href = "/discuss/?admin=1"; });
-    fetch("/api/forum/session", { credentials: "same-origin", cache: "no-store", headers: { accept: "application/json" } })
-      .then((response) => response.ok ? response.json() : null)
-      .then((session) => {
-        user = session?.authenticated ? session.user : null;
-        const label = accountButton.querySelector("span");
-        if (label) label.textContent = user?.username || "论坛账户";
-        if (adminButton) adminButton.hidden = user?.role !== "admin";
-      })
-      .catch(() => {});
-  }
-
   const openSidebar = () => document.body.classList.add("sidebar-open", "no-scroll");
   const closeSidebar = () => document.body.classList.remove("sidebar-open", "no-scroll");
   $$("[data-sidebar-open]").forEach((button) => button.addEventListener("click", openSidebar));
@@ -62,22 +43,35 @@
       update();
       setInterval(update, 1000);
     }
-    if ($("#home-visitors")) updateVisitors();
+    if ($("#home-visitors")) {
+      updateUmamiStats();
+      setInterval(updateUmamiStats, 60_000);
+    }
   }
 
-  async function updateVisitors() {
-    const visitorId = localStorage.getItem("mumuemhaha-visitor-id") || crypto.randomUUID();
-    const sessionId = sessionStorage.getItem("mumuemhaha-session-id") || crypto.randomUUID();
-    localStorage.setItem("mumuemhaha-visitor-id", visitorId);
-    sessionStorage.setItem("mumuemhaha-session-id", sessionId);
+  async function updateUmamiStats() {
+    const origin = "https://umami.vmss.cn";
+    const shareId = "hJgv7MWzlfs3JTnu";
+    const websiteId = "993c6970-8f42-4804-a055-38b6b9c01810";
     try {
-      const response = await fetch("/api/visitors", { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ visitorId, sessionId }), cache: "no-store" });
-      if (!response.ok) throw new Error(String(response.status));
-      const data = await response.json();
-      $$('[data-visitor-stat="online"]').forEach((node) => { node.textContent = Number(data.online || 0).toLocaleString(); });
-      $$('[data-visitor-stat="total"]').forEach((node) => { node.textContent = Number(data.total || 0).toLocaleString(); });
+      const shareResponse = await fetch(`${origin}/api/share/${shareId}`, { cache: "no-store" });
+      if (!shareResponse.ok) throw new Error(String(shareResponse.status));
+      const share = await shareResponse.json();
+      if (share.websiteId !== websiteId || !share.token) throw new Error("Invalid Umami share response");
+      const headers = { "x-umami-share-token": share.token };
+      const endAt = Date.now();
+      const [activeResponse, statsResponse] = await Promise.all([
+        fetch(`${origin}/api/websites/${websiteId}/active`, { headers, cache: "no-store" }),
+        fetch(`${origin}/api/websites/${websiteId}/stats?startAt=0&endAt=${endAt}&timezone=Asia%2FShanghai&compare=false`, { headers, cache: "no-store" }),
+      ]);
+      if (!activeResponse.ok || !statsResponse.ok) throw new Error("Umami statistics are unavailable");
+      const [active, stats] = await Promise.all([activeResponse.json(), statsResponse.json()]);
+      const values = { active: active.visitors, visitors: stats.visitors, visits: stats.visits };
+      Object.entries(values).forEach(([key, value]) => {
+        $$(`[data-umami-stat="${key}"]`).forEach((node) => { node.textContent = Number(value || 0).toLocaleString("zh-CN"); });
+      });
     } catch {
-      $$('[data-visitor-stat]').forEach((node) => { node.textContent = "--"; });
+      $$('[data-umami-stat]').forEach((node) => { node.textContent = "--"; });
     }
   }
 
@@ -193,7 +187,6 @@
   }
 
   initCursor();
-  initForumAccount();
   initHome();
   initSearch();
   initTools();

@@ -205,11 +205,44 @@ if (siteConfig.font) {
 		/>
 		<script
 			is:inline
-			async
-			fetchpriority="low"
+			defer
 			src="https://umami.vmss.cn/script.js"
 			data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"
 		></script>
+		<script is:inline>
+			(() => {
+				const origin = "https://umami.vmss.cn";
+				const shareId = "hJgv7MWzlfs3JTnu";
+				const expectedWebsiteId = "993c6970-8f42-4804-a055-38b6b9c01810";
+				let shareRequest;
+				const getShare = () => {
+					if (!shareRequest) {
+						shareRequest = fetch(`${origin}/api/share/${shareId}`, { cache: "no-store" })
+							.then((response) => {
+								if (!response.ok) throw new Error(`Umami share request failed: ${response.status}`);
+								return response.json();
+							})
+							.then((share) => {
+								if (share.websiteId !== expectedWebsiteId || !share.token) throw new Error("Invalid Umami share response");
+								return share;
+							});
+					}
+					return shareRequest;
+				};
+				const getStats = async (path) => {
+					const share = await getShare();
+					const params = new URLSearchParams({ startAt: "0", endAt: String(Date.now()), timezone: "Asia/Shanghai", compare: "false" });
+					if (path) params.set("path", `eq.${path}`);
+					const response = await fetch(`${origin}/api/websites/${expectedWebsiteId}/stats?${params}`, {
+						headers: { "x-umami-share-token": share.token },
+						cache: "no-store",
+					});
+					if (!response.ok) throw new Error(`Umami statistics request failed: ${response.status}`);
+					return response.json();
+				};
+				window.mumuUmami = { getSiteStats: () => getStats(), getStats };
+			})();
+		</script>
 	</head>
 	<body
 		class="min-h-screen"

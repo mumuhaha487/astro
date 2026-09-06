@@ -43,6 +43,10 @@ declare global {
 
 	interface Window {
 		swup: Swup | undefined;
+		mumuUmami?: {
+			getSiteStats: () => Promise<{ pageviews?: number; visits?: number; visitors?: number }>;
+			getStats: (path: string) => Promise<{ pageviews?: number; visits?: number; visitors?: number }>;
+		};
 		closeAnnouncement: () => void;
 		pagefind: {
 			search: (query: string) => Promise<{

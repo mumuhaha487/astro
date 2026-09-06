@@ -16,13 +16,13 @@
       </section>
       <nav class="glass-panel home-shortcuts" aria-label="快捷入口">
         <a href="/blog/">{{ partial "icon.html" (dict "name" "book-open") }}博客</a>
-        <a href="/discuss/">{{ partial "icon.html" (dict "name" "messages") }}论坛</a>
         <a href="/tools/">{{ partial "icon.html" (dict "name" "wrench") }}工具箱</a>
         <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}GitHub</a>
       </nav>
       <section class="visitor-strip" id="home-visitors" aria-label="访问统计">
-        <div><span class="visitor-dot online"></span><small>当前访客</small><strong data-visitor-stat="online">--</strong></div>
-        <div><span class="visitor-dot"></span><small>累计访客</small><strong data-visitor-stat="total">--</strong></div>
+        <div><span class="visitor-dot online"></span><small>当前访客</small><strong data-umami-stat="active">--</strong></div>
+        <div><span class="visitor-dot"></span><small>累计访客</small><strong data-umami-stat="visitors">--</strong></div>
+        <div><span class="visitor-dot"></span><small>累计访问次数</small><strong data-umami-stat="visits">--</strong></div>
       </section>
     </div>
     <div class="home-profile">
@@ -32,7 +32,6 @@
       <p class="profile-bio">不乱于心，不困于情，不畏将来，不惧过去</p>
       <div class="profile-actions">
         <a class="button button-primary" href="/blog/">阅读博客{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
-        <a class="button button-ghost" href="/discuss/">进入论坛</a>
       </div>
     </div>
   </div>

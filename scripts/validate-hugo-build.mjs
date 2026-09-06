@@ -22,10 +22,12 @@ const requiredFiles = [
   "assets/font/ZenMaruGothic-Medium.woff2",
   "assets/font/loli.woff2",
   "blog/index.html",
-  "discuss/index.html",
   "tools/index.html",
   "category/index.html",
   "tags/index.html",
+];
+const forbiddenFiles = [
+  "discuss/index.html",
   "forum-editor/forum.html",
   "forum-editor/assets/forum-editor.js",
   "hugo-theme/forum.js",
@@ -33,6 +35,9 @@ const requiredFiles = [
 
 for (const relative of requiredFiles) {
   assert.ok(existsSync(join(outputRoot, relative)), `Missing build output: dist/${relative}`);
+}
+for (const relative of forbiddenFiles) {
+  assert.equal(existsSync(join(outputRoot, relative)), false, `Removed forum artifact remains: dist/${relative}`);
 }
 
 const posts = JSON.parse(await readFile(join(outputRoot, "api", "allPostMeta.json"), "utf8"));
@@ -55,13 +60,18 @@ for (const post of posts) {
 
 const home = await readFile(join(outputRoot, "index.html"), "utf8");
 const blog = await readFile(join(outputRoot, "blog", "index.html"), "utf8");
-const discuss = await readFile(join(outputRoot, "discuss", "index.html"), "utf8");
 assert.match(home, /class="home-stage"/, "Home workspace is missing");
-assert.match(home, /data-visitor-stat="total"/, "Home visitor total is missing");
-assert.doesNotMatch(blog, /data-visitor-stat=/, "Visitor totals must only appear on the home page");
+assert.match(home, /data-umami-stat="active"/, "Home active visitor statistic is missing");
+assert.match(home, /data-umami-stat="visitors"/, "Home unique visitor statistic is missing");
+assert.match(home, /data-umami-stat="visits"/, "Home visit statistic is missing");
+assert.match(home, /当前访客/, "Current visitor label is missing");
+assert.match(home, /累计访客/, "Total visitor label is missing");
+assert.match(home, /累计访问次数/, "Total visit label is missing");
+assert.match(home, /<script defer src="https:\/\/umami\.vmss\.cn\/script\.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"><\/script>/, "Self-hosted Umami tracker is missing");
+assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
+assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
+assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
 assert.equal((blog.match(/class="post-card(?: |")/g) || []).length, posts.length, "Blog list did not preserve every post");
-assert.match(discuss, /id="forum-app"/, "Forum shell is missing");
-assert.match(discuss, /forum-editor\/forum\.html/, "Forum editor is not connected");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
@@ -80,7 +90,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} posts, dark workspace, forum editor, search, feeds, and APIs.`);
+console.log(`Validated Hugo output: ${posts.length} posts, self-hosted Umami statistics, search, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];
