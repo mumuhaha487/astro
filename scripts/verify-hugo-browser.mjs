@@ -50,7 +50,7 @@ try {
         const dot = document.querySelector(".cursor-dot");
         const ring = document.querySelector(".cursor-ring");
         if (!dot || !ring) return null;
-        return { dot: parseFloat(getComputedStyle(dot).width), ring: parseFloat(getComputedStyle(ring).width) };
+        return { dot: parseFloat(getComputedStyle(dot).width), ring: parseFloat(getComputedStyle(ring).width), lag: Number(ring.dataset.lag) };
       })(),
     };
   });
@@ -62,6 +62,7 @@ try {
   assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
   assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
   assert.ok(desktopLayout.cursorSize?.ring >= 32 && desktopLayout.cursorSize?.dot >= 4, "custom cursor must include a large ring and a small center point");
+  assert.equal(desktopLayout.cursorSize?.lag, 200, "cursor ring lag is not 0.2 seconds");
   await desktopPage.mouse.move(260, 220);
   await desktopPage.waitForTimeout(1_000);
   await desktopPage.mouse.move(760, 520);
@@ -73,6 +74,12 @@ try {
   });
   assert.ok(Math.abs(cursorPositions.dot.x - 760) < 5, "cursor center dot is not immediate");
   assert.ok(cursorPositions.ring.x < 500, "cursor ring does not retain the requested delayed trail");
+  await desktopPage.waitForTimeout(260);
+  const settledRingX = await desktopPage.locator(".cursor-ring").evaluate((ring) => {
+    const rect = ring.getBoundingClientRect();
+    return rect.x + rect.width / 2;
+  });
+  assert.ok(Math.abs(settledRingX - 760) < 5, "cursor ring does not catch up after 0.2 seconds");
 
   desktopResponse = await desktopPage.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);

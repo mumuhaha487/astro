@@ -106,7 +106,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-tools-toc/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260906-cursor-200/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");

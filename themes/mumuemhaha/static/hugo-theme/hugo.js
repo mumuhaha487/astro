@@ -89,17 +89,13 @@
     if (!dot || !ring) return;
     document.body.classList.add("has-custom-cursor");
     const trail = [];
-    const lag = 900;
+    const lag = 200;
+    ring.dataset.lag = String(lag);
     let ringFrame = 0;
     const renderRing = (now) => {
       const cutoff = now - lag;
-      while (trail.length > 2 && trail[1].time <= cutoff) trail.shift();
-      let point = trail[0];
-      if (trail.length > 1 && point.time <= cutoff) {
-        const next = trail[1];
-        const progress = Math.max(0, Math.min(1, (cutoff - point.time) / Math.max(1, next.time - point.time)));
-        point = { x: point.x + ((next.x - point.x) * progress), y: point.y + ((next.y - point.y) * progress) };
-      }
+      while (trail.length > 1 && trail[1].time <= cutoff) trail.shift();
+      const point = trail[0];
       if (point) ring.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
       ringFrame = requestAnimationFrame(renderRing);
     };
