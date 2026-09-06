@@ -422,7 +422,7 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
-  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast3$/, "Giscus high-contrast dark theme is missing");
+  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast4$/, "Giscus high-contrast dark theme is missing");
   const articleAnimation = await page.locator(".article-shell").evaluate((node) => ({ name: getComputedStyle(node).animationName, duration: getComputedStyle(node).animationDuration }));
   assert.deepEqual(articleAnimation, { name: "workspace-page-enter", duration: "0.4s" }, "article does not use the 0.4-second side fade-in");
   const commentSurface = await page.locator(".article-comments").evaluate((node) => ({ background: getComputedStyle(node).backgroundColor, color: getComputedStyle(node.querySelector("h2")).color }));
