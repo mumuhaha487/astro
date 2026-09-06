@@ -17,7 +17,9 @@ try {
   const desktopPage = await desktopContext.newPage();
   let desktopResponse = await desktopPage.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
-  assert.equal(await desktopPage.locator(".post-card").count(), 10, "desktop blog page does not contain exactly ten articles");
+  assert.equal(await desktopPage.locator(".post-card").count(), 30, "desktop blog page does not contain exactly thirty articles");
+  assert.equal(await desktopPage.locator(".post-card:visible").count(), 30, "desktop blog page hides articles intended for the ten-row grid");
+  assert.equal(await desktopPage.locator(".pagination-summary").innerText(), "第 1 / 4 页", "desktop pagination does not use 30-item pages");
   const desktopLayout = await desktopPage.evaluate(() => {
     const cards = [...document.querySelectorAll(".post-card")];
     const covers = [...document.querySelectorAll(".post-cover")];
@@ -132,10 +134,11 @@ try {
 
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 10, "blog page does not contain exactly ten articles");
-  const firstPageTitles = await page.locator(".post-card h2").allInnerTexts();
+  assert.equal(await page.locator(".post-card").count(), 30, "mobile blog page does not retain the complete desktop page group");
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog page does not show exactly ten articles");
+  const firstPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "1", "blog first page is not active");
-  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/page\/2\/$/, "blog next-page URL is incorrect");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/\?mobile-page=2$/, "mobile blog next-page URL is incorrect");
   assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/2.webp"]').count(), 1, "mobile blog wallpaper is missing");
   assert.equal(await page.locator('a[href*="md.vmss.cn"]').count(), 0, "private writing entry is exposed");
   assert.equal(await page.locator("[data-umami-stat]").count(), 0, "homepage statistics leaked into blog page");
@@ -154,21 +157,35 @@ try {
   assert.equal(await page.locator("#search-results .search-result").count(), 10, "search second page does not contain ten results");
   assert.notDeepEqual(await page.locator("#search-results .search-result strong").allInnerTexts(), firstSearchPageTitles, "search second page repeated the first page");
 
-  response = await page.goto(new URL("/blog/page/2/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  response = await page.goto(new URL("/blog/?mobile-page=2", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 10, "blog second page does not contain exactly ten articles");
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog second page does not contain exactly ten articles");
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "2", "blog second page is not active");
-  assert.notDeepEqual(await page.locator(".post-card h2").allInnerTexts(), firstPageTitles, "blog second page repeated the first page");
+  assert.notDeepEqual(await page.locator(".post-card:visible h2").allInnerTexts(), firstPageTitles, "blog second page repeated the first page");
+
+  response = await page.goto(new URL("/blog/?mobile-page=3", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  const thirdPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
+  assert.equal(thirdPageTitles.length, 10, "mobile blog third page does not contain exactly ten articles");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/page\/2\/\?mobile-page=4$/, "mobile pagination does not cross into the next 30-item group");
+
+  response = await page.goto(new URL("/blog/page/2/?mobile-page=4", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog fourth page does not contain exactly ten articles");
+  assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "4", "blog fourth page is not active");
+  assert.notDeepEqual(await page.locator(".post-card:visible h2").allInnerTexts(), thirdPageTitles, "blog fourth page repeated the third page");
 
   response = await page.goto(new URL("/tags/linux/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 10, "Linux tag page does not contain ten articles");
-  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/tags\/linux\/page\/2\/$/, "Linux tag next-page URL is incorrect");
+  assert.ok(await page.locator(".post-card").count() > 10, "Linux tag page does not retain its desktop article group");
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "Linux tag mobile page does not contain ten articles");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/tags\/linux\/\?mobile-page=2$/, "Linux tag mobile next-page URL is incorrect");
 
   response = await page.goto(new URL("/category/python/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 10, "category page does not contain ten articles");
-  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/category\/.+\/page\/2\/$/, "category next-page URL is incorrect");
+  assert.ok(await page.locator(".post-card").count() > 10, "category page does not retain its desktop article group");
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "category mobile page does not contain ten articles");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/category\/python\/\?mobile-page=2$/, "category mobile next-page URL is incorrect");
 
   const forumResponse = await page.request.get(new URL("/discuss/", baseUrl).toString());
   assert.equal(forumResponse.status(), 404, "removed forum page is still published");
@@ -188,7 +205,7 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: desktop three-column fixed cards and custom cursor; 10-item blog, tag, category, and search pagination; home, tools, article, and mobile overflow checks.");
+  console.log("Browser verification passed: 30-item desktop list pages in three columns; 10-item mobile list and search pagination; custom cursor, home, tools, article, and overflow checks.");
 } finally {
   await browser.close();
 }

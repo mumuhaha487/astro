@@ -1,7 +1,7 @@
 {{ define "main" }}
 {{- $pages := .Pages.ByDate.Reverse -}}
-{{- $paginator := .Paginate $pages 10 -}}
-<section class="content-page">
+{{- $paginator := .Paginate $pages 30 -}}
+<section class="content-page" data-responsive-post-list data-post-list-total="{{ len $pages }}" data-post-list-page="{{ $paginator.PageNumber }}">
   <header class="page-heading"><p>ARCHIVE</p><h1>{{ .Title }}</h1><span>{{ len $pages }} 篇文章</span></header>
   <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
   {{ partial "pagination.html" $paginator }}

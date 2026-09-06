@@ -249,6 +249,140 @@
     });
   }
 
+  function initResponsivePostPagination() {
+    const mobileViewport = matchMedia("(max-width: 760px)");
+    const serverPageSize = 30;
+    const mobilePageSize = 10;
+    const serverPagesPerMobileGroup = serverPageSize / mobilePageSize;
+
+    $$('[data-responsive-post-list]').forEach((root) => {
+      const grid = $(".post-grid", root);
+      const cards = grid ? [...grid.children].filter((node) => node.matches(".post-card")) : [];
+      const totalItems = Number(root.dataset.postListTotal);
+      const serverPage = Number(root.dataset.postListPage) || 1;
+      if (!grid || !cards.length || !Number.isFinite(totalItems)) return;
+
+      let navigation = $(".hugo-pagination", root);
+      const hasServerNavigation = Boolean(navigation);
+      const serverNavigation = navigation?.innerHTML || "";
+      if (!navigation && totalItems > mobilePageSize) {
+        navigation = document.createElement("nav");
+        navigation.className = "hugo-pagination";
+        navigation.setAttribute("aria-label", "文章分页");
+        grid.after(navigation);
+      }
+
+      const pageUrl = (mobilePage) => {
+        const group = Math.ceil(mobilePage / serverPagesPerMobileGroup);
+        const url = new URL(location.href);
+        let basePath = url.pathname.replace(/page\/\d+\/?$/, "");
+        if (!basePath.endsWith("/")) basePath += "/";
+        url.pathname = group === 1 ? basePath : `${basePath}page/${group}/`;
+        url.searchParams.delete("verify");
+        url.searchParams.delete("mobile-page");
+        if (mobilePage > 1) url.searchParams.set("mobile-page", String(mobilePage));
+        return `${url.pathname}${url.search}`;
+      };
+
+      const icon = (name) => {
+        const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
+        svg.setAttribute("class", "icon");
+        svg.setAttribute("aria-hidden", "true");
+        const use = document.createElementNS("http://www.w3.org/2000/svg", "use");
+        use.setAttribute("href", `/icons/lucide-sprite.svg#${name}`);
+        svg.append(use);
+        return svg;
+      };
+
+      const control = (direction, page, disabled) => {
+        const label = direction === "prev" ? "上一页" : "下一页";
+        const node = document.createElement(disabled ? "span" : "a");
+        node.className = `pagination-control${disabled ? " disabled" : ""}`;
+        if (disabled) node.setAttribute("aria-hidden", "true");
+        else {
+          node.href = pageUrl(page);
+          node.rel = direction;
+          node.setAttribute("aria-label", label);
+        }
+        node.append(icon(direction === "prev" ? "chevron-left" : "chevron-right"));
+        return node;
+      };
+
+      const renderMobileNavigation = (current, total) => {
+        if (!navigation) return;
+        navigation.hidden = total <= 1;
+        navigation.dataset.currentPage = String(current);
+        navigation.dataset.totalPages = String(total);
+        if (total <= 1) return;
+
+        const pages = document.createElement("div");
+        pages.className = "pagination-pages";
+        const visiblePages = new Set([1, total, current - 1, current, current + 1].filter((page) => page >= 1 && page <= total));
+        let previousPage = 0;
+        [...visiblePages].sort((a, b) => a - b).forEach((page) => {
+          if (previousPage && page - previousPage > 1) {
+            const gap = document.createElement("span");
+            gap.className = "pagination-gap";
+            gap.setAttribute("aria-hidden", "true");
+            gap.textContent = "...";
+            pages.append(gap);
+          }
+          const node = document.createElement(page === current ? "span" : "a");
+          node.className = `pagination-page${page === current ? " active" : ""}`;
+          node.textContent = String(page);
+          if (page === current) node.setAttribute("aria-current", "page");
+          else {
+            node.href = pageUrl(page);
+            node.setAttribute("aria-label", `第 ${page} 页`);
+          }
+          pages.append(node);
+          previousPage = page;
+        });
+
+        const summary = document.createElement("span");
+        summary.className = "pagination-summary";
+        summary.textContent = `第 ${current} / ${total} 页`;
+        navigation.replaceChildren(
+          control("prev", current - 1, current <= 1),
+          pages,
+          control("next", current + 1, current >= total),
+          summary,
+        );
+      };
+
+      const render = () => {
+        if (!mobileViewport.matches) {
+          cards.forEach((card) => { card.hidden = false; });
+          if (navigation) {
+            navigation.hidden = !hasServerNavigation;
+            if (hasServerNavigation) navigation.innerHTML = serverNavigation;
+          }
+          root.classList.add("responsive-pagination-ready");
+          return;
+        }
+
+        const totalMobilePages = Math.ceil(totalItems / mobilePageSize);
+        const firstMobilePage = ((serverPage - 1) * serverPagesPerMobileGroup) + 1;
+        const requestedPage = Number(new URL(location.href).searchParams.get("mobile-page"));
+        const requestedGroup = Math.ceil(requestedPage / serverPagesPerMobileGroup);
+        const currentPage = Number.isInteger(requestedPage)
+          && requestedPage >= 1
+          && requestedPage <= totalMobilePages
+          && requestedGroup === serverPage
+          ? requestedPage
+          : firstMobilePage;
+        const localPage = (currentPage - 1) % serverPagesPerMobileGroup;
+        const start = localPage * mobilePageSize;
+        cards.forEach((card, index) => { card.hidden = index < start || index >= start + mobilePageSize; });
+        renderMobileNavigation(currentPage, totalMobilePages);
+        root.classList.add("responsive-pagination-ready");
+      };
+
+      render();
+      mobileViewport.addEventListener?.("change", render);
+    });
+  }
+
   function initTools() {
     $$("[data-tool-tab]").forEach((button) => button.addEventListener("click", () => {
       $$("[data-tool-tab]").forEach((node) => node.classList.toggle("active", node === button));
@@ -316,6 +450,7 @@
 
   initCursor();
   initHome();
+  initResponsivePostPagination();
   initSearch();
   initTools();
   initArticle();

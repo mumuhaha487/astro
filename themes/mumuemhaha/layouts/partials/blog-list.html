@@ -1,6 +1,6 @@
 {{- $posts := partial "sorted-posts.html" . -}}
-{{- $paginator := .Paginate $posts 10 -}}
-<section class="content-page blog-page">
+{{- $paginator := .Paginate $posts 30 -}}
+<section class="content-page blog-page" data-responsive-post-list data-post-list-total="{{ len $posts }}" data-post-list-page="{{ $paginator.PageNumber }}">
   <header class="page-heading page-heading-row">
     <div><p>WRITING / NOTES</p><h1>博客</h1><span>共 {{ len $posts }} 篇文章，记录技术与生活。</span></div>
     <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}搜索全部文章</button>

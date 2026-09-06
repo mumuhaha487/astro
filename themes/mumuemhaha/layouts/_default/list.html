@@ -3,8 +3,8 @@
     {{ partial "blog-list.html" . }}
   {{ else }}
   {{- $pages := .Pages.ByDate.Reverse -}}
-  {{- $paginator := .Paginate $pages 10 -}}
-  <section class="content-page">
+  {{- $paginator := .Paginate $pages 30 -}}
+  <section class="content-page" data-responsive-post-list data-post-list-total="{{ len $pages }}" data-post-list-page="{{ $paginator.PageNumber }}">
     <header class="page-heading"><p>COLLECTION</p><h1>{{ .Title }}</h1>{{ with .Description }}<span>{{ . }}</span>{{ end }}</header>
     <div class="post-grid">
       {{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ else }}<div class="empty-state">这里暂时没有内容。</div>{{ end }}

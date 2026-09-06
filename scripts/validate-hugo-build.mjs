@@ -80,30 +80,38 @@ for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
-const blogPageSize = 10;
-const blogPageCount = Math.ceil(posts.length / blogPageSize);
+const blogServerPageSize = 30;
+const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   const pagePath = pageNumber === 1 ? join(outputRoot, "blog", "index.html") : join(outputRoot, "blog", "page", String(pageNumber), "index.html");
   assert.ok(existsSync(pagePath), `Missing blog page ${pageNumber}`);
   const pageHtml = await readFile(pagePath, "utf8");
-  const expectedCards = Math.min(blogPageSize, posts.length - ((pageNumber - 1) * blogPageSize));
+  const expectedCards = Math.min(blogServerPageSize, posts.length - ((pageNumber - 1) * blogServerPageSize));
   assert.equal((pageHtml.match(/class="post-card(?: |")/g) || []).length, expectedCards, `Blog page ${pageNumber} has the wrong number of posts`);
+  assert.match(pageHtml, new RegExp(`data-responsive-post-list data-post-list-total="${posts.length}" data-post-list-page="${pageNumber}"`), `Blog page ${pageNumber} is missing responsive pagination metadata`);
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
+assert.match(blog, /hugo\.js\?v=20260906-responsive-30/, "Responsive pagination asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
-assert.equal((linuxTag.match(/class="post-card(?: |")/g) || []).length, 10, "Linux tag first page does not contain ten posts");
-assert.match(linuxTag, /rel="next" aria-label="下一页"/, "Linux tag page is not paginated");
-assert.ok(existsSync(join(outputRoot, "tags", "linux", "page", "2", "index.html")), "Linux tag second page is missing");
+const linuxTotal = Number(linuxTag.match(/data-post-list-total="(\d+)"/)?.[1]);
+assert.ok(linuxTotal > 10, "Linux tag fixture must exercise mobile pagination");
+assert.equal((linuxTag.match(/class="post-card(?: |")/g) || []).length, Math.min(blogServerPageSize, linuxTotal), "Linux tag first server page has the wrong number of posts");
+assert.match(linuxTag, /data-responsive-post-list/, "Linux tag page is missing responsive pagination");
 
-const categoryEntries = await readdir(join(outputRoot, "category"), { withFileTypes: true });
-const paginatedCategory = categoryEntries.find((entry) => entry.isDirectory() && existsSync(join(outputRoot, "category", entry.name, "page", "2", "index.html")));
-assert.ok(paginatedCategory, "No category with a second page was generated");
-const categoryPage = await readFile(join(outputRoot, "category", paginatedCategory.name, "index.html"), "utf8");
-assert.equal((categoryPage.match(/class="post-card(?: |")/g) || []).length, 10, "Category first page does not contain ten posts");
-assert.match(categoryPage, /rel="next" aria-label="下一页"/, "Category page is not paginated");
+const categoryPath = join(outputRoot, "category", "python", "index.html");
+assert.ok(existsSync(categoryPath), "Python category page is missing");
+const categoryPage = await readFile(categoryPath, "utf8");
+const categoryTotal = Number(categoryPage.match(/data-post-list-total="(\d+)"/)?.[1]);
+assert.ok(categoryTotal > 10, "Python category fixture must exercise mobile pagination");
+assert.equal((categoryPage.match(/class="post-card(?: |")/g) || []).length, Math.min(blogServerPageSize, categoryTotal), "Category first server page has the wrong number of posts");
+assert.match(categoryPage, /data-responsive-post-list/, "Category page is missing responsive pagination");
+
+const archive = await readFile(join(outputRoot, "archive", "index.html"), "utf8");
+assert.equal((archive.match(/class="post-card(?: |")/g) || []).length, Math.min(blogServerPageSize, posts.length), "Archive first server page has the wrong number of posts");
+assert.match(archive, /data-responsive-post-list/, "Archive page is missing responsive pagination");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
@@ -122,7 +130,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} posts with 10-item blog, tag, and category pagination, paginated search UI, feeds, and isolated web pages.`);
+console.log(`Validated Hugo output: ${posts.length} posts with 30-item desktop and 10-item mobile list pagination, 10-item search pagination, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];
