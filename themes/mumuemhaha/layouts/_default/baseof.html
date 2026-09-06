@@ -101,6 +101,11 @@
       </form>
       <div class="search-hint" id="search-hint">输入关键词开始搜索</div>
       <div class="search-results" id="search-results" aria-live="polite"></div>
+      <nav class="search-pagination" id="search-pagination" aria-label="搜索结果分页" hidden>
+        <button class="pagination-control" type="button" data-search-prev aria-label="上一页">{{ partial "icon.html" (dict "name" "chevron-left") }}</button>
+        <span id="search-page-status">第 1 / 1 页</span>
+        <button class="pagination-control" type="button" data-search-next aria-label="下一页">{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
+      </nav>
     </div>
   </dialog>
 

@@ -173,36 +173,76 @@
     const input = $("#search-input");
     const results = $("#search-results");
     const hint = $("#search-hint");
-    if (!dialog || !input || !results || !hint) return;
+    const pagination = $("#search-pagination");
+    const pageStatus = $("#search-page-status");
+    const previousButton = $("[data-search-prev]");
+    const nextButton = $("[data-search-next]");
+    if (!dialog || !input || !results || !hint || !pagination || !pageStatus || !previousButton || !nextButton) return;
     const open = () => { dialog.showModal(); window.loadPagefind().catch(() => {}); setTimeout(() => input.focus(), 20); };
     $("#search-open")?.addEventListener("click", open);
     $$("[data-search-trigger]").forEach((button) => button.addEventListener("click", open));
     dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
     let request = 0;
+    let renderRequest = 0;
+    let searchResults = [];
+    let searchPage = 1;
+    const pageSize = 10;
+
+    const renderSearchPage = async (expectedRequest) => {
+      const currentRender = ++renderRequest;
+      const page = searchPage;
+      const totalPages = Math.ceil(searchResults.length / pageSize);
+      const start = (page - 1) * pageSize;
+      const items = await Promise.all(searchResults.slice(start, start + pageSize).map((result) => result.data()));
+      if (expectedRequest !== request || currentRender !== renderRequest || page !== searchPage) return;
+      results.replaceChildren();
+      for (const item of items) {
+        const link = document.createElement("a");
+        link.className = "search-result";
+        link.href = item.url;
+        const title = document.createElement("strong");
+        title.textContent = item.meta?.title || item.url;
+        const excerpt = document.createElement("p");
+        excerpt.innerHTML = item.excerpt || "";
+        link.append(title, excerpt);
+        results.append(link);
+      }
+      pagination.hidden = totalPages <= 1;
+      pageStatus.textContent = `第 ${page} / ${Math.max(1, totalPages)} 页`;
+      previousButton.disabled = page <= 1;
+      nextButton.disabled = page >= totalPages;
+      results.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+    };
+
+    previousButton.addEventListener("click", () => {
+      if (searchPage <= 1) return;
+      searchPage -= 1;
+      renderSearchPage(request);
+    });
+    nextButton.addEventListener("click", () => {
+      if (searchPage * pageSize >= searchResults.length) return;
+      searchPage += 1;
+      renderSearchPage(request);
+    });
     input.addEventListener("input", async () => {
       const query = input.value.trim();
       const current = ++request;
+      renderRequest += 1;
+      searchResults = [];
+      searchPage = 1;
       results.replaceChildren();
+      pagination.hidden = true;
       hint.textContent = query ? "正在搜索..." : "输入关键词开始搜索";
       if (!query) return;
       try {
         const pagefind = await window.loadPagefind();
         const search = await pagefind.search(query);
         if (current !== request) return;
-        const items = await Promise.all(search.results.slice(0, 12).map((result) => result.data()));
-        hint.textContent = items.length ? `找到 ${search.results.length} 个结果` : "没有找到相关内容";
-        for (const item of items) {
-          const link = document.createElement("a");
-          link.className = "search-result";
-          link.href = item.url;
-          const title = document.createElement("strong");
-          title.textContent = item.meta?.title || item.url;
-          const excerpt = document.createElement("p");
-          excerpt.innerHTML = item.excerpt || "";
-          link.append(title, excerpt);
-          results.append(link);
-        }
+        searchResults = search.results;
+        hint.textContent = searchResults.length ? `找到 ${searchResults.length} 个结果` : "没有找到相关内容";
+        await renderSearchPage(current);
       } catch {
+        if (current !== request) return;
         hint.textContent = "搜索索引暂时不可用，请稍后重试";
       }
     });

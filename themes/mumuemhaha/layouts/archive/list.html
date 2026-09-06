@@ -1,7 +1,9 @@
 {{ define "main" }}
 {{- $posts := partial "sorted-posts.html" . -}}
+{{- $paginator := .Paginate $posts 10 -}}
 <section class="content-page">
   <header class="page-heading page-heading-row"><div><p>ARCHIVE</p><h1>文章归档</h1><span>按时间查看 {{ len $posts }} 篇文章。</span></div><a class="button button-ghost" href="/blog/">返回博客</a></header>
-  <div class="post-grid">{{ range $posts }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
+  <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
+  {{ partial "pagination.html" $paginator }}
 </section>
 {{ end }}

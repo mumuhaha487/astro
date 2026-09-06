@@ -80,7 +80,7 @@ try {
 
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 7, "blog page does not contain exactly seven articles");
+  assert.equal(await page.locator(".post-card").count(), 10, "blog page does not contain exactly ten articles");
   const firstPageTitles = await page.locator(".post-card h2").allInnerTexts();
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "1", "blog first page is not active");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/page\/2\/$/, "blog next-page URL is incorrect");
@@ -93,12 +93,30 @@ try {
   await searchInput.fill("海龟汤");
   await page.waitForFunction(() => document.querySelector("#search-results")?.textContent?.includes("海龟汤"), undefined, { timeout: 15_000 });
   assert.match(await page.locator("#search-results").innerText(), /海龟汤/, "Pagefind search did not return the expected article");
+  await searchInput.fill("的");
+  await page.waitForFunction(() => !document.querySelector("#search-pagination")?.hidden && document.querySelectorAll("#search-results .search-result").length === 10, undefined, { timeout: 15_000 });
+  const firstSearchPageTitles = await page.locator("#search-results .search-result strong").allInnerTexts();
+  assert.match(await page.locator("#search-page-status").innerText(), /^第 1 \/ \d+ 页$/, "search first-page status is incorrect");
+  await page.locator("[data-search-next]").click();
+  await page.waitForFunction(() => document.querySelector("#search-page-status")?.textContent?.startsWith("第 2 /"), undefined, { timeout: 5_000 });
+  assert.equal(await page.locator("#search-results .search-result").count(), 10, "search second page does not contain ten results");
+  assert.notDeepEqual(await page.locator("#search-results .search-result strong").allInnerTexts(), firstSearchPageTitles, "search second page repeated the first page");
 
   response = await page.goto(new URL("/blog/page/2/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card").count(), 7, "blog second page does not contain exactly seven articles");
+  assert.equal(await page.locator(".post-card").count(), 10, "blog second page does not contain exactly ten articles");
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "2", "blog second page is not active");
   assert.notDeepEqual(await page.locator(".post-card h2").allInnerTexts(), firstPageTitles, "blog second page repeated the first page");
+
+  response = await page.goto(new URL("/tags/linux/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".post-card").count(), 10, "Linux tag page does not contain ten articles");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/tags\/linux\/page\/2\/$/, "Linux tag next-page URL is incorrect");
+
+  response = await page.goto(new URL("/category/python/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".post-card").count(), 10, "category page does not contain ten articles");
+  assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/category\/.+\/page\/2\/$/, "category next-page URL is incorrect");
 
   const forumResponse = await page.request.get(new URL("/discuss/", baseUrl).toString());
   assert.equal(forumResponse.status(), 404, "removed forum page is still published");
@@ -118,7 +136,7 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: animated Umami stats, typewriter, ICP filing, optimized home media, search, tools, article, forum removal, and mobile overflow checks.");
+  console.log("Browser verification passed: 10-item blog, tag, category, and search pagination plus home, tools, article, and mobile overflow checks.");
 } finally {
   await browser.close();
 }

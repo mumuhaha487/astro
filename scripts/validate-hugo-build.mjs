@@ -80,7 +80,7 @@ for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
-const blogPageSize = 7;
+const blogPageSize = 10;
 const blogPageCount = Math.ceil(posts.length / blogPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   const pagePath = pageNumber === 1 ? join(outputRoot, "blog", "index.html") : join(outputRoot, "blog", "page", String(pageNumber), "index.html");
@@ -91,6 +91,19 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
+const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
+assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
+const linuxTag = await readFile(linuxTagPath, "utf8");
+assert.equal((linuxTag.match(/class="post-card(?: |")/g) || []).length, 10, "Linux tag first page does not contain ten posts");
+assert.match(linuxTag, /rel="next" aria-label="下一页"/, "Linux tag page is not paginated");
+assert.ok(existsSync(join(outputRoot, "tags", "linux", "page", "2", "index.html")), "Linux tag second page is missing");
+
+const categoryEntries = await readdir(join(outputRoot, "category"), { withFileTypes: true });
+const paginatedCategory = categoryEntries.find((entry) => entry.isDirectory() && existsSync(join(outputRoot, "category", entry.name, "page", "2", "index.html")));
+assert.ok(paginatedCategory, "No category with a second page was generated");
+const categoryPage = await readFile(join(outputRoot, "category", paginatedCategory.name, "index.html"), "utf8");
+assert.equal((categoryPage.match(/class="post-card(?: |")/g) || []).length, 10, "Category first page does not contain ten posts");
+assert.match(categoryPage, /rel="next" aria-label="下一页"/, "Category page is not paginated");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
 assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
@@ -109,7 +122,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} posts, self-hosted Umami statistics, search, feeds, and isolated web pages.`);
+console.log(`Validated Hugo output: ${posts.length} posts with 10-item blog, tag, and category pagination, paginated search UI, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];

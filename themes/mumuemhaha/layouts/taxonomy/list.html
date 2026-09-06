@@ -1,6 +1,9 @@
 {{ define "main" }}
+{{- $pages := .Pages.ByDate.Reverse -}}
+{{- $paginator := .Paginate $pages 10 -}}
 <section class="content-page">
-  <header class="page-heading"><p>TAXONOMY</p><h1>{{ .Title }}</h1><span>{{ len .Pages }} 篇文章</span></header>
-  <div class="post-grid">{{ range .Pages.ByDate.Reverse }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
+  <header class="page-heading"><p>TAXONOMY</p><h1>{{ .Title }}</h1><span>{{ len $pages }} 篇文章</span></header>
+  <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
+  {{ partial "pagination.html" $paginator }}
 </section>
 {{ end }}

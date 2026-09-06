@@ -14,7 +14,7 @@ taxonomies:
   category: category
 
 pagination:
-  pagerSize: 7
+  pagerSize: 10
   path: page
 
 permalinks:

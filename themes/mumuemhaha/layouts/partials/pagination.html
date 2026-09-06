@@ -1,7 +1,7 @@
 {{- if gt .TotalPages 1 -}}
 {{- $current := .PageNumber -}}
 {{- $total := .TotalPages -}}
-<nav class="hugo-pagination" aria-label="博客分页">
+<nav class="hugo-pagination" aria-label="文章分页">
   {{- with .Prev -}}
     <a class="pagination-control" href="{{ .URL }}" rel="prev" aria-label="上一页">{{ partial "icon.html" (dict "name" "chevron-left") }}</a>
   {{- else -}}
