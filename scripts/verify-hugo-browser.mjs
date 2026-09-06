@@ -50,7 +50,12 @@ try {
         const dot = document.querySelector(".cursor-dot");
         const ring = document.querySelector(".cursor-ring");
         if (!dot || !ring) return null;
-        return { dot: parseFloat(getComputedStyle(dot).width), ring: parseFloat(getComputedStyle(ring).width), lag: Number(ring.dataset.lag) };
+        return {
+          dot: parseFloat(getComputedStyle(dot).width),
+          ring: parseFloat(getComputedStyle(ring).width),
+          followMode: ring.dataset.followMode,
+          followMs: Number(ring.dataset.followMs),
+        };
       })(),
     };
   });
@@ -62,7 +67,8 @@ try {
   assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
   assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
   assert.ok(desktopLayout.cursorSize?.ring >= 32 && desktopLayout.cursorSize?.dot >= 4, "custom cursor must include a large ring and a small center point");
-  assert.equal(desktopLayout.cursorSize?.lag, 200, "cursor ring lag is not 0.2 seconds");
+  assert.equal(desktopLayout.cursorSize?.followMode, "straight-line", "cursor ring does not use the direct path");
+  assert.ok(desktopLayout.cursorSize?.followMs >= 40 && desktopLayout.cursorSize?.followMs <= 90, "cursor response is not short and slightly delayed");
   await desktopPage.mouse.move(260, 220);
   await desktopPage.waitForTimeout(1_000);
   await desktopPage.mouse.move(760, 520);
@@ -73,13 +79,43 @@ try {
     return { dot: { x: dot.x + dot.width / 2, y: dot.y + dot.height / 2 }, ring: { x: ring.x + ring.width / 2, y: ring.y + ring.height / 2 } };
   });
   assert.ok(Math.abs(cursorPositions.dot.x - 760) < 5, "cursor center dot is not immediate");
-  assert.ok(cursorPositions.ring.x < 500, "cursor ring does not retain the requested delayed trail");
-  await desktopPage.waitForTimeout(260);
+  assert.ok(cursorPositions.ring.x < cursorPositions.dot.x - 20, "cursor ring no longer has a visible short delay");
+  await desktopPage.waitForTimeout(320);
   const settledRingX = await desktopPage.locator(".cursor-ring").evaluate((ring) => {
     const rect = ring.getBoundingClientRect();
     return rect.x + rect.width / 2;
   });
   assert.ok(Math.abs(settledRingX - 760) < 5, "cursor ring does not catch up after 0.2 seconds");
+
+  desktopResponse = await desktopPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(desktopResponse?.status(), 200);
+  assert.equal(await desktopPage.locator(".workspace-brand-title", { hasText: "工作空间" }).count(), 1, "compact workspace brand is missing");
+  assert.equal(await desktopPage.locator(".workspace-brand .workspace-avatar, .workspace-brand", { hasText: "木木em哈哈" }).count(), 0, "removed sidebar identity remains");
+  assert.equal(await desktopPage.locator('a[href="/archive/"][data-nav="archive"]').count(), 1, "archive navigation is missing");
+  assert.equal(await desktopPage.locator('a[href="/friends/"][data-nav="friends"]').count(), 1, "friends navigation is missing");
+  assert.equal(await desktopPage.locator('a[href="/guestbook/"][data-nav="guestbook"]').count(), 1, "guestbook navigation is missing");
+  assert.match(await desktopPage.locator(".status-panel").innerText(), /一个可能特别有想法的博主。[\s\S]*这是一个建立在21世纪的边缘小站。/);
+  assert.match(await desktopPage.locator(".profile-overline").innerText(), /我の小小窝。/);
+  assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487"]').count(), 1, "production GitHub contact is missing");
+  assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"]').count(), 1, "production Bilibili contact is missing");
+  await desktopPage.waitForTimeout(500);
+  const particleAlpha = await desktopPage.locator(".profile-particles").evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(particleAlpha > 100, "avatar particle canvas is blank during assembly");
+  await desktopPage.waitForTimeout(2_800);
+  assert.equal(await desktopPage.locator("[data-avatar-particles].is-ready").count(), 1, "avatar does not transition to the rotating image");
+
+  desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(desktopResponse?.status(), 200);
+  assert.equal(await desktopPage.locator(".friend-card").count(), 4, "validated friend entries are missing");
+  assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/tree/main/friends"]').count(), 1, "friends repository uses a non-production URL");
+  assert.equal(await desktopPage.locator('a[href^="https://github.com/mumuhaha487/astro/new/main/friends/entries"]').count(), 1, "friend contribution URL is missing");
+  await desktopPage.locator("[data-friends-search]").fill("Astro");
+  assert.equal(await desktopPage.locator(".friend-card:visible").count(), 1, "friends search does not filter cards");
 
   desktopResponse = await desktopPage.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -124,6 +160,18 @@ try {
     await page.route("https://umami.vmss.cn/api/websites/993c6970-8f42-4804-a055-38b6b9c01810/stats?**", (route) => delayedFulfill(route, {
       pageviews: 61756, visitors: 24388, visits: 19853,
     }));
+    let guestbookMessages = [{ id: "message-1", name: "访客", content: "这是一条公开留言", createdAt: "2026-09-06T08:00:00.000Z" }];
+    await page.route("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/**", async (route) => {
+      const request = route.request();
+      const pathname = new URL(request.url()).pathname;
+      const json = (body, status = 200) => route.fulfill({ status, contentType: "application/json", body: JSON.stringify(body) });
+      if (pathname.endsWith("/captcha")) return json({ id: "captcha-1", prompt: "2 + 3 = ?", expiresAt: "2026-09-06T09:00:00.000Z" });
+      if (request.method() === "GET") return json({ messages: guestbookMessages });
+      const body = request.postDataJSON();
+      const created = { id: "message-2", name: body.name, content: body.content, createdAt: "2026-09-06T08:05:00.000Z" };
+      guestbookMessages = [created, ...guestbookMessages];
+      return json(created, 201);
+    });
   }
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
@@ -237,6 +285,29 @@ try {
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/4.webp"]').count(), 1, "mobile tools wallpaper is missing");
   assert.equal(await page.locator(".tool-card").count(), 7, "toolbox cards are missing");
+  await page.waitForTimeout(250);
+  const loadedToolCovers = await page.locator('[data-random-cover][src]').count();
+  assert.ok(loadedToolCovers > 0 && loadedToolCovers < 7, `tool covers are not loaded on demand: ${loadedToolCovers}/7`);
+  assert.equal(await page.locator('.tool-card-icon img[src^="/tool-icons/"]').count(), 7, "toolbox representative icons are not local");
+
+  response = await page.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".friend-card").count(), 4, "mobile friends page is incomplete");
+  assert.equal(await page.locator('a[href="https://github.com/mumuhaha487/astro/tree/main/friends"]').count(), 1, "mobile friends page has no real repository URL");
+  await page.locator("[data-friends-search]").fill("没有这个站点");
+  assert.equal(await page.locator(".friend-card:visible").count(), 0, "friends search does not hide unmatched entries");
+  assert.equal(await page.locator("[data-friends-empty]:visible").count(), 1, "friends empty state is missing");
+
+  response = await page.goto(new URL("/guestbook/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await page.waitForFunction(() => document.querySelector("[data-guestbook-captcha]")?.textContent === "2 + 3 = ?", undefined, { timeout: 5_000 });
+  assert.equal(await page.locator(".guestbook-message").count(), 1, "public guestbook messages did not load");
+  await page.locator('input[name="name"]').fill("浏览器测试");
+  await page.locator('textarea[name="content"]').fill("公开留言提交正常");
+  await page.locator('input[name="captchaAnswer"]').fill("5");
+  await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
+  await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
+  assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
 
   response = await page.goto(new URL("/tools/json-formatter/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);

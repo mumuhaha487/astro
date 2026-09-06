@@ -19,9 +19,13 @@ const requiredFiles = [
   "pagefind/pagefind-entry.json",
   "icons/search.svg",
   "icons/lucide-sprite.svg",
-  "assets/font/ZenMaruGothic-Medium.woff2",
-  "assets/font/loli.woff2",
   "blog/index.html",
+  "friends/index.html",
+  "guestbook/index.html",
+  "en/friends/index.html",
+  "en/guestbook/index.html",
+  "ja/friends/index.html",
+  "ja/guestbook/index.html",
   "en/index.html",
   "en/blog/index.html",
   "en/posts/测试文章标题/index.html",
@@ -36,6 +40,20 @@ const requiredFiles = [
   "tools/uuid/index.html",
   "tools/beast-translator/index.html",
   "tools/docker-accelerator/index.html",
+  "tool-icons/json.png",
+  "tool-icons/base64.png",
+  "tool-icons/text-stats.png",
+  "tool-icons/timestamp.png",
+  "tool-icons/uuid.png",
+  "tool-icons/docker.png",
+  "tool-icons/beast.png",
+  "tool-covers/1.webp",
+  "tool-covers/2.webp",
+  "tool-covers/3.webp",
+  "tool-covers/4.webp",
+  "tool-covers/5.webp",
+  "tool-covers/6.webp",
+  "images/grain.png",
   "hugo-theme/giscus-theme.css",
   "category/index.html",
   "tags/index.html",
@@ -94,6 +112,17 @@ for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
+assert.match(home, /workspace-brand-title[^>]*>工作空间<\//, "Compact workspace brand is missing");
+assert.doesNotMatch(home, /workspace-brand[\s\S]{0,500}木木em哈哈/, "Removed sidebar identity remains");
+assert.match(home, /href="\/archive\/" data-nav="archive"/, "Archive sidebar link is missing");
+assert.match(home, /href="\/friends\/" data-nav="friends"/, "Friends sidebar link is missing");
+assert.match(home, /href="\/guestbook\/" data-nav="guestbook"/, "Guestbook sidebar link is missing");
+assert.match(home, /这是一个建立在21世纪的边缘小站。/, "Homepage status description is incorrect");
+assert.match(home, /一个可能特别有想法的博主。/, "Homepage status title is incorrect");
+assert.match(home, /我の小小窝。/, "Homepage workspace label is incorrect");
+assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub contact is missing");
+assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
+assert.match(home, /data-avatar-particles/, "Particle avatar stage is missing");
 const blogServerPageSize = 30;
 const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
@@ -106,7 +135,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260906-cursor-200/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260906-home-friends/, "Current interactive asset version is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
@@ -156,11 +185,25 @@ for (const article of translatedArticles) {
 
 const toolsIndex = await readFile(join(outputRoot, "tools", "index.html"), "utf8");
 assert.equal((toolsIndex.match(/class="tool-card"/g) || []).length, 7, "Toolbox does not contain seven routed tool cards");
+assert.equal((toolsIndex.match(/data-random-cover/g) || []).length, 7, "Toolbox cards are missing deferred cover slots");
+assert.equal((toolsIndex.match(/src="\/tool-icons\//g) || []).length, 7, "Toolbox icons are not local files");
+assert.match(toolsIndex, /data-tool-covers="\[&#34;\/tool-covers\/1\.webp&#34;/, "Toolbox does not use local wallpaper thumbnails");
 for (const route of ["json-formatter", "timestamp", "text-stats", "base64", "uuid", "beast-translator", "docker-accelerator"]) {
   assert.ok(toolsIndex.includes(`href="/tools/${route}/"`), `Tool card route is missing: ${route}`);
 }
 const dockerTool = await readFile(join(outputRoot, "tools", "docker-accelerator", "index.html"), "utf8");
-assert.match(dockerTool, /<iframe class="tool-service-frame" src="https:\/\/docker\.0ha\.top\/"/, "Docker accelerator iframe is missing");
+assert.match(dockerTool, /<iframe class="tool-service-frame" src="https:\/\/docker\.0ha\.top\/"[^>]*loading="lazy"/, "Docker accelerator iframe is not loaded on demand");
+
+const friendsPage = await readFile(join(outputRoot, "friends", "index.html"), "utf8");
+assert.equal((friendsPage.match(/class="friend-card"/g) || []).length, 4, "Friends page did not render every validated entry");
+assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/tree\/main\/friends/, "Friends repository link is not production-ready");
+assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/new\/main\/friends\/entries\?filename=your-site\.json/, "Friends contribution link is not production-ready");
+assert.doesNotMatch(friendsPage, /static\/friends|astro-island/, "Legacy generated friends page overrode the Hugo route");
+
+const guestbookPage = await readFile(join(outputRoot, "guestbook", "index.html"), "utf8");
+assert.match(guestbookPage, /data-guestbook-api="https:\/\/astro-blog-studio\.vrhjio4405\.workers\.dev"/, "Guestbook production API is missing");
+assert.match(guestbookPage, /data-guestbook-form/, "Guestbook public form is missing");
+assert.match(guestbookPage, /data-guestbook-captcha/, "Guestbook captcha is missing");
 const giscusTheme = await readFile(join(outputRoot, "hugo-theme", "giscus-theme.css"), "utf8");
 assert.match(giscusTheme, /--color-canvas-default:transparent/, "Giscus theme is not dark-theme compatible");
 assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
@@ -187,7 +230,7 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-console.log(`Validated Hugo output: ${posts.length} Chinese posts, English/Japanese variants with shared comments, 30-item desktop and 10-item mobile list pagination, 10-item search pagination, feeds, and isolated web pages.`);
+console.log(`Validated Hugo output: ${posts.length} Chinese posts, friends, guestbook, local tool assets, English/Japanese variants, responsive pagination, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];

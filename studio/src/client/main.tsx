@@ -82,6 +82,7 @@ import {
 import type {
   DraftDocument,
   DraftSummary,
+  GuestbookMessage,
   PostDocument,
   PostMeta,
   PostRevision,
@@ -215,6 +216,7 @@ function App() {
   const [sidebarOpen, setSidebarOpen] = useState(false);
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
+  const [guestbookOpen, setGuestbookOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [runnableCodeOpen, setRunnableCodeOpen] = useState(false);
@@ -1281,6 +1283,9 @@ function App() {
         </div>
 
         <div className="topbar-actions">
+          <button className="icon-button" onClick={() => setGuestbookOpen(true)} title="留言管理" aria-label="留言管理">
+            <MessageSquareText size={18} />
+          </button>
           <button
             className={`connection-pill ${session.github.connected ? "connected" : ""}`}
             onClick={() => setSettingsOpen(true)}
@@ -1623,6 +1628,8 @@ function App() {
           showToast={showToast}
         />
       ) : null}
+
+      {guestbookOpen ? <GuestbookDialog onClose={() => setGuestbookOpen(false)} /> : null}
 
       {translationOpen && translationTargets.length ? (
         <TranslationDialog
@@ -3958,6 +3965,99 @@ function TranslationDialog({
           </button>
           <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
         </footer>
+      </section>
+    </div>
+  );
+}
+
+function GuestbookDialog({ onClose }: { onClose: () => void }) {
+  const [messages, setMessages] = useState<GuestbookMessage[]>([]);
+  const [selected, setSelected] = useState<Set<string>>(new Set());
+  const [loading, setLoading] = useState(true);
+  const [deleting, setDeleting] = useState(false);
+  const [error, setError] = useState("");
+
+  const load = useCallback(async () => {
+    setLoading(true);
+    setError("");
+    try {
+      const result = await api.guestbookMessages();
+      setMessages(result.messages);
+      setSelected((current) => new Set([...current].filter((id) => result.messages.some((message) => message.id === id))));
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setLoading(false);
+    }
+  }, []);
+
+  useEffect(() => { void load(); }, [load]);
+
+  function toggle(id: string) {
+    setSelected((current) => {
+      const next = new Set(current);
+      if (next.has(id)) next.delete(id); else next.add(id);
+      return next;
+    });
+  }
+
+  async function removeSelected() {
+    const ids = [...selected];
+    if (!ids.length || !window.confirm(`确认永久删除选中的 ${ids.length} 条留言？`)) return;
+    setDeleting(true);
+    setError("");
+    try {
+      await api.deleteGuestbookMessages(ids);
+      setMessages((current) => current.filter((message) => !selected.has(message.id)));
+      setSelected(new Set());
+    } catch (reason) {
+      setError(errorMessage(reason));
+    } finally {
+      setDeleting(false);
+    }
+  }
+
+  const allSelected = messages.length > 0 && selected.size === messages.length;
+  return (
+    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
+      <section className="guestbook-admin-dialog" role="dialog" aria-modal="true" aria-labelledby="guestbook-admin-title">
+        <header>
+          <div><h2 id="guestbook-admin-title">留言管理</h2><span>共 {messages.length} 条留言</span></div>
+          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+        </header>
+        <div className="guestbook-admin-toolbar">
+          <label>
+            <input
+              type="checkbox"
+              checked={allSelected}
+              onChange={(event) => setSelected(event.target.checked ? new Set(messages.map((message) => message.id)) : new Set())}
+            />
+            全选
+          </label>
+          <div>
+            <button className="secondary-button" onClick={() => void load()} disabled={loading || deleting}>
+              <RefreshCw className={loading ? "spin" : ""} size={15} />刷新
+            </button>
+            <button className="secondary-button danger-text" onClick={() => void removeSelected()} disabled={!selected.size || deleting}>
+              {deleting ? <LoaderCircle className="spin" size={15} /> : <Trash2 size={15} />}删除所选 ({selected.size})
+            </button>
+          </div>
+        </div>
+        {error ? <p className="guestbook-admin-error">{error}</p> : null}
+        <div className="guestbook-admin-list">
+          {loading && messages.length === 0 ? <div className="guestbook-admin-empty"><LoaderCircle className="spin" size={22} />正在读取留言</div> : null}
+          {!loading && messages.length === 0 ? <div className="guestbook-admin-empty">目前没有留言</div> : null}
+          {messages.map((message) => (
+            <label className={`guestbook-admin-row ${selected.has(message.id) ? "selected" : ""}`} key={message.id}>
+              <input type="checkbox" checked={selected.has(message.id)} onChange={() => toggle(message.id)} />
+              <span className="guestbook-admin-avatar">{[...message.name][0]?.toUpperCase() || "?"}</span>
+              <span className="guestbook-admin-copy">
+                <span><strong>{message.name}</strong><time>{formatDateTime(message.createdAt)}</time></span>
+                <p>{message.content}</p>
+              </span>
+            </label>
+          ))}
+        </div>
       </section>
     </div>
   );

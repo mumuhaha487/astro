@@ -38,7 +38,7 @@
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260906-tools-toc">
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260906-home-friends">
   <script async fetchpriority="low" src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
 </head>
 <body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-pagefind-ignore>
@@ -53,22 +53,18 @@
   <div class="site-shell">
     <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="{{ i18n "main_navigation" }}">
       <div class="workspace-brand">
-        <a href="{{ site.Home.RelPermalink }}" aria-label="{{ i18n "back_home" }}">
-          <img src="/images/demo-avatar.webp" alt="" width="42" height="42">
-          <span><strong>木木em哈哈</strong><small>{{ i18n "personal_workspace" }}</small></span>
-        </a>
+        <a class="workspace-brand-title" href="{{ site.Home.RelPermalink }}">{{ i18n "workspace" }}</a>
         <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="{{ i18n "close_navigation" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
       </div>
-      <div class="workspace-label">{{ i18n "workspace" }}</div>
       <nav class="workspace-nav">
         <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
         <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
+        <a href="{{ "archive/" | relLangURL }}" data-nav="archive">{{ partial "icon.html" (dict "name" "calendar") }}<span>{{ i18n "archive" }}</span></a>
+        <a href="{{ "friends/" | relLangURL }}" data-nav="friends">{{ partial "icon.html" (dict "name" "share") }}<span>{{ i18n "friends" }}</span></a>
+        <a href="{{ "guestbook/" | relLangURL }}" data-nav="guestbook">{{ partial "icon.html" (dict "name" "messages") }}<span>{{ i18n "guestbook" }}</span></a>
         <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
       </nav>
       <div class="workspace-spacer"></div>
-      <nav class="workspace-nav workspace-nav-secondary">
-        <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span>GitHub</span>{{ partial "icon.html" (dict "name" "external-link" "class" "nav-tail") }}</a>
-      </nav>
       <p class="workspace-foot">{{ site.Params.description }}<br><span>Hugo · EdgeOne</span></p>
     </aside>
     <div class="sidebar-backdrop" data-sidebar-close></div>
@@ -76,7 +72,7 @@
       <header class="workspace-topbar">
         <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="{{ i18n "open_navigation" }}">{{ partial "icon.html" (dict "name" "menu") }}</button>
         <div class="topbar-title">
-          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (eq $section "posts") "book-open" (cond (eq $section "tools") "wrench" "layout")))) }}
+          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (or (eq $section "posts") (eq $section "blog")) "book-open" (cond (eq $section "tools") "wrench" (cond (eq $section "archive") "calendar" (cond (eq $section "friends") "share" (cond (eq $section "guestbook") "messages" "layout"))))))) }}
           <span>{{ if .IsHome }}{{ i18n "home" }}{{ else if eq $section "posts" }}{{ i18n "blog" }}{{ else }}{{ .Title }}{{ end }}</span>
         </div>
         <div class="topbar-actions">
@@ -119,7 +115,7 @@
   </nav>
   <div class="cursor-ring" aria-hidden="true"></div>
   <div class="cursor-dot" aria-hidden="true"></div>
-  <script src="/hugo-theme/hugo.js?v=20260906-cursor-200"></script>
+  <script src="/hugo-theme/hugo.js?v=20260906-home-friends"></script>
   <script data-hugo-pagefind-preload>window.loadPagefind?.();</script>
   {{ block "scripts" . }}{{ end }}
 </body>

@@ -41,9 +41,9 @@
 - id: todays_status
   translation: 今日のステータス
 - id: status_title
-  translation: 丁寧に暮らし、丁寧にコードを書いています。
+  translation: ちょっと特別な発想を持つかもしれないブロガー。
 - id: status_description
-  translation: 解決した問題、作ったプロジェクト、残しておきたい考えを記録しています。
+  translation: 21世紀に生まれた、小さなエッジサイトです。
 - id: current_visitors
   translation: 現在の訪問者
 - id: total_visitors
@@ -53,7 +53,11 @@
 - id: visitor_stats
   translation: アクセス統計
 - id: profile_workspace
-  translation: 個人ワークスペース
+  translation: 私の小さな居場所。
+- id: contact_title
+  translation: 連絡先
+- id: bilibili
+  translation: ビリビリ
 - id: profile_quote
   translation: 心を乱さず、愛に縛られず、未来を恐れず、過去に怯えない。
 - id: read_blog
@@ -82,6 +86,64 @@
   translation: '%d / %d ページ'
 - id: archive
   translation: アーカイブ
+- id: friends
+  translation: リンク
+- id: guestbook
+  translation: ゲストブック
+- id: friends_apply
+  translation: リンクを申請
+- id: friends_search_placeholder
+  translation: サイト名・紹介・タグを検索
+- id: friends_repository
+  translation: データディレクトリを見る
+- id: friends_step_fork
+  translation: リポジトリを Fork
+- id: friends_step_json
+  translation: JSON を一つ追加
+- id: friends_step_pr
+  translation: Pull Request を送信
+- id: friends_step_build
+  translation: 確認後に自動公開
+- id: friends_visit
+  translation: サイトを見る
+- id: friends_empty
+  translation: 該当するリンクはありません。
+- id: friends_no_description
+  translation: 紹介文はまだありません。
+- id: guestbook_loading
+  translation: メッセージを読み込み中...
+- id: guestbook_empty
+  translation: まだメッセージはありません。最初の一言をどうぞ。
+- id: guestbook_success
+  translation: メッセージを公開しました。
+- id: guestbook_error
+  translation: ゲストブックを一時的に利用できません。
+- id: guestbook_rules
+  translation: 投稿ルール
+- id: guestbook_rule_plain
+  translation: 投稿はプレーンテキストで表示し、HTML や外部リンクは実行しません。
+- id: guestbook_rule_limit
+  translation: 同じ IP からの投稿は1時間に3件までです。
+- id: guestbook_rule_captcha
+  translation: 投稿ごとに計算問題への回答が必要です。
+- id: guestbook_name
+  translation: お名前
+- id: guestbook_name_placeholder
+  translation: 呼び名を入力
+- id: guestbook_content
+  translation: メッセージ
+- id: guestbook_content_placeholder
+  translation: 一言を残してください
+- id: guestbook_captcha
+  translation: 確認問題
+- id: guestbook_answer
+  translation: 答え
+- id: guestbook_refresh_captcha
+  translation: 別の問題
+- id: guestbook_submit
+  translation: 投稿する
+- id: guestbook_recent
+  translation: 最近のメッセージ
 - id: archive_description
   translation: '%d 件の記事を日付順に表示します。'
 - id: back_blog

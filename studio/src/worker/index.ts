@@ -4,6 +4,8 @@ import seedPostIndex from "../../public/post-index.json";
 import type {
   DraftDocument,
   DraftSummary,
+  GuestbookCaptcha,
+  GuestbookMessage,
   PostDocument,
   PostBundleResult,
   PostMeta,
@@ -109,6 +111,20 @@ interface StoredPassword {
   iterations: number;
 }
 
+interface StoredGuestbookMessage extends GuestbookMessage {
+  ipHash: string;
+}
+
+interface StoredGuestbookCaptcha {
+  answer: number;
+  expiresAt: number;
+}
+
+interface GuestbookRateLimit {
+  count: number;
+  resetAt: number;
+}
+
 class HttpError extends Error {
   status: number;
   code?: string;
@@ -127,6 +143,12 @@ const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
 const MAX_RESOURCE_BYTES = 25 * 1024 * 1024;
+const GUESTBOOK_MESSAGE_PREFIX = "guestbook/messages/";
+const GUESTBOOK_CAPTCHA_PREFIX = "guestbook/captcha/";
+const GUESTBOOK_RATE_PREFIX = "guestbook/rate/";
+const GUESTBOOK_RATE_LIMIT = 3;
+const GUESTBOOK_RATE_WINDOW = 60 * 60_000;
+const GUESTBOOK_CAPTCHA_LIFETIME = 5 * 60_000;
 
 const webEmbedSecurityHeaders: Record<string, string> = {
   "Content-Security-Policy": [
@@ -171,10 +193,11 @@ const securityHeaders: Record<string, string> = {
 export default {
   async fetch(request: Request, env: Env): Promise<Response> {
     const url = new URL(request.url);
+    const publicGuestbook = isPublicGuestbookRoute(url.pathname);
     try {
       if (url.pathname.startsWith("/api/")) {
         const response = await routeApi(request, env, url);
-        return secureResponse(response, true);
+        return secureResponse(publicGuestbook ? withGuestbookCors(response, request) : response, true);
       }
       const repositoryAssetPath = repositoryPublicAssetPath(url.pathname);
       if (repositoryAssetPath && (request.method === "GET" || request.method === "HEAD")) {
@@ -188,15 +211,24 @@ export default {
       const message =
         error instanceof HttpError ? error.message : "服务器暂时无法处理该请求";
       const code = error instanceof HttpError ? error.code : undefined;
-      return secureResponse(json({ error: message, ...(code ? { code } : {}) }, status), true);
+      const response = json({ error: message, ...(code ? { code } : {}) }, status);
+      return secureResponse(publicGuestbook ? withGuestbookCors(response, request) : response, true);
     }
   },
   async scheduled(_controller: ScheduledController, env: Env, context: ExecutionContext): Promise<void> {
-    context.waitUntil(publishScheduledPosts(env));
+    context.waitUntil(Promise.all([publishScheduledPosts(env), cleanupExpiredGuestbookState(env)]).then(() => undefined));
   },
 };
 
 async function routeApi(request: Request, env: Env, url: URL): Promise<Response> {
+  if (isPublicGuestbookRoute(url.pathname)) {
+    assertGuestbookOrigin(request);
+    if (request.method === "OPTIONS") return new Response(null, { status: 204 });
+    if (url.pathname === "/api/guestbook/captcha" && request.method === "GET") return json(await createGuestbookCaptcha(env));
+    if (url.pathname === "/api/guestbook/messages" && request.method === "GET") return json({ messages: await listGuestbookMessages(env, false) });
+    if (url.pathname === "/api/guestbook/messages" && request.method === "POST") return json(await createGuestbookMessage(request, env), 201);
+    throw new HttpError(405, "请求方法不受支持");
+  }
   if (!["GET", "HEAD", "OPTIONS"].includes(request.method)) {
     assertSameOrigin(request, url);
   }
@@ -314,6 +346,13 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
     await changePassword(env, await readJson(request));
     return new Response(null, { status: 204 });
   }
+  if (url.pathname === "/api/guestbook/admin/messages" && request.method === "GET") {
+    return json({ messages: await listGuestbookMessages(env, true) });
+  }
+  if (url.pathname === "/api/guestbook/admin/messages" && request.method === "DELETE") {
+    const body = await readJson<{ ids?: unknown }>(request);
+    return json({ deleted: await deleteGuestbookMessages(env, body.ids) });
+  }
 
   throw new HttpError(404, "接口不存在");
 }
@@ -346,6 +385,122 @@ async function getSessionInfo(env: Env): Promise<SessionInfo> {
     },
     translation,
   };
+}
+
+async function createGuestbookCaptcha(env: Env): Promise<GuestbookCaptcha> {
+  const left = randomInteger(1, 9);
+  const right = randomInteger(1, 9);
+  const subtract = crypto.getRandomValues(new Uint8Array(1))[0] % 2 === 0;
+  const first = subtract ? Math.max(left, right) : left;
+  const second = subtract ? Math.min(left, right) : right;
+  const answer = subtract ? first - second : first + second;
+  const id = crypto.randomUUID().replaceAll("-", "");
+  const expiresAt = Date.now() + GUESTBOOK_CAPTCHA_LIFETIME;
+  await env.DRAFTS.put(`${GUESTBOOK_CAPTCHA_PREFIX}${id}`, JSON.stringify({ answer, expiresAt } satisfies StoredGuestbookCaptcha), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  return { id, prompt: `${first} ${subtract ? "-" : "+"} ${second} = ?`, expiresAt: new Date(expiresAt).toISOString() };
+}
+
+async function createGuestbookMessage(request: Request, env: Env): Promise<GuestbookMessage> {
+  const body = await readJson<{ name?: unknown; content?: unknown; captchaId?: unknown; captchaAnswer?: unknown }>(request);
+  const name = cleanGuestbookText(body.name, "用户名", 1, 30, false);
+  const content = cleanGuestbookText(body.content, "留言内容", 2, 600, true);
+  const captchaId = typeof body.captchaId === "string" && /^[a-f0-9]{32}$/.test(body.captchaId) ? body.captchaId : "";
+  if (!captchaId) throw new HttpError(400, "验证码已失效，请刷新后重试", "CAPTCHA_INVALID");
+  const captchaKey = `${GUESTBOOK_CAPTCHA_PREFIX}${captchaId}`;
+  const captcha = await readJsonObject<StoredGuestbookCaptcha>(env.DRAFTS, captchaKey);
+  await env.DRAFTS.delete(captchaKey);
+  const answer = typeof body.captchaAnswer === "number" ? body.captchaAnswer : Number(body.captchaAnswer);
+  if (!captcha || captcha.expiresAt <= Date.now() || !Number.isInteger(answer) || answer !== captcha.answer) {
+    throw new HttpError(400, "验证码不正确，请重新计算", "CAPTCHA_INVALID");
+  }
+  const ip = clientIp(request);
+  const ipHash = await sha256(ip);
+  const rateKey = `${GUESTBOOK_RATE_PREFIX}${ipHash}`;
+  const storedRate = await readJsonObject<GuestbookRateLimit>(env.DRAFTS, rateKey);
+  const rate = storedRate && storedRate.resetAt > Date.now()
+    ? storedRate
+    : { count: 0, resetAt: Date.now() + GUESTBOOK_RATE_WINDOW };
+  if (rate.count >= GUESTBOOK_RATE_LIMIT) {
+    const minutes = Math.max(1, Math.ceil((rate.resetAt - Date.now()) / 60_000));
+    throw new HttpError(429, `每个 IP 每小时最多留言 3 次，请在 ${minutes} 分钟后再试`, "GUESTBOOK_RATE_LIMIT");
+  }
+  await env.DRAFTS.put(rateKey, JSON.stringify({ count: rate.count + 1, resetAt: rate.resetAt } satisfies GuestbookRateLimit), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  const createdAt = new Date().toISOString();
+  const id = `${Date.now()}-${crypto.randomUUID().replaceAll("-", "").slice(0, 12)}`;
+  const message: StoredGuestbookMessage = { id, name, content, createdAt, ipHash };
+  await env.DRAFTS.put(`${GUESTBOOK_MESSAGE_PREFIX}${id}`, JSON.stringify(message), {
+    httpMetadata: { contentType: "application/json" },
+  });
+  return publicGuestbookMessage(message);
+}
+
+async function listGuestbookMessages(env: Env, admin: boolean): Promise<GuestbookMessage[]> {
+  const listing = await env.DRAFTS.list({ prefix: GUESTBOOK_MESSAGE_PREFIX, limit: admin ? 1000 : 120 });
+  const stored = await mapConcurrent(listing.objects, 12, (entry) => readJsonObject<StoredGuestbookMessage>(env.DRAFTS, entry.key));
+  return stored
+    .filter((entry): entry is StoredGuestbookMessage => Boolean(entry?.id && entry.name && entry.content && entry.createdAt))
+    .sort((left, right) => right.createdAt.localeCompare(left.createdAt))
+    .slice(0, admin ? 500 : 60)
+    .map(publicGuestbookMessage);
+}
+
+async function deleteGuestbookMessages(env: Env, value: unknown): Promise<number> {
+  if (!Array.isArray(value) || value.length === 0 || value.length > 100) throw new HttpError(400, "请选择 1 到 100 条留言");
+  const ids = [...new Set(value.map((entry) => {
+    if (typeof entry !== "string" || !/^\d{13}-[a-f0-9]{12}$/.test(entry)) throw new HttpError(400, "留言标识无效");
+    return entry;
+  }))];
+  await Promise.all(ids.map((id) => env.DRAFTS.delete(`${GUESTBOOK_MESSAGE_PREFIX}${id}`)));
+  return ids.length;
+}
+
+async function cleanupExpiredGuestbookState(env: Env): Promise<void> {
+  const now = Date.now();
+  const [captchas, rates] = await Promise.all([
+    env.DRAFTS.list({ prefix: GUESTBOOK_CAPTCHA_PREFIX, limit: 500 }),
+    env.DRAFTS.list({ prefix: GUESTBOOK_RATE_PREFIX, limit: 500 }),
+  ]);
+  const stale = [];
+  for (const entry of captchas.objects) {
+    const captcha = await readJsonObject<StoredGuestbookCaptcha>(env.DRAFTS, entry.key);
+    if (!captcha || captcha.expiresAt <= now) stale.push(entry.key);
+  }
+  for (const entry of rates.objects) {
+    const rate = await readJsonObject<GuestbookRateLimit>(env.DRAFTS, entry.key);
+    if (!rate || rate.resetAt <= now) stale.push(entry.key);
+  }
+  await Promise.all(stale.map((key) => env.DRAFTS.delete(key)));
+}
+
+function publicGuestbookMessage(message: StoredGuestbookMessage): GuestbookMessage {
+  return { id: message.id, name: message.name, content: message.content, createdAt: message.createdAt };
+}
+
+function cleanGuestbookText(value: unknown, label: string, minimum: number, maximum: number, multiline: boolean): string {
+  if (typeof value !== "string") throw new HttpError(400, `请填写${label}`);
+  const cleaned = value
+    .normalize("NFKC")
+    .replace(/[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/g, "")
+    .replace(multiline ? /[ \t]+/g : /\s+/g, " ")
+    .trim();
+  const length = [...cleaned].length;
+  if (length < minimum || length > maximum) throw new HttpError(400, `${label}需要 ${minimum}-${maximum} 个字符`);
+  return cleaned;
+}
+
+function randomInteger(minimum: number, maximum: number): number {
+  return minimum + (crypto.getRandomValues(new Uint8Array(1))[0] % (maximum - minimum + 1));
+}
+
+function clientIp(request: Request): string {
+  return request.headers.get("CF-Connecting-IP")
+    || request.headers.get("X-Real-IP")
+    || request.headers.get("X-Forwarded-For")?.split(",", 1)[0]?.trim()
+    || "local";
 }
 
 async function listPosts(
@@ -2043,6 +2198,39 @@ function expiredSessionCookie(): string {
 function assertSameOrigin(request: Request, url: URL): void {
   const origin = request.headers.get("Origin");
   if (origin && origin !== url.origin) throw new HttpError(403, "跨站请求已被拒绝");
+}
+
+function isPublicGuestbookRoute(pathname: string): boolean {
+  return pathname === "/api/guestbook/captcha" || pathname === "/api/guestbook/messages";
+}
+
+function guestbookOrigin(request: Request): string | null {
+  const origin = request.headers.get("Origin");
+  if (!origin) return null;
+  try {
+    const url = new URL(origin);
+    if (url.origin === "https://vmss.cn" || url.origin === "https://www.vmss.cn") return url.origin;
+    if (["localhost", "127.0.0.1"].includes(url.hostname) && ["http:", "https:"].includes(url.protocol)) return url.origin;
+  } catch {}
+  return null;
+}
+
+function assertGuestbookOrigin(request: Request): void {
+  if (!request.headers.has("Origin")) return;
+  if (!guestbookOrigin(request)) throw new HttpError(403, "该来源不能提交留言");
+}
+
+function withGuestbookCors(response: Response, request: Request): Response {
+  const headers = new Headers(response.headers);
+  const origin = guestbookOrigin(request);
+  if (origin) {
+    headers.set("Access-Control-Allow-Origin", origin);
+    headers.set("Vary", "Origin");
+    headers.set("Access-Control-Allow-Methods", "GET, POST, OPTIONS");
+    headers.set("Access-Control-Allow-Headers", "Content-Type");
+    headers.set("Access-Control-Max-Age", "86400");
+  }
+  return new Response(response.body, { status: response.status, statusText: response.statusText, headers });
 }
 
 function json(value: unknown, status = 200, extraHeaders: HeadersInit = {}): Response {

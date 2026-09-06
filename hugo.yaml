@@ -92,6 +92,7 @@ outputFormats:
 params:
   description: 木哈文轩
   author: 木木em哈哈
+  guestbookApi: https://astro-blog-studio.vrhjio4405.workers.dev
   siteStartDate: 2023-04-01
   wallpapers:
     desktop:

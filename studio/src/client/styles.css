@@ -1363,6 +1363,152 @@ button:disabled {
   box-shadow: var(--shadow);
 }
 
+.guestbook-admin-dialog {
+  width: min(820px, 100%);
+  max-height: calc(100vh - 36px);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  border: 1px solid var(--line-strong);
+  border-radius: 8px;
+  background: white;
+  box-shadow: var(--shadow);
+}
+
+.guestbook-admin-dialog > header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 17px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.guestbook-admin-dialog > header h2 {
+  margin: 0;
+  font-size: 18px;
+}
+
+.guestbook-admin-dialog > header span {
+  display: block;
+  margin-top: 3px;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+.guestbook-admin-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 14px;
+  padding: 12px 20px;
+  border-bottom: 1px solid var(--line);
+  background: var(--surface-subtle);
+}
+
+.guestbook-admin-toolbar > label,
+.guestbook-admin-toolbar > div {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.guestbook-admin-toolbar > label {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.guestbook-admin-toolbar input,
+.guestbook-admin-row > input {
+  width: 16px;
+  height: 16px;
+  accent-color: var(--coral);
+}
+
+.guestbook-admin-error {
+  margin: 0;
+  padding: 9px 20px;
+  border-bottom: 1px solid #ffd7cf;
+  background: #fff4f1;
+  color: #c53c21;
+  font-size: 12px;
+}
+
+.guestbook-admin-list {
+  min-height: 260px;
+  overflow: auto;
+  padding: 8px 20px 20px;
+}
+
+.guestbook-admin-row {
+  display: grid;
+  grid-template-columns: 18px 38px minmax(0, 1fr);
+  align-items: start;
+  gap: 11px;
+  padding: 14px 10px;
+  border-bottom: 1px solid var(--line);
+  cursor: pointer;
+}
+
+.guestbook-admin-row.selected {
+  background: var(--green-soft);
+}
+
+.guestbook-admin-avatar {
+  width: 38px;
+  height: 38px;
+  display: grid;
+  place-items: center;
+  border-radius: 50%;
+  background: #eceef1;
+  color: #555861;
+  font-weight: 700;
+}
+
+.guestbook-admin-copy,
+.guestbook-admin-copy > span {
+  min-width: 0;
+}
+
+.guestbook-admin-copy > span {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+}
+
+.guestbook-admin-copy strong {
+  overflow: hidden;
+  color: var(--ink);
+  font-size: 13px;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.guestbook-admin-copy time {
+  flex: 0 0 auto;
+  color: var(--faint);
+  font-size: 11px;
+}
+
+.guestbook-admin-copy p {
+  margin: 5px 0 0;
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.6;
+  white-space: pre-wrap;
+  overflow-wrap: anywhere;
+}
+
+.guestbook-admin-empty {
+  min-height: 240px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  color: var(--faint);
+  font-size: 12px;
+}
+
 .settings-dialog > header {
   display: flex;
   align-items: center;
@@ -1908,6 +2054,36 @@ button:disabled {
   .settings-dialog > header,
   .settings-section {
     padding-inline: 16px;
+  }
+
+  .guestbook-admin-dialog > header,
+  .guestbook-admin-toolbar,
+  .guestbook-admin-list {
+    padding-inline: 14px;
+  }
+
+  .guestbook-admin-toolbar {
+    align-items: stretch;
+    flex-direction: column;
+  }
+
+  .guestbook-admin-toolbar > div {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+  }
+
+  .guestbook-admin-row {
+    grid-template-columns: 18px minmax(0, 1fr);
+  }
+
+  .guestbook-admin-avatar {
+    display: none;
+  }
+
+  .guestbook-admin-copy > span {
+    align-items: flex-start;
+    flex-direction: column;
+    gap: 2px;
   }
 }
 

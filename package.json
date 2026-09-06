@@ -11,7 +11,7 @@
 		"update-anime": "node scripts/update-anime.mjs",
 		"update-bangumi": "node scripts/update-bangumi.mjs",
 		"update-bilibili": "node scripts/update-bilibili.mjs",
-		"build": "node scripts/update-anime.mjs && hugo --cleanDestinationDir --destination dist && node scripts/protect-hugo-pages.mjs && node scripts/finalize-hugo-build.mjs && pagefind --site dist && node scripts/validate-hugo-build.mjs",
+		"build": "node scripts/build-friends.mjs && node scripts/update-anime.mjs && hugo --cleanDestinationDir --destination dist && node scripts/protect-hugo-pages.mjs && node scripts/finalize-hugo-build.mjs && pagefind --site dist && node scripts/validate-hugo-build.mjs",
 		"submit": "node scripts/indexnow-submit.js",
 		"preview": "hugo server --environment production --disableFastRender",
 		"serve": "node scripts/serve-dist.mjs dist 4321",

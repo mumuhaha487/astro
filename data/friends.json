@@ -1,0 +1,41 @@
+{
+  "items": [
+    {
+      "name": "《二叉树树》官方网站",
+      "url": "https://2x.nz/",
+      "avatar": "https://q2.qlogo.cn/headimg_dl?dst_uin=2726730791&spec=0",
+      "description": "经常有些好玩的小玩意",
+      "tags": [
+        "博客"
+      ]
+    },
+    {
+      "name": "Astro",
+      "url": "https://astro.build/",
+      "avatar": "https://avatars.githubusercontent.com/u/44914786?v=4&s=640",
+      "description": "The web framework for content-driven websites",
+      "tags": [
+        "框架",
+        "开源"
+      ]
+    },
+    {
+      "name": "echo '秋知德雨';",
+      "url": "https://aj0.cn/",
+      "avatar": "https://aj0.cn/wp-content/uploads/2022/01/2022011202433817-scaled.jpg",
+      "description": "一个比较牛逼的大佬",
+      "tags": [
+        "博客"
+      ]
+    },
+    {
+      "name": "Mizuki Docs",
+      "url": "https://docs.mizuki.mysqil.com/",
+      "avatar": "https://q.qlogo.cn/headimg_dl?dst_uin=3231515355&spec=640&img_type=jpg",
+      "description": "Mizuki User Manual",
+      "tags": [
+        "文档"
+      ]
+    }
+  ]
+}

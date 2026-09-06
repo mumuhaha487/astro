@@ -1,6 +1,7 @@
 import type {
   DraftDocument,
   DraftSummary,
+  GuestbookMessage,
   PostDocument,
   PostBundleResult,
   PostMeta,
@@ -106,6 +107,13 @@ export const api = {
     request<void>("/api/draft", {
       method: "DELETE",
       body: JSON.stringify({ key }),
+    }),
+  guestbookMessages: () =>
+    request<{ messages: GuestbookMessage[] }>("/api/guestbook/admin/messages"),
+  deleteGuestbookMessages: (ids: string[]) =>
+    request<{ deleted: number }>("/api/guestbook/admin/messages", {
+      method: "DELETE",
+      body: JSON.stringify({ ids }),
     }),
   schedulePost: (schedule: Omit<ScheduledPost, "key" | "createdAt">) =>
     request<ScheduledPost>("/api/schedule", {

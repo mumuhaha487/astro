@@ -571,3 +571,97 @@ describe("multilingual publishing", () => {
     expect(treeBody.tree.at(-1)?.sha).toBeNull();
   });
 });
+
+describe("guestbook API", () => {
+  function guestbookEnv() {
+    const values = new Map<string, string>();
+    const env = testEnv();
+    env.DRAFTS = {
+      get: vi.fn(async (key: string) => {
+        const value = values.get(key);
+        return value === undefined ? null : { json: async <T>() => JSON.parse(value) as T };
+      }),
+      put: vi.fn(async (key: string, value: string | ArrayBuffer | ArrayBufferView | ReadableStream) => {
+        values.set(key, typeof value === "string" ? value : String(value));
+      }),
+      delete: vi.fn(async (key: string) => { values.delete(key); }),
+      list: vi.fn(async (options?: { prefix?: string; limit?: number }) => ({
+        objects: [...values.keys()]
+          .filter((key) => !options?.prefix || key.startsWith(options.prefix))
+          .slice(0, options?.limit)
+          .map((key) => ({ key })),
+      })),
+    };
+    return { env, values };
+  }
+
+  async function captcha(env: ReturnType<typeof guestbookEnv>["env"]) {
+    const response = await worker.fetch(new Request("https://studio.example/api/guestbook/captcha", {
+      headers: { Origin: "https://vmss.cn" },
+    }), env);
+    expect(response.status).toBe(200);
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://vmss.cn");
+    const result = await response.json() as { id: string; prompt: string };
+    const match = result.prompt.match(/(\d+) ([+-]) (\d+)/);
+    expect(match).not.toBeNull();
+    const answer = match?.[2] === "+" ? Number(match[1]) + Number(match[3]) : Number(match?.[1]) - Number(match?.[3]);
+    return { id: result.id, answer };
+  }
+
+  async function postMessage(env: ReturnType<typeof guestbookEnv>["env"], index: number) {
+    const challenge = await captcha(env);
+    return worker.fetch(new Request("https://studio.example/api/guestbook/messages", {
+      method: "POST",
+      headers: {
+        Origin: "https://vmss.cn",
+        "CF-Connecting-IP": "203.0.113.42",
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ name: "访客", content: `第 ${index} 条测试留言`, captchaId: challenge.id, captchaAnswer: challenge.answer }),
+    }), env);
+  }
+
+  it("accepts plain-text messages with one-time captchas and returns CORS headers", async () => {
+    const { env, values } = guestbookEnv();
+    const response = await postMessage(env, 1);
+    expect(response.status).toBe(201);
+    expect(response.headers.get("Access-Control-Allow-Origin")).toBe("https://vmss.cn");
+    const created = await response.json() as { id: string; name: string; content: string };
+    expect(created).toMatchObject({ name: "访客", content: "第 1 条测试留言" });
+    expect([...values.keys()].filter((key) => key.startsWith("guestbook/captcha/"))).toHaveLength(0);
+
+    const listing = await worker.fetch(new Request("https://studio.example/api/guestbook/messages", {
+      headers: { Origin: "https://vmss.cn" },
+    }), env);
+    expect(listing.status).toBe(200);
+    expect(await listing.json()).toMatchObject({ messages: [{ id: created.id }] });
+  });
+
+  it("limits each IP to three messages per rolling hour", async () => {
+    const { env } = guestbookEnv();
+    for (let index = 1; index <= 3; index += 1) expect((await postMessage(env, index)).status).toBe(201);
+    const blocked = await postMessage(env, 4);
+    expect(blocked.status).toBe(429);
+    expect(await blocked.json()).toMatchObject({ code: "GUESTBOOK_RATE_LIMIT" });
+  });
+
+  it("lets an authenticated editor list and batch-delete messages", async () => {
+    const { env } = guestbookEnv();
+    const created = await (await postMessage(env, 1)).json() as { id: string };
+    const login = await worker.fetch(new Request("https://studio.example/api/login", {
+      method: "POST",
+      headers: { Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ password: "test-password" }),
+    }), env);
+    const cookie = login.headers.get("Set-Cookie")?.split(";", 1)[0] || "";
+    const remove = await worker.fetch(new Request("https://studio.example/api/guestbook/admin/messages", {
+      method: "DELETE",
+      headers: { Origin: "https://studio.example", Cookie: cookie, "Content-Type": "application/json" },
+      body: JSON.stringify({ ids: [created.id] }),
+    }), env);
+    expect(remove.status).toBe(200);
+    expect(await remove.json()).toEqual({ deleted: 1 });
+    const listing = await worker.fetch(new Request("https://studio.example/api/guestbook/admin/messages", { headers: { Cookie: cookie } }), env);
+    expect(await listing.json()).toEqual({ messages: [] });
+  });
+});

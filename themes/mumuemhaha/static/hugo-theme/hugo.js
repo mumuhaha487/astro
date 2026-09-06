@@ -88,22 +88,39 @@
     const ring = $(".cursor-ring");
     if (!dot || !ring) return;
     document.body.classList.add("has-custom-cursor");
-    const trail = [];
-    const lag = 200;
-    ring.dataset.lag = String(lag);
+    const followTime = 58;
+    const current = { x: 0, y: 0 };
+    const target = { x: 0, y: 0 };
+    let initialized = false;
     let ringFrame = 0;
+    let previousFrame = 0;
+    ring.dataset.followMode = "straight-line";
+    ring.dataset.followMs = String(followTime);
     const renderRing = (now) => {
-      const cutoff = now - lag;
-      while (trail.length > 1 && trail[1].time <= cutoff) trail.shift();
-      const point = trail[0];
-      if (point) ring.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
-      ringFrame = requestAnimationFrame(renderRing);
+      const elapsed = Math.min(48, Math.max(1, now - (previousFrame || now - 16)));
+      previousFrame = now;
+      const progress = 1 - Math.exp(-elapsed / followTime);
+      current.x += (target.x - current.x) * progress;
+      current.y += (target.y - current.y) * progress;
+      const distance = Math.hypot(target.x - current.x, target.y - current.y);
+      if (distance < 0.18) {
+        current.x = target.x;
+        current.y = target.y;
+      }
+      ring.style.transform = `translate3d(${current.x}px,${current.y}px,0) translate(-50%,-50%)`;
+      if (distance >= 0.18) ringFrame = requestAnimationFrame(renderRing);
+      else { ringFrame = 0; previousFrame = 0; }
     };
     addEventListener("pointermove", (event) => {
-      const point = { x: event.clientX, y: event.clientY, time: performance.now() };
-      dot.style.transform = `translate3d(${point.x}px,${point.y}px,0) translate(-50%,-50%)`;
-      trail.push(point);
-      if (trail.length > 240) trail.splice(0, trail.length - 240);
+      target.x = event.clientX;
+      target.y = event.clientY;
+      dot.style.transform = `translate3d(${target.x}px,${target.y}px,0) translate(-50%,-50%)`;
+      if (!initialized) {
+        current.x = target.x;
+        current.y = target.y;
+        ring.style.transform = dot.style.transform;
+        initialized = true;
+      }
       dot.classList.add("visible"); ring.classList.add("visible");
       if (!ringFrame) ringFrame = requestAnimationFrame(renderRing);
     }, { passive: true });
@@ -132,11 +149,109 @@
       setInterval(update, 1000);
     }
     initTypewriter();
+    initAvatarParticles();
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
       updateUmamiStats();
       setInterval(updateUmamiStats, 60_000);
     }
+  }
+
+  function initAvatarParticles() {
+    const stage = $("[data-avatar-particles]");
+    const canvas = $(".profile-particles", stage || document);
+    const image = $("[data-avatar-image]", stage || document);
+    if (!stage || !canvas || !image) return;
+    const showImage = () => {
+      stage.classList.add("is-assembled");
+      setTimeout(() => { stage.classList.add("is-ready"); startAvatarSpin(image); }, 680);
+    };
+    if (reducedMotion.matches) { stage.classList.add("is-assembled", "is-ready"); image.style.transform = "none"; return; }
+    const assemble = async () => {
+      try { await image.decode(); } catch {
+        if (!image.complete) await new Promise((resolve) => image.addEventListener("load", resolve, { once: true }));
+      }
+      const size = 156;
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d", { alpha: true });
+      const sample = document.createElement("canvas");
+      sample.width = size; sample.height = size;
+      const sampleContext = sample.getContext("2d", { willReadFrequently: true });
+      if (!context || !sampleContext || !image.naturalWidth) { showImage(); return; }
+      const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+      sampleContext.drawImage(image, (image.naturalWidth - sourceSize) / 2, (image.naturalHeight - sourceSize) / 2, sourceSize, sourceSize, 0, 0, size, size);
+      const pixels = sampleContext.getImageData(0, 0, size, size).data;
+      const particles = [];
+      let particleIndex = 0;
+      for (let y = 2; y < size - 2; y += 3) {
+        for (let x = 2; x < size - 2; x += 3) {
+          const distanceFromCenter = Math.hypot(x - size / 2, y - size / 2);
+          if (distanceFromCenter > size / 2 - 2) continue;
+          const offset = (y * size + x) * 4;
+          if (pixels[offset + 3] < 90) continue;
+          const angle = ((particleIndex * 137.508) % 360) * Math.PI / 180;
+          const radius = size * (.72 + ((particleIndex * 47) % 37) / 100);
+          particles.push({
+            x,
+            y,
+            startX: size / 2 + Math.cos(angle) * radius,
+            startY: size / 2 + Math.sin(angle) * radius,
+            color: `rgba(${pixels[offset]},${pixels[offset + 1]},${pixels[offset + 2]},${pixels[offset + 3] / 255})`,
+            delay: (1 - Math.min(1, distanceFromCenter / (size / 2))) * 560,
+          });
+          particleIndex += 1;
+        }
+      }
+      const startedAt = performance.now();
+      stage.dataset.particleDuration = "2400";
+      const render = (now) => {
+        context.clearRect(0, 0, size, size);
+        for (const particle of particles) {
+          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / 1720));
+          const eased = 1 - (1 - linear) ** 4;
+          const x = particle.startX + (particle.x - particle.startX) * eased;
+          const y = particle.startY + (particle.y - particle.startY) * eased;
+          context.fillStyle = particle.color;
+          context.fillRect(Math.round(x), Math.round(y), 2, 2);
+        }
+        if (now - startedAt < 2320) requestAnimationFrame(render);
+        else showImage();
+      };
+      requestAnimationFrame(render);
+    };
+    void assemble();
+  }
+
+  function startAvatarSpin(image) {
+    const baseVelocity = -180;
+    const acceleration = 180;
+    let angle = 0;
+    let velocity = baseVelocity;
+    let hovering = false;
+    let recoveryStart = 0;
+    let recoveryVelocity = baseVelocity;
+    let previous = performance.now();
+    image.dataset.spinBase = String(baseVelocity);
+    image.addEventListener("pointerenter", () => { hovering = true; recoveryStart = 0; });
+    image.addEventListener("pointerleave", () => { hovering = false; recoveryStart = performance.now(); recoveryVelocity = velocity; });
+    const render = (now) => {
+      const seconds = Math.min(.05, Math.max(0, (now - previous) / 1000));
+      previous = now;
+      if (document.visibilityState === "visible") {
+        if (hovering) velocity += acceleration * seconds;
+        else if (recoveryStart) {
+          const progress = Math.min(1, (now - recoveryStart) / 3000);
+          const eased = 1 - (1 - progress) ** 3;
+          velocity = recoveryVelocity + (baseVelocity - recoveryVelocity) * eased;
+          if (progress === 1) recoveryStart = 0;
+        } else velocity = baseVelocity;
+        angle = (angle + velocity * seconds) % 360;
+        image.style.transform = `rotate(${angle}deg)`;
+      }
+      requestAnimationFrame(render);
+    };
+    requestAnimationFrame(render);
   }
 
   function initTypewriter() {
@@ -450,6 +565,36 @@
   }
 
   function initTools() {
+    const toolsPage = $("[data-tool-covers]");
+    if (toolsPage) {
+      let covers = [];
+      try { covers = JSON.parse(toolsPage.dataset.toolCovers || "[]").filter((value) => typeof value === "string" && value.startsWith("/")); } catch {}
+      const loadCover = (image, index) => {
+        if (image.dataset.coverLoaded === "true") return;
+        image.dataset.coverLoaded = "true";
+        if (!covers.length) { image.classList.add("is-missing"); return; }
+        const start = Math.floor(Math.random() * covers.length);
+        let attempt = 0;
+        image.addEventListener("error", () => {
+          attempt += 1;
+          if (attempt >= covers.length) { image.removeAttribute("src"); image.classList.add("is-missing"); return; }
+          image.src = covers[(start + index + attempt) % covers.length];
+        });
+        image.src = covers[(start + index) % covers.length];
+      };
+      const coverImages = $$('[data-random-cover]', toolsPage);
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          entries.forEach((entry) => {
+            if (!entry.isIntersecting) return;
+            const index = coverImages.indexOf(entry.target);
+            loadCover(entry.target, index);
+            observer.unobserve(entry.target);
+          });
+        }, { rootMargin: "180px 0px" });
+        coverImages.forEach((image) => observer.observe(image));
+      } else coverImages.forEach(loadCover);
+    }
     const jsonInput = $("[data-json-input]");
     const jsonMessage = $("[data-json-message]");
     const transformJson = (space) => {
@@ -558,6 +703,115 @@
       catch { button.textContent = text.copyFailed; }
       setTimeout(() => { button.innerHTML = original; }, 1_500);
     }));
+  }
+
+  function initFriends() {
+    const page = $("[data-friends-page]");
+    if (!page) return;
+    const search = $("[data-friends-search]", page);
+    const cards = $$('[data-friend-card]', page);
+    const empty = $("[data-friends-empty]", page);
+    $$('[data-friend-avatar]', page).forEach((image) => image.addEventListener("error", () => image.remove(), { once: true }));
+    const filter = () => {
+      const query = (search?.value || "").trim().toLocaleLowerCase();
+      let visible = 0;
+      cards.forEach((card) => {
+        const matches = !query || (card.dataset.search || "").includes(query);
+        card.hidden = !matches;
+        if (matches) visible += 1;
+      });
+      if (empty) empty.hidden = visible !== 0;
+    };
+    search?.addEventListener("input", filter);
+    filter();
+  }
+
+  function initGuestbook() {
+    const page = $("[data-guestbook]");
+    if (!page) return;
+    const api = (page.dataset.guestbookApi || "").replace(/\/$/, "");
+    const form = $("[data-guestbook-form]", page);
+    const list = $("[data-guestbook-list]", page);
+    const count = $("[data-guestbook-count]", page);
+    const captchaText = $("[data-guestbook-captcha]", page);
+    const refresh = $("[data-guestbook-captcha-refresh]", page);
+    const status = $("[data-guestbook-status]", page);
+    const submit = $('button[type="submit"]', form || document);
+    let captchaId = "";
+    let messages = [];
+    const request = async (path, options) => {
+      const response = await fetch(`${api}${path}`, { cache: "no-store", ...options });
+      const payload = await response.json().catch(() => ({}));
+      if (!response.ok) throw new Error(payload.error || page.dataset.error);
+      return payload;
+    };
+    const renderMessages = () => {
+      if (!list) return;
+      if (count) count.textContent = String(messages.length);
+      if (!messages.length) {
+        const empty = document.createElement("p"); empty.className = "guestbook-list-state"; empty.textContent = page.dataset.empty || "";
+        list.replaceChildren(empty); return;
+      }
+      const formatter = new Intl.DateTimeFormat(locale, { year: "numeric", month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" });
+      list.replaceChildren(...messages.map((message) => {
+        const article = document.createElement("article"); article.className = "guestbook-message";
+        const avatar = document.createElement("span"); avatar.className = "guestbook-message-avatar"; avatar.textContent = [...message.name][0]?.toUpperCase() || "?";
+        const body = document.createElement("div");
+        const header = document.createElement("header");
+        const name = document.createElement("strong"); name.textContent = message.name;
+        const time = document.createElement("time"); time.dateTime = message.createdAt; time.textContent = formatter.format(new Date(message.createdAt));
+        const content = document.createElement("p"); content.textContent = message.content;
+        header.append(name, time); body.append(header, content); article.append(avatar, body);
+        return article;
+      }));
+    };
+    const loadCaptcha = async () => {
+      if (captchaText) captchaText.textContent = "...";
+      captchaId = "";
+      try {
+        const captcha = await request("/api/guestbook/captcha");
+        captchaId = captcha.id;
+        if (captchaText) captchaText.textContent = captcha.prompt;
+      } catch (error) {
+        if (captchaText) captchaText.textContent = "--";
+        if (status) { status.textContent = error.message; status.className = "error"; }
+      }
+    };
+    const loadMessages = async () => {
+      try {
+        const result = await request("/api/guestbook/messages");
+        messages = Array.isArray(result.messages) ? result.messages : [];
+        renderMessages();
+      } catch (error) {
+        if (list) { const state = document.createElement("p"); state.className = "guestbook-list-state error"; state.textContent = error.message; list.replaceChildren(state); }
+      }
+    };
+    refresh?.addEventListener("click", () => void loadCaptcha());
+    form?.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      if (!captchaId || !submit) return;
+      const values = new FormData(form);
+      submit.disabled = true;
+      if (status) { status.textContent = ""; status.className = ""; }
+      try {
+        const created = await request("/api/guestbook/messages", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), captchaId, captchaAnswer: Number(values.get("captchaAnswer")) }),
+        });
+        messages = [created, ...messages.filter((message) => message.id !== created.id)].slice(0, 60);
+        renderMessages();
+        form.querySelector('textarea[name="content"]').value = "";
+        form.querySelector('input[name="captchaAnswer"]').value = "";
+        if (status) { status.textContent = page.dataset.success || ""; status.className = "success"; }
+      } catch (error) {
+        if (status) { status.textContent = error.message; status.className = "error"; }
+      } finally {
+        submit.disabled = false;
+        void loadCaptcha();
+      }
+    });
+    void Promise.all([loadCaptcha(), loadMessages()]);
   }
 
   function initCodeBlocks(content) {
@@ -679,5 +933,7 @@
   initResponsivePostPagination();
   initSearch();
   initTools();
+  initFriends();
+  initGuestbook();
   initArticle();
 })();

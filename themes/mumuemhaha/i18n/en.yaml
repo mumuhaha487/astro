@@ -41,9 +41,9 @@
 - id: todays_status
   translation: Today's status
 - id: status_title
-  translation: Living thoughtfully and writing code with care.
+  translation: A blogger who might have unusually good ideas.
 - id: status_description
-  translation: Notes on problems solved, projects built, and ideas worth keeping.
+  translation: A small edge site built in the twenty-first century.
 - id: current_visitors
   translation: Online now
 - id: total_visitors
@@ -53,7 +53,11 @@
 - id: visitor_stats
   translation: Visitor statistics
 - id: profile_workspace
-  translation: Personal workspace
+  translation: My little corner.
+- id: contact_title
+  translation: Contact
+- id: bilibili
+  translation: Bilibili
 - id: profile_quote
   translation: Stay calm, love freely, face the future, and release the past.
 - id: read_blog
@@ -82,6 +86,64 @@
   translation: Page %d of %d
 - id: archive
   translation: Archive
+- id: friends
+  translation: Friends
+- id: guestbook
+  translation: Guestbook
+- id: friends_apply
+  translation: Submit a site
+- id: friends_search_placeholder
+  translation: Search sites, descriptions, or tags
+- id: friends_repository
+  translation: View data directory
+- id: friends_step_fork
+  translation: Fork this repository
+- id: friends_step_json
+  translation: Add one JSON file
+- id: friends_step_pr
+  translation: Open a pull request
+- id: friends_step_build
+  translation: Review and publish
+- id: friends_visit
+  translation: Visit site
+- id: friends_empty
+  translation: No matching links found.
+- id: friends_no_description
+  translation: No description has been provided.
+- id: guestbook_loading
+  translation: Loading messages...
+- id: guestbook_empty
+  translation: No messages yet. Leave the first one.
+- id: guestbook_success
+  translation: Your message has been published.
+- id: guestbook_error
+  translation: The guestbook is temporarily unavailable.
+- id: guestbook_rules
+  translation: Posting rules
+- id: guestbook_rule_plain
+  translation: Messages are plain text; HTML and external links are never executed.
+- id: guestbook_rule_limit
+  translation: Each IP can submit up to three messages per hour.
+- id: guestbook_rule_captcha
+  translation: Every submission requires a new arithmetic challenge.
+- id: guestbook_name
+  translation: Name
+- id: guestbook_name_placeholder
+  translation: How should we call you?
+- id: guestbook_content
+  translation: Message
+- id: guestbook_content_placeholder
+  translation: Write your note
+- id: guestbook_captcha
+  translation: Challenge
+- id: guestbook_answer
+  translation: Answer
+- id: guestbook_refresh_captcha
+  translation: New challenge
+- id: guestbook_submit
+  translation: Post message
+- id: guestbook_recent
+  translation: Recent messages
 - id: archive_description
   translation: Browse %d articles by date.
 - id: back_blog

@@ -1,0 +1,38 @@
+{{ define "main" }}
+{{- $friends := hugo.Data.friends.items | default slice -}}
+<section class="content-page friends-page" data-friends-page>
+  <header class="page-heading page-heading-row">
+    <div><p>CONNECTIONS</p><h1>{{ .Title }}</h1>{{ with .Description }}<span>{{ . }}</span>{{ end }}</div>
+    <a class="button button-primary" href="https://github.com/mumuhaha487/astro/new/main/friends/entries?filename=your-site.json" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "plus") }}{{ i18n "friends_apply" }}</a>
+  </header>
+
+  <section class="friends-apply-panel">
+    <div><span>01</span><p>{{ i18n "friends_step_fork" }}</p></div>
+    <div><span>02</span><p>{{ i18n "friends_step_json" }}</p></div>
+    <div><span>03</span><p>{{ i18n "friends_step_pr" }}</p></div>
+    <div><span>04</span><p>{{ i18n "friends_step_build" }}</p></div>
+  </section>
+
+  <div class="friends-toolbar">
+    <label class="friends-search">{{ partial "icon.html" (dict "name" "search") }}<input type="search" data-friends-search placeholder="{{ i18n "friends_search_placeholder" }}" autocomplete="off"></label>
+    <a href="https://github.com/mumuhaha487/astro/tree/main/friends" target="_blank" rel="noopener noreferrer">{{ i18n "friends_repository" }}{{ partial "icon.html" (dict "name" "external-link") }}</a>
+  </div>
+
+  <div class="friends-grid" data-friends-grid>
+    {{ range $friends }}
+    {{- $hostname := replaceRE "^www\\." "" (urls.Parse .url).Host -}}
+    {{- $friendName := .name -}}
+    <article class="friend-card" data-friend-card data-search="{{ lower (printf "%s %s %s" .name .description (delimit .tags " ")) }}">
+      <div class="friend-avatar">
+        <span aria-hidden="true">{{ substr .name 0 1 }}</span>
+        {{ with .avatar }}<img src="{{ . }}" alt="{{ $friendName }}" loading="lazy" decoding="async" referrerpolicy="no-referrer" data-friend-avatar>{{ end }}
+      </div>
+      <div class="friend-card-copy"><h2>{{ .name }}</h2><a href="{{ .url }}" target="_blank" rel="noopener noreferrer">{{ $hostname }}</a><p>{{ .description | default (i18n "friends_no_description") }}</p></div>
+      {{ with .tags }}<div class="friend-tags">{{ range . }}<span>{{ . }}</span>{{ end }}</div>{{ end }}
+      <a class="friend-visit" href="{{ .url }}" target="_blank" rel="noopener noreferrer">{{ i18n "friends_visit" }}{{ partial "icon.html" (dict "name" "external-link") }}</a>
+    </article>
+    {{ end }}
+  </div>
+  <p class="friends-empty" data-friends-empty hidden>{{ i18n "friends_empty" }}</p>
+</section>
+{{ end }}

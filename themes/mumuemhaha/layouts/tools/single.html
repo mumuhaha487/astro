@@ -28,7 +28,7 @@
       <p class="tool-source">兼容 <a href="https://github.com/SycAlright/beast_sdk" target="_blank" rel="noopener noreferrer">beast_sdk 开源实现</a>，算法在本页浏览器中运行。</p>
     {{- else if eq .Params.tool "docker" }}
       <div class="embed-toolbar"><div><strong>docker.0ha.top</strong><span>GitHub 与 Docker 镜像加速服务</span></div><a class="button button-ghost" href="https://docker.0ha.top/" target="_blank" rel="noopener noreferrer">新窗口打开{{ partial "icon.html" (dict "name" "external-link") }}</a></div>
-      <iframe class="tool-service-frame" src="https://docker.0ha.top/" title="GitHub 与 Docker 加速" loading="eager" referrerpolicy="no-referrer"></iframe>
+      <iframe class="tool-service-frame" src="https://docker.0ha.top/" title="GitHub 与 Docker 加速" loading="lazy" referrerpolicy="no-referrer"></iframe>
     {{- end }}
   </section>
 </section>

@@ -113,6 +113,19 @@ export interface WebEmbedRecord {
   reused: boolean;
 }
 
+export interface GuestbookMessage {
+  id: string;
+  name: string;
+  content: string;
+  createdAt: string;
+}
+
+export interface GuestbookCaptcha {
+  id: string;
+  prompt: string;
+  expiresAt: string;
+}
+
 export interface SessionInfo {
   authenticated: boolean;
   github: {

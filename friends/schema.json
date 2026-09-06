@@ -1,0 +1,19 @@
+{
+  "$schema": "https://json-schema.org/draft/2020-12/schema",
+  "title": "Mumuemhaha friend link",
+  "type": "object",
+  "additionalProperties": false,
+  "required": ["name", "url"],
+  "properties": {
+    "name": { "type": "string", "minLength": 1, "maxLength": 48 },
+    "url": { "type": "string", "format": "uri", "pattern": "^https?://" },
+    "avatar": { "type": ["string", "null"], "format": "uri" },
+    "description": { "type": "string", "maxLength": 120 },
+    "tags": {
+      "type": "array",
+      "maxItems": 6,
+      "items": { "type": "string", "minLength": 1, "maxLength": 24 },
+      "uniqueItems": true
+    }
+  }
+}

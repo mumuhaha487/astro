@@ -1,5 +1,5 @@
 - id: workspace
-  translation: 工作区
+  translation: 工作空间
 - id: personal_workspace
   translation: 个人工作区
 - id: home
@@ -41,9 +41,9 @@
 - id: todays_status
   translation: 今日小状态
 - id: status_title
-  translation: 正在认真生活，也认真写代码。
+  translation: 一个可能特别有想法的博主。
 - id: status_description
-  translation: 把踩过的坑、做过的项目和偶然冒出的想法，留在这个小站里。
+  translation: 这是一个建立在21世纪的边缘小站。
 - id: current_visitors
   translation: 当前访客
 - id: total_visitors
@@ -53,7 +53,11 @@
 - id: visitor_stats
   translation: 访问统计
 - id: profile_workspace
-  translation: 个人工作空间
+  translation: 我の小小窝。
+- id: contact_title
+  translation: 联系方式
+- id: bilibili
+  translation: 哔哩哔哩
 - id: profile_quote
   translation: 不乱于心，不困于情，不畏将来，不惧过去
 - id: read_blog
@@ -82,6 +86,64 @@
   translation: 第 %d / %d 页
 - id: archive
   translation: 文章归档
+- id: friends
+  translation: 友情链接
+- id: guestbook
+  translation: 留言板
+- id: friends_apply
+  translation: 申请友链
+- id: friends_search_placeholder
+  translation: 搜索站点、简介或标签
+- id: friends_repository
+  translation: 查看数据目录
+- id: friends_step_fork
+  translation: Fork 本仓库
+- id: friends_step_json
+  translation: 新建友链 JSON
+- id: friends_step_pr
+  translation: 提交 Pull Request
+- id: friends_step_build
+  translation: 审核后自动上线
+- id: friends_visit
+  translation: 访问站点
+- id: friends_empty
+  translation: 没有找到匹配的友链。
+- id: friends_no_description
+  translation: 这个站点暂时没有填写简介。
+- id: guestbook_loading
+  translation: 正在读取留言...
+- id: guestbook_empty
+  translation: 还没有留言，来写下第一条吧。
+- id: guestbook_success
+  translation: 留言已发布。
+- id: guestbook_error
+  translation: 留言服务暂时不可用，请稍后再试。
+- id: guestbook_rules
+  translation: 留言约定
+- id: guestbook_rule_plain
+  translation: 留言以纯文本展示，不会执行 HTML 或生成外部链接。
+- id: guestbook_rule_limit
+  translation: 同一 IP 每小时最多提交 3 条留言。
+- id: guestbook_rule_captcha
+  translation: 每次提交都需要完成一次算术验证码。
+- id: guestbook_name
+  translation: 用户名
+- id: guestbook_name_placeholder
+  translation: 怎么称呼你
+- id: guestbook_content
+  translation: 留言内容
+- id: guestbook_content_placeholder
+  translation: 写下想说的话
+- id: guestbook_captcha
+  translation: 验证码
+- id: guestbook_answer
+  translation: 答案
+- id: guestbook_refresh_captcha
+  translation: 换一道题
+- id: guestbook_submit
+  translation: 发布留言
+- id: guestbook_recent
+  translation: 最近留言
 - id: archive_description
   translation: 按时间查看 %d 篇文章。
 - id: back_blog

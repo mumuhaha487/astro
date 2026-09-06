@@ -1,0 +1,29 @@
+{{ define "main" }}
+<section class="content-page guestbook-page" data-guestbook data-guestbook-api="{{ site.Params.guestbookApi }}" data-loading="{{ i18n "guestbook_loading" }}" data-empty="{{ i18n "guestbook_empty" }}" data-success="{{ i18n "guestbook_success" }}" data-error="{{ i18n "guestbook_error" }}">
+  <header class="page-heading"><p>PUBLIC NOTES</p><h1>{{ .Title }}</h1>{{ with .Description }}<span>{{ . }}</span>{{ end }}</header>
+  <div class="guestbook-layout">
+    <aside class="guestbook-note">
+      {{ partial "icon.html" (dict "name" "shield") }}
+      <h2>{{ i18n "guestbook_rules" }}</h2>
+      <p>{{ i18n "guestbook_rule_plain" }}</p>
+      <p>{{ i18n "guestbook_rule_limit" }}</p>
+      <p>{{ i18n "guestbook_rule_captcha" }}</p>
+    </aside>
+    <div class="guestbook-main">
+      <form class="guestbook-form" data-guestbook-form>
+        <label><span>{{ i18n "guestbook_name" }}</span><input type="text" name="name" minlength="1" maxlength="30" required autocomplete="nickname" placeholder="{{ i18n "guestbook_name_placeholder" }}"></label>
+        <label><span>{{ i18n "guestbook_content" }}</span><textarea name="content" minlength="2" maxlength="600" required rows="5" placeholder="{{ i18n "guestbook_content_placeholder" }}"></textarea></label>
+        <div class="guestbook-captcha-row">
+          <label><span>{{ i18n "guestbook_captcha" }}</span><span class="guestbook-captcha"><strong data-guestbook-captcha>...</strong><button type="button" data-guestbook-captcha-refresh aria-label="{{ i18n "guestbook_refresh_captcha" }}" title="{{ i18n "guestbook_refresh_captcha" }}">{{ partial "icon.html" (dict "name" "refresh-cw") }}</button></span></label>
+          <label><span>{{ i18n "guestbook_answer" }}</span><input type="number" name="captchaAnswer" inputmode="numeric" min="0" max="18" required></label>
+        </div>
+        <div class="guestbook-submit-row"><p data-guestbook-status aria-live="polite"></p><button class="button button-primary" type="submit">{{ partial "icon.html" (dict "name" "send") }}{{ i18n "guestbook_submit" }}</button></div>
+      </form>
+      <section class="guestbook-messages" aria-live="polite">
+        <header><h2>{{ i18n "guestbook_recent" }}</h2><span data-guestbook-count>0</span></header>
+        <div data-guestbook-list><p class="guestbook-list-state">{{ i18n "guestbook_loading" }}</p></div>
+      </section>
+    </div>
+  </div>
+</section>
+{{ end }}

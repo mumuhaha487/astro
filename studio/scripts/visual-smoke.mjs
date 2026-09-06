@@ -127,6 +127,10 @@ const exampleDraftContent = exampleContent
 async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [], postContent = exampleContent, webEmbedUploads = [] } = {}) {
   let postRecords = [examplePost];
   let draftRecords = includeDraft ? [exampleDraft] : [];
+  let guestbookRecords = [
+    { id: "visual-message-1", name: "访客甲", content: "第一条管理端测试留言", createdAt: "2026-09-06T08:00:00.000Z" },
+    { id: "visual-message-2", name: "访客乙", content: "第二条管理端测试留言", createdAt: "2026-09-06T08:05:00.000Z" },
+  ];
   await page.route("**/image/editor/visual-wide.svg", (route) => route.fulfill({
     status: 200,
     contentType: "image/svg+xml",
@@ -248,6 +252,17 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       draftRecords = draftRecords.filter((draft) => draft.key !== body.key);
       return json({ ok: true });
     }
+    if (url.pathname === "/api/guestbook/admin/messages" && request.method() === "GET") {
+      return json({ messages: guestbookRecords });
+    }
+    if (url.pathname === "/api/guestbook/admin/messages" && request.method() === "DELETE") {
+      const body = request.postDataJSON();
+      mutations.push({ method: "DELETE", path: url.pathname, body });
+      const selected = new Set(body.ids || []);
+      const deleted = guestbookRecords.filter((message) => selected.has(message.id)).length;
+      guestbookRecords = guestbookRecords.filter((message) => !selected.has(message.id));
+      return json({ deleted });
+    }
     if (url.pathname === "/api/schedule" && request.method() === "PUT") {
       const body = request.postDataJSON();
       mutations.push({ method: "PUT", path: url.pathname, body });
@@ -351,6 +366,30 @@ async function verifyPostListSurvivesDraftFailure() {
   assert.deepEqual(pageErrors, [], `independent list loading page errors: ${pageErrors.join("; ")}`);
   await context.close();
   return { postListSurvivedDraftFailure: true };
+}
+
+async function verifyGuestbookAdmin() {
+  const { context, page, pageErrors, mutations } = await openEditor({ width: 1264, height: 720 }, { existing: true });
+  await page.getByRole("button", { name: "留言管理" }).click();
+  const dialog = page.getByRole("dialog", { name: "留言管理" });
+  await dialog.waitFor();
+  await dialog.locator(".guestbook-admin-row").nth(1).waitFor();
+  assert.equal(await dialog.locator(".guestbook-admin-row").count(), 2, "guestbook admin did not load every message");
+  await dialog.getByText("全选", { exact: true }).click();
+  assert.equal(await dialog.locator('.guestbook-admin-row input[type="checkbox"]:checked').count(), 2, "guestbook select-all is incomplete");
+  const screenshotPath = join(outputDirectory, "desktop-1264-guestbook-admin.png");
+  await page.screenshot({ path: screenshotPath, animations: "disabled" });
+  page.once("dialog", (confirmation) => confirmation.accept());
+  await dialog.getByRole("button", { name: "删除所选 (2)" }).click();
+  await dialog.getByText("目前没有留言").waitFor();
+  assert.deepEqual(
+    mutations.find((mutation) => mutation.path === "/api/guestbook/admin/messages")?.body.ids.sort(),
+    ["visual-message-1", "visual-message-2"],
+    "guestbook batch delete sent the wrong IDs",
+  );
+  assert.deepEqual(pageErrors, [], `guestbook admin page errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { guestbookAdminScreenshot: screenshotPath, guestbookBatchDelete: true };
 }
 
 async function layoutMetrics(page) {
@@ -2413,6 +2452,7 @@ try {
     await verifyDraftPublishing(),
     await verifyScheduledPublish(),
     await verifyPostListSurvivesDraftFailure(),
+    await verifyGuestbookAdmin(),
     await verifyLinkCardsAndLargeImages(),
     await verifyWebEmbeds(),
   ];

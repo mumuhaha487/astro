@@ -6,6 +6,18 @@
   </picture>
   <div class="home-rain" aria-hidden="true"></div>
   <div class="home-grid">
+    <div class="home-profile">
+      <div class="profile-avatar-stage" data-avatar-particles>
+        <canvas class="profile-particles" aria-hidden="true"></canvas>
+        <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176" data-avatar-image>
+      </div>
+      <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
+      <h1>木木em哈哈</h1>
+      <p class="profile-bio" data-typewriter="{{ i18n "profile_quote" }}" aria-label="{{ i18n "profile_quote" }}"><span data-typewriter-output aria-hidden="true">{{ i18n "profile_quote" }}</span></p>
+      <div class="profile-actions">
+        <a class="button button-primary" href="{{ "blog/" | relLangURL }}">{{ i18n "read_blog" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+      </div>
+    </div>
     <div class="home-left">
       <p class="home-kicker">WELCOME / {{ now.Format "2006" }}</p>
       <section class="glass-panel status-panel">
@@ -14,25 +26,18 @@
         <p>{{ i18n "status_description" }}</p>
         <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
       </section>
-      <nav class="glass-panel home-shortcuts" aria-label="{{ i18n "workspace" }}">
-        <a href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "book-open") }}{{ i18n "blog" }}</a>
-        <a href="/tools/">{{ partial "icon.html" (dict "name" "wrench") }}{{ i18n "toolbox" }}</a>
-        <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}GitHub</a>
-      </nav>
+      <section class="glass-panel contact-panel">
+        <span class="panel-eyebrow">{{ i18n "contact_title" }}</span>
+        <div class="contact-links">
+          <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
+          <a href="https://space.bilibili.com/334584883" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "video") }}<span><strong>{{ i18n "bilibili" }}</strong><small>UID 334584883</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
+        </div>
+      </section>
       <section class="visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}">
         <div><span class="visitor-dot online"></span><small>{{ i18n "current_visitors" }}</small><strong data-umami-stat="active">0</strong></div>
         <div><span class="visitor-dot"></span><small>{{ i18n "total_visitors" }}</small><strong data-umami-stat="visitors">0</strong></div>
         <div><span class="visitor-dot"></span><small>{{ i18n "total_visits" }}</small><strong data-umami-stat="visits">0</strong></div>
       </section>
-    </div>
-    <div class="home-profile">
-      <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176">
-      <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
-      <h1>木木em哈哈</h1>
-      <p class="profile-bio" data-typewriter="{{ i18n "profile_quote" }}" aria-label="{{ i18n "profile_quote" }}"><span data-typewriter-output aria-hidden="true">{{ i18n "profile_quote" }}</span></p>
-      <div class="profile-actions">
-        <a class="button button-primary" href="{{ "blog/" | relLangURL }}">{{ i18n "read_blog" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
-      </div>
     </div>
   </div>
 </section>
