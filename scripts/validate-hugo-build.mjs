@@ -179,7 +179,7 @@ for (const article of translatedArticles) {
   assert.match(article, /data-category-id="DIC_kwDOPjTkdM4CuiIf"/, "Giscus category ID does not match the original Astro comments");
   assert.match(article, /data-mapping="specific"/, "Giscus must use a shared explicit discussion key");
   assert.ok(article.includes(`data-term="${expectedCommentTerm}"`), "Language variants do not share the Chinese discussion key");
-  assert.match(article, /data-theme="https:\/\/vmss\.cn\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast"/, "Giscus high-contrast dark theme is missing");
+  assert.match(article, /data-theme="https:\/\/vmss\.cn\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast2"/, "Giscus high-contrast dark theme is missing");
   assert.match(article, /data-article-toc-nav/, "Article TOC shell is missing");
   assert.match(article, /data-mobile-actions-toggle/, "Mobile article action launcher is missing");
 }
@@ -218,6 +218,11 @@ assert.match(giscusTheme, /--color-canvas-default:transparent/, "Giscus theme is
 assert.match(giscusTheme, /--color-canvas-subtle:#303131/, "Giscus comment panels do not use the readable gray surface");
 assert.match(giscusTheme, /--color-fg-default:#f5f3ef/, "Giscus comment text is not high contrast");
 assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
+const responseHeaders = await readFile(join(outputRoot, "_headers"), "utf8");
+assert.ok(
+  responseHeaders.indexOf("/hugo-theme/giscus-theme.css") > responseHeaders.indexOf("/hugo-theme/*"),
+  "Giscus CORS headers must follow the generic immutable theme rule",
+);
 const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
 assert.match(legacyCommentArticle, /data-term="posts\/20250825\/"/, "Existing Astro discussion mapping was not restored");
 const englishHome = await readFile(join(outputRoot, "en", "index.html"), "utf8");

@@ -422,12 +422,22 @@ try {
   assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
-  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast$/, "Giscus high-contrast dark theme is missing");
+  assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast2$/, "Giscus high-contrast dark theme is missing");
   const articleAnimation = await page.locator(".article-shell").evaluate((node) => ({ name: getComputedStyle(node).animationName, duration: getComputedStyle(node).animationDuration }));
   assert.deepEqual(articleAnimation, { name: "workspace-page-enter", duration: "0.4s" }, "article does not use the 0.4-second side fade-in");
   const commentSurface = await page.locator(".article-comments").evaluate((node) => ({ background: getComputedStyle(node).backgroundColor, color: getComputedStyle(node.querySelector("h2")).color }));
   assert.equal(commentSurface.background, "rgba(48, 49, 49, 0.92)", "comment shell is not a readable gray panel");
   assert.equal(commentSurface.color, "rgb(255, 255, 255)", "comment shell heading is not high contrast");
+  if (!localRun) {
+    const giscusBox = page.frameLocator("iframe.giscus-frame").locator(".gsc-comment-box");
+    await giscusBox.waitFor({ state: "visible", timeout: 15_000 });
+    const giscusStyle = await giscusBox.evaluate((node) => ({
+      background: getComputedStyle(node).backgroundColor,
+      foreground: getComputedStyle(document.querySelector("main")).getPropertyValue("--color-fg-default").trim(),
+    }));
+    assert.equal(giscusStyle.background, "rgb(48, 49, 49)", "Giscus comment box theme did not load inside the iframe");
+    assert.equal(giscusStyle.foreground, "#f5f3ef", "Giscus iframe text color is not high contrast");
+  }
   const mobileHeadingCount = await page.locator("#hugo-article-content h1, #hugo-article-content h2").count();
   assert.equal(await page.locator("[data-mobile-toc-nav] [data-toc-id]").count(), mobileHeadingCount, "mobile TOC did not recognize H1/H2 headings");
   assert.equal(await page.locator(".article-toc-top-trigger:visible").count(), 1, "mobile top-right TOC button is missing");

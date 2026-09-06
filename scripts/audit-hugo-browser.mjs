@@ -93,7 +93,17 @@ try {
       if (routePath === "/posts/20260326/") {
         const comments = page.locator(".article-comments");
         await comments.scrollIntoViewIfNeeded();
-        if (!localRun) await page.locator(".article-comments iframe.giscus-frame").waitFor({ timeout: 15_000 });
+        if (!localRun) {
+          await page.locator(".article-comments iframe.giscus-frame").waitFor({ timeout: 15_000 });
+          const giscusBox = page.frameLocator("iframe.giscus-frame").locator(".gsc-comment-box");
+          await giscusBox.waitFor({ state: "visible", timeout: 15_000 });
+          const giscusStyle = await giscusBox.evaluate((node) => ({
+            background: getComputedStyle(node).backgroundColor,
+            foreground: getComputedStyle(document.querySelector("main")).getPropertyValue("--color-fg-default").trim(),
+          }));
+          assert.equal(giscusStyle.background, "rgb(48, 49, 49)", `${viewport.name} Giscus comment box theme did not load`);
+          assert.equal(giscusStyle.foreground, "#f5f3ef", `${viewport.name} Giscus text color is not high contrast`);
+        }
         await page.waitForTimeout(localRun ? 100 : 1_500);
         await comments.screenshot({ path: join(outputDirectory, `${viewport.name}-article-comments.png`) });
       }
