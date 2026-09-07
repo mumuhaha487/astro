@@ -143,8 +143,8 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
-assert.match(blog, /hugo\.js\?v=20260907-pixel-cover-particles/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260907-pixel-cover-particles/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260907-smooth-cover-particles/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260907-smooth-cover-particles/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");

@@ -197,7 +197,7 @@
       requestAnimationFrame(() => {
       const width = Math.max(1, Math.round(card.clientWidth));
       const height = Math.max(1, Math.round(card.clientHeight));
-      const ratio = Math.min(2, devicePixelRatio || 1);
+      const ratio = 1;
       canvas.width = Math.round(width * ratio);
       canvas.height = Math.round(height * ratio);
       const context = canvas.getContext("2d", { alpha: true });
@@ -291,9 +291,11 @@
             const pixelOffset = (pixelY * sample.width + pixelX) * 4;
             const alpha = pixels ? pixels[pixelOffset + 3] : 255;
             if (alpha < 24) continue;
-            const red = pixels ? Math.round(pixels[pixelOffset] * .78) : 154;
-            const green = pixels ? Math.round(pixels[pixelOffset + 1] * .78) : 151;
-            const blue = pixels ? Math.round(pixels[pixelOffset + 2] * .78) : 146;
+            const quantize = (value) => Math.min(192, Math.round(value * .78 / 48) * 48);
+            const red = pixels ? quantize(pixels[pixelOffset]) : 144;
+            const green = pixels ? quantize(pixels[pixelOffset + 1]) : 144;
+            const blue = pixels ? quantize(pixels[pixelOffset + 2]) : 144;
+            const color = `rgba(${red},${green},${blue},${Math.round(alpha / 32) / 8})`;
             imageParticles.push({
               startX: random(particleIndex + 701) * width,
               startY: random(particleIndex + 907) * height,
@@ -301,42 +303,67 @@
               targetY: target.y + y,
               drawWidth,
               drawHeight,
-              color: `rgba(${red},${green},${blue},${alpha / 255})`,
+              color,
               delay: random(particleIndex + 1_103) * 340,
             });
           }
         }
       }
 
-      const duration = 1_900;
+      const mutedParticles = particles.filter((particle) => !particle.accent);
+      const accentParticles = particles.filter((particle) => particle.accent);
+      const imageParticleGroups = new Map();
+      imageParticles.forEach((particle) => {
+        if (!imageParticleGroups.has(particle.color)) imageParticleGroups.set(particle.color, []);
+        imageParticleGroups.get(particle.color).push(particle);
+      });
+      const duration = 1_520;
+      const frameInterval = 1_000 / 30;
       const startedAt = performance.now();
+      let lastPaintAt = startedAt - frameInterval;
       card.dataset.particleDuration = String(duration);
       card.dataset.particleCount = String(particles.length + imageParticles.length);
       card.dataset.imageParticleCount = String(imageParticles.length);
       card.dataset.particleMode = imageParticles.length ? "image-pixels" : "document-pixels";
+      card.dataset.particleRenderer = "batched-2d";
+      card.dataset.particleFps = "30";
       card.dataset.particleState = "assembling";
       const render = (now) => {
+        if (now - startedAt < duration && now - lastPaintAt < frameInterval) {
+          requestAnimationFrame(render);
+          return;
+        }
+        lastPaintAt = now;
         context.clearRect(0, 0, width, height);
-        particles.forEach((particle) => {
-          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
-          const eased = 1 - (1 - linear) ** 3;
-          const x = particle.x + (particle.targetX - particle.x) * eased;
-          const y = particle.y + (particle.targetY - particle.y) * eased;
-          context.fillStyle = particle.accent ? `rgba(239,162,132,${.35 + eased * .6})` : `rgba(221,218,212,${.18 + eased * .55})`;
-          context.fillRect(x, y, particle.size, particle.size);
-        });
-        if (coverImage && imageParticles.length) {
-          imageParticles.forEach((particle) => {
+        const drawVectorGroup = (members, color) => {
+          context.beginPath();
+          members.forEach((particle) => {
             const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
-            const eased = 1 - (1 - linear) ** 4;
-            const x = particle.startX + (particle.targetX - particle.startX) * eased;
-            const y = particle.startY + (particle.targetY - particle.startY) * eased;
-            const scale = .58 + eased * .46;
-            context.globalAlpha = .18 + eased * .82;
-            context.fillStyle = particle.color;
-            context.fillRect(x, y, particle.drawWidth * scale, particle.drawHeight * scale);
+            const eased = 1 - (1 - linear) ** 3;
+            const x = particle.x + (particle.targetX - particle.x) * eased;
+            const y = particle.y + (particle.targetY - particle.y) * eased;
+            const size = particle.size * (.42 + eased * .58);
+            context.rect(x, y, size, size);
           });
-          context.globalAlpha = 1;
+          context.fillStyle = color;
+          context.fill();
+        };
+        drawVectorGroup(mutedParticles, "rgba(221,218,212,.62)");
+        drawVectorGroup(accentParticles, "rgba(239,162,132,.88)");
+        if (coverImage && imageParticles.length) {
+          imageParticleGroups.forEach((members, color) => {
+            context.beginPath();
+            members.forEach((particle) => {
+              const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
+              const eased = 1 - (1 - linear) ** 4;
+              const x = particle.startX + (particle.targetX - particle.startX) * eased;
+              const y = particle.startY + (particle.targetY - particle.startY) * eased;
+              const scale = .2 + eased * .84;
+              context.rect(x, y, particle.drawWidth * scale, particle.drawHeight * scale);
+            });
+            context.fillStyle = color;
+            context.fill();
+          });
         }
         if (now - startedAt < duration) requestAnimationFrame(render);
         else {
