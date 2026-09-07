@@ -2,10 +2,15 @@ import { cp, mkdir, readFile, readdir, rm, writeFile } from "node:fs/promises";
 import { existsSync } from "node:fs";
 import { dirname, join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { parse } from "node-html-parser";
 
 const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = join(repositoryRoot, "dist");
 const manifestPath = join(outputRoot, "post-manifest.json");
+const generatedImageDataPath = join(repositoryRoot, "data", "generatedImages.json");
+const generatedImages = existsSync(generatedImageDataPath)
+  ? JSON.parse(await readFile(generatedImageDataPath, "utf8")).images || {}
+  : {};
 
 if (!existsSync(manifestPath)) {
   throw new Error("Hugo did not produce dist/post-manifest.json");
@@ -48,11 +53,22 @@ for (let page = 2; ; page += 1) {
   await cp(source, target, { force: true });
 }
 
-const pagefindPreload = '<script data-hugo-pagefind-preload>window.loadPagefind?.();</script>';
 for (const htmlPath of await listHtmlFiles(outputRoot)) {
-  const html = await readFile(htmlPath, "utf8");
-  if (!html.includes("window.loadPagefind") || html.includes("data-hugo-pagefind-preload")) continue;
-  await writeFile(htmlPath, html.replace("</body>", `${pagefindPreload}</body>`));
+  let html = await readFile(htmlPath, "utf8");
+  let changed = false;
+  if (html.includes("markdown-content")) {
+    const document = parse(html);
+    for (const image of document.querySelectorAll(".markdown-content img")) {
+      const source = image.getAttribute("src");
+      const optimized = generatedImages[source]?.content;
+      if (optimized) image.setAttribute("src", optimized);
+      image.setAttribute("loading", "lazy");
+      image.setAttribute("decoding", "async");
+      changed = true;
+    }
+    if (changed) html = document.toString();
+  }
+  if (changed) await writeFile(htmlPath, html);
 }
 
 await rm(manifestPath);

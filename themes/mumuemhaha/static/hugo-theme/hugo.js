@@ -50,6 +50,36 @@
     shareRequest: null,
   };
 
+  function scheduleIdleWork(callback, timeout = 2_500) {
+    const schedule = () => {
+      if ("requestIdleCallback" in window) requestIdleCallback(callback, { timeout });
+      else setTimeout(callback, Math.min(timeout, 1_200));
+    };
+    if (document.readyState === "complete") schedule();
+    else addEventListener("load", schedule, { once: true });
+  }
+
+  function initPageVisibility() {
+    const update = () => document.documentElement.classList.toggle("is-page-hidden", document.hidden);
+    document.addEventListener("visibilitychange", update, { passive: true });
+    update();
+  }
+
+  function initDeferredAnalytics() {
+    const source = document.body.dataset.analyticsSrc;
+    const websiteId = document.body.dataset.analyticsWebsiteId;
+    if (!source || !websiteId) return;
+    scheduleIdleWork(() => {
+      if (document.querySelector(`script[src="${source}"]`)) return;
+      const script = document.createElement("script");
+      script.src = source;
+      script.async = true;
+      script.fetchPriority = "low";
+      script.dataset.websiteId = websiteId;
+      document.body.append(script);
+    });
+  }
+
   function makeIcon(name) {
     const svg = document.createElementNS("http://www.w3.org/2000/svg", "svg");
     svg.setAttribute("class", "icon");
@@ -131,7 +161,11 @@
   let randomPostCovers;
   function getRandomPostCovers() {
     if (randomPostCovers) return randomPostCovers;
-    try { randomPostCovers = JSON.parse(document.body.dataset.randomPostCovers || "[]").filter((value) => typeof value === "string" && value.startsWith("/")); }
+    try {
+      const configured = JSON.parse(document.body.dataset.randomPostCovers || "{}");
+      const selected = Array.isArray(configured) ? configured : configured[innerWidth <= 760 ? "mobile" : "desktop"];
+      randomPostCovers = (selected || []).filter((value) => typeof value === "string" && value.startsWith("/"));
+    }
     catch { randomPostCovers = []; }
     return randomPostCovers;
   }
@@ -164,342 +198,36 @@
     return images;
   }
 
-  function waitForParticleImage(image, timeout = 3_000) {
-    if (!image) return Promise.resolve(false);
-    if (image.complete) return Promise.resolve(image.naturalWidth > 0);
-    return Promise.race([
-      new Promise((resolve) => {
-        image.addEventListener("load", () => resolve(true), { once: true });
-        image.addEventListener("error", () => resolve(false), { once: true });
-      }),
-      new Promise((resolve) => setTimeout(() => resolve(false), timeout)),
-    ]);
-  }
-
-  function initParticleCard(card, delay = 0) {
-    if (!card || card.dataset.particleState) return;
-    const canvas = $(".particle-card-canvas", card);
+  function revealCard(card, delay = 0) {
+    if (!card) return;
     hydrateProgressiveCard(card);
-    if (!canvas || reducedMotion.matches) {
-      card.dataset.particleState = "ready";
-      card.classList.add("is-particle-ready");
-      return;
-    }
-    card.dataset.particleState = "pending";
-    card.classList.add("is-particle-assembling");
-    const begin = async () => {
-      let coverImage = $(".post-cover img", card);
-      if (coverImage && !(await waitForParticleImage(coverImage))) {
-        const key = coverImage.dataset.postCoverKey || $("h2 a", card)?.getAttribute("href") || location.pathname;
-        if (assignRandomPostCover(coverImage, key)) await waitForParticleImage(coverImage);
-      }
-      if (!coverImage?.naturalWidth) coverImage = null;
-      requestAnimationFrame(() => {
-      const width = Math.max(1, Math.round(card.clientWidth));
-      const height = Math.max(1, Math.round(card.clientHeight));
-      const ratio = 1;
-      canvas.width = Math.round(width * ratio);
-      canvas.height = Math.round(height * ratio);
-      const context = canvas.getContext("2d", { alpha: true });
-      if (!context || width < 4 || height < 4) {
-        card.classList.remove("is-particle-assembling");
-        card.classList.add("is-particle-ready");
-        card.dataset.particleState = "ready";
-        return;
-      }
-      context.setTransform(ratio, 0, 0, ratio, 0, 0);
-      const pattern = card.dataset.particlePattern || "document";
-      const random = (seed) => {
-        const value = Math.sin(seed * 78.233 + 17.17) * 43758.5453;
-        return value - Math.floor(value);
-      };
-      const vectorCount = pattern === "post"
-        ? Math.max(480, Math.min(720, Math.round(width * height / 430)))
-        : Math.max(560, Math.min(1_050, Math.round(width * height / 300)));
-      const targetFor = (index) => {
-        const edgeRatio = .28;
-        if (index < vectorCount * edgeRatio) {
-          const distance = (index / Math.ceil(vectorCount * edgeRatio)) * (width * 2 + height * 2);
-          if (distance < width) return { x: distance, y: 1 };
-          if (distance < width + height) return { x: width - 1, y: distance - width };
-          if (distance < width * 2 + height) return { x: width - (distance - width - height), y: height - 1 };
-          return { x: 1, y: height - (distance - width * 2 - height) };
-        }
-        const local = index - Math.ceil(vectorCount * edgeRatio);
-        const inset = Math.max(12, width * .055);
-        if (pattern === "metrics") {
-          const column = local % 3;
-          return {
-            x: inset + column * ((width - inset * 2) / 3) + random(index) * Math.max(12, (width - inset * 2) / 3 - 16),
-            y: height * (.34 + (local % 2) * .34) + (random(index + 2) - .5) * 6,
-          };
-        }
-        if (pattern === "links") {
-          const row = local % 2;
-          return { x: inset + random(index) * (width - inset * 2), y: height * (.5 + row * .25) + (random(index + 3) - .5) * 7 };
-        }
-        const line = local % 5;
-        const contentStart = coverImage ? Math.min(height - 30, $(".post-cover", card).offsetHeight + 24) : height * .3;
-        const available = Math.max(12, height - contentStart - 18);
-        return { x: inset + random(index) * (width - inset * (2.4 + line * .12)), y: contentStart + available * (.12 + line * .17) };
-      };
-      const particles = Array.from({ length: vectorCount }, (_, index) => {
-        const target = targetFor(index);
-        return {
-          x: random(index + 11) * width,
-          y: random(index + 29) * height,
-          targetX: Math.max(1, Math.min(width - 1, target.x)),
-          targetY: Math.max(1, Math.min(height - 1, target.y)),
-          delay: random(index + 41) * 320,
-          size: 1.2 + random(index + 53) * 1.8,
-          accent: index % 7 === 0,
-        };
-      });
-
-      const imageParticles = [];
-      if (coverImage) {
-        const cardBox = card.getBoundingClientRect();
-        const coverBox = $(".post-cover", card).getBoundingClientRect();
-        const target = { x: coverBox.left - cardBox.left, y: coverBox.top - cardBox.top, width: coverBox.width, height: coverBox.height };
-        const targetCount = innerWidth <= 760 ? 1_450 : 1_750;
-        const fragment = Math.max(3, Math.ceil(Math.sqrt((target.width * target.height) / targetCount)));
-        const targetRatio = target.width / target.height;
-        const sourceRatio = coverImage.naturalWidth / coverImage.naturalHeight;
-        const source = sourceRatio > targetRatio
-          ? { x: (coverImage.naturalWidth - coverImage.naturalHeight * targetRatio) / 2, y: 0, width: coverImage.naturalHeight * targetRatio, height: coverImage.naturalHeight }
-          : { x: 0, y: (coverImage.naturalHeight - coverImage.naturalWidth / targetRatio) / 2, width: coverImage.naturalWidth, height: coverImage.naturalWidth / targetRatio };
-        const sample = document.createElement("canvas");
-        sample.width = Math.max(1, Math.round(target.width));
-        sample.height = Math.max(1, Math.round(target.height));
-        const sampleContext = sample.getContext("2d", { willReadFrequently: true });
-        let pixels = null;
-        if (sampleContext) {
-          try {
-            sampleContext.drawImage(coverImage, source.x, source.y, source.width, source.height, 0, 0, sample.width, sample.height);
-            pixels = sampleContext.getImageData(0, 0, sample.width, sample.height).data;
-          } catch {}
-        }
-        let index = 0;
-        for (let y = 0; y < target.height; y += fragment) {
-          for (let x = 0; x < target.width; x += fragment) {
-            const particleIndex = index;
-            index += 1;
-            const drawWidth = Math.min(fragment, target.width - x);
-            const drawHeight = Math.min(fragment, target.height - y);
-            const pixelX = Math.min(sample.width - 1, Math.max(0, Math.round(x + drawWidth / 2)));
-            const pixelY = Math.min(sample.height - 1, Math.max(0, Math.round(y + drawHeight / 2)));
-            const pixelOffset = (pixelY * sample.width + pixelX) * 4;
-            const alpha = pixels ? pixels[pixelOffset + 3] : 255;
-            if (alpha < 24) continue;
-            const quantize = (value) => Math.min(192, Math.round(value * .78 / 48) * 48);
-            const red = pixels ? quantize(pixels[pixelOffset]) : 144;
-            const green = pixels ? quantize(pixels[pixelOffset + 1]) : 144;
-            const blue = pixels ? quantize(pixels[pixelOffset + 2]) : 144;
-            const color = `rgba(${red},${green},${blue},${Math.round(alpha / 32) / 8})`;
-            imageParticles.push({
-              startX: random(particleIndex + 701) * width,
-              startY: random(particleIndex + 907) * height,
-              targetX: target.x + x,
-              targetY: target.y + y,
-              drawWidth,
-              drawHeight,
-              color,
-              delay: random(particleIndex + 1_103) * 340,
-            });
-          }
-        }
-      }
-
-      const mutedParticles = particles.filter((particle) => !particle.accent);
-      const accentParticles = particles.filter((particle) => particle.accent);
-      const imageParticleGroups = new Map();
-      imageParticles.forEach((particle) => {
-        if (!imageParticleGroups.has(particle.color)) imageParticleGroups.set(particle.color, []);
-        imageParticleGroups.get(particle.color).push(particle);
-      });
-      const duration = 1_520;
-      const frameInterval = 1_000 / 30;
-      const startedAt = performance.now();
-      let lastPaintAt = startedAt - frameInterval;
-      card.dataset.particleDuration = String(duration);
-      card.dataset.particleCount = String(particles.length + imageParticles.length);
-      card.dataset.imageParticleCount = String(imageParticles.length);
-      card.dataset.particleMode = imageParticles.length ? "image-pixels" : "document-pixels";
-      card.dataset.particleRenderer = "batched-2d";
-      card.dataset.particleFps = "30";
-      card.dataset.particleState = "assembling";
-      const render = (now) => {
-        if (now - startedAt < duration && now - lastPaintAt < frameInterval) {
-          requestAnimationFrame(render);
-          return;
-        }
-        lastPaintAt = now;
-        context.clearRect(0, 0, width, height);
-        const drawVectorGroup = (members, color) => {
-          context.beginPath();
-          members.forEach((particle) => {
-            const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
-            const eased = 1 - (1 - linear) ** 3;
-            const x = particle.x + (particle.targetX - particle.x) * eased;
-            const y = particle.y + (particle.targetY - particle.y) * eased;
-            const size = particle.size * (.42 + eased * .58);
-            context.rect(x, y, size, size);
-          });
-          context.fillStyle = color;
-          context.fill();
-        };
-        drawVectorGroup(mutedParticles, "rgba(221,218,212,.62)");
-        drawVectorGroup(accentParticles, "rgba(239,162,132,.88)");
-        if (coverImage && imageParticles.length) {
-          imageParticleGroups.forEach((members, color) => {
-            context.beginPath();
-            members.forEach((particle) => {
-              const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
-              const eased = 1 - (1 - linear) ** 4;
-              const x = particle.startX + (particle.targetX - particle.startX) * eased;
-              const y = particle.startY + (particle.targetY - particle.startY) * eased;
-              const scale = .2 + eased * .84;
-              context.rect(x, y, particle.drawWidth * scale, particle.drawHeight * scale);
-            });
-            context.fillStyle = color;
-            context.fill();
-          });
-        }
-        if (now - startedAt < duration) requestAnimationFrame(render);
-        else {
-          card.classList.remove("is-particle-assembling");
-          card.classList.add("is-particle-ready");
-          card.dataset.particleState = "ready";
-        }
-      };
-      requestAnimationFrame(render);
-      });
-    };
-    if (delay > 0) setTimeout(() => { void begin(); }, delay); else void begin();
+    if (card.dataset.cardAnimated === "true" || reducedMotion.matches) return;
+    card.dataset.cardAnimated = "true";
+    card.style.animationDelay = `${Math.min(delay, 180)}ms`;
+    card.classList.add("is-card-entering");
+    card.addEventListener("animationend", () => {
+      card.classList.remove("is-card-entering");
+      card.style.removeProperty("animation-delay");
+    }, { once: true });
   }
 
   function initHome() {
-    const rain = $(".home-rain");
-    if (rain && !reducedMotion.matches) {
-      const fragment = document.createDocumentFragment();
-      for (let index = 0; index < 20; index += 1) {
-        const line = document.createElement("span");
-        line.className = "rain-line";
-        line.style.left = `${(index * 13 + 7) % 103}%`;
-        line.style.animationDuration = `${3.8 + (index % 6) * .65}s`;
-        line.style.animationDelay = `${-(index % 9) * .7}s`;
-        fragment.append(line);
-      }
-      rain.append(fragment);
-    }
     const clock = $("#home-clock");
     if (clock) {
       const update = () => { clock.textContent = new Intl.DateTimeFormat(locale, { dateStyle: "medium", timeStyle: "medium", hour12: false }).format(new Date()); };
       update();
-      setInterval(update, 1000);
+      setInterval(() => { if (!document.hidden) update(); }, 1000);
     }
     initTypewriter();
-    initAvatarParticles();
-    $$(".home-doc-item[data-particle-card]").forEach((card, index) => initParticleCard(card, index * 130));
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
-      updateUmamiStats();
-      setInterval(updateUmamiStats, 60_000);
+      scheduleIdleWork(() => {
+        updateUmamiStats();
+        setInterval(() => { if (!document.hidden) updateUmamiStats(); }, 60_000);
+      }, 1_800);
     }
   }
 
-  function initAvatarParticles() {
-    const stage = $("[data-avatar-particles]");
-    const canvas = $(".profile-particles", stage || document);
-    const image = $("[data-avatar-image]", stage || document);
-    if (!stage || !canvas || !image) return;
-    const showImage = () => {
-      stage.classList.add("is-assembled");
-      setTimeout(() => { stage.classList.add("is-ready"); startAvatarSpin(image); }, 680);
-    };
-    if (reducedMotion.matches) { stage.classList.add("is-assembled", "is-ready"); image.style.transform = "none"; return; }
-    const assemble = async () => {
-      try { await image.decode(); } catch {
-        if (!image.complete) await new Promise((resolve) => image.addEventListener("load", resolve, { once: true }));
-      }
-      const size = 156;
-      canvas.width = size;
-      canvas.height = size;
-      const context = canvas.getContext("2d", { alpha: true });
-      const sample = document.createElement("canvas");
-      sample.width = size; sample.height = size;
-      const sampleContext = sample.getContext("2d", { willReadFrequently: true });
-      if (!context || !sampleContext || !image.naturalWidth) { showImage(); return; }
-      const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
-      sampleContext.drawImage(image, (image.naturalWidth - sourceSize) / 2, (image.naturalHeight - sourceSize) / 2, sourceSize, sourceSize, 0, 0, size, size);
-      const pixels = sampleContext.getImageData(0, 0, size, size).data;
-      const particles = [];
-      let particleIndex = 0;
-      for (let y = 2; y < size - 2; y += 3) {
-        for (let x = 2; x < size - 2; x += 3) {
-          const distanceFromCenter = Math.hypot(x - size / 2, y - size / 2);
-          if (distanceFromCenter > size / 2 - 2) continue;
-          const offset = (y * size + x) * 4;
-          if (pixels[offset + 3] < 90) continue;
-          const angle = ((particleIndex * 137.508) % 360) * Math.PI / 180;
-          const radius = size * (.72 + ((particleIndex * 47) % 37) / 100);
-          particles.push({
-            x,
-            y,
-            startX: size / 2 + Math.cos(angle) * radius,
-            startY: size / 2 + Math.sin(angle) * radius,
-            color: `rgba(${pixels[offset]},${pixels[offset + 1]},${pixels[offset + 2]},${pixels[offset + 3] / 255})`,
-            delay: (1 - Math.min(1, distanceFromCenter / (size / 2))) * 560,
-          });
-          particleIndex += 1;
-        }
-      }
-      const startedAt = performance.now();
-      stage.dataset.particleDuration = "2400";
-      const render = (now) => {
-        context.clearRect(0, 0, size, size);
-        for (const particle of particles) {
-          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / 1720));
-          const eased = 1 - (1 - linear) ** 4;
-          const x = particle.startX + (particle.x - particle.startX) * eased;
-          const y = particle.startY + (particle.y - particle.startY) * eased;
-          context.fillStyle = particle.color;
-          context.fillRect(Math.round(x), Math.round(y), 2, 2);
-        }
-        if (now - startedAt < 2320) requestAnimationFrame(render);
-        else showImage();
-      };
-      requestAnimationFrame(render);
-    };
-    void assemble();
-  }
-
-  function startAvatarSpin(image) {
-    const targetVelocity = -120;
-    const accelerationDuration = 4_800;
-    let angle = 0;
-    let velocity = 0;
-    const startedAt = performance.now();
-    let previous = performance.now();
-    image.dataset.spinDirection = "counterclockwise";
-    image.dataset.spinTargetPeriod = "3000";
-    image.dataset.spinAccelerationMs = String(accelerationDuration);
-    image.dataset.spinTargetVelocity = String(targetVelocity);
-    const render = (now) => {
-      const seconds = Math.min(.05, Math.max(0, (now - previous) / 1000));
-      previous = now;
-      if (document.visibilityState === "visible") {
-        const progress = Math.min(1, (now - startedAt) / accelerationDuration);
-        const eased = progress * progress * (3 - 2 * progress);
-        velocity = targetVelocity * eased;
-        angle = (angle + velocity * seconds) % 360;
-        image.style.transform = `rotate(${angle}deg)`;
-        image.dataset.spinVelocity = velocity.toFixed(2);
-      }
-      requestAnimationFrame(render);
-    };
-    requestAnimationFrame(render);
-  }
 
   function initTypewriter() {
     $$('[data-typewriter]').forEach((node) => {
@@ -842,7 +570,7 @@
         candidates.slice(revealed, next).forEach((card, index) => {
           card.classList.remove("is-progressive-hidden");
           card.removeAttribute("aria-hidden");
-          initParticleCard(card, index * 90);
+          revealCard(card, index * 60);
         });
         revealed = next;
         lastRevealAt = performance.now();
@@ -868,7 +596,7 @@
           if (progressiveHidden) card.setAttribute("aria-hidden", "true");
           else if (!card.hidden) card.removeAttribute("aria-hidden");
         });
-        candidates.slice(0, revealed).forEach((card, index) => initParticleCard(card, index * 90));
+        candidates.slice(0, revealed).forEach((card, index) => revealCard(card, index * 60));
         updateState();
       };
 
@@ -1332,6 +1060,8 @@
     });
   }
 
+  initPageVisibility();
+  initDeferredAnalytics();
   initCursor();
   initHome();
   initResponsivePostPagination();

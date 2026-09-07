@@ -1,15 +1,18 @@
 {{ define "main" }}
+{{- $generated := hugo.Data.generatedImages | default dict -}}{{- $imageMap := index $generated "images" | default dict -}}
+{{- $desktopHome := index site.Params.covers.desktop 0 -}}{{- $mobileHome := index site.Params.covers.mobile 0 -}}
+{{- with index $imageMap $desktopHome -}}{{- with index . "desktopBackdrop" -}}{{- $desktopHome = . -}}{{- end -}}{{- end -}}
+{{- with index $imageMap $mobileHome -}}{{- with index . "mobileBackdrop" -}}{{- $mobileHome = . -}}{{- end -}}{{- end -}}
 <section class="home-stage">
   <picture class="home-backdrop" role="img" aria-label="{{ i18n "profile_workspace" }}">
-    <source media="(max-width: 760px)" srcset="{{ index site.Params.covers.mobile 0 }}">
-    <img src="{{ index site.Params.covers.desktop 0 }}" alt="" decoding="async" fetchpriority="high">
+    <source media="(max-width: 760px)" srcset="{{ $mobileHome }}">
+    <img src="{{ $desktopHome }}" alt="" decoding="async" fetchpriority="high">
   </picture>
   <div class="home-rain" aria-hidden="true"></div>
   <div class="home-grid">
     <div class="home-profile">
-      <div class="profile-avatar-stage" data-avatar-particles>
-        <canvas class="profile-particles" aria-hidden="true"></canvas>
-        <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176" data-avatar-image>
+      <div class="profile-avatar-stage">
+        <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176" data-avatar-image data-spin-direction="counterclockwise" data-spin-target-period="3000">
       </div>
       <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
       <h1>木木em哈哈</h1>
@@ -21,26 +24,23 @@
     <div class="home-left">
       <p class="home-kicker">WELCOME / {{ now.Format "2006" }}</p>
       <div class="home-doc-list">
-        <section class="home-doc-item visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}" data-particle-card data-particle-pattern="metrics">
-          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
-          <div class="particle-card-content visitor-values">
+        <section class="home-doc-item visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}">
+          <div class="home-card-content visitor-values">
             <div><span class="visitor-dot online"></span><small>{{ i18n "current_visitors" }}</small><strong data-umami-stat="active">0</strong></div>
             <div><span class="visitor-dot"></span><small>{{ i18n "total_visitors" }}</small><strong data-umami-stat="visitors">0</strong></div>
             <div><span class="visitor-dot"></span><small>{{ i18n "total_visits" }}</small><strong data-umami-stat="visits">0</strong></div>
           </div>
         </section>
-        <section class="home-doc-item status-panel" data-particle-card data-particle-pattern="document">
-          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
-          <div class="particle-card-content">
+        <section class="home-doc-item status-panel">
+          <div class="home-card-content">
             <span class="panel-eyebrow">{{ i18n "todays_status" }}</span>
             <h2>{{ i18n "status_title" }}</h2>
             <p>{{ i18n "status_description" }}</p>
             <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
           </div>
         </section>
-        <section class="home-doc-item contact-panel" data-particle-card data-particle-pattern="links">
-          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
-          <div class="particle-card-content">
+        <section class="home-doc-item contact-panel">
+          <div class="home-card-content">
             <span class="panel-eyebrow">{{ i18n "contact_title" }}</span>
             <div class="contact-links">
               <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>

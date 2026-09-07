@@ -89,15 +89,14 @@ try {
         await page.locator(".post-load-sentinel:not([hidden])").scrollIntoViewIfNeeded();
         await page.mouse.wheel(0, 180);
         await page.waitForFunction(() => Number(document.querySelector("[data-responsive-post-list]")?.dataset.postVisibleCount || 0) >= 6, undefined, { timeout: 3_000 });
-        await page.waitForFunction(() => [...document.querySelectorAll('.post-card[data-particle-mode="image-pixels"]')].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).length >= 6, undefined, { timeout: 5_000 });
-        await page.waitForTimeout(140);
-        const particlePixels = await page.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
-          const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-          let visible = 0;
-          for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-          return visible;
-        });
-        assert.ok(particlePixels > 40, `${viewport.name} newly loaded article card particle canvas is blank`);
+        await page.waitForFunction(() => {
+          const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
+          return cards.length >= 6 && cards.every((card) => {
+            const image = card.querySelector(".post-cover img");
+            return card.dataset.cardAnimated === "true" && image?.complete && image.naturalWidth > 0;
+          });
+        }, undefined, { timeout: 5_000 });
+        assert.equal(await page.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, `${viewport.name} blog still contains particle rendering`);
         await page.screenshot({ path: join(outputDirectory, `${viewport.name}-blog-after-scroll.png`), fullPage: false });
       }
       if (routePath === "/friends/") {

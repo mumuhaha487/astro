@@ -3,6 +3,9 @@ dist/
 .astro/
 .hugo-test-dist/
 .hugo_build.lock
+data/generatedImages.json
+data/generated-images.json
+public/optimized/images/
 
 .env
 .env.*

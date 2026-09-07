@@ -43,18 +43,11 @@ try {
   assert.equal(await desktopPage.locator('.post-card:visible img[data-progressive-src]').count(), 0, "visible covers were not hydrated");
   assert.ok(await desktopPage.locator('.post-card.is-progressive-hidden img[data-progressive-src]').count() > 0, "offscreen covers were hydrated before scrolling");
   assert.equal(await desktopPage.locator(".post-cover-placeholder").count(), 0, "empty cover placeholder remains");
-  assert.match(await desktopPage.locator('.post-card.random-cover img').first().getAttribute("src"), /^\/image\/h\/\d+\.webp$/, "post without a cover did not receive a stable local random image");
+  assert.match(await desktopPage.locator('.post-card.random-cover img').first().getAttribute("src"), /^\/optimized\/images\/[a-f0-9]+-card\.webp$/, "post without a cover did not receive a stable optimized random image");
   assert.equal(await desktopPage.locator(".pagination-summary").innerText(), "第 1 / 4 页", "desktop pagination does not use 30-item pages");
-  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => card.dataset.particleMode === "image-pixels" && Number(card.dataset.imageParticleCount) >= 900 && card.dataset.particleRenderer === "batched-2d" && card.dataset.particleFps === "30"), undefined, { timeout: 5_000 });
-  await desktopPage.waitForTimeout(180);
-  const firstCardParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
-    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-    let visible = 0;
-    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-    return visible;
-  });
-  assert.ok(firstCardParticles > 40, "desktop article card particle canvas is blank");
-  assert.equal(await desktopPage.locator('.post-card:visible[data-particle-mode="image-pixels"]').count(), 3, "desktop cards do not use image pixel assembly");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return image?.complete && image.naturalWidth > 0 && image.src.includes("/optimized/images/"); }), undefined, { timeout: 5_000 });
+  assert.equal(await desktopPage.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, "desktop page still contains particle rendering");
+  assert.equal(await desktopPage.locator('.post-card:visible[data-card-animated="true"]').count(), 3, "desktop cards do not use the lightweight fade transition");
   const desktopLayout = await desktopPage.evaluate(() => {
     const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
     const covers = cards.map((card) => card.querySelector(".post-cover")).filter(Boolean);
@@ -124,15 +117,7 @@ try {
 
   await revealPostCards(desktopPage, 6);
   assert.equal(await desktopPage.locator(".post-card:visible").count(), 6, "desktop blog did not append exactly three cards after scrolling");
-  await desktopPage.waitForFunction(() => [...document.querySelectorAll('.post-card[data-particle-mode="image-pixels"]')].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).length === 6, undefined, { timeout: 5_000 });
-  await desktopPage.waitForTimeout(120);
-  const secondBatchParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
-    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-    let visible = 0;
-    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-    return visible;
-  });
-  assert.ok(secondBatchParticles > 40, "new desktop article batch did not assemble from particles");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return card.dataset.cardAnimated === "true" && image?.complete && image.naturalWidth > 0; }), undefined, { timeout: 5_000 });
 
   desktopResponse = await desktopPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -146,36 +131,31 @@ try {
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487"]').count(), 1, "production GitHub contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"]').count(), 1, "production Bilibili contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"] use[href="/icons/lucide-sprite.svg#bilibili"]').count(), 1, "Bilibili brand icon is missing");
-  await desktopPage.waitForTimeout(500);
-  const particleAlpha = await desktopPage.locator(".profile-particles").evaluate((canvas) => {
-    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-    let visible = 0;
-    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-    return visible;
-  });
-  assert.ok(particleAlpha > 100, "avatar particle canvas is blank during assembly");
-  const homeCardParticleAlpha = await desktopPage.locator(".home-doc-item .particle-card-canvas").first().evaluate((canvas) => {
-    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-    let visible = 0;
-    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-    return visible;
-  });
-  assert.ok(homeCardParticleAlpha > 40, "homepage document card particle canvas is blank");
-  await desktopPage.waitForTimeout(2_800);
-  assert.equal(await desktopPage.locator("[data-avatar-particles].is-ready").count(), 1, "avatar does not transition to the rotating image");
-  const earlySpin = await desktopPage.locator("[data-avatar-image]").evaluate((image) => ({
-    direction: image.dataset.spinDirection,
-    targetPeriod: Number(image.dataset.spinTargetPeriod),
-    velocity: Math.abs(Number(image.dataset.spinVelocity)),
+  assert.equal(await desktopPage.locator("canvas, [data-particle-card], [data-avatar-particles]").count(), 0, "homepage still contains particle rendering");
+  const avatarMotion = await desktopPage.locator("[data-avatar-image]").evaluate((image) => new Promise((resolve) => {
+    const angles = [];
+    const startedAt = performance.now();
+    const sample = (now) => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(image).transform);
+      angles.push(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI);
+      if (now - startedAt < 1_000) requestAnimationFrame(sample);
+      else {
+        let rotation = 0;
+        for (let index = 1; index < angles.length; index += 1) {
+          let change = angles[index] - angles[index - 1];
+          if (change > 180) change -= 360;
+          if (change < -180) change += 360;
+          rotation += change;
+        }
+        resolve({ frames: angles.length, rotation, direction: image.dataset.spinDirection, targetPeriod: Number(image.dataset.spinTargetPeriod) });
+      }
+    };
+    requestAnimationFrame(sample);
   }));
-  await desktopPage.waitForTimeout(1_000);
-  const laterSpinVelocity = await desktopPage.locator("[data-avatar-image]").evaluate((image) => Math.abs(Number(image.dataset.spinVelocity)));
-  assert.equal(earlySpin.direction, "counterclockwise", "avatar does not rotate counterclockwise");
-  assert.equal(earlySpin.targetPeriod, 3_000, "avatar target period is not three seconds");
-  assert.ok(laterSpinVelocity > earlySpin.velocity, "avatar rotation does not accelerate gradually");
-  await desktopPage.waitForTimeout(3_900);
-  const targetSpinVelocity = await desktopPage.locator("[data-avatar-image]").evaluate((image) => Math.abs(Number(image.dataset.spinVelocity)));
-  assert.ok(targetSpinVelocity >= 118 && targetSpinVelocity <= 121, `avatar did not settle at one rotation per three seconds: ${targetSpinVelocity}`);
+  assert.equal(avatarMotion.direction, "counterclockwise", "avatar does not rotate counterclockwise");
+  assert.equal(avatarMotion.targetPeriod, 3_000, "avatar target period is not three seconds");
+  assert.ok(avatarMotion.frames >= 50, `avatar animation did not update close to 60 FPS: ${avatarMotion.frames}`);
+  assert.ok(avatarMotion.rotation <= -105 && avatarMotion.rotation >= -135, `avatar rotation is not one turn per three seconds: ${avatarMotion.rotation}`);
 
   desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -269,10 +249,10 @@ try {
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".home-stage").count(), 1, "home workspace is missing");
   assert.equal(await page.locator("#site-wallpaper").count(), 0, "duplicate home wallpaper layer remains");
-  assert.equal(await page.locator('.home-backdrop source[srcset="/image/v/2870.webp"]').count(), 1, "mobile home cover is missing");
-  assert.equal(await page.locator('link[rel="preload"][href="/image/v/2870.webp"][media="(max-width: 760px)"]').count(), 1, "mobile home cover is not preloaded");
-  assert.equal(await page.locator('link[rel="preconnect"][href="https://umami.vmss.cn"]').count(), 1, "Umami preconnect is missing");
-  assert.equal(await page.locator('script[src="https://umami.vmss.cn/script.js"][async][fetchpriority="low"][data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"]').count(), 1, "non-blocking self-hosted Umami tracker is missing");
+  assert.equal(await page.locator('.home-backdrop source[srcset^="/optimized/images/"][srcset$="-mobileBackdrop.webp"]').count(), 1, "optimized mobile home cover is missing");
+  assert.equal(await page.locator('link[rel="preload"][href^="/optimized/images/"][href$="-mobileBackdrop.webp"][media="(max-width: 760px)"]').count(), 1, "optimized mobile home cover is not preloaded");
+  assert.equal(await page.locator('body[data-analytics-src="https://umami.vmss.cn/script.js"][data-analytics-website-id="993c6970-8f42-4804-a055-38b6b9c01810"]').count(), 1, "deferred Umami configuration is missing");
+  await page.waitForFunction(() => document.querySelector('script[src="https://umami.vmss.cn/script.js"]')?.async === true, undefined, { timeout: 5_000 });
   assert.equal(await page.locator('[data-umami-stat="active"]').count(), 1, "active visitor statistic is missing");
   assert.equal(await page.locator('[data-umami-stat="visitors"]').count(), 1, "unique visitor statistic is missing");
   assert.equal(await page.locator('[data-umami-stat="visits"]').count(), 1, "visit statistic is missing");
@@ -330,15 +310,8 @@ try {
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".post-card").count(), 30, "mobile blog page does not retain the complete desktop page group");
   assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog page must initially render only three articles");
-  await page.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => card.dataset.particleMode === "image-pixels" && Number(card.dataset.imageParticleCount) >= 900 && card.dataset.particleRenderer === "batched-2d" && card.dataset.particleFps === "30"), undefined, { timeout: 5_000 });
-  await page.waitForTimeout(160);
-  const mobileCardParticles = await page.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
-    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
-    let visible = 0;
-    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
-    return visible;
-  });
-  assert.ok(mobileCardParticles > 40, "mobile article card particle canvas is blank");
+  await page.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return image?.complete && image.naturalWidth > 0 && image.src.includes("/optimized/images/"); }), undefined, { timeout: 5_000 });
+  assert.equal(await page.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, "mobile blog still contains particle rendering");
   await revealPostCards(page, 6);
   assert.equal(await page.locator(".post-card:visible").count(), 6, "mobile blog did not append three cards after scrolling");
   await revealPostCards(page, 10);
@@ -346,10 +319,11 @@ try {
   const firstPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "1", "blog first page is not active");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/\?mobile-page=2$/, "mobile blog next-page URL is incorrect");
-  assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/2.webp"]').count(), 1, "mobile blog wallpaper is missing");
+  assert.equal(await page.locator('#site-wallpaper source[srcset^="/optimized/images/"][srcset$="-mobileBackdrop.webp"]').count(), 1, "optimized mobile blog wallpaper is missing");
   assert.equal(await page.locator('a[href*="md.vmss.cn"]').count(), 0, "private writing entry is exposed");
   assert.equal(await page.locator("[data-umami-stat]").count(), 0, "homepage statistics leaked into blog page");
   assert.equal(await page.locator('footer.site-footer a[href="https://beian.miit.gov.cn/"]').innerText(), "赣ICP备2024038464号-3", "blog ICP filing link is incorrect");
+  assert.equal(await page.evaluate(() => performance.getEntriesByType("resource").some((entry) => entry.name.includes("/pagefind/"))), false, "Pagefind loaded before search was opened");
   await page.locator("[data-search-trigger]").click();
   const searchInput = page.locator("#search-input");
   await searchInput.fill("海龟汤");
@@ -409,7 +383,7 @@ try {
 
   response = await page.goto(new URL("/tools/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator('#site-wallpaper source[srcset="/assets/mobile-banner/4.webp"]').count(), 1, "mobile tools wallpaper is missing");
+  assert.equal(await page.locator('#site-wallpaper source[srcset^="/optimized/images/"][srcset$="-mobileBackdrop.webp"]').count(), 1, "optimized mobile tools wallpaper is missing");
   assert.equal(await page.locator(".tool-card").count(), 7, "toolbox cards are missing");
   await page.waitForTimeout(250);
   const loadedToolCovers = await page.locator('[data-random-cover][src]').count();
@@ -501,7 +475,7 @@ try {
   response = await page.goto(new URL("/posts/20260326/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator("#hugo-article-content").count(), 1, "article body is missing");
-  assert.equal(await page.locator('#site-wallpaper img[src="/assets/desktop-banner/2.webp"]').count(), 1, "desktop article wallpaper is missing");
+  assert.equal(await page.locator('#site-wallpaper img[src^="/optimized/images/"][src$="-desktopBackdrop.webp"]').count(), 1, "optimized desktop article wallpaper is missing");
   assert.equal(await page.locator('img[src*="image.vmss.cn"]').count(), 0, "remote image.vmss.cn reference remains");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"][data-repo-id="R_kgDOPjTkdA"][data-category-id="DIC_kwDOPjTkdM4CuiIf"]').count(), 1, "restored Giscus configuration is missing");
   assert.match(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-theme"), /\/hugo-theme\/giscus-theme\.css\?v=20260907-contrast4$/, "Giscus high-contrast dark theme is missing");
@@ -560,7 +534,7 @@ try {
   assert.equal(await page.locator(".post-card h2", { hasText: "Test Article Title" }).count(), 1, "English blog does not show its translated article");
   assert.equal(await page.locator(".post-card h2", { hasText: "测试文章标题" }).count(), 0, "English blog shows the Chinese variant at the same time");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: three-card progressive particle loading within 30-item desktop and 10-item mobile pages, accelerated avatar rotation, compact cursor, three-language UI/content switching, full article details, and overflow checks.");
+  console.log("Browser verification passed: particle-free card fading within 30-item desktop and 10-item mobile pages, compositor-driven 60 FPS avatar rotation, optimized images, compact cursor, three-language UI/content switching, full article details, and overflow checks.");
 } finally {
   await browser.close();
 }

@@ -101,11 +101,12 @@ assert.match(home, /累计访客/, "Total visitor label is missing");
 assert.match(home, /累计访问次数/, "Total visit label is missing");
 assert.match(home, /data-typewriter="不乱于心，不困于情，不畏将来，不惧过去"/, "Looping homepage typewriter is missing");
 assert.match(home, /data-typewriter-output/, "Homepage typewriter output is missing");
-assert.match(home, /<link rel="preconnect" href="https:\/\/umami\.vmss\.cn" crossorigin>/, "Umami preconnect is missing");
-assert.match(home, /<link rel="preload" as="image" href="\/image\/v\/2870\.webp" media="\(max-width: 760px\)">/, "Optimized mobile home cover preload is missing");
-assert.match(home, /<link rel="preload" as="image" href="\/image\/h\/132\.webp" media="\(min-width: 761px\)">/, "Optimized desktop home cover preload is missing");
+assert.doesNotMatch(home, /rel="preconnect" href="https:\/\/umami\.vmss\.cn"/, "Umami still competes with critical resources during initial loading");
+assert.match(home, /<link rel="preload" as="image" href="\/optimized\/images\/[a-f0-9]+-mobileBackdrop\.webp" media="\(max-width: 760px\)">/, "Optimized mobile home cover preload is missing");
+assert.match(home, /<link rel="preload" as="image" href="\/optimized\/images\/[a-f0-9]+-desktopBackdrop\.webp" media="\(min-width: 761px\)">/, "Optimized desktop home cover preload is missing");
 assert.doesNotMatch(home, /id="site-wallpaper"/, "Duplicate homepage wallpaper layer remains");
-assert.match(home, /<script async fetchpriority="low" src="https:\/\/umami\.vmss\.cn\/script\.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"><\/script>/, "Non-blocking self-hosted Umami tracker is missing");
+assert.match(home, /data-analytics-src="https:\/\/umami\.vmss\.cn\/script\.js"/, "Deferred self-hosted Umami tracker configuration is missing");
+assert.doesNotMatch(home, /<script[^>]+src="https:\/\/umami\.vmss\.cn\/script\.js"/, "Umami tracker still blocks the initial HTML parse");
 for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
   assert.match(page, /<a href="https:\/\/beian\.miit\.gov\.cn\/" target="_blank" rel="noopener noreferrer">赣ICP备2024038464号-3<\/a>/, `ICP filing link is missing on ${name}`);
 }
@@ -123,10 +124,10 @@ assert.match(home, /我の小小窝。/, "Homepage workspace label is incorrect"
 assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub contact is missing");
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
-assert.match(home, /data-avatar-particles/, "Particle avatar stage is missing");
-assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three particle cards");
-assert.equal((home.match(/data-particle-card/g) || []).length, 3, "Homepage particle card metadata is incomplete");
-assert.match(home, /data-random-post-covers="\[&#34;\/image\/h\/132\.webp&#34;/, "Local random post cover pool is missing");
+assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three cards");
+assert.doesNotMatch(home, /particle-card|profile-particles|data-particle/, "Removed particle rendering remains on the homepage");
+assert.match(home, /data-spin-target-period="3000"/, "The compositor-driven avatar rotation is missing");
+assert.match(home, /data-random-post-covers="{&#34;desktop&#34;:\[&#34;\/optimized\/images\/[a-f0-9]+-card\.webp&#34;/, "Optimized random post cover pool is missing");
 const blogServerPageSize = 30;
 const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
@@ -135,7 +136,7 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   const pageHtml = await readFile(pagePath, "utf8");
   const expectedCards = Math.min(blogServerPageSize, posts.length - ((pageNumber - 1) * blogServerPageSize));
   assert.equal((pageHtml.match(/class="post-card(?: |")/g) || []).length, expectedCards, `Blog page ${pageNumber} has the wrong number of posts`);
-  assert.equal((pageHtml.match(/data-particle-pattern="post"/g) || []).length, expectedCards, `Blog page ${pageNumber} is missing particle cards`);
+  assert.doesNotMatch(pageHtml, /particle-card|data-particle/, `Blog page ${pageNumber} still contains particle rendering`);
   assert.equal((pageHtml.match(/data-progressive-src=/g) || []).length, (pageHtml.match(/class="post-cover"/g) || []).length, `Blog page ${pageNumber} does not defer every cover`);
   assert.match(pageHtml, new RegExp(`data-responsive-post-list data-post-list-total="${posts.length}" data-post-list-page="${pageNumber}"`), `Blog page ${pageNumber} is missing responsive pagination metadata`);
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
@@ -143,8 +144,9 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
-assert.match(blog, /hugo\.js\?v=20260907-smooth-cover-particles/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260907-smooth-cover-particles/, "Current stylesheet asset version is missing");
+assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
+assert.match(blog, /hugo\.js\?v=20260907-performance-lite/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260907-performance-lite/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
@@ -167,7 +169,7 @@ assert.equal((archive.match(/class="post-card(?: |")/g) || []).length, Math.min(
 assert.match(archive, /data-responsive-post-list/, "Archive page is missing responsive pagination");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
 assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
-assert.match(home, /data-hugo-pagefind-preload/, "Pagefind is not preloaded on the home page");
+assert.doesNotMatch(home, /data-hugo-pagefind-preload/, "Pagefind should load only after the visitor opens search");
 
 const translatedArticleFiles = [
   join(outputRoot, "posts", "测试文章标题", "index.html"),

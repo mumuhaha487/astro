@@ -1,0 +1,4 @@
+{{- $source := .Destination -}}
+{{- $generated := hugo.Data.generatedImages | default dict -}}{{- $imageMap := index $generated "images" | default dict -}}
+{{- with index $imageMap $source -}}{{- with index . "content" -}}{{- $source = . -}}{{- end -}}{{- end -}}
+<img src="{{ $source | safeURL }}" alt="{{ .Text }}"{{ with .Title }} title="{{ . }}"{{ end }} loading="lazy" decoding="async">

@@ -18,6 +18,11 @@
   {{- $desktopWallpaper = index site.Params.covers.desktop 0 -}}
   {{- $mobileWallpaper = index site.Params.covers.mobile 0 -}}
 {{- end -}}
+{{- $generated := hugo.Data.generatedImages | default dict -}}
+{{- $imageMap := index $generated "images" | default dict -}}
+{{- with index $imageMap $desktopWallpaper -}}{{- with index . "desktopBackdrop" -}}{{- $desktopWallpaper = . -}}{{- end -}}{{- end -}}
+{{- with index $imageMap $mobileWallpaper -}}{{- with index . "mobileBackdrop" -}}{{- $mobileWallpaper = . -}}{{- end -}}{{- end -}}
+{{- $randomCoverPools := index $generated "randomCovers" | default site.Params.covers -}}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
@@ -34,15 +39,13 @@
   <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
   <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
   <link rel="dns-prefetch" href="//umami.vmss.cn">
-  <link rel="preconnect" href="https://umami.vmss.cn" crossorigin>
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
-  <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260907-smooth-cover-particles">
-  <script async fetchpriority="low" src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
+  {{ if and .IsPage (eq $section "posts") }}<link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">{{ end }}
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260907-performance-lite">
   {{ if eq $section "guestbook" }}<script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-turnstile-script></script>{{ end }}
 </head>
-<body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-random-post-covers="{{ jsonify site.Params.covers.desktop }}" data-pagefind-ignore>
+<body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-random-post-covers="{{ jsonify $randomCoverPools }}" data-analytics-src="https://umami.vmss.cn/script.js" data-analytics-website-id="993c6970-8f42-4804-a055-38b6b9c01810" data-pagefind-ignore>
   {{- if not .IsHome }}
     <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
       <picture>
@@ -115,8 +118,7 @@
   </nav>
   <div class="cursor-ring" aria-hidden="true"></div>
   <div class="cursor-dot" aria-hidden="true"></div>
-  <script src="/hugo-theme/hugo.js?v=20260907-smooth-cover-particles"></script>
-  <script data-hugo-pagefind-preload>window.loadPagefind?.();</script>
+  <script src="/hugo-theme/hugo.js?v=20260907-performance-lite"></script>
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>

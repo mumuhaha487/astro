@@ -5,6 +5,7 @@
 {{- $giscusLanguage := cond (eq site.Language.Lang "zh") "zh-CN" site.Language.Lang -}}
 {{- $commentsEnabled := true -}}
 {{- if isset .Params "comment" -}}{{- $commentsEnabled = .Params.comment -}}{{- end -}}
+{{- $generated := hugo.Data.generatedImages | default dict -}}{{- $imageMap := index $generated "images" | default dict -}}
 <article class="article-shell">
   <header class="article-header">
     <a class="back-link" href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "back_blog" }}</a>
@@ -21,7 +22,7 @@
     {{ with .Params.tags }}<div class="tag-row">{{ range . }}<a href="{{ printf "%s%s/" ("tags/" | relLangURL) (. | urlize) }}"># {{ . }}</a>{{ end }}</div>{{ end }}
     <span class="visually-hidden" data-pagefind-body>{{ .Params.category }} {{ delimit (.Params.tags | default slice) " " }}</span>
   </header>
-  {{ with .Params.image }}<figure class="article-cover"><img src="{{ . | safeURL }}" alt="{{ $.Title }}" loading="eager"></figure>{{ end }}
+  {{ with .Params.image }}{{- $articleImage := . -}}{{- with index $imageMap . -}}{{- with index . "content" -}}{{- $articleImage = . -}}{{- end -}}{{- end -}}<figure class="article-cover"><img src="{{ $articleImage | safeURL }}" alt="{{ $.Title }}" loading="eager" decoding="async" fetchpriority="high"></figure>{{ end }}
   <div class="article-layout">
     <div class="article-main">
       <div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ $.Content }}</div>
