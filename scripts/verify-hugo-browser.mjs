@@ -261,9 +261,11 @@ try {
   assert.equal(await typewriter.count(), 1, "homepage typewriter is missing");
   assert.equal(await page.locator('[data-typewriter="不乱于心，不困于情，不畏将来，不惧过去"]').count(), 1, "homepage typewriter text is incorrect");
   assert.equal(await page.locator('.language-switch a[lang="ja"]', { hasText: "日本語" }).count(), 1, "Japanese language option is ambiguous");
+  const typedStartLength = [...await typewriter.innerText()].length;
   await page.waitForTimeout(1_100);
   const typedText = await typewriter.innerText();
-  assert.ok([...typedText].length >= 1 && [...typedText].length <= 3, `typewriter pace is incorrect: ${typedText}`);
+  const typedCharacters = [...typedText].length - typedStartLength;
+  assert.ok(typedCharacters >= 1 && typedCharacters <= 3, `typewriter pace is incorrect: ${typedCharacters} new characters in 1.1 seconds`);
   const mobileTypewriterLayout = await page.evaluate(() => {
     const output = document.querySelector("[data-typewriter-output]");
     const bio = document.querySelector(".profile-bio");
