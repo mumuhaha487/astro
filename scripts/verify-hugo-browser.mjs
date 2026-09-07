@@ -505,6 +505,7 @@ try {
   assert.equal(commentSurface.background, "rgba(48, 49, 49, 0.92)", "comment shell is not a readable gray panel");
   assert.equal(commentSurface.color, "rgb(255, 255, 255)", "comment shell heading is not high contrast");
   if (!localRun) {
+    await page.locator(".article-comments").scrollIntoViewIfNeeded();
     const giscusBox = page.frameLocator("iframe.giscus-frame").locator(".gsc-comment-box");
     await giscusBox.waitFor({ state: "visible", timeout: 15_000 });
     const giscusStyle = await giscusBox.evaluate((node) => ({
