@@ -20,24 +20,35 @@
     </div>
     <div class="home-left">
       <p class="home-kicker">WELCOME / {{ now.Format "2006" }}</p>
-      <section class="glass-panel status-panel">
-        <span class="panel-eyebrow">{{ i18n "todays_status" }}</span>
-        <h2>{{ i18n "status_title" }}</h2>
-        <p>{{ i18n "status_description" }}</p>
-        <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
-      </section>
-      <section class="glass-panel contact-panel">
-        <span class="panel-eyebrow">{{ i18n "contact_title" }}</span>
-        <div class="contact-links">
-          <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
-          <a href="https://space.bilibili.com/334584883" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "bilibili") }}<span><strong>{{ i18n "bilibili" }}</strong><small>UID 334584883</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
-        </div>
-      </section>
-      <section class="visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}">
-        <div><span class="visitor-dot online"></span><small>{{ i18n "current_visitors" }}</small><strong data-umami-stat="active">0</strong></div>
-        <div><span class="visitor-dot"></span><small>{{ i18n "total_visitors" }}</small><strong data-umami-stat="visitors">0</strong></div>
-        <div><span class="visitor-dot"></span><small>{{ i18n "total_visits" }}</small><strong data-umami-stat="visits">0</strong></div>
-      </section>
+      <div class="home-doc-list">
+        <section class="home-doc-item visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}" data-particle-card data-particle-pattern="metrics">
+          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
+          <div class="particle-card-content visitor-values">
+            <div><span class="visitor-dot online"></span><small>{{ i18n "current_visitors" }}</small><strong data-umami-stat="active">0</strong></div>
+            <div><span class="visitor-dot"></span><small>{{ i18n "total_visitors" }}</small><strong data-umami-stat="visitors">0</strong></div>
+            <div><span class="visitor-dot"></span><small>{{ i18n "total_visits" }}</small><strong data-umami-stat="visits">0</strong></div>
+          </div>
+        </section>
+        <section class="home-doc-item status-panel" data-particle-card data-particle-pattern="document">
+          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
+          <div class="particle-card-content">
+            <span class="panel-eyebrow">{{ i18n "todays_status" }}</span>
+            <h2>{{ i18n "status_title" }}</h2>
+            <p>{{ i18n "status_description" }}</p>
+            <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
+          </div>
+        </section>
+        <section class="home-doc-item contact-panel" data-particle-card data-particle-pattern="links">
+          <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
+          <div class="particle-card-content">
+            <span class="panel-eyebrow">{{ i18n "contact_title" }}</span>
+            <div class="contact-links">
+              <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
+              <a href="https://space.bilibili.com/334584883" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "bilibili") }}<span><strong>{{ i18n "bilibili" }}</strong><small>UID 334584883</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
+            </div>
+          </div>
+        </section>
+      </div>
     </div>
   </div>
 </section>

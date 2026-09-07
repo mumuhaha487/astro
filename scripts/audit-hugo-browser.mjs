@@ -84,6 +84,21 @@ try {
       assert.ok(metrics.bodyWidth <= metrics.viewportWidth, `${viewport.name} ${routePath} overflows horizontally`);
       const slug = routePath === "/" ? "home" : routePath.split("/").filter(Boolean).join("-");
       await page.screenshot({ path: join(outputDirectory, `${viewport.name}-${slug}.png`), fullPage: false });
+      if (routePath === "/blog/") {
+        assert.equal(await page.locator(".post-card:visible").count(), 3, `${viewport.name} blog does not start with three cards`);
+        await page.locator(".post-load-sentinel:not([hidden])").scrollIntoViewIfNeeded();
+        await page.mouse.wheel(0, 180);
+        await page.waitForFunction(() => Number(document.querySelector("[data-responsive-post-list]")?.dataset.postVisibleCount || 0) >= 6, undefined, { timeout: 3_000 });
+        await page.waitForTimeout(140);
+        const particlePixels = await page.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
+          const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+          let visible = 0;
+          for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+          return visible;
+        });
+        assert.ok(particlePixels > 40, `${viewport.name} newly loaded article card particle canvas is blank`);
+        await page.screenshot({ path: join(outputDirectory, `${viewport.name}-blog-after-scroll.png`), fullPage: false });
+      }
       if (routePath === "/friends/") {
         await page.locator("[data-friends-apply-open]").click();
         await page.locator("[data-friends-apply-dialog][open]").waitFor();

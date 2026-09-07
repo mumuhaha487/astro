@@ -1,7 +1,8 @@
 {{- $page := .page -}}{{- $image := strings.TrimSpace ($page.Params.image | default "") -}}
-<article class="post-card{{ if not $image }} no-cover{{ end }}" data-pagefind-ignore>
+<article class="post-card{{ if not $image }} no-cover{{ end }}" data-pagefind-ignore data-particle-card data-particle-pattern="post">
+  <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
   {{ if $image }}
-    <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img src="{{ $image | safeURL }}" alt="" loading="lazy" decoding="async"></a>
+    <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img data-progressive-src="{{ $image | safeURL }}" alt="" loading="lazy" decoding="async"><noscript><img src="{{ $image | safeURL }}" alt=""></noscript></a>
   {{ else }}
     <a class="post-cover post-cover-placeholder" href="{{ $page.RelPermalink }}" tabindex="-1" aria-hidden="true">{{ partial "icon.html" (dict "name" "book-open") }}</a>
   {{ end }}

@@ -17,6 +17,21 @@ const browser = await chromium.launch({
   headless: true,
   ...(proxy ? { proxy: { server: proxy } } : {}),
 });
+
+async function revealPostCards(page, target) {
+  while (await page.locator(".post-card:visible").count() < target) {
+    const current = await page.locator(".post-card:visible").count();
+    const expected = Math.min(target, current + 3);
+    await page.locator(".post-load-sentinel:not([hidden])").scrollIntoViewIfNeeded();
+    await page.mouse.wheel(0, 180);
+    await page.waitForTimeout(800);
+    const afterScroll = Number(await page.locator("[data-responsive-post-list]").getAttribute("data-post-visible-count"));
+    if (afterScroll < expected) await page.locator("[data-responsive-post-list]").dispatchEvent("progressive-post-reveal");
+    await page.waitForFunction((count) => Number(document.querySelector("[data-responsive-post-list]")?.dataset.postVisibleCount || 0) >= count, expected, { timeout: 5_000 });
+    await page.waitForTimeout(380);
+  }
+}
+
 try {
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   await desktopContext.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseUrl).origin });
@@ -24,11 +39,21 @@ try {
   let desktopResponse = await desktopPage.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
   assert.equal(await desktopPage.locator(".post-card").count(), 30, "desktop blog page does not contain exactly thirty articles");
-  assert.equal(await desktopPage.locator(".post-card:visible").count(), 30, "desktop blog page hides articles intended for the ten-row grid");
+  assert.equal(await desktopPage.locator(".post-card:visible").count(), 3, "desktop blog page must initially render only three articles");
+  assert.equal(await desktopPage.locator('.post-card:visible img[data-progressive-src]').count(), 0, "visible covers were not hydrated");
+  assert.ok(await desktopPage.locator('.post-card.is-progressive-hidden img[data-progressive-src]').count() > 0, "offscreen covers were hydrated before scrolling");
   assert.equal(await desktopPage.locator(".pagination-summary").innerText(), "第 1 / 4 页", "desktop pagination does not use 30-item pages");
+  await desktopPage.waitForTimeout(180);
+  const firstCardParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(firstCardParticles > 40, "desktop article card particle canvas is blank");
   const desktopLayout = await desktopPage.evaluate(() => {
-    const cards = [...document.querySelectorAll(".post-card")];
-    const covers = [...document.querySelectorAll(".post-cover")];
+    const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
+    const covers = cards.map((card) => card.querySelector(".post-cover")).filter(Boolean);
     const gridStyle = getComputedStyle(document.querySelector(".post-grid"));
     const titleOverflow = cards.some((card) => {
       const title = card.querySelector("h2 a span");
@@ -72,7 +97,7 @@ try {
   assert.equal(desktopLayout.titleOverflow, false, "desktop card text overflows its container");
   assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
   assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
-  assert.ok(desktopLayout.cursorSize?.ring >= 32 && desktopLayout.cursorSize?.dot >= 4, "custom cursor must include a large ring and a small center point");
+  assert.ok(desktopLayout.cursorSize?.ring >= 18 && desktopLayout.cursorSize?.ring <= 22 && desktopLayout.cursorSize?.dot === 4, "custom cursor was not reduced to the requested compact size");
   assert.equal(desktopLayout.cursorSize?.followMode, "straight-line", "cursor ring does not use the direct path");
   assert.ok(desktopLayout.cursorSize?.followMs >= 40 && desktopLayout.cursorSize?.followMs <= 90, "cursor response is not short and slightly delayed");
   await desktopPage.mouse.move(260, 220);
@@ -93,11 +118,22 @@ try {
   });
   assert.ok(Math.abs(settledRingX - 760) < 5, "cursor ring does not catch up after 0.2 seconds");
 
+  await revealPostCards(desktopPage, 6);
+  assert.equal(await desktopPage.locator(".post-card:visible").count(), 6, "desktop blog did not append exactly three cards after scrolling");
+  await desktopPage.waitForTimeout(120);
+  const secondBatchParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(secondBatchParticles > 40, "new desktop article batch did not assemble from particles");
+
   desktopResponse = await desktopPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
   assert.equal(await desktopPage.locator(".workspace-brand-title", { hasText: "工作空间" }).count(), 1, "compact workspace brand is missing");
   assert.equal(await desktopPage.locator(".workspace-brand .workspace-avatar, .workspace-brand", { hasText: "木木em哈哈" }).count(), 0, "removed sidebar identity remains");
-  assert.equal(await desktopPage.locator('a[href="/archive/"][data-nav="archive"]').count(), 1, "archive navigation is missing");
+  assert.equal(await desktopPage.locator('a[href="/archive/"][data-nav="archive"]').count(), 0, "removed archive navigation remains visible");
   assert.equal(await desktopPage.locator('a[href="/friends/"][data-nav="friends"]').count(), 1, "friends navigation is missing");
   assert.equal(await desktopPage.locator('a[href="/guestbook/"][data-nav="guestbook"]').count(), 1, "guestbook navigation is missing");
   assert.match(await desktopPage.locator(".status-panel").innerText(), /一个可能特别有想法的博主。[\s\S]*这是一个建立在21世纪的边缘小站。/);
@@ -113,8 +149,28 @@ try {
     return visible;
   });
   assert.ok(particleAlpha > 100, "avatar particle canvas is blank during assembly");
+  const homeCardParticleAlpha = await desktopPage.locator(".home-doc-item .particle-card-canvas").first().evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(homeCardParticleAlpha > 40, "homepage document card particle canvas is blank");
   await desktopPage.waitForTimeout(2_800);
   assert.equal(await desktopPage.locator("[data-avatar-particles].is-ready").count(), 1, "avatar does not transition to the rotating image");
+  const earlySpin = await desktopPage.locator("[data-avatar-image]").evaluate((image) => ({
+    direction: image.dataset.spinDirection,
+    targetPeriod: Number(image.dataset.spinTargetPeriod),
+    velocity: Math.abs(Number(image.dataset.spinVelocity)),
+  }));
+  await desktopPage.waitForTimeout(1_000);
+  const laterSpinVelocity = await desktopPage.locator("[data-avatar-image]").evaluate((image) => Math.abs(Number(image.dataset.spinVelocity)));
+  assert.equal(earlySpin.direction, "counterclockwise", "avatar does not rotate counterclockwise");
+  assert.equal(earlySpin.targetPeriod, 3_000, "avatar target period is not three seconds");
+  assert.ok(laterSpinVelocity > earlySpin.velocity, "avatar rotation does not accelerate gradually");
+  await desktopPage.waitForTimeout(3_900);
+  const targetSpinVelocity = await desktopPage.locator("[data-avatar-image]").evaluate((image) => Math.abs(Number(image.dataset.spinVelocity)));
+  assert.ok(targetSpinVelocity >= 118 && targetSpinVelocity <= 121, `avatar did not settle at one rotation per three seconds: ${targetSpinVelocity}`);
 
   desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -268,7 +324,19 @@ try {
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".post-card").count(), 30, "mobile blog page does not retain the complete desktop page group");
-  assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog page does not show exactly ten articles");
+  assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog page must initially render only three articles");
+  await page.waitForTimeout(160);
+  const mobileCardParticles = await page.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(mobileCardParticles > 40, "mobile article card particle canvas is blank");
+  await revealPostCards(page, 6);
+  assert.equal(await page.locator(".post-card:visible").count(), 6, "mobile blog did not append three cards after scrolling");
+  await revealPostCards(page, 10);
+  assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog page does not stop at its ten-article page boundary");
   const firstPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "1", "blog first page is not active");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/\?mobile-page=2$/, "mobile blog next-page URL is incorrect");
@@ -292,18 +360,22 @@ try {
 
   response = await page.goto(new URL("/blog/?mobile-page=2", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
+  assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog second page does not start with three articles");
+  await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog second page does not contain exactly ten articles");
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "2", "blog second page is not active");
   assert.notDeepEqual(await page.locator(".post-card:visible h2").allInnerTexts(), firstPageTitles, "blog second page repeated the first page");
 
   response = await page.goto(new URL("/blog/?mobile-page=3", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
+  await revealPostCards(page, 10);
   const thirdPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
   assert.equal(thirdPageTitles.length, 10, "mobile blog third page does not contain exactly ten articles");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/blog\/page\/2\/\?mobile-page=4$/, "mobile pagination does not cross into the next 30-item group");
 
   response = await page.goto(new URL("/blog/page/2/?mobile-page=4", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
+  await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog fourth page does not contain exactly ten articles");
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "4", "blog fourth page is not active");
   assert.notDeepEqual(await page.locator(".post-card:visible h2").allInnerTexts(), thirdPageTitles, "blog fourth page repeated the third page");
@@ -311,12 +383,16 @@ try {
   response = await page.goto(new URL("/tags/linux/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.ok(await page.locator(".post-card").count() > 10, "Linux tag page does not retain its desktop article group");
+  assert.equal(await page.locator(".post-card:visible").count(), 3, "Linux tag page does not start with three articles");
+  await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "Linux tag mobile page does not contain ten articles");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/tags\/linux\/\?mobile-page=2$/, "Linux tag mobile next-page URL is incorrect");
 
   response = await page.goto(new URL("/category/python/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.ok(await page.locator(".post-card").count() > 10, "category page does not retain its desktop article group");
+  assert.equal(await page.locator(".post-card:visible").count(), 3, "category page does not start with three articles");
+  await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "category mobile page does not contain ten articles");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/category\/python\/\?mobile-page=2$/, "category mobile next-page URL is incorrect");
 
@@ -469,6 +545,7 @@ try {
   assert.equal(await page.locator(".language-switch a.active").innerText(), "日本語");
   assert.equal(await page.locator(".article-header h1").innerText(), "テスト記事のタイトル");
   assert.equal(await page.locator('script[src="https://giscus.app/client.js"]').getAttribute("data-term"), sharedCommentTerm);
+  assert.equal(await page.locator("[data-responsive-post-list], .post-load-sentinel").count(), 0, "article details incorrectly use progressive list loading");
 
   response = await page.goto(new URL("/en/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
@@ -476,7 +553,7 @@ try {
   assert.equal(await page.locator(".post-card h2", { hasText: "Test Article Title" }).count(), 1, "English blog does not show its translated article");
   assert.equal(await page.locator(".post-card h2", { hasText: "测试文章标题" }).count(), 0, "English blog shows the Chinese variant at the same time");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: 30-item desktop and 10-item mobile pagination, three-language UI/content switching, shared Giscus comments, custom cursor, home, tools, article, and overflow checks.");
+  console.log("Browser verification passed: three-card progressive particle loading within 30-item desktop and 10-item mobile pages, accelerated avatar rotation, compact cursor, three-language UI/content switching, full article details, and overflow checks.");
 } finally {
   await browser.close();
 }

@@ -128,6 +128,112 @@
     document.addEventListener("pointerleave", () => { dot.classList.remove("visible"); ring.classList.remove("visible"); });
   }
 
+  function hydrateProgressiveCard(card) {
+    $$("img[data-progressive-src]", card).forEach((image) => {
+      if (image.src) return;
+      image.src = image.dataset.progressiveSrc;
+      image.removeAttribute("data-progressive-src");
+    });
+  }
+
+  function initParticleCard(card, delay = 0) {
+    if (!card || card.dataset.particleState) return;
+    const canvas = $(".particle-card-canvas", card);
+    hydrateProgressiveCard(card);
+    if (!canvas || reducedMotion.matches) {
+      card.dataset.particleState = "ready";
+      card.classList.add("is-particle-ready");
+      return;
+    }
+    card.dataset.particleState = "pending";
+    card.classList.add("is-particle-assembling");
+    const begin = () => requestAnimationFrame(() => {
+      const width = Math.max(1, Math.round(card.clientWidth));
+      const height = Math.max(1, Math.round(card.clientHeight));
+      const ratio = Math.min(2, devicePixelRatio || 1);
+      canvas.width = Math.round(width * ratio);
+      canvas.height = Math.round(height * ratio);
+      const context = canvas.getContext("2d", { alpha: true });
+      if (!context || width < 4 || height < 4) {
+        card.classList.remove("is-particle-assembling");
+        card.classList.add("is-particle-ready");
+        card.dataset.particleState = "ready";
+        return;
+      }
+      context.setTransform(ratio, 0, 0, ratio, 0, 0);
+      const pattern = card.dataset.particlePattern || "document";
+      const count = Math.max(150, Math.min(330, Math.round(width * height / 760)));
+      const random = (seed) => {
+        const value = Math.sin(seed * 78.233 + 17.17) * 43758.5453;
+        return value - Math.floor(value);
+      };
+      const targetFor = (index) => {
+        const edgeRatio = .32;
+        if (index < count * edgeRatio) {
+          const distance = (index / Math.ceil(count * edgeRatio)) * (width * 2 + height * 2);
+          if (distance < width) return { x: distance, y: 1 };
+          if (distance < width + height) return { x: width - 1, y: distance - width };
+          if (distance < width * 2 + height) return { x: width - (distance - width - height), y: height - 1 };
+          return { x: 1, y: height - (distance - width * 2 - height) };
+        }
+        const local = index - Math.ceil(count * edgeRatio);
+        const inset = Math.max(12, width * .055);
+        if (pattern === "metrics") {
+          const column = local % 3;
+          return {
+            x: inset + column * ((width - inset * 2) / 3) + random(index) * Math.max(12, (width - inset * 2) / 3 - 16),
+            y: height * (.34 + (local % 2) * .34) + (random(index + 2) - .5) * 6,
+          };
+        }
+        if (pattern === "links") {
+          const row = local % 2;
+          return { x: inset + random(index) * (width - inset * 2), y: height * (.5 + row * .25) + (random(index + 3) - .5) * 7 };
+        }
+        if (pattern === "post" && local % 3 === 0) {
+          return { x: inset + random(index) * (width - inset * 2), y: 8 + random(index + 4) * Math.max(18, height * .38) };
+        }
+        const line = local % 5;
+        return { x: inset + random(index) * (width - inset * (2.4 + line * .12)), y: height * (.48 + line * .085) };
+      };
+      const particles = Array.from({ length: count }, (_, index) => {
+        const target = targetFor(index);
+        return {
+          x: random(index + 11) * width,
+          y: random(index + 29) * height,
+          targetX: Math.max(1, Math.min(width - 1, target.x)),
+          targetY: Math.max(1, Math.min(height - 1, target.y)),
+          delay: random(index + 41) * 210,
+          size: 1 + random(index + 53) * 1.35,
+          accent: index % 7 === 0,
+        };
+      });
+      const duration = 980;
+      const startedAt = performance.now();
+      card.dataset.particleDuration = String(duration);
+      card.dataset.particleCount = String(count);
+      card.dataset.particleState = "assembling";
+      const render = (now) => {
+        context.clearRect(0, 0, width, height);
+        particles.forEach((particle) => {
+          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 210)));
+          const eased = 1 - (1 - linear) ** 3;
+          const x = particle.x + (particle.targetX - particle.x) * eased;
+          const y = particle.y + (particle.targetY - particle.y) * eased;
+          context.fillStyle = particle.accent ? `rgba(239,162,132,${.35 + eased * .6})` : `rgba(221,218,212,${.18 + eased * .55})`;
+          context.fillRect(x, y, particle.size, particle.size);
+        });
+        if (now - startedAt < duration) requestAnimationFrame(render);
+        else {
+          card.classList.remove("is-particle-assembling");
+          card.classList.add("is-particle-ready");
+          card.dataset.particleState = "ready";
+        }
+      };
+      requestAnimationFrame(render);
+    });
+    if (delay > 0) setTimeout(begin, delay); else begin();
+  }
+
   function initHome() {
     const rain = $(".home-rain");
     if (rain && !reducedMotion.matches) {
@@ -150,6 +256,7 @@
     }
     initTypewriter();
     initAvatarParticles();
+    $$(".home-doc-item[data-particle-card]").forEach((card, index) => initParticleCard(card, index * 130));
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
       updateUmamiStats();
@@ -224,30 +331,26 @@
   }
 
   function startAvatarSpin(image) {
-    const baseVelocity = -180;
-    const acceleration = 180;
+    const targetVelocity = -120;
+    const accelerationDuration = 4_800;
     let angle = 0;
-    let velocity = baseVelocity;
-    let hovering = false;
-    let recoveryStart = 0;
-    let recoveryVelocity = baseVelocity;
+    let velocity = 0;
+    const startedAt = performance.now();
     let previous = performance.now();
-    image.dataset.spinBase = String(baseVelocity);
-    image.addEventListener("pointerenter", () => { hovering = true; recoveryStart = 0; });
-    image.addEventListener("pointerleave", () => { hovering = false; recoveryStart = performance.now(); recoveryVelocity = velocity; });
+    image.dataset.spinDirection = "counterclockwise";
+    image.dataset.spinTargetPeriod = "3000";
+    image.dataset.spinAccelerationMs = String(accelerationDuration);
+    image.dataset.spinTargetVelocity = String(targetVelocity);
     const render = (now) => {
       const seconds = Math.min(.05, Math.max(0, (now - previous) / 1000));
       previous = now;
       if (document.visibilityState === "visible") {
-        if (hovering) velocity += acceleration * seconds;
-        else if (recoveryStart) {
-          const progress = Math.min(1, (now - recoveryStart) / 3000);
-          const eased = 1 - (1 - progress) ** 3;
-          velocity = recoveryVelocity + (baseVelocity - recoveryVelocity) * eased;
-          if (progress === 1) recoveryStart = 0;
-        } else velocity = baseVelocity;
+        const progress = Math.min(1, (now - startedAt) / accelerationDuration);
+        const eased = progress * progress * (3 - 2 * progress);
+        velocity = targetVelocity * eased;
         angle = (angle + velocity * seconds) % 360;
         image.style.transform = `rotate(${angle}deg)`;
+        image.dataset.spinVelocity = velocity.toFixed(2);
       }
       requestAnimationFrame(render);
     };
@@ -539,6 +642,7 @@
             if (hasServerNavigation) navigation.innerHTML = serverNavigation;
           }
           root.classList.add("responsive-pagination-ready");
+          root.dispatchEvent(new CustomEvent("responsive-post-page-rendered"));
           return;
         }
 
@@ -557,10 +661,87 @@
         cards.forEach((card, index) => { card.hidden = index < start || index >= start + mobilePageSize; });
         renderMobileNavigation(currentPage, totalMobilePages);
         root.classList.add("responsive-pagination-ready");
+        root.dispatchEvent(new CustomEvent("responsive-post-page-rendered"));
       };
 
       render();
       mobileViewport.addEventListener?.("change", render);
+    });
+  }
+
+  function initProgressivePostLists() {
+    const batchSize = 3;
+    $$('[data-responsive-post-list]').forEach((root) => {
+      const grid = $(".post-grid", root);
+      const cards = grid ? [...grid.children].filter((node) => node.matches(".post-card")) : [];
+      if (!grid || !cards.length) return;
+      const sentinel = document.createElement("div");
+      sentinel.className = "post-load-sentinel";
+      sentinel.setAttribute("aria-hidden", "true");
+      sentinel.innerHTML = "<span></span><span></span><span></span>";
+      grid.after(sentinel);
+      root.dataset.postBatchSize = String(batchSize);
+      let candidates = [];
+      let revealed = 0;
+      let interacted = false;
+      let lastRevealAt = 0;
+      let frame = 0;
+
+      const updateState = () => {
+        root.dataset.postVisibleCount = String(revealed);
+        root.dataset.postBatchComplete = String(revealed >= candidates.length);
+        sentinel.hidden = revealed >= candidates.length;
+      };
+      const revealNext = () => {
+        if (revealed >= candidates.length || performance.now() - lastRevealAt < 360) return;
+        const next = Math.min(candidates.length, revealed + batchSize);
+        candidates.slice(revealed, next).forEach((card, index) => {
+          card.classList.remove("is-progressive-hidden");
+          card.removeAttribute("aria-hidden");
+          initParticleCard(card, index * 90);
+        });
+        revealed = next;
+        lastRevealAt = performance.now();
+        updateState();
+      };
+      const maybeReveal = () => {
+        frame = 0;
+        if (!interacted || sentinel.hidden) return;
+        if (sentinel.getBoundingClientRect().top <= innerHeight + 220) revealNext();
+      };
+      const queueRevealCheck = () => {
+        if (!frame) frame = requestAnimationFrame(maybeReveal);
+      };
+      const reset = () => {
+        candidates = cards.filter((card) => !card.hidden);
+        revealed = Math.min(batchSize, candidates.length);
+        interacted = false;
+        lastRevealAt = 0;
+        cards.forEach((card) => {
+          const index = candidates.indexOf(card);
+          const progressiveHidden = index >= revealed;
+          card.classList.toggle("is-progressive-hidden", progressiveHidden);
+          if (progressiveHidden) card.setAttribute("aria-hidden", "true");
+          else if (!card.hidden) card.removeAttribute("aria-hidden");
+        });
+        candidates.slice(0, revealed).forEach((card, index) => initParticleCard(card, index * 90));
+        updateState();
+      };
+
+      addEventListener("wheel", (event) => {
+        if (event.deltaY <= 0 || root.getBoundingClientRect().bottom < 0 || root.getBoundingClientRect().top > innerHeight) return;
+        interacted = true;
+        queueRevealCheck();
+      }, { passive: true });
+      addEventListener("touchmove", () => { interacted = true; queueRevealCheck(); }, { passive: true });
+      addEventListener("scroll", () => { interacted = true; queueRevealCheck(); }, { passive: true });
+      root.addEventListener("progressive-post-reveal", () => {
+        interacted = true;
+        lastRevealAt = 0;
+        revealNext();
+      });
+      root.addEventListener("responsive-post-page-rendered", reset);
+      reset();
     });
   }
 
@@ -1010,6 +1191,7 @@
   initCursor();
   initHome();
   initResponsivePostPagination();
+  initProgressivePostLists();
   initSearch();
   initTools();
   initFriends();

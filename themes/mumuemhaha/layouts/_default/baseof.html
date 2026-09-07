@@ -38,7 +38,7 @@
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   <link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260907-turnstile-friends-motion">
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260907-progressive-particles">
   <script async fetchpriority="low" src="https://umami.vmss.cn/script.js" data-website-id="993c6970-8f42-4804-a055-38b6b9c01810"></script>
   {{ if eq $section "guestbook" }}<script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-turnstile-script></script>{{ end }}
 </head>
@@ -60,7 +60,6 @@
       <nav class="workspace-nav">
         <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
         <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
-        <a href="{{ "archive/" | relLangURL }}" data-nav="archive">{{ partial "icon.html" (dict "name" "calendar") }}<span>{{ i18n "archive" }}</span></a>
         <a href="{{ "friends/" | relLangURL }}" data-nav="friends">{{ partial "icon.html" (dict "name" "share") }}<span>{{ i18n "friends" }}</span></a>
         <a href="{{ "guestbook/" | relLangURL }}" data-nav="guestbook">{{ partial "icon.html" (dict "name" "messages") }}<span>{{ i18n "guestbook" }}</span></a>
         <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
@@ -116,7 +115,7 @@
   </nav>
   <div class="cursor-ring" aria-hidden="true"></div>
   <div class="cursor-dot" aria-hidden="true"></div>
-  <script src="/hugo-theme/hugo.js?v=20260907-turnstile-friends-motion"></script>
+  <script src="/hugo-theme/hugo.js?v=20260907-progressive-particles"></script>
   <script data-hugo-pagefind-preload>window.loadPagefind?.();</script>
   {{ block "scripts" . }}{{ end }}
 </body>

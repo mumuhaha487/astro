@@ -114,7 +114,7 @@ assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on th
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
 assert.match(home, /workspace-brand-title[^>]*>工作空间<\//, "Compact workspace brand is missing");
 assert.doesNotMatch(home, /workspace-brand[\s\S]{0,500}木木em哈哈/, "Removed sidebar identity remains");
-assert.match(home, /href="\/archive\/" data-nav="archive"/, "Archive sidebar link is missing");
+assert.doesNotMatch(home, /href="\/archive\/" data-nav="archive"/, "Removed archive sidebar link remains");
 assert.match(home, /href="\/friends\/" data-nav="friends"/, "Friends sidebar link is missing");
 assert.match(home, /href="\/guestbook\/" data-nav="guestbook"/, "Guestbook sidebar link is missing");
 assert.match(home, /这是一个建立在21世纪的边缘小站。/, "Homepage status description is incorrect");
@@ -124,6 +124,8 @@ assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub cont
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
 assert.match(home, /data-avatar-particles/, "Particle avatar stage is missing");
+assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three particle cards");
+assert.equal((home.match(/data-particle-card/g) || []).length, 3, "Homepage particle card metadata is incomplete");
 const blogServerPageSize = 30;
 const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
@@ -132,11 +134,15 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   const pageHtml = await readFile(pagePath, "utf8");
   const expectedCards = Math.min(blogServerPageSize, posts.length - ((pageNumber - 1) * blogServerPageSize));
   assert.equal((pageHtml.match(/class="post-card(?: |")/g) || []).length, expectedCards, `Blog page ${pageNumber} has the wrong number of posts`);
+  assert.equal((pageHtml.match(/data-particle-pattern="post"/g) || []).length, expectedCards, `Blog page ${pageNumber} is missing particle cards`);
+  assert.equal((pageHtml.match(/data-progressive-src=/g) || []).length, (pageHtml.match(/class="post-cover"/g) || []).length, `Blog page ${pageNumber} does not defer every cover`);
   assert.match(pageHtml, new RegExp(`data-responsive-post-list data-post-list-total="${posts.length}" data-post-list-page="${pageNumber}"`), `Blog page ${pageNumber} is missing responsive pagination metadata`);
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260907-turnstile-friends-motion/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260907-progressive-particles/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260907-progressive-particles/, "Current stylesheet asset version is missing");
+assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
 const linuxTag = await readFile(linuxTagPath, "utf8");
