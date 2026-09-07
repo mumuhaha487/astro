@@ -126,8 +126,11 @@ html.is-page-hidden .profile-avatar{animation-play-state:paused!important}
 .post-grid{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:14px}
 .post-card{position:relative;min-width:0;height:100%;display:flex;flex-direction:column;background:var(--surface);border:1px solid var(--line-soft);border-radius:7px;overflow:hidden;transition:border-color .18s,background .18s}
 .post-card.is-progressive-hidden{display:none!important}
-.post-card.is-card-entering{animation:card-fade-in .42s cubic-bezier(.22,.8,.26,1) both}
-@keyframes card-fade-in{from{opacity:0;transform:translateY(8px)}to{opacity:1;transform:translateY(0)}}
+.post-card.is-card-entering{animation:card-fade-in .54s cubic-bezier(.22,.75,.24,1) both}
+@keyframes card-fade-in{0%{opacity:0;transform:translateY(7px) scale(.992)}65%{opacity:.88}100%{opacity:1;transform:translateY(0) scale(1)}}
+[data-fade-card]{opacity:0}
+[data-fade-card][data-card-motion="visible"]{animation:card-soft-fade .56s cubic-bezier(.22,.75,.24,1) var(--card-fade-delay,0ms) both}
+@keyframes card-soft-fade{from{opacity:0}to{opacity:1}}
 .post-load-sentinel{height:38px;display:flex;align-items:center;justify-content:center;gap:7px}
 .post-load-sentinel[hidden]{display:none}
 .post-load-sentinel span{width:4px;height:4px;border-radius:50%;background:var(--accent-strong);opacity:.28;animation:post-load-pulse 1.15s ease-in-out infinite}

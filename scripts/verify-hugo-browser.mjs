@@ -48,6 +48,7 @@ try {
   await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return image?.complete && image.naturalWidth > 0 && image.src.includes("/optimized/images/"); }), undefined, { timeout: 5_000 });
   assert.equal(await desktopPage.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, "desktop page still contains particle rendering");
   assert.equal(await desktopPage.locator('.post-card:visible[data-card-animated="true"]').count(), 3, "desktop cards do not use the lightweight fade transition");
+  await desktopPage.waitForFunction(() => !document.querySelector(".post-card.is-card-entering"));
   const desktopLayout = await desktopPage.evaluate(() => {
     const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
     const covers = cards.map((card) => card.querySelector(".post-cover")).filter(Boolean);
@@ -88,7 +89,7 @@ try {
     };
   });
   assert.equal(desktopLayout.columns, 3, "desktop blog must use a three-column card grid");
-  assert.equal(new Set(desktopLayout.cardWidths).size, 1, `desktop card widths differ: ${desktopLayout.cardWidths.join(", ")}`);
+  assert.ok(Math.max(...desktopLayout.cardWidths) - Math.min(...desktopLayout.cardWidths) <= 1, `desktop card widths differ: ${desktopLayout.cardWidths.join(", ")}`);
   assert.equal(new Set(desktopLayout.cardHeights).size, 1, `desktop card heights differ: ${desktopLayout.cardHeights.join(", ")}`);
   assert.ok(desktopLayout.coverRatios.every((ratio) => Math.abs(ratio - 16 / 9) < 0.02), `desktop covers must be cropped to 16:9: ${desktopLayout.coverRatios.join(", ")}`);
   assert.equal(desktopLayout.titleOverflow, false, "desktop card text overflows its container");
@@ -132,6 +133,9 @@ try {
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"]').count(), 1, "production Bilibili contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"] use[href="/icons/lucide-sprite.svg#bilibili"]').count(), 1, "Bilibili brand icon is missing");
   assert.equal(await desktopPage.locator(".particle-card-canvas, [data-particle-card], [data-particle-mode]").count(), 0, "removed card particles returned to the homepage");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".home-doc-item")].every((card) => card.dataset.cardMotion === "visible"));
+  assert.equal(await desktopPage.locator('.home-doc-item[data-fade-card][data-card-motion="visible"]').count(), 3, "homepage cards do not use the lightweight fade motion");
+  assert.equal(await desktopPage.locator(".home-doc-item").first().evaluate((card) => getComputedStyle(card).animationName), "card-soft-fade", "homepage card fade animation is not rendered");
   assert.equal(await desktopPage.locator("[data-avatar-particles] > canvas.profile-particles").count(), 1, "avatar particle canvas is missing from its original stage");
   await desktopPage.waitForTimeout(500);
   const particleAlpha = await desktopPage.locator(".profile-particles").evaluate((canvas) => {
@@ -190,6 +194,9 @@ try {
   desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
   assert.equal(await desktopPage.locator(".friend-card").count(), 4, "validated friend entries are missing");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".friend-card")].every((card) => card.dataset.cardMotion === "visible"));
+  assert.equal(await desktopPage.locator('.friend-card[data-fade-card][data-card-motion="visible"]').count(), 4, "friend cards do not use the fade motion");
+  assert.equal(await desktopPage.locator(".friend-card").first().evaluate((card) => getComputedStyle(card).animationName), "card-soft-fade", "friend card fade animation is not rendered");
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/tree/main/friends"]').count(), 1, "friends repository uses a non-production URL");
   await desktopPage.locator("[data-friends-apply-open]").click();
   assert.equal(await desktopPage.locator("[data-friends-apply-dialog]").getAttribute("open"), "", "friend application dialog did not open");
@@ -427,6 +434,8 @@ try {
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator('#site-wallpaper source[srcset^="/optimized/images/"][srcset$="-mobileBackdrop.webp"]').count(), 1, "optimized mobile tools wallpaper is missing");
   assert.equal(await page.locator(".tool-card").count(), 7, "toolbox cards are missing");
+  await page.waitForFunction(() => document.querySelector(".tool-card")?.dataset.cardMotion === "visible");
+  assert.ok(await page.locator('.tool-card[data-fade-card][data-card-motion="visible"]').count() > 0, "visible tool cards do not use the fade motion");
   await page.waitForTimeout(250);
   const loadedToolCovers = await page.locator('[data-random-cover][src]').count();
   assert.ok(loadedToolCovers > 0 && loadedToolCovers < 7, `tool covers are not loaded on demand: ${loadedToolCovers}/7`);

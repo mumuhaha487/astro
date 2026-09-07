@@ -125,6 +125,8 @@ assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub cont
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three cards");
+assert.match(home, /hugo\.css\?v=20260907-card-fade/, "Card fade stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20260907-card-fade/, "Card fade script cache version is missing");
 assert.doesNotMatch(home, /particle-card|data-particle-card/, "Removed card particle rendering remains on the homepage");
 assert.match(home, /data-avatar-particles/, "Homepage avatar particle assembly is missing");
 assert.match(home, /class="profile-particles"/, "Homepage avatar particle canvas is missing");
@@ -147,8 +149,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260907-avatar-particles/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260907-avatar-particles/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260907-card-fade/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260907-card-fade/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");

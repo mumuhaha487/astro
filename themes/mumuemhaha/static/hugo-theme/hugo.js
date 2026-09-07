@@ -211,6 +211,31 @@
     }, { once: true });
   }
 
+  function initCardFadeMotion() {
+    const cards = $$(".home-doc-item, .tool-card, .friend-card, .guestbook-note, .guestbook-form, .guestbook-messages, .article-related .card-base");
+    if (!cards.length) return;
+
+    cards.forEach((card, index) => {
+      card.dataset.fadeCard = "";
+      card.style.setProperty("--card-fade-delay", `${Math.min(index % 4, 3) * 55}ms`);
+    });
+
+    if (reducedMotion.matches || !("IntersectionObserver" in window)) {
+      cards.forEach((card) => { card.dataset.cardMotion = "visible"; });
+      return;
+    }
+
+    const observer = new IntersectionObserver((entries) => {
+      entries.forEach((entry) => {
+        if (!entry.isIntersecting) return;
+        entry.target.dataset.cardMotion = "visible";
+        observer.unobserve(entry.target);
+      });
+    }, { rootMargin: "0px 0px -4%", threshold: 0.08 });
+
+    cards.forEach((card) => observer.observe(card));
+  }
+
   function initHome() {
     const clock = $("#home-clock");
     if (clock) {
@@ -1145,6 +1170,7 @@
   initPageVisibility();
   initDeferredAnalytics();
   initCursor();
+  initCardFadeMotion();
   initHome();
   initResponsivePostPagination();
   initProgressivePostLists();
