@@ -219,6 +219,7 @@
       setInterval(() => { if (!document.hidden) update(); }, 1000);
     }
     initTypewriter();
+    initAvatarParticles();
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
       scheduleIdleWork(() => {
@@ -226,6 +227,87 @@
         setInterval(() => { if (!document.hidden) updateUmamiStats(); }, 60_000);
       }, 1_800);
     }
+  }
+
+  function initAvatarParticles() {
+    const stage = $("[data-avatar-particles]");
+    const canvas = $(".profile-particles", stage || document);
+    const image = $("[data-avatar-image]", stage || document);
+    if (!stage || !canvas || !image) return;
+    const showImage = (frames = 0) => {
+      stage.dataset.particleFrames = String(frames);
+      stage.dataset.particleState = "assembled";
+      stage.classList.add("is-assembled");
+      setTimeout(() => stage.classList.add("is-ready"), 680);
+    };
+    if (reducedMotion.matches) {
+      stage.classList.add("is-assembled", "is-ready");
+      stage.dataset.particleState = "reduced-motion";
+      return;
+    }
+    const assemble = async () => {
+      try { await image.decode(); } catch {
+        if (!image.complete) await new Promise((resolve) => image.addEventListener("load", resolve, { once: true }));
+      }
+      const size = Math.max(1, Math.round(stage.clientWidth));
+      canvas.width = size;
+      canvas.height = size;
+      const context = canvas.getContext("2d", { alpha: true });
+      const sample = document.createElement("canvas");
+      sample.width = size;
+      sample.height = size;
+      const sampleContext = sample.getContext("2d", { willReadFrequently: true });
+      if (!context || !sampleContext || !image.naturalWidth) {
+        showImage();
+        return;
+      }
+      const sourceSize = Math.min(image.naturalWidth, image.naturalHeight);
+      sampleContext.drawImage(image, (image.naturalWidth - sourceSize) / 2, (image.naturalHeight - sourceSize) / 2, sourceSize, sourceSize, 0, 0, size, size);
+      const pixels = sampleContext.getImageData(0, 0, size, size).data;
+      const particles = [];
+      let particleIndex = 0;
+      for (let y = 2; y < size - 2; y += 3) {
+        for (let x = 2; x < size - 2; x += 3) {
+          const distanceFromCenter = Math.hypot(x - size / 2, y - size / 2);
+          if (distanceFromCenter > size / 2 - 2) continue;
+          const offset = (y * size + x) * 4;
+          if (pixels[offset + 3] < 90) continue;
+          const angle = ((particleIndex * 137.508) % 360) * Math.PI / 180;
+          const radius = size * (.72 + ((particleIndex * 47) % 37) / 100);
+          particles.push({
+            x,
+            y,
+            startX: size / 2 + Math.cos(angle) * radius,
+            startY: size / 2 + Math.sin(angle) * radius,
+            color: `rgba(${pixels[offset]},${pixels[offset + 1]},${pixels[offset + 2]},${pixels[offset + 3] / 255})`,
+            delay: (1 - Math.min(1, distanceFromCenter / (size / 2))) * 560,
+          });
+          particleIndex += 1;
+        }
+      }
+      const startedAt = performance.now();
+      const duration = 2_320;
+      let frameCount = 0;
+      stage.dataset.particleDuration = String(duration);
+      stage.dataset.particleCount = String(particles.length);
+      stage.dataset.particleState = "assembling";
+      const render = (now) => {
+        frameCount += 1;
+        context.clearRect(0, 0, size, size);
+        for (const particle of particles) {
+          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / 1_720));
+          const eased = 1 - (1 - linear) ** 4;
+          const x = particle.startX + (particle.x - particle.startX) * eased;
+          const y = particle.startY + (particle.y - particle.startY) * eased;
+          context.fillStyle = particle.color;
+          context.fillRect(Math.round(x), Math.round(y), 2, 2);
+        }
+        if (now - startedAt < duration) requestAnimationFrame(render);
+        else showImage(frameCount);
+      };
+      requestAnimationFrame(render);
+    };
+    void assemble();
   }
 
 

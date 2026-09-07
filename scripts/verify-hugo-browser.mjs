@@ -131,7 +131,33 @@ try {
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487"]').count(), 1, "production GitHub contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"]').count(), 1, "production Bilibili contact is missing");
   assert.equal(await desktopPage.locator('a[href="https://space.bilibili.com/334584883"] use[href="/icons/lucide-sprite.svg#bilibili"]').count(), 1, "Bilibili brand icon is missing");
-  assert.equal(await desktopPage.locator("canvas, [data-particle-card], [data-avatar-particles]").count(), 0, "homepage still contains particle rendering");
+  assert.equal(await desktopPage.locator(".particle-card-canvas, [data-particle-card], [data-particle-mode]").count(), 0, "removed card particles returned to the homepage");
+  assert.equal(await desktopPage.locator("[data-avatar-particles] > canvas.profile-particles").count(), 1, "avatar particle canvas is missing from its original stage");
+  await desktopPage.waitForTimeout(500);
+  const particleAlpha = await desktopPage.locator(".profile-particles").evaluate((canvas) => {
+    const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
+    let visible = 0;
+    for (let index = 3; index < pixels.length; index += 4) if (pixels[index] > 0) visible += 1;
+    return visible;
+  });
+  assert.ok(particleAlpha > 100, `avatar particle canvas is blank during assembly: ${particleAlpha}`);
+  await desktopPage.waitForFunction(() => document.querySelector("[data-avatar-particles]")?.dataset.particleState === "assembled", undefined, { timeout: 5_000 });
+  const particleResult = await desktopPage.locator("[data-avatar-particles]").evaluate((stage) => ({
+    count: Number(stage.dataset.particleCount),
+    duration: Number(stage.dataset.particleDuration),
+    frames: Number(stage.dataset.particleFrames),
+    direction: stage.dataset.hoverSpinDirection,
+    period: Number(stage.dataset.hoverSpinPeriod),
+  }));
+  assert.ok(particleResult.count > 1_000, `avatar particle density is too low: ${particleResult.count}`);
+  assert.equal(particleResult.duration, 2_320, "avatar particle assembly duration changed");
+  assert.ok(particleResult.frames >= 110, `avatar particle assembly did not render near 60 FPS: ${particleResult.frames}`);
+  assert.equal(particleResult.direction, "clockwise", "avatar hover direction is not clockwise");
+  assert.equal(particleResult.period, 3_000, "avatar hover rotation period is not three seconds");
+  await desktopPage.waitForFunction(() => document.querySelector("[data-avatar-particles]")?.classList.contains("is-ready"), undefined, { timeout: 2_000 });
+  const initialPlayState = await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).animationPlayState);
+  assert.equal(initialPlayState, "paused", "avatar rotates before the pointer enters it");
+  await desktopPage.locator(".profile-avatar-stage").hover();
   const avatarMotion = await desktopPage.locator("[data-avatar-image]").evaluate((image) => new Promise((resolve) => {
     const angles = [];
     const startedAt = performance.now();
@@ -147,15 +173,19 @@ try {
           if (change < -180) change += 360;
           rotation += change;
         }
-        resolve({ frames: angles.length, rotation, direction: image.dataset.spinDirection, targetPeriod: Number(image.dataset.spinTargetPeriod) });
+        resolve({ frames: angles.length, rotation, playState: getComputedStyle(image).animationPlayState });
       }
     };
     requestAnimationFrame(sample);
   }));
-  assert.equal(avatarMotion.direction, "counterclockwise", "avatar does not rotate counterclockwise");
-  assert.equal(avatarMotion.targetPeriod, 3_000, "avatar target period is not three seconds");
+  assert.equal(avatarMotion.playState, "running", "avatar hover animation is not running");
   assert.ok(avatarMotion.frames >= 50, `avatar animation did not update close to 60 FPS: ${avatarMotion.frames}`);
-  assert.ok(avatarMotion.rotation <= -105 && avatarMotion.rotation >= -135, `avatar rotation is not one turn per three seconds: ${avatarMotion.rotation}`);
+  assert.ok(avatarMotion.rotation >= 105 && avatarMotion.rotation <= 135, `avatar does not rotate clockwise once every three seconds: ${avatarMotion.rotation}`);
+  await desktopPage.mouse.move(20, 20);
+  await desktopPage.waitForTimeout(100);
+  const pausedRotation = await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).transform);
+  await desktopPage.waitForTimeout(350);
+  assert.equal(await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).transform), pausedRotation, "avatar keeps rotating after the pointer leaves");
 
   desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -288,6 +318,16 @@ try {
     }, undefined, { timeout: 5_000 });
   }
   await page.waitForFunction(() => [...document.querySelectorAll("[data-umami-stat]")].every((node) => node.dataset.umamiReady === "true"), undefined, { timeout: 15_000 });
+  const mobileAvatarParticles = await page.locator("[data-avatar-particles]").evaluate((stage) => ({
+    state: stage.dataset.particleState,
+    count: Number(stage.dataset.particleCount),
+    frames: Number(stage.dataset.particleFrames),
+    canvasCount: stage.querySelectorAll("canvas.profile-particles").length,
+  }));
+  assert.equal(mobileAvatarParticles.state, "assembled", "mobile avatar particle assembly did not finish");
+  assert.ok(mobileAvatarParticles.count > 500, `mobile avatar particle density is too low: ${mobileAvatarParticles.count}`);
+  assert.ok(mobileAvatarParticles.frames >= 110, `mobile avatar particle assembly did not render near 60 FPS: ${mobileAvatarParticles.frames}`);
+  assert.equal(mobileAvatarParticles.canvasCount, 1, "mobile avatar particle canvas left its original stage");
   assert.match(await page.locator("#home-visitors").innerText(), /当前访客[\s\S]*累计访客[\s\S]*累计访问次数/);
   const mobileStatsPosition = await page.evaluate(() => ({
     kickerBottom: document.querySelector(".home-kicker")?.getBoundingClientRect().bottom,
@@ -536,7 +576,7 @@ try {
   assert.equal(await page.locator(".post-card h2", { hasText: "Test Article Title" }).count(), 1, "English blog does not show its translated article");
   assert.equal(await page.locator(".post-card h2", { hasText: "测试文章标题" }).count(), 0, "English blog shows the Chinese variant at the same time");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: particle-free card fading within 30-item desktop and 10-item mobile pages, compositor-driven 60 FPS avatar rotation, optimized images, compact cursor, three-language UI/content switching, full article details, and overflow checks.");
+  console.log("Browser verification passed: card particles remain removed, the original dense avatar particle assembly returns at near 60 FPS, hover rotation is clockwise and pauses on leave, responsive pagination and optimized images remain intact, and the full site has no overflow regressions.");
 } finally {
   await browser.close();
 }

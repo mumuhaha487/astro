@@ -11,8 +11,9 @@
   <div class="home-rain" aria-hidden="true"></div>
   <div class="home-grid">
     <div class="home-profile">
-      <div class="profile-avatar-stage">
-        <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176" data-avatar-image data-spin-direction="counterclockwise" data-spin-target-period="3000">
+      <div class="profile-avatar-stage" data-avatar-particles data-hover-spin-direction="clockwise" data-hover-spin-period="3000">
+        <canvas class="profile-particles" aria-hidden="true"></canvas>
+        <img class="profile-avatar" src="/images/demo-avatar.webp" alt="{{ i18n "profile_avatar" }}" width="176" height="176" data-avatar-image>
       </div>
       <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
       <h1>木木em哈哈</h1>
