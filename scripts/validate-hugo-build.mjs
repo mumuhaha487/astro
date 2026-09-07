@@ -126,6 +126,7 @@ assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missin
 assert.match(home, /data-avatar-particles/, "Particle avatar stage is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three particle cards");
 assert.equal((home.match(/data-particle-card/g) || []).length, 3, "Homepage particle card metadata is incomplete");
+assert.match(home, /data-random-post-covers="\[&#34;\/image\/h\/132\.webp&#34;/, "Local random post cover pool is missing");
 const blogServerPageSize = 30;
 const blogPageCount = Math.ceil(posts.length / blogServerPageSize);
 for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
@@ -140,8 +141,10 @@ for (let pageNumber = 1; pageNumber <= blogPageCount; pageNumber += 1) {
   assert.match(pageHtml, new RegExp(`aria-current="page">${pageNumber}<`), `Blog page ${pageNumber} is missing its active pagination state`);
 }
 assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is missing its next-page link");
-assert.match(blog, /hugo\.js\?v=20260907-progressive-particles/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260907-progressive-particles/, "Current stylesheet asset version is missing");
+assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
+assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
+assert.match(blog, /hugo\.js\?v=20260907-dense-image-particles/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260907-dense-image-particles/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");

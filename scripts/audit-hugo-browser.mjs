@@ -89,6 +89,7 @@ try {
         await page.locator(".post-load-sentinel:not([hidden])").scrollIntoViewIfNeeded();
         await page.mouse.wheel(0, 180);
         await page.waitForFunction(() => Number(document.querySelector("[data-responsive-post-list]")?.dataset.postVisibleCount || 0) >= 6, undefined, { timeout: 3_000 });
+        await page.waitForFunction(() => [...document.querySelectorAll('.post-card[data-particle-mode="image-pixels"]')].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).length >= 6, undefined, { timeout: 5_000 });
         await page.waitForTimeout(140);
         const particlePixels = await page.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
           const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;

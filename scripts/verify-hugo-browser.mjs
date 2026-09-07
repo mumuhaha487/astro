@@ -42,7 +42,10 @@ try {
   assert.equal(await desktopPage.locator(".post-card:visible").count(), 3, "desktop blog page must initially render only three articles");
   assert.equal(await desktopPage.locator('.post-card:visible img[data-progressive-src]').count(), 0, "visible covers were not hydrated");
   assert.ok(await desktopPage.locator('.post-card.is-progressive-hidden img[data-progressive-src]').count() > 0, "offscreen covers were hydrated before scrolling");
+  assert.equal(await desktopPage.locator(".post-cover-placeholder").count(), 0, "empty cover placeholder remains");
+  assert.match(await desktopPage.locator('.post-card.random-cover img').first().getAttribute("src"), /^\/image\/h\/\d+\.webp$/, "post without a cover did not receive a stable local random image");
   assert.equal(await desktopPage.locator(".pagination-summary").innerText(), "第 1 / 4 页", "desktop pagination does not use 30-item pages");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => card.dataset.particleMode === "image-pixels" && Number(card.dataset.imageParticleCount) >= 900), undefined, { timeout: 5_000 });
   await desktopPage.waitForTimeout(180);
   const firstCardParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
     const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
@@ -51,6 +54,7 @@ try {
     return visible;
   });
   assert.ok(firstCardParticles > 40, "desktop article card particle canvas is blank");
+  assert.equal(await desktopPage.locator('.post-card:visible[data-particle-mode="image-pixels"]').count(), 3, "desktop cards do not use image pixel assembly");
   const desktopLayout = await desktopPage.evaluate(() => {
     const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
     const covers = cards.map((card) => card.querySelector(".post-cover")).filter(Boolean);
@@ -120,6 +124,7 @@ try {
 
   await revealPostCards(desktopPage, 6);
   assert.equal(await desktopPage.locator(".post-card:visible").count(), 6, "desktop blog did not append exactly three cards after scrolling");
+  await desktopPage.waitForFunction(() => [...document.querySelectorAll('.post-card[data-particle-mode="image-pixels"]')].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).length === 6, undefined, { timeout: 5_000 });
   await desktopPage.waitForTimeout(120);
   const secondBatchParticles = await desktopPage.locator(".post-card:visible .particle-card-canvas").nth(3).evaluate((canvas) => {
     const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;
@@ -325,6 +330,7 @@ try {
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".post-card").count(), 30, "mobile blog page does not retain the complete desktop page group");
   assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog page must initially render only three articles");
+  await page.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => card.dataset.particleMode === "image-pixels" && Number(card.dataset.imageParticleCount) >= 900), undefined, { timeout: 5_000 });
   await page.waitForTimeout(160);
   const mobileCardParticles = await page.locator(".post-card:visible .particle-card-canvas").first().evaluate((canvas) => {
     const pixels = canvas.getContext("2d").getImageData(0, 0, canvas.width, canvas.height).data;

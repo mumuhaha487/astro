@@ -137,8 +137,6 @@ body[data-section="home"] .workspace-content{background:transparent}
 .post-cover{aspect-ratio:16/9;flex:0 0 auto;overflow:hidden;background:#0d0e0e}
 .post-cover img{width:100%;height:100%;object-fit:cover;filter:brightness(.72) saturate(.82);transition:transform .3s,filter .3s}
 .post-card:hover .post-cover img{transform:scale(1.025);filter:brightness(.86) saturate(.92)}
-.post-cover-placeholder{display:grid;place-items:center;background:linear-gradient(145deg,#161717,#252626);color:#5d5e5e}
-.post-cover-placeholder .icon{width:2rem;height:2rem}
 .post-card-body{min-width:0;min-height:228px;padding:18px 18px 16px;display:flex;flex-direction:column}
 .post-card-top{display:flex;gap:12px;color:var(--faint);font-size:.73rem}
 .post-card-top a{color:var(--accent-strong)}

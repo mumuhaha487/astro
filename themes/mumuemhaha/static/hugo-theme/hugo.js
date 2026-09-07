@@ -128,12 +128,52 @@
     document.addEventListener("pointerleave", () => { dot.classList.remove("visible"); ring.classList.remove("visible"); });
   }
 
+  let randomPostCovers;
+  function getRandomPostCovers() {
+    if (randomPostCovers) return randomPostCovers;
+    try { randomPostCovers = JSON.parse(document.body.dataset.randomPostCovers || "[]").filter((value) => typeof value === "string" && value.startsWith("/")); }
+    catch { randomPostCovers = []; }
+    return randomPostCovers;
+  }
+
+  function assignRandomPostCover(image, key) {
+    const covers = getRandomPostCovers();
+    if (!covers.length) return false;
+    let hash = 2166136261;
+    for (const character of key || location.pathname) {
+      hash ^= character.codePointAt(0);
+      hash = Math.imul(hash, 16777619);
+    }
+    image.src = covers[(hash >>> 0) % covers.length];
+    image.dataset.coverSource = "random";
+    return true;
+  }
+
   function hydrateProgressiveCard(card) {
-    $$("img[data-progressive-src]", card).forEach((image) => {
-      if (image.src) return;
-      image.src = image.dataset.progressiveSrc;
+    const images = $$("img[data-progressive-src]", card);
+    images.forEach((image) => {
+      if (image.hasAttribute("src")) return;
+      const source = image.dataset.progressiveSrc;
+      if (image.hasAttribute("data-random-post-cover")) assignRandomPostCover(image, image.dataset.postCoverKey);
+      else if (source) {
+        image.src = source;
+        image.dataset.coverSource = "article";
+      }
       image.removeAttribute("data-progressive-src");
     });
+    return images;
+  }
+
+  function waitForParticleImage(image, timeout = 3_000) {
+    if (!image) return Promise.resolve(false);
+    if (image.complete) return Promise.resolve(image.naturalWidth > 0);
+    return Promise.race([
+      new Promise((resolve) => {
+        image.addEventListener("load", () => resolve(true), { once: true });
+        image.addEventListener("error", () => resolve(false), { once: true });
+      }),
+      new Promise((resolve) => setTimeout(() => resolve(false), timeout)),
+    ]);
   }
 
   function initParticleCard(card, delay = 0) {
@@ -147,7 +187,14 @@
     }
     card.dataset.particleState = "pending";
     card.classList.add("is-particle-assembling");
-    const begin = () => requestAnimationFrame(() => {
+    const begin = async () => {
+      let coverImage = $(".post-cover img", card);
+      if (coverImage && !(await waitForParticleImage(coverImage))) {
+        const key = coverImage.dataset.postCoverKey || $("h2 a", card)?.getAttribute("href") || location.pathname;
+        if (assignRandomPostCover(coverImage, key)) await waitForParticleImage(coverImage);
+      }
+      if (!coverImage?.naturalWidth) coverImage = null;
+      requestAnimationFrame(() => {
       const width = Math.max(1, Math.round(card.clientWidth));
       const height = Math.max(1, Math.round(card.clientHeight));
       const ratio = Math.min(2, devicePixelRatio || 1);
@@ -162,21 +209,23 @@
       }
       context.setTransform(ratio, 0, 0, ratio, 0, 0);
       const pattern = card.dataset.particlePattern || "document";
-      const count = Math.max(150, Math.min(330, Math.round(width * height / 760)));
       const random = (seed) => {
         const value = Math.sin(seed * 78.233 + 17.17) * 43758.5453;
         return value - Math.floor(value);
       };
+      const vectorCount = pattern === "post"
+        ? Math.max(480, Math.min(720, Math.round(width * height / 430)))
+        : Math.max(560, Math.min(1_050, Math.round(width * height / 300)));
       const targetFor = (index) => {
-        const edgeRatio = .32;
-        if (index < count * edgeRatio) {
-          const distance = (index / Math.ceil(count * edgeRatio)) * (width * 2 + height * 2);
+        const edgeRatio = .28;
+        if (index < vectorCount * edgeRatio) {
+          const distance = (index / Math.ceil(vectorCount * edgeRatio)) * (width * 2 + height * 2);
           if (distance < width) return { x: distance, y: 1 };
           if (distance < width + height) return { x: width - 1, y: distance - width };
           if (distance < width * 2 + height) return { x: width - (distance - width - height), y: height - 1 };
           return { x: 1, y: height - (distance - width * 2 - height) };
         }
-        const local = index - Math.ceil(count * edgeRatio);
+        const local = index - Math.ceil(vectorCount * edgeRatio);
         const inset = Math.max(12, width * .055);
         if (pattern === "metrics") {
           const column = local % 3;
@@ -189,39 +238,90 @@
           const row = local % 2;
           return { x: inset + random(index) * (width - inset * 2), y: height * (.5 + row * .25) + (random(index + 3) - .5) * 7 };
         }
-        if (pattern === "post" && local % 3 === 0) {
-          return { x: inset + random(index) * (width - inset * 2), y: 8 + random(index + 4) * Math.max(18, height * .38) };
-        }
         const line = local % 5;
-        return { x: inset + random(index) * (width - inset * (2.4 + line * .12)), y: height * (.48 + line * .085) };
+        const contentStart = coverImage ? Math.min(height - 30, $(".post-cover", card).offsetHeight + 24) : height * .3;
+        const available = Math.max(12, height - contentStart - 18);
+        return { x: inset + random(index) * (width - inset * (2.4 + line * .12)), y: contentStart + available * (.12 + line * .17) };
       };
-      const particles = Array.from({ length: count }, (_, index) => {
+      const particles = Array.from({ length: vectorCount }, (_, index) => {
         const target = targetFor(index);
         return {
           x: random(index + 11) * width,
           y: random(index + 29) * height,
           targetX: Math.max(1, Math.min(width - 1, target.x)),
           targetY: Math.max(1, Math.min(height - 1, target.y)),
-          delay: random(index + 41) * 210,
-          size: 1 + random(index + 53) * 1.35,
+          delay: random(index + 41) * 320,
+          size: 1.2 + random(index + 53) * 1.8,
           accent: index % 7 === 0,
         };
       });
-      const duration = 980;
+
+      const imageParticles = [];
+      if (coverImage) {
+        const cardBox = card.getBoundingClientRect();
+        const coverBox = $(".post-cover", card).getBoundingClientRect();
+        const target = { x: coverBox.left - cardBox.left, y: coverBox.top - cardBox.top, width: coverBox.width, height: coverBox.height };
+        const targetCount = innerWidth <= 760 ? 1_450 : 1_750;
+        const fragment = Math.max(3, Math.ceil(Math.sqrt((target.width * target.height) / targetCount)));
+        const targetRatio = target.width / target.height;
+        const sourceRatio = coverImage.naturalWidth / coverImage.naturalHeight;
+        const source = sourceRatio > targetRatio
+          ? { x: (coverImage.naturalWidth - coverImage.naturalHeight * targetRatio) / 2, y: 0, width: coverImage.naturalHeight * targetRatio, height: coverImage.naturalHeight }
+          : { x: 0, y: (coverImage.naturalHeight - coverImage.naturalWidth / targetRatio) / 2, width: coverImage.naturalWidth, height: coverImage.naturalWidth / targetRatio };
+        let index = 0;
+        for (let y = 0; y < target.height; y += fragment) {
+          for (let x = 0; x < target.width; x += fragment) {
+            const drawWidth = Math.min(fragment, target.width - x);
+            const drawHeight = Math.min(fragment, target.height - y);
+            imageParticles.push({
+              startX: random(index + 701) * width,
+              startY: random(index + 907) * height,
+              targetX: target.x + x,
+              targetY: target.y + y,
+              sourceX: source.x + (x / target.width) * source.width,
+              sourceY: source.y + (y / target.height) * source.height,
+              sourceWidth: (drawWidth / target.width) * source.width,
+              sourceHeight: (drawHeight / target.height) * source.height,
+              drawWidth,
+              drawHeight,
+              delay: random(index + 1_103) * 340,
+            });
+            index += 1;
+          }
+        }
+      }
+
+      const duration = 1_900;
       const startedAt = performance.now();
       card.dataset.particleDuration = String(duration);
-      card.dataset.particleCount = String(count);
+      card.dataset.particleCount = String(particles.length + imageParticles.length);
+      card.dataset.imageParticleCount = String(imageParticles.length);
+      card.dataset.particleMode = imageParticles.length ? "image-pixels" : "document-pixels";
       card.dataset.particleState = "assembling";
       const render = (now) => {
         context.clearRect(0, 0, width, height);
         particles.forEach((particle) => {
-          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 210)));
+          const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
           const eased = 1 - (1 - linear) ** 3;
           const x = particle.x + (particle.targetX - particle.x) * eased;
           const y = particle.y + (particle.targetY - particle.y) * eased;
           context.fillStyle = particle.accent ? `rgba(239,162,132,${.35 + eased * .6})` : `rgba(221,218,212,${.18 + eased * .55})`;
           context.fillRect(x, y, particle.size, particle.size);
         });
+        if (coverImage && imageParticles.length) {
+          context.filter = "brightness(.72) saturate(.82)";
+          imageParticles.forEach((particle) => {
+            const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
+            const eased = 1 - (1 - linear) ** 4;
+            const x = particle.startX + (particle.targetX - particle.startX) * eased;
+            const y = particle.startY + (particle.targetY - particle.startY) * eased;
+            const scale = .58 + eased * .46;
+            context.globalAlpha = .18 + eased * .82;
+            context.drawImage(coverImage, particle.sourceX, particle.sourceY, particle.sourceWidth, particle.sourceHeight, x, y, particle.drawWidth * scale, particle.drawHeight * scale);
+          });
+          context.globalAlpha = 1;
+          context.filter = "none";
+        }
         if (now - startedAt < duration) requestAnimationFrame(render);
         else {
           card.classList.remove("is-particle-assembling");
@@ -230,8 +330,9 @@
         }
       };
       requestAnimationFrame(render);
-    });
-    if (delay > 0) setTimeout(begin, delay); else begin();
+      });
+    };
+    if (delay > 0) setTimeout(() => { void begin(); }, delay); else void begin();
   }
 
   function initHome() {

@@ -1,11 +1,8 @@
-{{- $page := .page -}}{{- $image := strings.TrimSpace ($page.Params.image | default "") -}}
-<article class="post-card{{ if not $image }} no-cover{{ end }}" data-pagefind-ignore data-particle-card data-particle-pattern="post">
+{{- $page := .page -}}{{- $image := strings.TrimSpace ($page.Params.image | default "") -}}{{- $randomCover := not $image -}}{{- $noscriptImage := $image -}}
+{{- if $randomCover -}}{{- $noscriptImage = index site.Params.covers.desktop 0 -}}{{- end -}}
+<article class="post-card{{ if $randomCover }} random-cover{{ end }}" data-pagefind-ignore data-particle-card data-particle-pattern="post">
   <canvas class="particle-card-canvas" aria-hidden="true"></canvas>
-  {{ if $image }}
-    <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img data-progressive-src="{{ $image | safeURL }}" alt="" loading="lazy" decoding="async"><noscript><img src="{{ $image | safeURL }}" alt=""></noscript></a>
-  {{ else }}
-    <a class="post-cover post-cover-placeholder" href="{{ $page.RelPermalink }}" tabindex="-1" aria-hidden="true">{{ partial "icon.html" (dict "name" "book-open") }}</a>
-  {{ end }}
+  <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img data-progressive-src="{{ $image | safeURL }}"{{ if $randomCover }} data-random-post-cover data-post-cover-key="{{ $page.RelPermalink }}"{{ end }} alt="" loading="lazy" decoding="async"><noscript><img src="{{ $noscriptImage | safeURL }}" alt=""></noscript></a>
   <div class="post-card-body">
     <div class="post-card-top">
       <span>{{ $page.Date.Format "2006.01.02" }}</span>
