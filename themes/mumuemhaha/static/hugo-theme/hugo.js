@@ -268,25 +268,42 @@
         const source = sourceRatio > targetRatio
           ? { x: (coverImage.naturalWidth - coverImage.naturalHeight * targetRatio) / 2, y: 0, width: coverImage.naturalHeight * targetRatio, height: coverImage.naturalHeight }
           : { x: 0, y: (coverImage.naturalHeight - coverImage.naturalWidth / targetRatio) / 2, width: coverImage.naturalWidth, height: coverImage.naturalWidth / targetRatio };
+        const sample = document.createElement("canvas");
+        sample.width = Math.max(1, Math.round(target.width));
+        sample.height = Math.max(1, Math.round(target.height));
+        const sampleContext = sample.getContext("2d", { willReadFrequently: true });
+        let pixels = null;
+        if (sampleContext) {
+          try {
+            sampleContext.drawImage(coverImage, source.x, source.y, source.width, source.height, 0, 0, sample.width, sample.height);
+            pixels = sampleContext.getImageData(0, 0, sample.width, sample.height).data;
+          } catch {}
+        }
         let index = 0;
         for (let y = 0; y < target.height; y += fragment) {
           for (let x = 0; x < target.width; x += fragment) {
+            const particleIndex = index;
+            index += 1;
             const drawWidth = Math.min(fragment, target.width - x);
             const drawHeight = Math.min(fragment, target.height - y);
+            const pixelX = Math.min(sample.width - 1, Math.max(0, Math.round(x + drawWidth / 2)));
+            const pixelY = Math.min(sample.height - 1, Math.max(0, Math.round(y + drawHeight / 2)));
+            const pixelOffset = (pixelY * sample.width + pixelX) * 4;
+            const alpha = pixels ? pixels[pixelOffset + 3] : 255;
+            if (alpha < 24) continue;
+            const red = pixels ? Math.round(pixels[pixelOffset] * .78) : 154;
+            const green = pixels ? Math.round(pixels[pixelOffset + 1] * .78) : 151;
+            const blue = pixels ? Math.round(pixels[pixelOffset + 2] * .78) : 146;
             imageParticles.push({
-              startX: random(index + 701) * width,
-              startY: random(index + 907) * height,
+              startX: random(particleIndex + 701) * width,
+              startY: random(particleIndex + 907) * height,
               targetX: target.x + x,
               targetY: target.y + y,
-              sourceX: source.x + (x / target.width) * source.width,
-              sourceY: source.y + (y / target.height) * source.height,
-              sourceWidth: (drawWidth / target.width) * source.width,
-              sourceHeight: (drawHeight / target.height) * source.height,
               drawWidth,
               drawHeight,
-              delay: random(index + 1_103) * 340,
+              color: `rgba(${red},${green},${blue},${alpha / 255})`,
+              delay: random(particleIndex + 1_103) * 340,
             });
-            index += 1;
           }
         }
       }
@@ -309,7 +326,6 @@
           context.fillRect(x, y, particle.size, particle.size);
         });
         if (coverImage && imageParticles.length) {
-          context.filter = "brightness(.72) saturate(.82)";
           imageParticles.forEach((particle) => {
             const linear = Math.max(0, Math.min(1, (now - startedAt - particle.delay) / (duration - 340)));
             const eased = 1 - (1 - linear) ** 4;
@@ -317,10 +333,10 @@
             const y = particle.startY + (particle.targetY - particle.startY) * eased;
             const scale = .58 + eased * .46;
             context.globalAlpha = .18 + eased * .82;
-            context.drawImage(coverImage, particle.sourceX, particle.sourceY, particle.sourceWidth, particle.sourceHeight, x, y, particle.drawWidth * scale, particle.drawHeight * scale);
+            context.fillStyle = particle.color;
+            context.fillRect(x, y, particle.drawWidth * scale, particle.drawHeight * scale);
           });
           context.globalAlpha = 1;
-          context.filter = "none";
         }
         if (now - startedAt < duration) requestAnimationFrame(render);
         else {
