@@ -47,6 +47,8 @@
     websiteId: "993c6970-8f42-4804-a055-38b6b9c01810",
     cacheKey: "mumu-umami-share-v1",
     cacheLifetime: 30 * 60 * 1000,
+    statsCacheKey: "mumu-umami-stats-v1",
+    statsCacheLifetime: 5 * 60 * 1000,
     shareRequest: null,
   };
 
@@ -111,52 +113,6 @@
   const closeSidebar = () => document.body.classList.remove("sidebar-open", "no-scroll");
   $$("[data-sidebar-open]").forEach((button) => button.addEventListener("click", openSidebar));
   $$("[data-sidebar-close]").forEach((button) => button.addEventListener("click", closeSidebar));
-
-  function initCursor() {
-    if (!matchMedia("(pointer:fine)").matches || reducedMotion.matches) return;
-    const dot = $(".cursor-dot");
-    const ring = $(".cursor-ring");
-    if (!dot || !ring) return;
-    document.body.classList.add("has-custom-cursor");
-    const followTime = 58;
-    const current = { x: 0, y: 0 };
-    const target = { x: 0, y: 0 };
-    let initialized = false;
-    let ringFrame = 0;
-    let previousFrame = 0;
-    ring.dataset.followMode = "straight-line";
-    ring.dataset.followMs = String(followTime);
-    const renderRing = (now) => {
-      const elapsed = Math.min(48, Math.max(1, now - (previousFrame || now - 16)));
-      previousFrame = now;
-      const progress = 1 - Math.exp(-elapsed / followTime);
-      current.x += (target.x - current.x) * progress;
-      current.y += (target.y - current.y) * progress;
-      const distance = Math.hypot(target.x - current.x, target.y - current.y);
-      if (distance < 0.18) {
-        current.x = target.x;
-        current.y = target.y;
-      }
-      ring.style.transform = `translate3d(${current.x}px,${current.y}px,0) translate(-50%,-50%)`;
-      if (distance >= 0.18) ringFrame = requestAnimationFrame(renderRing);
-      else { ringFrame = 0; previousFrame = 0; }
-    };
-    addEventListener("pointermove", (event) => {
-      target.x = event.clientX;
-      target.y = event.clientY;
-      dot.style.transform = `translate3d(${target.x}px,${target.y}px,0) translate(-50%,-50%)`;
-      if (!initialized) {
-        current.x = target.x;
-        current.y = target.y;
-        ring.style.transform = dot.style.transform;
-        initialized = true;
-      }
-      dot.classList.add("visible"); ring.classList.add("visible");
-      if (!ringFrame) ringFrame = requestAnimationFrame(renderRing);
-    }, { passive: true });
-    document.addEventListener("pointerover", (event) => ring.classList.toggle("active", Boolean(event.target.closest("a,button,input,textarea,select,iframe"))));
-    document.addEventListener("pointerleave", () => { dot.classList.remove("visible"); ring.classList.remove("visible"); });
-  }
 
   let randomPostCovers;
   function getRandomPostCovers() {
@@ -247,10 +203,10 @@
     initAvatarParticles();
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
-      scheduleIdleWork(() => {
-        updateUmamiStats();
-        setInterval(() => { if (!document.hidden) updateUmamiStats(); }, 60_000);
-      }, 1_800);
+      const cachedStats = readCachedUmamiStats();
+      if (cachedStats) renderUmamiStats(cachedStats.values, false);
+      void updateUmamiStats();
+      setInterval(() => { if (!document.hidden) updateUmamiStats(); }, 60_000);
     }
   }
 
@@ -263,7 +219,10 @@
       stage.dataset.particleFrames = String(frames);
       stage.dataset.particleState = "assembled";
       stage.classList.add("is-assembled");
-      setTimeout(() => stage.classList.add("is-ready"), 680);
+      setTimeout(() => {
+        stage.classList.add("is-ready");
+        startAvatarSpin(stage, image);
+      }, 680);
     };
     if (reducedMotion.matches) {
       stage.classList.add("is-assembled", "is-ready");
@@ -335,6 +294,61 @@
     void assemble();
   }
 
+  function startAvatarSpin(stage, image) {
+    if (image.dataset.spinReady === "true" || reducedMotion.matches) return;
+    const baseVelocity = -180;
+    const acceleration = 180;
+    const recoveryDuration = 3_000;
+    let angle = 0;
+    let velocity = baseVelocity;
+    let hovering = stage.matches(":hover");
+    let recoveryStart = 0;
+    let recoveryVelocity = baseVelocity;
+    let previous = performance.now();
+
+    image.dataset.spinReady = "true";
+    image.dataset.spinDirection = hovering ? "accelerating-clockwise" : "counterclockwise";
+    image.dataset.spinBase = String(baseVelocity);
+    image.dataset.spinAcceleration = String(acceleration);
+    image.dataset.spinRecovery = String(recoveryDuration);
+    image.dataset.spinVelocity = String(baseVelocity);
+
+    stage.addEventListener("pointerenter", () => {
+      hovering = true;
+      recoveryStart = 0;
+      image.dataset.spinDirection = "accelerating-clockwise";
+    });
+    stage.addEventListener("pointerleave", () => {
+      hovering = false;
+      recoveryStart = performance.now();
+      recoveryVelocity = velocity;
+      image.dataset.spinDirection = "recovering-counterclockwise";
+    });
+
+    const render = (now) => {
+      const seconds = Math.min(.05, Math.max(0, (now - previous) / 1_000));
+      previous = now;
+      if (!document.hidden) {
+        if (hovering) velocity += acceleration * seconds;
+        else if (recoveryStart) {
+          const progress = Math.min(1, (now - recoveryStart) / recoveryDuration);
+          const eased = 1 - (1 - progress) ** 3;
+          velocity = recoveryVelocity + (baseVelocity - recoveryVelocity) * eased;
+          if (progress === 1) {
+            recoveryStart = 0;
+            velocity = baseVelocity;
+            image.dataset.spinDirection = "counterclockwise";
+          }
+        } else velocity = baseVelocity;
+        angle = (angle + velocity * seconds) % 360;
+        image.style.transform = `rotate(${angle}deg)`;
+        image.dataset.spinVelocity = velocity.toFixed(2);
+      }
+      requestAnimationFrame(render);
+    };
+    requestAnimationFrame(render);
+  }
+
 
   function initTypewriter() {
     $$('[data-typewriter]').forEach((node) => {
@@ -370,6 +384,28 @@
     return null;
   }
 
+  function readCachedUmamiStats() {
+    try {
+      const cached = JSON.parse(localStorage.getItem(umami.statsCacheKey) || "null");
+      if (cached?.values && Date.now() - cached.cachedAt < umami.statsCacheLifetime) return cached;
+    } catch {}
+    return null;
+  }
+
+  function renderUmamiStats(values, animate = true) {
+    Object.entries(values).forEach(([key, value]) => {
+      $$(`[data-umami-stat="${key}"]`).forEach((node) => {
+        if (animate) animateStatistic(node, value);
+        else {
+          const safeValue = Math.max(0, Number(value) || 0);
+          node.textContent = numberFormatter.format(safeValue);
+          node.dataset.umamiValue = String(safeValue);
+          node.dataset.umamiReady = "true";
+        }
+      });
+    });
+  }
+
   function getUmamiShare() {
     const cached = readCachedUmamiShare();
     if (cached) return Promise.resolve(cached);
@@ -403,7 +439,7 @@
     }
     const startedAt = performance.now();
     const render = (now) => {
-      const progress = Math.min(1, (now - startedAt) / 3_000);
+      const progress = Math.min(1, (now - startedAt) / 1_200);
       const eased = 1 - (1 - progress) ** 3;
       const value = Math.round(startValue + (safeTarget - startValue) * eased);
       node.textContent = numberFormatter.format(value);
@@ -428,11 +464,14 @@
       if (!activeResponse.ok || !statsResponse.ok) throw new Error("Umami statistics are unavailable");
       const [active, stats] = await Promise.all([activeResponse.json(), statsResponse.json()]);
       const values = { active: active.visitors, visitors: stats.visitors, visits: stats.visits };
-      Object.entries(values).forEach(([key, value]) => {
-        $$(`[data-umami-stat="${key}"]`).forEach((node) => animateStatistic(node, value));
-      });
+      try { localStorage.setItem(umami.statsCacheKey, JSON.stringify({ values, cachedAt: Date.now() })); } catch {}
+      renderUmamiStats(values);
     } catch {
-      $$('[data-umami-stat]').forEach((node) => { node.textContent = "--"; node.dataset.umamiReady = "false"; });
+      $$('[data-umami-stat]').forEach((node) => {
+        if (node.dataset.umamiReady === "true") return;
+        node.textContent = "--";
+        node.dataset.umamiReady = "false";
+      });
     }
   }
 
@@ -662,9 +701,8 @@
       root.dataset.postBatchSize = String(batchSize);
       let candidates = [];
       let revealed = 0;
-      let interacted = false;
-      let lastRevealAt = 0;
       let frame = 0;
+      let resizeTimer = 0;
 
       const updateState = () => {
         root.dataset.postVisibleCount = String(revealed);
@@ -672,7 +710,7 @@
         sentinel.hidden = revealed >= candidates.length;
       };
       const revealNext = () => {
-        if (revealed >= candidates.length || performance.now() - lastRevealAt < 360) return;
+        if (revealed >= candidates.length) return false;
         const next = Math.min(candidates.length, revealed + batchSize);
         candidates.slice(revealed, next).forEach((card, index) => {
           card.classList.remove("is-progressive-hidden");
@@ -680,22 +718,28 @@
           revealCard(card, index * 60);
         });
         revealed = next;
-        lastRevealAt = performance.now();
         updateState();
+        return true;
       };
-      const maybeReveal = () => {
+      const fillViewport = () => {
         frame = 0;
-        if (!interacted || sentinel.hidden) return;
-        if (sentinel.getBoundingClientRect().top <= innerHeight + 220) revealNext();
+        if (sentinel.hidden) {
+          root.dataset.postViewportFilled = "true";
+          return;
+        }
+        if (sentinel.getBoundingClientRect().top <= innerHeight + 120 && revealNext()) {
+          requestAnimationFrame(fillViewport);
+          return;
+        }
+        root.dataset.postViewportFilled = "true";
       };
-      const queueRevealCheck = () => {
-        if (!frame) frame = requestAnimationFrame(maybeReveal);
+      const queueViewportFill = () => {
+        root.dataset.postViewportFilled = "false";
+        if (!frame) frame = requestAnimationFrame(fillViewport);
       };
       const reset = () => {
         candidates = cards.filter((card) => !card.hidden);
         revealed = Math.min(batchSize, candidates.length);
-        interacted = false;
-        lastRevealAt = 0;
         cards.forEach((card) => {
           const index = candidates.indexOf(card);
           const progressiveHidden = index >= revealed;
@@ -705,19 +749,22 @@
         });
         candidates.slice(0, revealed).forEach((card, index) => revealCard(card, index * 60));
         updateState();
+        queueViewportFill();
       };
 
-      addEventListener("wheel", (event) => {
-        if (event.deltaY <= 0 || root.getBoundingClientRect().bottom < 0 || root.getBoundingClientRect().top > innerHeight) return;
-        interacted = true;
-        queueRevealCheck();
+      if ("IntersectionObserver" in window) {
+        const observer = new IntersectionObserver((entries) => {
+          if (entries.some((entry) => entry.isIntersecting) && revealNext()) queueViewportFill();
+        }, { rootMargin: "0px 0px 220px", threshold: 0 });
+        observer.observe(sentinel);
+      } else addEventListener("scroll", queueViewportFill, { passive: true });
+      addEventListener("resize", () => {
+        clearTimeout(resizeTimer);
+        resizeTimer = setTimeout(queueViewportFill, 120);
       }, { passive: true });
-      addEventListener("touchmove", () => { interacted = true; queueRevealCheck(); }, { passive: true });
-      addEventListener("scroll", () => { interacted = true; queueRevealCheck(); }, { passive: true });
       root.addEventListener("progressive-post-reveal", () => {
-        interacted = true;
-        lastRevealAt = 0;
         revealNext();
+        queueViewportFill();
       });
       root.addEventListener("responsive-post-page-rendered", reset);
       reset();
@@ -1169,7 +1216,6 @@
 
   initPageVisibility();
   initDeferredAnalytics();
-  initCursor();
   initCardFadeMotion();
   initHome();
   initResponsivePostPagination();

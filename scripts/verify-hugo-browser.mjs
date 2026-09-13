@@ -32,6 +32,37 @@ async function revealPostCards(page, target) {
   }
 }
 
+async function measureAvatarRotation(locator, duration = 1_000) {
+  return locator.evaluate((image, sampleDuration) => new Promise((resolve) => {
+    const angles = [];
+    const velocities = [];
+    const startedAt = performance.now();
+    const sample = (now) => {
+      const matrix = new DOMMatrixReadOnly(getComputedStyle(image).transform);
+      angles.push(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI);
+      velocities.push(Number(image.dataset.spinVelocity));
+      if (now - startedAt < sampleDuration) requestAnimationFrame(sample);
+      else {
+        let rotation = 0;
+        for (let index = 1; index < angles.length; index += 1) {
+          let change = angles[index] - angles[index - 1];
+          if (change > 180) change -= 360;
+          if (change < -180) change += 360;
+          rotation += change;
+        }
+        resolve({
+          frames: angles.length,
+          rotation,
+          startVelocity: velocities[0],
+          endVelocity: velocities.at(-1),
+          direction: image.dataset.spinDirection,
+        });
+      }
+    };
+    requestAnimationFrame(sample);
+  }), duration);
+}
+
 try {
   const desktopContext = await browser.newContext({ viewport: { width: 1440, height: 1000 } });
   await desktopContext.grantPermissions(["clipboard-read", "clipboard-write"], { origin: new URL(baseUrl).origin });
@@ -39,7 +70,15 @@ try {
   let desktopResponse = await desktopPage.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
   assert.equal(await desktopPage.locator(".post-card").count(), 30, "desktop blog page does not contain exactly thirty articles");
-  assert.equal(await desktopPage.locator(".post-card:visible").count(), 3, "desktop blog page must initially render only three articles");
+  await desktopPage.waitForFunction(() => document.querySelector("[data-responsive-post-list]")?.dataset.postViewportFilled === "true");
+  const initialDesktopCards = await desktopPage.locator(".post-card:visible").count();
+  assert.ok(initialDesktopCards > 3 && initialDesktopCards <= 30 && initialDesktopCards % 3 === 0, `desktop initial card count is not viewport-aware: ${initialDesktopCards}`);
+  const desktopFillState = await desktopPage.locator("[data-responsive-post-list]").evaluate((root) => ({
+    complete: root.dataset.postBatchComplete === "true",
+    sentinelTop: root.querySelector(".post-load-sentinel")?.getBoundingClientRect().top || 0,
+    viewportHeight: innerHeight,
+  }));
+  assert.ok(desktopFillState.complete || desktopFillState.sentinelTop > desktopFillState.viewportHeight + 100, `desktop cards did not fill the viewport: ${JSON.stringify(desktopFillState)}`);
   assert.equal(await desktopPage.locator('.post-card:visible img[data-progressive-src]').count(), 0, "visible covers were not hydrated");
   assert.ok(await desktopPage.locator('.post-card.is-progressive-hidden img[data-progressive-src]').count() > 0, "offscreen covers were hydrated before scrolling");
   assert.equal(await desktopPage.locator(".post-cover-placeholder").count(), 0, "empty cover placeholder remains");
@@ -47,7 +86,7 @@ try {
   assert.equal(await desktopPage.locator(".pagination-summary").innerText(), "第 1 / 4 页", "desktop pagination does not use 30-item pages");
   await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return image?.complete && image.naturalWidth > 0 && image.src.includes("/optimized/images/"); }), undefined, { timeout: 5_000 });
   assert.equal(await desktopPage.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, "desktop page still contains particle rendering");
-  assert.equal(await desktopPage.locator('.post-card:visible[data-card-animated="true"]').count(), 3, "desktop cards do not use the lightweight fade transition");
+  assert.equal(await desktopPage.locator('.post-card:visible[data-card-animated="true"]').count(), initialDesktopCards, "desktop cards do not use the lightweight fade transition");
   await desktopPage.waitForFunction(() => !document.querySelector(".post-card.is-card-entering"));
   const desktopLayout = await desktopPage.evaluate(() => {
     const cards = [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden"));
@@ -75,17 +114,7 @@ try {
       titleOverflow,
       hasCustomCursor: document.body.classList.contains("has-custom-cursor"),
       nativeCursor: getComputedStyle(document.body).cursor,
-      cursorSize: (() => {
-        const dot = document.querySelector(".cursor-dot");
-        const ring = document.querySelector(".cursor-ring");
-        if (!dot || !ring) return null;
-        return {
-          dot: parseFloat(getComputedStyle(dot).width),
-          ring: parseFloat(getComputedStyle(ring).width),
-          followMode: ring.dataset.followMode,
-          followMs: Number(ring.dataset.followMs),
-        };
-      })(),
+      customCursorCount: document.querySelectorAll(".cursor-dot, .cursor-ring").length,
     };
   });
   assert.equal(desktopLayout.columns, 3, "desktop blog must use a three-column card grid");
@@ -93,31 +122,14 @@ try {
   assert.equal(new Set(desktopLayout.cardHeights).size, 1, `desktop card heights differ: ${desktopLayout.cardHeights.join(", ")}`);
   assert.ok(desktopLayout.coverRatios.every((ratio) => Math.abs(ratio - 16 / 9) < 0.02), `desktop covers must be cropped to 16:9: ${desktopLayout.coverRatios.join(", ")}`);
   assert.equal(desktopLayout.titleOverflow, false, "desktop card text overflows its container");
-  assert.equal(desktopLayout.hasCustomCursor, true, "custom cursor was not enabled for a fine pointer");
-  assert.equal(desktopLayout.nativeCursor, "none", "native cursor remains visible behind the custom cursor");
-  assert.ok(desktopLayout.cursorSize?.ring >= 18 && desktopLayout.cursorSize?.ring <= 22 && desktopLayout.cursorSize?.dot === 4, "custom cursor was not reduced to the requested compact size");
-  assert.equal(desktopLayout.cursorSize?.followMode, "straight-line", "cursor ring does not use the direct path");
-  assert.ok(desktopLayout.cursorSize?.followMs >= 40 && desktopLayout.cursorSize?.followMs <= 90, "cursor response is not short and slightly delayed");
-  await desktopPage.mouse.move(260, 220);
-  await desktopPage.waitForTimeout(1_000);
-  await desktopPage.mouse.move(760, 520);
-  assert.equal(await desktopPage.locator(".cursor-dot.visible").count(), 1, "custom cursor does not follow pointer movement");
-  const cursorPositions = await desktopPage.evaluate(() => {
-    const dot = document.querySelector(".cursor-dot").getBoundingClientRect();
-    const ring = document.querySelector(".cursor-ring").getBoundingClientRect();
-    return { dot: { x: dot.x + dot.width / 2, y: dot.y + dot.height / 2 }, ring: { x: ring.x + ring.width / 2, y: ring.y + ring.height / 2 } };
-  });
-  assert.ok(Math.abs(cursorPositions.dot.x - 760) < 5, "cursor center dot is not immediate");
-  assert.ok(cursorPositions.ring.x < cursorPositions.dot.x - 20, "cursor ring no longer has a visible short delay");
-  await desktopPage.waitForTimeout(320);
-  const settledRingX = await desktopPage.locator(".cursor-ring").evaluate((ring) => {
-    const rect = ring.getBoundingClientRect();
-    return rect.x + rect.width / 2;
-  });
-  assert.ok(Math.abs(settledRingX - 760) < 5, "cursor ring does not catch up after 0.2 seconds");
+  assert.equal(desktopLayout.hasCustomCursor, false, "removed custom cursor class remains active");
+  assert.equal(desktopLayout.customCursorCount, 0, "removed custom cursor elements remain in the page");
+  assert.notEqual(desktopLayout.nativeCursor, "none", "native browser cursor is hidden");
 
-  await revealPostCards(desktopPage, 6);
-  assert.equal(await desktopPage.locator(".post-card:visible").count(), 6, "desktop blog did not append exactly three cards after scrolling");
+  const nextDesktopTarget = Math.min(30, initialDesktopCards + 3);
+  await desktopPage.locator("[data-responsive-post-list]").dispatchEvent("progressive-post-reveal");
+  await desktopPage.waitForFunction((target) => document.querySelectorAll(".post-card:not(.is-progressive-hidden):not([hidden])").length >= target, nextDesktopTarget);
+  assert.ok(await desktopPage.locator(".post-card:visible").count() >= nextDesktopTarget, "desktop blog did not append the next card batch");
   await desktopPage.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return card.dataset.cardAnimated === "true" && image?.complete && image.naturalWidth > 0; }), undefined, { timeout: 5_000 });
 
   desktopResponse = await desktopPage.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
@@ -150,46 +162,40 @@ try {
     count: Number(stage.dataset.particleCount),
     duration: Number(stage.dataset.particleDuration),
     frames: Number(stage.dataset.particleFrames),
-    direction: stage.dataset.hoverSpinDirection,
-    period: Number(stage.dataset.hoverSpinPeriod),
+    idleDirection: stage.dataset.idleSpinDirection,
+    idleVelocity: Number(stage.dataset.idleSpinVelocity),
+    hoverDirection: stage.dataset.hoverSpinDirection,
+    hoverAcceleration: Number(stage.dataset.hoverSpinAcceleration),
+    recovery: Number(stage.dataset.spinRecovery),
   }));
   assert.ok(particleResult.count > 1_000, `avatar particle density is too low: ${particleResult.count}`);
   assert.equal(particleResult.duration, 2_320, "avatar particle assembly duration changed");
   assert.ok(particleResult.frames >= 110, `avatar particle assembly did not render near 60 FPS: ${particleResult.frames}`);
-  assert.equal(particleResult.direction, "clockwise", "avatar hover direction is not clockwise");
-  assert.equal(particleResult.period, 3_000, "avatar hover rotation period is not three seconds");
+  assert.equal(particleResult.idleDirection, "counterclockwise", "avatar idle direction is not counterclockwise");
+  assert.equal(particleResult.idleVelocity, -180, "avatar idle velocity changed");
+  assert.equal(particleResult.hoverDirection, "clockwise", "avatar hover direction is not clockwise");
+  assert.equal(particleResult.hoverAcceleration, 180, "avatar hover acceleration changed");
+  assert.equal(particleResult.recovery, 3_000, "avatar recovery duration changed");
   await desktopPage.waitForFunction(() => document.querySelector("[data-avatar-particles]")?.classList.contains("is-ready"), undefined, { timeout: 2_000 });
-  const initialPlayState = await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).animationPlayState);
-  assert.equal(initialPlayState, "paused", "avatar rotates before the pointer enters it");
+  await desktopPage.waitForFunction(() => document.querySelector("[data-avatar-image]")?.dataset.spinReady === "true");
+  const idleMotion = await measureAvatarRotation(desktopPage.locator("[data-avatar-image]"));
+  assert.ok(idleMotion.frames >= 50, `idle avatar animation did not update close to 60 FPS: ${idleMotion.frames}`);
+  assert.ok(idleMotion.rotation >= -200 && idleMotion.rotation <= -160, `avatar is not rotating counterclockwise at a steady 180 degrees per second: ${idleMotion.rotation}`);
+  assert.ok(idleMotion.startVelocity === -180 && idleMotion.endVelocity === -180, `avatar idle velocity is not steady: ${idleMotion.startVelocity} -> ${idleMotion.endVelocity}`);
   await desktopPage.locator(".profile-avatar-stage").hover();
-  const avatarMotion = await desktopPage.locator("[data-avatar-image]").evaluate((image) => new Promise((resolve) => {
-    const angles = [];
-    const startedAt = performance.now();
-    const sample = (now) => {
-      const matrix = new DOMMatrixReadOnly(getComputedStyle(image).transform);
-      angles.push(Math.atan2(matrix.b, matrix.a) * 180 / Math.PI);
-      if (now - startedAt < 1_000) requestAnimationFrame(sample);
-      else {
-        let rotation = 0;
-        for (let index = 1; index < angles.length; index += 1) {
-          let change = angles[index] - angles[index - 1];
-          if (change > 180) change -= 360;
-          if (change < -180) change += 360;
-          rotation += change;
-        }
-        resolve({ frames: angles.length, rotation, playState: getComputedStyle(image).animationPlayState });
-      }
-    };
-    requestAnimationFrame(sample);
-  }));
-  assert.equal(avatarMotion.playState, "running", "avatar hover animation is not running");
-  assert.ok(avatarMotion.frames >= 50, `avatar animation did not update close to 60 FPS: ${avatarMotion.frames}`);
-  assert.ok(avatarMotion.rotation >= 105 && avatarMotion.rotation <= 135, `avatar does not rotate clockwise once every three seconds: ${avatarMotion.rotation}`);
+  await desktopPage.waitForTimeout(1_300);
+  const hoverMotion = await measureAvatarRotation(desktopPage.locator("[data-avatar-image]"));
+  assert.ok(hoverMotion.frames >= 50, `hover avatar animation did not update close to 60 FPS: ${hoverMotion.frames}`);
+  assert.ok(hoverMotion.startVelocity > 25, `avatar did not reverse to clockwise after hover: ${hoverMotion.startVelocity}`);
+  assert.ok(hoverMotion.endVelocity > hoverMotion.startVelocity + 150, `avatar clockwise speed is not increasing: ${hoverMotion.startVelocity} -> ${hoverMotion.endVelocity}`);
+  assert.ok(hoverMotion.rotation > 100, `avatar does not rotate clockwise while accelerating: ${hoverMotion.rotation}`);
+  assert.equal(hoverMotion.direction, "accelerating-clockwise", "avatar hover state is incorrect");
   await desktopPage.mouse.move(20, 20);
-  await desktopPage.waitForTimeout(100);
-  const pausedRotation = await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).transform);
-  await desktopPage.waitForTimeout(350);
-  assert.equal(await desktopPage.locator("[data-avatar-image]").evaluate((image) => getComputedStyle(image).transform), pausedRotation, "avatar keeps rotating after the pointer leaves");
+  await desktopPage.waitForTimeout(3_200);
+  const recoveredMotion = await measureAvatarRotation(desktopPage.locator("[data-avatar-image]"), 600);
+  assert.ok(recoveredMotion.rotation >= -125 && recoveredMotion.rotation <= -90, `avatar did not recover to counterclockwise rotation: ${recoveredMotion.rotation}`);
+  assert.ok(recoveredMotion.startVelocity === -180 && recoveredMotion.endVelocity === -180, `avatar recovery did not settle at -180 degrees per second: ${recoveredMotion.startVelocity} -> ${recoveredMotion.endVelocity}`);
+  assert.equal(recoveredMotion.direction, "counterclockwise", "avatar recovery state is incorrect");
 
   desktopResponse = await desktopPage.goto(new URL("/friends/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(desktopResponse?.status(), 200);
@@ -200,6 +206,7 @@ try {
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/tree/main/friends"]').count(), 1, "friends repository uses a non-production URL");
   await desktopPage.locator("[data-friends-apply-open]").click();
   assert.equal(await desktopPage.locator("[data-friends-apply-dialog]").getAttribute("open"), "", "friend application dialog did not open");
+  assert.notEqual(await desktopPage.locator("[data-friends-apply-dialog]").evaluate((dialog) => getComputedStyle(dialog).cursor), "none", "native cursor disappears inside the friend dialog");
   assert.equal(await desktopPage.locator('a[href="https://github.com/mumuhaha487/astro/new/main/friends/entries"]').count(), 1, "friend contribution URL is not filename-neutral");
   assert.doesNotMatch(await desktopPage.locator("[data-friends-apply-dialog]").innerText(), /friend\.json|your-site-2026\.json/, "friend dialog suggests a fixed filename");
   assert.match(await desktopPage.locator("[data-friends-template]").innerText(), /"name": "你的站点名称"[\s\S]*"tags": \["博客"\]/, "friend JSON template is incomplete");
@@ -282,6 +289,7 @@ try {
   const errors = [];
   page.on("pageerror", (error) => errors.push(error.message));
 
+  const statsStartedAt = Date.now();
   let response = await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".home-stage").count(), 1, "home workspace is missing");
@@ -294,6 +302,8 @@ try {
   assert.equal(await page.locator('[data-umami-stat="visitors"]').count(), 1, "unique visitor statistic is missing");
   assert.equal(await page.locator('[data-umami-stat="visits"]').count(), 1, "visit statistic is missing");
   if (localRun) assert.deepEqual(await page.locator("[data-umami-stat]").allInnerTexts(), ["0", "0", "0"], "statistics do not begin at zero");
+  await page.waitForFunction(() => [...document.querySelectorAll("[data-umami-stat]")].every((node) => node.dataset.umamiReady === "true"), undefined, { timeout: 5_000 });
+  if (localRun) assert.ok(Date.now() - statsStartedAt < 2_500, `homepage statistics were not ready promptly: ${Date.now() - statsStartedAt}ms`);
   const typewriter = page.locator("[data-typewriter-output]");
   assert.equal(await typewriter.count(), 1, "homepage typewriter is missing");
   assert.equal(await page.locator('[data-typewriter="不乱于心，不困于情，不畏将来，不惧过去"]').count(), 1, "homepage typewriter text is incorrect");
@@ -318,13 +328,6 @@ try {
   });
   assert.ok(Math.abs(mobileTypewriterLayout.initialButtonWidth - mobileTypewriterLayout.fullButtonWidth) < 1, "mobile read button changes width while the quote is typed");
   assert.ok(mobileTypewriterLayout.bioScrollWidth <= mobileTypewriterLayout.bioClientWidth, "mobile typewriter text overflows its fixed region");
-  if (localRun) {
-    await page.waitForFunction(() => {
-      const value = Number(document.querySelector('[data-umami-stat="visitors"]')?.textContent?.replaceAll(",", ""));
-      return value > 0 && value < 24388;
-    }, undefined, { timeout: 5_000 });
-  }
-  await page.waitForFunction(() => [...document.querySelectorAll("[data-umami-stat]")].every((node) => node.dataset.umamiReady === "true"), undefined, { timeout: 15_000 });
   const mobileAvatarParticles = await page.locator("[data-avatar-particles]").evaluate((stage) => ({
     state: stage.dataset.particleState,
     count: Number(stage.dataset.particleCount),
@@ -358,11 +361,13 @@ try {
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".post-card").count(), 30, "mobile blog page does not retain the complete desktop page group");
-  assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog page must initially render only three articles");
+  await page.waitForFunction(() => document.querySelector("[data-responsive-post-list]")?.dataset.postViewportFilled === "true");
+  const initialMobileCards = await page.locator(".post-card:visible").count();
+  assert.ok(initialMobileCards >= 3 && initialMobileCards <= 10, `mobile initial card count is invalid: ${initialMobileCards}`);
   await page.waitForFunction(() => [...document.querySelectorAll(".post-card")].filter((card) => !card.hidden && !card.classList.contains("is-progressive-hidden")).every((card) => { const image = card.querySelector(".post-cover img"); return image?.complete && image.naturalWidth > 0 && image.src.includes("/optimized/images/"); }), undefined, { timeout: 5_000 });
   assert.equal(await page.locator("canvas, [data-particle-card], [data-particle-mode]").count(), 0, "mobile blog still contains particle rendering");
   await revealPostCards(page, 6);
-  assert.equal(await page.locator(".post-card:visible").count(), 6, "mobile blog did not append three cards after scrolling");
+  assert.ok(await page.locator(".post-card:visible").count() >= 6, "mobile blog did not append cards near the viewport");
   await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog page does not stop at its ten-article page boundary");
   const firstPageTitles = await page.locator(".post-card:visible h2").allInnerTexts();
@@ -389,7 +394,8 @@ try {
 
   response = await page.goto(new URL("/blog/?mobile-page=2", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
-  assert.equal(await page.locator(".post-card:visible").count(), 3, "mobile blog second page does not start with three articles");
+  await page.waitForFunction(() => document.querySelector("[data-responsive-post-list]")?.dataset.postViewportFilled === "true");
+  assert.ok(await page.locator(".post-card:visible").count() >= 3, "mobile blog second page did not fill its initial viewport");
   await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "mobile blog second page does not contain exactly ten articles");
   assert.equal(await page.locator('.pagination-page[aria-current="page"]').innerText(), "2", "blog second page is not active");
@@ -412,7 +418,8 @@ try {
   response = await page.goto(new URL("/tags/linux/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.ok(await page.locator(".post-card").count() > 10, "Linux tag page does not retain its desktop article group");
-  assert.equal(await page.locator(".post-card:visible").count(), 3, "Linux tag page does not start with three articles");
+  await page.waitForFunction(() => document.querySelector("[data-responsive-post-list]")?.dataset.postViewportFilled === "true");
+  assert.ok(await page.locator(".post-card:visible").count() >= 3, "Linux tag page did not fill its initial viewport");
   await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "Linux tag mobile page does not contain ten articles");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/tags\/linux\/\?mobile-page=2$/, "Linux tag mobile next-page URL is incorrect");
@@ -420,7 +427,8 @@ try {
   response = await page.goto(new URL("/category/python/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.ok(await page.locator(".post-card").count() > 10, "category page does not retain its desktop article group");
-  assert.equal(await page.locator(".post-card:visible").count(), 3, "category page does not start with three articles");
+  await page.waitForFunction(() => document.querySelector("[data-responsive-post-list]")?.dataset.postViewportFilled === "true");
+  assert.ok(await page.locator(".post-card:visible").count() >= 3, "category page did not fill its initial viewport");
   await revealPostCards(page, 10);
   assert.equal(await page.locator(".post-card:visible").count(), 10, "category mobile page does not contain ten articles");
   assert.match(await page.locator('a[rel="next"]').getAttribute("href"), /\/category\/python\/\?mobile-page=2$/, "category mobile next-page URL is incorrect");
@@ -585,7 +593,7 @@ try {
   assert.equal(await page.locator(".post-card h2", { hasText: "Test Article Title" }).count(), 1, "English blog does not show its translated article");
   assert.equal(await page.locator(".post-card h2", { hasText: "测试文章标题" }).count(), 0, "English blog shows the Chinese variant at the same time");
   assert.equal(errors.length, 0, `browser raised: ${errors.join("; ")}`);
-  console.log("Browser verification passed: card particles remain removed, the original dense avatar particle assembly returns at near 60 FPS, hover rotation is clockwise and pauses on leave, responsive pagination and optimized images remain intact, and the full site has no overflow regressions.");
+  console.log("Browser verification passed: viewport-aware card loading fills large screens, the native cursor remains visible, statistics respond promptly, dense avatar particles render near 60 FPS, idle rotation is steady counterclockwise, hover rotation accelerates clockwise, and pointer leave recovers the idle motion.");
 } finally {
   await browser.close();
 }
