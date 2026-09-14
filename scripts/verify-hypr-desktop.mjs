@@ -44,13 +44,10 @@ try {
   const avatarSwitch = page.locator(".avatar-style-switch");
   assert.equal(await avatarSwitch.getAttribute("href"), "/desktop/");
   assert.match(await avatarSwitch.textContent(), /切换另外一种风格/);
-  const homeSwitch = page.locator(".home-desktop-switch");
-  const sidebarSwitch = page.locator(".sidebar-desktop-switch");
-  assert.equal(await homeSwitch.isVisible(), true, "visible homepage desktop switch is missing");
-  assert.equal(await sidebarSwitch.isVisible(), true, "persistent sidebar desktop switch is missing");
-  assert.match(await homeSwitch.textContent(), /切换另外一种风格/);
+  assert.equal(await avatarSwitch.locator(".archlinux-logo").count(), 1, "desktop switch has no Arch Linux icon");
+  assert.equal(await page.locator(".home-desktop-switch, .sidebar-desktop-switch").count(), 0, "duplicate desktop switch entry remains");
   await page.screenshot({ path: `${process.env.TEMP}\\hypr-home-switch-1600x900.png`, fullPage: true });
-  await homeSwitch.click();
+  await avatarSwitch.click();
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "particles");
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "loading");
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "barrage");
@@ -70,6 +67,8 @@ try {
   assert.equal(await page.locator("[data-workspace-target]").count(), 5, "workspace switcher is incomplete");
   assert.equal(await page.locator("#hypr-desktop").getAttribute("data-layout-mode"), "stacked", "desktop should default to the HyDE stacked layout");
   assert.equal(await page.locator("[data-layout-toggle]").getAttribute("aria-pressed"), "true", "layout toggle state does not match the default stack");
+  assert.equal(await page.locator("[data-return-classic]").isVisible(), true, "desktop cannot visibly return to classic mode");
+  assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
 
   await page.locator('.hypr-dock [data-app="blog"]').click();
   await page.locator('.hypr-dock [data-app="tools"]').click();
@@ -121,7 +120,21 @@ try {
   assert.equal(await page.locator('.hypr-window:not(.is-workspace-hidden)').count(), 0);
   await page.keyboard.press("Alt+Enter");
   await page.waitForFunction(() => document.querySelector('.hypr-window[data-app="terminal"][data-workspace="2"]'));
-  assert.equal(await page.locator('.hypr-window[data-app="terminal"] .terminal-command input').count(), 1);
+  const terminalInput = page.locator('.hypr-window[data-app="terminal"] .terminal-command input');
+  assert.equal(await terminalInput.count(), 1);
+  await terminalInput.fill("help");
+  await terminalInput.press("Enter");
+  assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /fastfetch[\s\S]*layout \[stacked\|tiled\][\s\S]*classic/, "extended terminal help is incomplete");
+  await terminalInput.fill("layout tiled");
+  await terminalInput.press("Enter");
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.layoutMode === "tiled");
+  await terminalInput.fill("layout stacked");
+  await terminalInput.press("Enter");
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.layoutMode === "stacked");
+  const terminalWallBefore = await page.locator("#wallpaper-image").getAttribute("src");
+  await terminalInput.fill("wallpaper next");
+  await terminalInput.press("Enter");
+  await page.waitForFunction(previous => document.querySelector("#wallpaper-image")?.getAttribute("src") !== previous, terminalWallBefore);
 
   await page.keyboard.press("Alt+Space");
   assert.equal(await page.locator("#launcher").isVisible(), true);
@@ -138,6 +151,9 @@ try {
   await page.waitForFunction(previous => document.querySelector("#wallpaper-image")?.getAttribute("src") !== previous, wallBefore);
   assert.equal(errors.length, 0, `desktop emitted page errors: ${errors.join(" | ")}`);
   await page.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-1600x900.png`, fullPage: true });
+  await page.locator("[data-return-classic]").click();
+  await page.waitForURL(new URL("/", baseUrl).toString());
+  assert.equal(new URL(page.url()).pathname, "/", "classic-mode return control did not leave the desktop");
   await desktop.close();
 
   const compact = await browser.newContext({ viewport: { width: 1024, height: 768 } });
@@ -199,7 +215,7 @@ try {
   await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-mobile-390x844.png`, fullPage: true });
   await mobile.close();
 
-  console.log("Hyprland desktop verification passed: discoverable homepage entry, default stacked windows, reversible spaced liquid tiling, rounded acrylic surfaces, always-on-top app launcher, workspaces, terminal, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
+  console.log("Hyprland desktop verification passed: Arch Linux switch icon, default stacked windows, reversible spaced liquid tiling, rounded acrylic surfaces, extended terminal commands, visible classic-mode return, always-on-top app launcher, workspaces, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
 } finally {
   await browser.close();
 }

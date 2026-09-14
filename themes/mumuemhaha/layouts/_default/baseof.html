@@ -42,7 +42,7 @@
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   {{ if and .IsPage (eq $section "posts") }}<link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">{{ end }}
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260914-hyprliquid-v1">
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260914-hyprliquid-v2">
   {{ if eq $section "guestbook" }}<script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-turnstile-script></script>{{ end }}
 </head>
 <body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-random-post-covers="{{ jsonify $randomCoverPools }}" data-analytics-src="https://umami.vmss.cn/script.js" data-analytics-website-id="993c6970-8f42-4804-a055-38b6b9c01810" data-pagefind-ignore>
@@ -66,7 +66,6 @@
         <a href="{{ "friends/" | relLangURL }}" data-nav="friends">{{ partial "icon.html" (dict "name" "share") }}<span>{{ i18n "friends" }}</span></a>
         <a href="{{ "guestbook/" | relLangURL }}" data-nav="guestbook">{{ partial "icon.html" (dict "name" "messages") }}<span>{{ i18n "guestbook" }}</span></a>
         <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
-        <a class="sidebar-desktop-switch" href="/desktop/" data-desktop-transition data-nav="desktop">{{ partial "icon.html" (dict "name" "monitor") }}<span>{{ i18n "switch_desktop_style" }}</span></a>
       </nav>
       <div class="workspace-spacer"></div>
       <p class="workspace-foot">{{ site.Params.description }}<br><span>Hugo · EdgeOne</span></p>
@@ -117,7 +116,7 @@
     <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
     <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "tools" }}</span></a>
   </nav>
-  <script src="/hugo-theme/hugo.js?v=20260914-hyprliquid-v1"></script>
+  <script src="/hugo-theme/hugo.js?v=20260914-hyprliquid-v2"></script>
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>

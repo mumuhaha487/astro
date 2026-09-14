@@ -351,11 +351,10 @@
   }
 
   function initDesktopStyleTransition() {
-    const triggers = $$('[data-desktop-transition]');
+    const trigger = $("[data-desktop-transition]");
     const avatar = $("[data-avatar-image]");
-    if (!triggers.length || !avatar) return;
-    const runTransition = async (event) => {
-      const trigger = event.currentTarget;
+    if (!trigger || !avatar) return;
+    trigger.addEventListener("click", async (event) => {
       if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || trigger.dataset.transitioning === "true") return;
       event.preventDefault();
       const target = new URL(trigger.href, location.href);
@@ -365,7 +364,6 @@
         return;
       }
       trigger.dataset.transitioning = "true";
-      triggers.forEach((item) => { item.dataset.transitioning = "true"; });
       const buttonRect = trigger.getBoundingClientRect();
       const avatarRect = avatar.getBoundingClientRect();
       try { await avatar.decode(); } catch {}
@@ -488,8 +486,7 @@
         else location.assign(target.href);
       };
       requestAnimationFrame(render);
-    };
-    triggers.forEach((trigger) => trigger.addEventListener("click", runTransition));
+    });
   }
 
 

@@ -208,6 +208,9 @@ kbd {
   font-size: 11px;
   transition: background .18s, color .18s;
 }
+.classic-return { text-decoration: none; color: var(--accent-strong); }
+.classic-return:hover { color: #fff; background: rgba(var(--accent-rgb), .16); }
+.classic-return .archlinux-logo { width: 16px; height: 16px; fill: currentColor; filter: drop-shadow(0 0 7px rgba(var(--accent-rgb), .32)); }
 .waybar-pill:hover, .clock-pill:hover { background: rgba(var(--accent-rgb), .15); color: #fff; }
 .network-icon { color: #7fdbac; font-size: 17px; line-height: 1; }
 .clock-pill { gap: 7px; }
@@ -390,6 +393,7 @@ kbd {
 .welcome-app { height: 100%; overflow: auto; padding: clamp(22px, 4vw, 48px); background: radial-gradient(circle at 88% 8%, rgba(var(--accent-rgb), .12), transparent 28%), #0d1219; user-select: text; }
 .welcome-heading { display: flex; align-items: center; gap: 16px; margin-bottom: 28px; }
 .welcome-mark { width: 55px; height: 55px; display: grid; place-items: center; border-radius: 17px; background: linear-gradient(145deg, rgba(var(--accent-rgb), .28), rgba(255, 255, 255, .05)); color: var(--accent); font-size: 27px; }
+.welcome-mark .archlinux-logo { width: 30px; height: 30px; fill: currentColor; filter: drop-shadow(0 0 10px rgba(var(--accent-rgb), .36)); }
 .welcome-heading p { margin: 0 0 5px; color: var(--accent); font: 700 10px/1 ui-monospace, monospace; letter-spacing: .17em; }
 .welcome-heading h1 { margin: 0; font-size: clamp(22px, 3vw, 34px); line-height: 1.15; }
 .welcome-copy { max-width: 720px; margin: 0 0 30px; color: #a9bbc8; line-height: 1.8; }
@@ -518,6 +522,8 @@ kbd {
   .workspace-switcher button:nth-child(n+5) { display: none; }
   .layout-mode-toggle { width: 29px; padding: 0; justify-content: center; }
   .layout-mode-label { display: none; }
+  .classic-return { width: 29px; padding: 0; justify-content: center; }
+  .classic-return span { display: none; }
   .clock-pill { padding: 0 7px; }
   .clock-pill span { display: none; }
   .workspace-viewport { top: 52px; }
