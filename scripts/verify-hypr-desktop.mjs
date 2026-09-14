@@ -337,12 +337,16 @@ try {
   await narrowPage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
   const narrowIconGeometry = await narrowPage.locator(".desktop-icon, .desktop-icon-shape").evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
-    return { className: element.className, width: rect.width, height: rect.height };
+    return { className: element.className, width: rect.width, height: rect.height, left: rect.left, top: rect.top };
   }));
   const narrowAppIcons = narrowIconGeometry.filter(item => item.className === "desktop-icon");
   const narrowIconShapes = narrowIconGeometry.filter(item => item.className.includes("desktop-icon-shape"));
   assert.ok(narrowAppIcons.every(item => item.width <= 72 && item.height >= 44 && item.height <= 68), "mobile desktop app targets are oversized or too small to tap");
   assert.ok(narrowIconShapes.every(item => item.width <= 34 && item.height <= 34), "mobile desktop icon artwork is still oversized");
+  assert.equal(new Set(narrowAppIcons.slice(0, 3).map(item => Math.round(item.top))).size, 1, "mobile desktop does not place three applications in the first row");
+  assert.ok(narrowAppIcons[3].top > narrowAppIcons[0].top, "mobile desktop application rows overlap");
+  const narrowColumnGaps = narrowAppIcons.slice(1, 3).map((item, index) => Math.round(item.left - narrowAppIcons[index].left - narrowAppIcons[index].width));
+  assert.ok(narrowColumnGaps.every(gap => Math.abs(gap - 18) <= 1), `mobile desktop icon gaps are not fixed at 18px: ${narrowColumnGaps.join(", ")}`);
   const narrowBarGeometry = await narrowPage.locator(".waybar-left, .layout-mode-toggle, .layout-mode-glyph, .waybar-right").evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
     return { className: element.className, left: rect.left, right: rect.right, width: rect.width };
