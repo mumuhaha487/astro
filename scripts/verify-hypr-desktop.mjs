@@ -46,6 +46,24 @@ try {
   assert.match(await avatarSwitch.textContent(), /切换另外一种风格/);
   assert.equal(await avatarSwitch.locator(".archlinux-logo").count(), 1, "desktop switch has no Arch Linux icon");
   assert.equal(await page.locator(".home-desktop-switch, .sidebar-desktop-switch").count(), 0, "duplicate desktop switch entry remains");
+  const homeInfoSurface = await page.locator(".home-doc-list-unframed").evaluate(element => {
+    const style = getComputedStyle(element);
+    const itemStyle = getComputedStyle(element.querySelector(".home-doc-item"));
+    return {
+      borderWidth: style.borderTopWidth,
+      borderRadius: style.borderTopLeftRadius,
+      background: style.backgroundColor,
+      boxShadow: style.boxShadow,
+      backdropFilter: style.backdropFilter || style.webkitBackdropFilter,
+      itemBackground: itemStyle.backgroundColor,
+    };
+  });
+  assert.equal(homeInfoSurface.borderWidth, "0px", "homepage information area still has an outer border");
+  assert.equal(homeInfoSurface.borderRadius, "0px", "homepage information area still has glass-frame corners");
+  assert.match(homeInfoSurface.background, /rgba\([^)]*, 0\)/, "homepage information area still has a visible glass background");
+  assert.equal(homeInfoSurface.boxShadow, "none", "homepage information area still has a glass shadow");
+  assert.equal(homeInfoSurface.backdropFilter, "none", "homepage information area still blurs the wallpaper");
+  assert.match(homeInfoSurface.itemBackground, /rgba\([^)]*, 0\)/, "homepage content sections still have glass backgrounds");
   await page.screenshot({ path: `${process.env.TEMP}\\hypr-home-switch-1600x900.png`, fullPage: true });
   await avatarSwitch.click();
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "particles");
@@ -70,6 +88,7 @@ try {
   assert.equal(await page.locator(".waybar [data-return-classic]").isVisible(), true, "waybar cannot visibly return to classic mode");
   assert.equal(await page.locator(".hypr-dock [data-return-classic]").isVisible(), true, "dock has no classic-style return control");
   assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
+  assert.equal(await page.locator(".welcome-copy").textContent(), "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。");
 
   await page.locator('.hypr-dock [data-app="blog"]').click();
   await page.locator('.hypr-dock [data-app="tools"]').click();
@@ -126,6 +145,27 @@ try {
   await terminalInput.fill("help");
   await terminalInput.press("Enter");
   assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /fastfetch[\s\S]*layout \[stacked\|tiled\][\s\S]*classic/, "extended terminal help is incomplete");
+  await terminalInput.fill("fast");
+  await terminalInput.press("Tab");
+  assert.equal(await terminalInput.inputValue(), "fastfetch ", "terminal Tab completion does not complete a unique command");
+  await terminalInput.press("Enter");
+  assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /OS: Arch Linux \(web\)/, "fastfetch static output is missing");
+  await terminalInput.press("ArrowUp");
+  assert.equal(await terminalInput.inputValue(), "fastfetch", "terminal history does not recall the last command");
+  await terminalInput.press("ArrowDown");
+  assert.equal(await terminalInput.inputValue(), "", "terminal history cannot return to an empty prompt");
+  await terminalInput.fill("cat /etc/os-release");
+  await terminalInput.press("Enter");
+  assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /NAME="Arch Linux"[\s\S]*BUILD_ID=rolling/, "Arch os-release example is missing");
+  await terminalInput.fill("fortune");
+  await terminalInput.press("Enter");
+  assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /保持好奇|清晰的目录|今天写下/, "terminal fun command has no output");
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-terminal-commands-1600x900.png`, fullPage: true });
+  await terminalInput.fill("history");
+  await terminalInput.press("Enter");
+  assert.match(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), /1  help[\s\S]*2  fastfetch[\s\S]*history/, "terminal history does not show the current session");
+  await terminalInput.press("Control+l");
+  assert.equal(await page.locator('.hypr-window[data-app="terminal"] .terminal-output').textContent(), "", "terminal Ctrl+L does not clear the output");
   await terminalInput.fill("layout tiled");
   await terminalInput.press("Enter");
   await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.layoutMode === "tiled");

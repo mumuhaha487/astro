@@ -135,9 +135,10 @@ assert.match(home, /我の小小窝。/, "Homepage workspace label is incorrect"
 assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub contact is missing");
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
-assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three cards");
-assert.match(home, /hugo\.css\?v=20260914-hyprliquid-v3/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20260914-hyprliquid-v3/, "Current script cache version is missing");
+assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three content sections");
+assert.match(home, /class="home-doc-list home-doc-list-unframed"/, "Homepage information area still uses the framed glass container");
+assert.match(home, /hugo\.css\?v=20260914-hyprliquid-v4/, "Current stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20260914-hyprliquid-v4/, "Current script cache version is missing");
 assert.match(home, /class="avatar-style-switch" href="\/desktop\/" data-desktop-transition/, "HyDE desktop transition trigger is missing from the avatar");
 assert.match(home, /class="archlinux-logo" viewBox="0 0 24 24"/, "Desktop switch is missing its Arch Linux icon");
 assert.doesNotMatch(home, /home-desktop-switch|sidebar-desktop-switch|data-nav="desktop"/, "Unrequested duplicate desktop switch entry remains");
@@ -148,6 +149,8 @@ assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
 assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
+assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v5/, "Current desktop stylesheet cache version is missing");
+assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v5/, "Current desktop script cache version is missing");
 assert.match(desktopScript, /function toggleLayoutMode\(\)/, "Global stacked/tiled window logic is missing");
 assert.match(desktopScript, /layoutMode === "stacked" \? "tiled" : "stacked"/, "Global window layout toggle is not reversible");
 assert.match(desktopScript, /getPropertyValue\("--window-gap"\)/, "Tiled windows do not read the responsive gap setting");
@@ -161,6 +164,13 @@ assert.match(desktopStyles, /@keyframes classic-window-collapse/, "Desktop windo
 assert.match(home, /desktop-returned-to-classic/, "Classic homepage does not detect a desktop return");
 assert.match(home, /from-hypr-desktop/, "Classic homepage return animation is missing");
 assert.match(desktopScript, /name === "fastfetch"/, "Extended terminal system commands are missing");
+assert.match(desktopScript, /这是一个启发于 Arch Linux \+ Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。/, "Desktop welcome copy is not the requested Arch Linux and Hyprland description");
+assert.doesNotMatch(desktopScript, /这里不是一张静态“桌面皮肤”/, "Legacy desktop welcome copy remains");
+assert.match(desktopScript, /const terminalCommands = \[/, "Terminal command completion registry is missing");
+assert.match(desktopScript, /name === "pacman"/, "Terminal is missing Arch package command examples");
+assert.match(desktopScript, /name === "fortune" \|\| name === "quote"/, "Terminal is missing static fun commands");
+assert.match(desktopScript, /event\.key === "ArrowUp" \|\| event\.key === "ArrowDown"/, "Terminal command history navigation is missing");
+assert.match(desktopScript, /event\.key === "Tab"/, "Terminal command completion is missing");
 assert.match(desktopScript, /name === "layout"/, "Terminal cannot control window layout");
 assert.match(desktopScript, /name === "wallpaper"/, "Terminal cannot control wallpapers");
 assert.match(desktopScript, /name === "classic"/, "Terminal cannot return to classic mode");
@@ -189,8 +199,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260914-hyprliquid-v3/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260914-hyprliquid-v3/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260914-hyprliquid-v4/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260914-hyprliquid-v4/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");

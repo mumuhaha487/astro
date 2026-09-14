@@ -32,6 +32,13 @@
     terminal: { title: "终端", subtitle: "zsh · mumu@arch", icon: ">_", kind: "terminal" }
   };
   const launcherOrder = ["home", "blog", "tools", "friends", "guestbook", "archive", "terminal", "welcome"];
+  const terminalCommands = [
+    "help", "commands", "man", "neofetch", "fastfetch", "ls", "tree", "pwd", "date", "whoami",
+    "hostname", "id", "uname", "uptime", "free", "df", "ps", "ip", "ping", "cat", "which",
+    "pacman", "sudo", "echo", "printf", "history", "open", "xdg-open", "cd", "workspace", "ws",
+    "layout", "tile", "wallpaper", "wall", "fortune", "quote", "matrix", "about", "clear", "close",
+    "exit", "home", "classic", "logout",
+  ];
   const wallpaperCount = 6;
   const windows = new Map();
   const focusStack = new Map();
@@ -162,7 +169,7 @@
     return `
       <div class="welcome-app">
         <div class="welcome-heading"><div class="welcome-mark">${archLogo}</div><div><p>ARCH LINUX · HYPRLAND</p><h1>木木em哈哈的桌面工作区</h1></div></div>
-        <p class="welcome-copy">这里不是一张静态“桌面皮肤”，而是一套可以操作的动态窗口工作区。窗口只有集中堆叠和液态平铺两种布局；平铺按比例填满工作区，以固定间距分隔，不留下大片空白。博客原有内容仍使用真实页面，只是被放进桌面窗口中。</p>
+        <p class="welcome-copy">这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。</p>
         <div class="welcome-grid">
           <section class="welcome-card"><span>01 / STACKED WINDOWS</span><h2>集中堆叠</h2><p>多个窗口按顺序集中层叠，标题栏始终可辨认，整体保持在屏幕范围内。</p></section>
           <section class="welcome-card"><span>02 / WORKSPACES</span><h2>多工作区</h2><p>顶部 1–5 是独立工作区，使用 Alt + 数字键可以快速切换。</p></section>
@@ -179,16 +186,50 @@
     const output = wrapper.querySelector(".terminal-output");
     const form = wrapper.querySelector("form");
     const input = wrapper.querySelector("input");
+    const commandHistory = [];
+    let historyIndex = 0;
     form.addEventListener("submit", event => {
       event.preventDefault();
       const command = input.value.trim();
       input.value = "";
       if (!command) return;
+      if (commandHistory.at(-1) !== command) commandHistory.push(command);
+      historyIndex = commandHistory.length;
       const commandLine = document.createElement("div");
       commandLine.textContent = `mumu@arch ~ ❯ ${command}`;
       output.append(commandLine);
-      runTerminalCommand(command, output, element);
+      runTerminalCommand(command, output, element, commandHistory);
       output.scrollTop = output.scrollHeight;
+    });
+    input.addEventListener("keydown", event => {
+      if (event.ctrlKey && event.key.toLowerCase() === "l") {
+        event.preventDefault();
+        output.textContent = "";
+        return;
+      }
+      if (event.key === "ArrowUp" || event.key === "ArrowDown") {
+        if (!commandHistory.length) return;
+        event.preventDefault();
+        historyIndex = event.key === "ArrowUp"
+          ? Math.max(0, historyIndex - 1)
+          : Math.min(commandHistory.length, historyIndex + 1);
+        input.value = historyIndex === commandHistory.length ? "" : commandHistory[historyIndex];
+        input.setSelectionRange(input.value.length, input.value.length);
+        return;
+      }
+      if (event.key === "Tab") {
+        const prefix = input.value.slice(0, input.selectionStart ?? input.value.length).trim().toLowerCase();
+        if (!prefix || /\s/.test(prefix)) return;
+        event.preventDefault();
+        const matches = terminalCommands.filter(command => command.startsWith(prefix));
+        if (matches.length === 1) {
+          input.value = `${matches[0]} `;
+          input.setSelectionRange(input.value.length, input.value.length);
+        } else if (matches.length > 1) {
+          appendTerminal(output, matches.join("  "));
+          output.scrollTop = output.scrollHeight;
+        }
+      }
     });
     wrapper.addEventListener("pointerdown", () => setTimeout(() => input.focus(), 0));
     return wrapper;
@@ -245,17 +286,22 @@
 
   function terminalHelp(output) {
     appendTerminal(output, "可用命令：");
-    appendTerminal(output, "  help / commands              查看帮助");
-    appendTerminal(output, "  neofetch / fastfetch         查看系统信息");
-    appendTerminal(output, "  ls [apps|workspaces]         列出应用或工作区");
-    appendTerminal(output, "  open <应用>                  打开 home/blog/tools/friends/guestbook/archive/terminal");
-    appendTerminal(output, "  cd <应用|~>                  打开应用；cd ~ 返回经典模式");
-    appendTerminal(output, "  workspace <1-5> / ws <1-5>  切换工作区");
-    appendTerminal(output, "  layout [stacked|tiled]       设置或切换窗口布局");
-    appendTerminal(output, "  wallpaper [next|1-6]         切换壁纸");
-    appendTerminal(output, "  close / exit                 关闭终端窗口");
-    appendTerminal(output, "  home / classic / logout      返回经典博客模式");
-    appendTerminal(output, "  pwd · date · whoami · uname · echo · history · clear");
+    appendTerminal(output, "  help / commands / man           查看帮助");
+    appendTerminal(output, "  neofetch / fastfetch            查看桌面环境信息");
+    appendTerminal(output, "  ls [apps|workspaces] · tree     浏览应用与工作区");
+    appendTerminal(output, "  open <应用> · cd <应用|~>       打开页面；cd ~ 返回经典模式");
+    appendTerminal(output, "  workspace <1-5> / ws <1-5>     切换工作区");
+    appendTerminal(output, "  layout [stacked|tiled]          设置或切换窗口布局");
+    appendTerminal(output, "  wallpaper [next|1-6]            切换壁纸");
+    appendTerminal(output, "  cat <文件> · which <命令>       查看静态文件与命令路径");
+    appendTerminal(output, "  free -h · df -h · ps · ip a    常用 Linux 状态格式");
+    appendTerminal(output, "  pacman [-Q|-Syu] · sudo         Arch 命令静态演示");
+    appendTerminal(output, "  fortune · quote · matrix        趣味内容");
+    appendTerminal(output, "  pwd · date · whoami · hostname · id · uname · uptime");
+    appendTerminal(output, "  echo · printf · ping · history · clear · about");
+    appendTerminal(output, "  close / exit                    关闭终端窗口");
+    appendTerminal(output, "  home / classic / logout         返回经典博客模式");
+    appendTerminal(output, "快捷键：↑/↓ 回看历史 · Tab 补全 · Ctrl+L 清屏");
   }
 
   function resolveApp(value = "") {
@@ -267,7 +313,7 @@
     return apps[normalized] ? normalized : aliases[normalized] || "";
   }
 
-  function runTerminalCommand(command, output, element) {
+  function runTerminalCommand(command, output, element, commandHistory = []) {
     const [rawName, ...args] = command.trim().split(/\s+/);
     const name = rawName.toLowerCase();
     const argument = args.join(" ");
@@ -280,24 +326,81 @@
     } else if (name === "ls") {
       if (args[0] === "workspaces" || args[0] === "ws") appendTerminal(output, "1  2  3  4  5");
       else appendTerminal(output, "home  blog  tools  friends  guestbook  archive  terminal  welcome");
+    } else if (name === "tree") {
+      appendTerminal(output, ".\n├── home\n├── blog\n├── tools\n├── friends\n├── guestbook\n├── archive\n├── terminal\n└── welcome");
     } else if (name === "pwd") {
       appendTerminal(output, `/home/mumu/workspace-${activeWorkspace}`);
     } else if (name === "date") {
       appendTerminal(output, new Date().toLocaleString("zh-CN", { hour12: false }));
     } else if (name === "whoami") {
       appendTerminal(output, "mumu");
+    } else if (name === "hostname") {
+      appendTerminal(output, "mumu-hypr");
+    } else if (name === "id") {
+      appendTerminal(output, "uid=1000(mumu) gid=1000(mumu) groups=1000(mumu),998(wheel)");
     } else if (name === "uname") {
       appendTerminal(output, args.includes("-a") ? "Arch Linux web 6.12-hyprliquid x86_64 GNU/Linux" : "Arch Linux");
-    } else if (name === "echo") {
+    } else if (name === "uptime") {
+      appendTerminal(output, `up ${Math.max(1, Math.floor(performance.now() / 60000))} min, 1 user, load average: 0.08, 0.05, 0.03`);
+    } else if (name === "free") {
+      appendTerminal(output, "               total        used        free      shared  buff/cache   available\nMem:            16Gi       3.2Gi       8.7Gi       128Mi       4.1Gi        12Gi\nSwap:          4.0Gi          0B       4.0Gi");
+    } else if (name === "df") {
+      appendTerminal(output, "Filesystem      Size  Used Avail Use% Mounted on\n/dev/web          64G   11G   50G  18% /\ntmpfs            7.8G  128K  7.8G   1% /tmp");
+    } else if (name === "ps") {
+      appendTerminal(output, "  PID TTY          TIME CMD\n 1000 pts/0    00:00:00 zsh\n 1024 pts/0    00:00:01 hypr-desktop\n 1058 pts/0    00:00:00 ps");
+    } else if (name === "ip") {
+      appendTerminal(output, "1: lo: <LOOPBACK,UP> mtu 65536\n    inet 127.0.0.1/8 scope host lo\n2: web0: <BROWSER,UP> mtu 1500\n    inet 浏览器沙盒（静态演示）");
+    } else if (name === "ping") {
+      const host = argument || "vmss.cn";
+      appendTerminal(output, `PING ${host}（静态演示）\n64 bytes from edge: time=12.4 ms\n64 bytes from edge: time=11.8 ms\n--- ${host} ping statistics ---\n2 packets transmitted, 2 received, 0% packet loss`);
+    } else if (name === "cat") {
+      const target = argument.replace(/^['"]|['"]$/g, "");
+      if (target === "/etc/os-release" || target === "etc/os-release") {
+        appendTerminal(output, 'NAME="Arch Linux"\nPRETTY_NAME="Arch Linux"\nID=arch\nBUILD_ID=rolling\nHOME_URL="https://archlinux.org/"');
+      } else if (target.toLowerCase() === "readme.md" || target.toLowerCase() === "readme") {
+        appendTerminal(output, "# Mumu Hyprland Desktop\n这是一个启发于 Arch Linux + Hyprland 的浏览器动态窗口工作区。");
+      } else if (target === "shortcuts" || target === "shortcuts.txt") {
+        appendTerminal(output, "Alt+Space 启动器\nAlt+Enter 终端\nAlt+1–5 工作区\nAlt+G 堆叠/平铺\nAlt+B 返回经典模式\nAlt+Q 关闭窗口");
+      } else {
+        appendTerminal(output, `cat: ${target || "(空)"}: No such static file；可查看 /etc/os-release、README.md 或 shortcuts`);
+      }
+    } else if (name === "which") {
+      const requested = (args[0] || "").toLowerCase();
+      appendTerminal(output, terminalCommands.includes(requested) ? `/usr/bin/${requested}` : `${requested || "(空)"} not found`);
+    } else if (name === "pacman") {
+      if (args.includes("-Q") || args.includes("-Qe")) {
+        appendTerminal(output, "hyprland 0.51.1-1\nwaybar 0.13.0-1\nzsh 5.9-5\nastro-blog current");
+      } else if (args.some(value => value === "-Syu" || value === "-S")) {
+        appendTerminal(output, ":: 正在同步软件包数据库…（静态演示）\n core、extra、multilib 均为最新；浏览器终端不会安装或修改本机软件。");
+      } else {
+        appendTerminal(output, "用法：pacman -Q 查看静态软件清单；pacman -Syu 查看更新演示");
+      }
+    } else if (name === "sudo") {
+      appendTerminal(output, "sudo: 此终端运行在浏览器沙盒中，不会申请系统权限或执行真实命令。");
+    } else if (name === "echo" || name === "printf") {
       appendTerminal(output, argument);
     } else if (name === "history") {
-      appendTerminal(output, "1  neofetch\n2  open blog\n3  workspace 2\n4  layout tiled\n5  wallpaper next");
+      appendTerminal(output, commandHistory.map((entry, index) => `${index + 1}  ${entry}`).join("\n") || "history: 当前会话还没有命令");
+    } else if (name === "fortune" || name === "quote") {
+      const quotes = [
+        "保持好奇，让每一次打开都通向新的页面。",
+        "清晰的目录让知识可被再次找到。",
+        "今天写下的一小段，可能正是明天需要的答案。",
+      ];
+      appendTerminal(output, quotes[commandHistory.length % quotes.length]);
+    } else if (name === "matrix") {
+      appendTerminal(output, "01001000 01111001 01110000 01110010\n00100000 01101100 01101001 01110001\n浏览器矩阵已连接：工作区保持稳定。");
+    } else if (name === "about") {
+      appendTerminal(output, "Mumu Hyprland Desktop\n启发于 Arch Linux + Hyprland，用窗口化方式浏览博客、工具、友链与归档页面。");
     } else if (name === "open" || name === "xdg-open") {
       const appName = resolveApp(args[0]);
       if (appName) openApp(appName);
       else appendTerminal(output, `未找到应用：${args[0] || "(空)"}；输入 ls 查看名称`);
     } else if (name === "cd") {
-      if (!argument || argument === "~" || argument === "/" || argument === "/home" || argument === "/home/mumu") returnToClassic();
+      if (!argument || argument === "~" || argument === "/" || argument === "/home" || argument === "/home/mumu") {
+        returnToClassic();
+        return;
+      }
       else {
         const appName = resolveApp(argument.replace(/^\/+|\/+$/g, ""));
         if (appName) openApp(appName);
@@ -310,7 +413,9 @@
     } else if (name === "layout" || name === "tile") {
       const requested = (args[0] || "toggle").toLowerCase();
       const targetMode = requested === "stack" || requested === "stacked" ? "stacked" : requested === "tile" || requested === "tiled" ? "tiled" : "";
-      if (!targetMode || targetMode !== layoutMode) toggleLayoutMode();
+      if (requested === "toggle") toggleLayoutMode();
+      else if (!targetMode) appendTerminal(output, "用法：layout [stacked|tiled]；不带参数时切换布局");
+      else if (targetMode !== layoutMode) toggleLayoutMode();
       else appendTerminal(output, `当前已经是${layoutMode === "stacked" ? "集中堆叠" : "液态平铺"}布局`);
     } else if (name === "wallpaper" || name === "wall") {
       const requested = args[0];
