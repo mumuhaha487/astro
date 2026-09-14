@@ -149,8 +149,8 @@ assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
 assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
-assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v5/, "Current desktop stylesheet cache version is missing");
-assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v5/, "Current desktop script cache version is missing");
+assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v7/, "Current desktop stylesheet cache version is missing");
+assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v7/, "Current desktop script cache version is missing");
 assert.match(desktopScript, /function toggleLayoutMode\(\)/, "Global stacked/tiled window logic is missing");
 assert.match(desktopScript, /layoutMode === "stacked" \? "tiled" : "stacked"/, "Global window layout toggle is not reversible");
 assert.match(desktopScript, /getPropertyValue\("--window-gap"\)/, "Tiled windows do not read the responsive gap setting");
@@ -158,6 +158,7 @@ assert.match(desktopStyles, /--window-gap:\s*12px/, "Desktop liquid-window gap i
 assert.match(desktopStyles, /--window-radius:\s*34px/, "Desktop liquid-window corner radius is missing");
 assert.match(desktopStyles, /border-radius:\s*var\(--window-radius\)/, "Window corners do not use the shared liquid radius");
 assert.match(desktopStyles, /backdrop-filter:\s*blur\(30px\) saturate\(1\.42\)/, "Liquid acrylic window material is missing");
+assert.match(desktopStyles, /\.welcome-card\s*\{[^}]*border:\s*0[^}]*border-radius:\s*0[^}]*background:\s*transparent[^}]*box-shadow:\s*none[^}]*backdrop-filter:\s*none/, "Welcome explanation cards still use liquid-glass framing");
 assert.match(desktopScript, /function returnToClassic\(\)/, "Desktop cannot return to classic mode");
 assert.match(desktopScript, /classic-return-transition/, "Desktop classic-mode return has no transition sequence");
 assert.match(desktopStyles, /@keyframes classic-window-collapse/, "Desktop windows do not animate when returning to classic mode");
@@ -171,6 +172,7 @@ assert.match(desktopScript, /name === "pacman"/, "Terminal is missing Arch packa
 assert.match(desktopScript, /name === "fortune" \|\| name === "quote"/, "Terminal is missing static fun commands");
 assert.match(desktopScript, /event\.key === "ArrowUp" \|\| event\.key === "ArrowDown"/, "Terminal command history navigation is missing");
 assert.match(desktopScript, /event\.key === "Tab"/, "Terminal command completion is missing");
+assert.match(desktopScript, /function syncToastViewport\(\)/, "Mobile notifications do not reserve non-overlapping window space");
 assert.match(desktopScript, /name === "layout"/, "Terminal cannot control window layout");
 assert.match(desktopScript, /name === "wallpaper"/, "Terminal cannot control wallpapers");
 assert.match(desktopScript, /name === "classic"/, "Terminal cannot return to classic mode");

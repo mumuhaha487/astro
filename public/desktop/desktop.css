@@ -370,6 +370,7 @@ kbd {
   pointer-events: none;
 }
 .hypr-window.is-opening { animation: window-open .48s var(--ease-hypr) both; }
+.hypr-desktop.is-toast-layout-sync .hypr-window { transition: none !important; }
 @keyframes window-open { from { opacity: 0; transform: translateY(16px) scale(.94); filter: blur(6px); } to { opacity: 1; transform: none; filter: none; } }
 .hypr-window.is-closing { opacity: 0; transform: translateY(9px) scale(.92); filter: blur(5px); pointer-events: none; }
 .hypr-window.is-workspace-hidden {
@@ -450,8 +451,8 @@ kbd {
 .welcome-heading p { margin: 0 0 5px; color: var(--accent); font: 700 10px/1 ui-monospace, monospace; letter-spacing: .17em; }
 .welcome-heading h1 { margin: 0; font-size: clamp(22px, 3vw, 34px); line-height: 1.15; }
 .welcome-copy { max-width: 720px; margin: 0 0 30px; color: #a9bbc8; line-height: 1.8; }
-.welcome-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 12px; }
-.welcome-card { min-height: 134px; padding: 17px; border: 1px solid rgba(255, 255, 255, .1); border-radius: 11px; background: rgba(255, 255, 255, .04); }
+.welcome-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(22px, 3vw, 42px); }
+.welcome-card { min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
 .welcome-card span { color: var(--accent); font: 700 11px/1 ui-monospace, monospace; }
 .welcome-card h2 { margin: 13px 0 7px; font-size: 15px; }
 .welcome-card p { margin: 0; color: #8296a6; font-size: 12px; line-height: 1.65; }
@@ -586,12 +587,15 @@ kbd {
   .desktop-icon { width: 100%; min-height: 92px; gap: 8px; }
   .desktop-icon-shape { width: 48px; height: 48px; border-radius: 15px; }
   .windows-layer { inset: 4px 6px 65px; }
+  .hypr-desktop.has-active-toast .windows-layer { bottom: var(--mobile-toast-reserve, 150px); }
   .hypr-window { min-width: 0; min-height: 0; border-radius: var(--window-radius); grid-template-rows:39px minmax(0,1fr); }
   .hypr-window.is-floating { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; resize: none; }
   .hypr-desktop[data-layout-mode="stacked"] .hypr-window:not(.is-focused) { opacity: 0; pointer-events: none; transform: scale(.965); }
   .window-titlebar{padding-left:10px}
   .window-app-subtitle { display: none; }
   .hypr-dock { bottom: max(8px, env(safe-area-inset-bottom)); height: 55px; }
+  .toast-region { left: 6px; right: 6px; bottom: 68px; }
+  .desktop-toast { width: 100%; }
   .desktop-hint { display: none; }
   .launcher { padding: 13px; }
   .launcher{width:100%;max-height:min(680px,calc(100dvh - 78px));align-self:end;border-radius:18px 18px 0 0;padding:16px}

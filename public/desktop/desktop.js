@@ -46,6 +46,7 @@
   let activeWindowId = null;
   let serial = 0;
   let topZ = 20;
+  let toastLayoutFrame = 0;
   let layoutMode = "stacked";
   let wallpaperIndex = clamp(Number(localStorage.getItem("hypr-wallpaper") || 3), 1, wallpaperCount);
   let launcherMatches = launcherOrder.slice();
@@ -603,13 +604,37 @@
     focusWindow(items[(index + direction + items.length) % items.length]);
   }
 
+  function syncToastViewport() {
+    const hasToast = toastRegion.childElementCount > 0;
+    root.classList.toggle("has-active-toast", hasToast);
+    if (hasToast) {
+      const toastRect = toastRegion.getBoundingClientRect();
+      const bottomOffset = Math.max(0, window.innerHeight - toastRect.bottom);
+      root.style.setProperty("--mobile-toast-reserve", `${Math.ceil(toastRect.height + bottomOffset + 8)}px`);
+    } else {
+      root.style.removeProperty("--mobile-toast-reserve");
+    }
+    if (window.innerWidth <= 680) {
+      if (hasToast) root.classList.add("is-toast-layout-sync");
+      cancelAnimationFrame(toastLayoutFrame);
+      toastLayoutFrame = requestAnimationFrame(() => {
+        applyLayoutMode(activeWorkspace);
+        toastLayoutFrame = requestAnimationFrame(() => root.classList.remove("is-toast-layout-sync"));
+      });
+    }
+  }
+
   function showToast(title, message, duration = 2600) {
     const toast = document.createElement("div");
     toast.className = "desktop-toast";
     toast.innerHTML = `<span>△</span><div><strong>${escapeHTML(title)}</strong><small>${escapeHTML(message)}</small></div>`;
     toastRegion.append(toast);
+    syncToastViewport();
     setTimeout(() => toast.classList.add("is-leaving"), duration);
-    setTimeout(() => toast.remove(), duration + 320);
+    setTimeout(() => {
+      toast.remove();
+      syncToastViewport();
+    }, duration + 320);
   }
 
   function renderLauncher(query = "") {

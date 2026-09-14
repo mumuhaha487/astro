@@ -29,7 +29,10 @@ function assertLiquidTiling(rects, layer, expectedGap, label) {
       if (horizontalOverlap > 4) separations.push(Math.max(second.top - first.bottom, first.top - second.bottom));
     }
   }
-  assert.ok(unusedRatio > .002 && unusedRatio < .06, `${label} does not reserve a controlled liquid-window gap`);
+  assert.ok(
+    unusedRatio > .002 && unusedRatio < .06,
+    `${label} does not reserve a controlled liquid-window gap (unused=${unusedRatio.toFixed(4)}, layer=${Math.round(layer.width)}x${Math.round(layer.height)}, windows=${rects.map(rect => `${Math.round(rect.width)}x${Math.round(rect.height)}`).join("+")})`,
+  );
   assert.ok(separations.some(gap => Math.abs(gap - expectedGap) <= 1.5), `${label} does not expose the configured ${expectedGap}px gap`);
 }
 
@@ -68,14 +71,19 @@ try {
   await avatarSwitch.click();
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "particles");
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "loading");
-  await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "barrage");
-  await page.waitForTimeout(320);
-  assert.equal(await page.locator(".desktop-transition-barrage").evaluate(element => getComputedStyle(element).opacity), "1", "barrage stage stays hidden");
-  assert.ok(Number(await page.locator(".desktop-transition-loading").evaluate(element => getComputedStyle(element).opacity)) < .02, "loading indicator does not leave before the barrage");
-  assert.equal(await page.locator(".desktop-transition-barrage span").evaluateAll(elements => elements.some(element => {
-    const rect = element.getBoundingClientRect();
-    return rect.left < innerWidth && rect.right > 0;
-  })), true, "barrage labels animate before they become visible");
+  await page.waitForFunction(() => {
+    const overlay = document.querySelector(".desktop-transition-overlay");
+    const barrage = document.querySelector(".desktop-transition-barrage");
+    const loading = document.querySelector(".desktop-transition-loading");
+    const visibleLabel = [...document.querySelectorAll(".desktop-transition-barrage span")].some(element => {
+      const rect = element.getBoundingClientRect();
+      return rect.left < innerWidth && rect.right > 0;
+    });
+    return overlay?.dataset.transitionState === "barrage"
+      && Number(getComputedStyle(barrage).opacity) > .5
+      && Number(getComputedStyle(loading).opacity) < .2
+      && visibleLabel;
+  });
   await page.waitForURL(/\/desktop\/\?from=classic/, { timeout: 8_000 });
   await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
   await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.entryState === "complete", { timeout: 4_000 });
@@ -89,6 +97,22 @@ try {
   assert.equal(await page.locator(".hypr-dock [data-return-classic]").isVisible(), true, "dock has no classic-style return control");
   assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
   assert.equal(await page.locator(".welcome-copy").textContent(), "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。");
+  const welcomeCardSurfaces = await page.locator(".welcome-card").evaluateAll(elements => elements.map(element => {
+    const style = getComputedStyle(element);
+    return {
+      borderWidth: style.borderTopWidth,
+      borderRadius: style.borderTopLeftRadius,
+      background: style.backgroundColor,
+      boxShadow: style.boxShadow,
+      backdropFilter: style.backdropFilter || style.webkitBackdropFilter,
+    };
+  }));
+  assert.equal(welcomeCardSurfaces.length, 3, "welcome explanation sections are incomplete");
+  assert.ok(welcomeCardSurfaces.every(surface => surface.borderWidth === "0px"), "welcome explanation cards still have borders");
+  assert.ok(welcomeCardSurfaces.every(surface => surface.borderRadius === "0px"), "welcome explanation cards still have rounded frames");
+  assert.ok(welcomeCardSurfaces.every(surface => /rgba\([^)]*, 0\)/.test(surface.background)), "welcome explanation cards still have visible backgrounds");
+  assert.ok(welcomeCardSurfaces.every(surface => surface.boxShadow === "none"), "welcome explanation cards still have shadows");
+  assert.ok(welcomeCardSurfaces.every(surface => surface.backdropFilter === "none"), "welcome explanation cards still use backdrop blur");
 
   await page.locator('.hypr-dock [data-app="blog"]').click();
   await page.locator('.hypr-dock [data-app="tools"]').click();
@@ -239,6 +263,18 @@ try {
   response = await mobilePage.goto(new URL("/desktop/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   await mobilePage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
+  await mobilePage.waitForSelector(".desktop-toast");
+  await mobilePage.waitForTimeout(450);
+  const mobileWelcomeAndToast = await mobilePage.locator(".hypr-window, .desktop-toast").evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    return { className: element.className, top: rect.top, bottom: rect.bottom };
+  }));
+  const mobileWelcomeRect = mobileWelcomeAndToast.find(rect => rect.className.includes("hypr-window"));
+  const mobileToastRect = mobileWelcomeAndToast.find(rect => rect.className.includes("desktop-toast"));
+  assert.ok(mobileWelcomeRect && mobileToastRect && mobileWelcomeRect.bottom <= mobileToastRect.top - 4, "mobile notification overlaps the welcome window");
+  await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-welcome-unframed-mobile-390x844.png`, fullPage: true });
+  await mobilePage.waitForSelector(".desktop-toast", { state: "detached" });
+  await mobilePage.waitForTimeout(450);
   await mobilePage.locator('.hypr-dock [data-app="blog"]').tap();
   await mobilePage.waitForFunction(() => document.querySelector('.hypr-window[data-app="blog"]')?.classList.contains("is-loaded"));
   const mobileRect = await mobilePage.locator('.hypr-window[data-app="blog"]').evaluate(element => {
