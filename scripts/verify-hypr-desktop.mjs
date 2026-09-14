@@ -67,7 +67,8 @@ try {
   assert.equal(await page.locator("[data-workspace-target]").count(), 5, "workspace switcher is incomplete");
   assert.equal(await page.locator("#hypr-desktop").getAttribute("data-layout-mode"), "stacked", "desktop should default to the HyDE stacked layout");
   assert.equal(await page.locator("[data-layout-toggle]").getAttribute("aria-pressed"), "true", "layout toggle state does not match the default stack");
-  assert.equal(await page.locator("[data-return-classic]").isVisible(), true, "desktop cannot visibly return to classic mode");
+  assert.equal(await page.locator(".waybar [data-return-classic]").isVisible(), true, "waybar cannot visibly return to classic mode");
+  assert.equal(await page.locator(".hypr-dock [data-return-classic]").isVisible(), true, "dock has no classic-style return control");
   assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
 
   await page.locator('.hypr-dock [data-app="blog"]').click();
@@ -151,7 +152,7 @@ try {
   await page.waitForFunction(previous => document.querySelector("#wallpaper-image")?.getAttribute("src") !== previous, wallBefore);
   assert.equal(errors.length, 0, `desktop emitted page errors: ${errors.join(" | ")}`);
   await page.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-1600x900.png`, fullPage: true });
-  await page.locator("[data-return-classic]").click();
+  await page.locator(".hypr-dock [data-return-classic]").click();
   await page.waitForURL(new URL("/", baseUrl).toString());
   assert.equal(new URL(page.url()).pathname, "/", "classic-mode return control did not leave the desktop");
   await desktop.close();

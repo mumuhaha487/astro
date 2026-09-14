@@ -147,6 +147,7 @@ assert.match(desktopPage, /Alt \+ G/, "Global window layout shortcut is not expl
 assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-app launcher is missing from the dock");
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
+assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
 assert.match(desktopScript, /function toggleLayoutMode\(\)/, "Global stacked/tiled window logic is missing");
 assert.match(desktopScript, /layoutMode === "stacked" \? "tiled" : "stacked"/, "Global window layout toggle is not reversible");
 assert.match(desktopScript, /getPropertyValue\("--window-gap"\)/, "Tiled windows do not read the responsive gap setting");

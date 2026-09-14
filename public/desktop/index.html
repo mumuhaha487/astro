@@ -11,8 +11,8 @@
   <script>if(new URLSearchParams(location.search).get("from")==="classic")document.documentElement.classList.add("from-classic")</script>
   <link rel="preload" as="image" href="/assets/desktop-banner/3.webp" media="(min-width: 761px)">
   <link rel="preload" as="image" href="/assets/mobile-banner/3.webp" media="(max-width: 760px)">
-  <link rel="stylesheet" href="/desktop/desktop.css?v=20260914-hyprliquid-v2">
-  <script src="/desktop/desktop.js?v=20260914-hyprliquid-v2" defer></script>
+  <link rel="stylesheet" href="/desktop/desktop.css?v=20260914-hyprliquid-v3">
+  <script src="/desktop/desktop.js?v=20260914-hyprliquid-v3" defer></script>
 </head>
 <body>
   <div class="hypr-desktop" id="hypr-desktop" data-workspace="1" data-layout-mode="stacked">
@@ -127,6 +127,9 @@
     </section>
 
     <nav class="hypr-dock glass-surface" aria-label="应用程序坞">
+      <a class="dock-return" href="/" data-return-classic aria-label="切回原来的样式" title="切回原来的样式 · Alt + B">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="m9 7-5 5 5 5M4 12h9a6 6 0 0 1 6 6"/></svg>
+      </a>
       <button type="button" data-app="home" aria-label="首页" title="首页"><span class="dock-glyph">⌂</span><i></i></button>
       <button type="button" data-app="blog" aria-label="博客" title="博客"><span class="dock-glyph">▤</span><i></i></button>
       <button type="button" data-app="tools" aria-label="工具箱" title="工具箱"><span class="dock-glyph">⌘</span><i></i></button>

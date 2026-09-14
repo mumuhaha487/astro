@@ -480,8 +480,10 @@ kbd {
   border-radius: 22px;
   transform: translateX(-50%);
 }
-.hypr-dock button { position: relative; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 12px; background: transparent; cursor: pointer; transition: transform .28s var(--ease-hypr), background .2s; }
-.hypr-dock button:hover { transform: translateY(-7px) scale(1.13); background: rgba(255, 255, 255, .1); }
+.hypr-dock button, .hypr-dock a { position: relative; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 12px; background: transparent; color: inherit; text-decoration: none; cursor: pointer; transition: transform .28s var(--ease-hypr), background .2s; }
+.hypr-dock button:hover, .hypr-dock a:hover { transform: translateY(-7px) scale(1.13); background: rgba(255, 255, 255, .1); }
+.dock-return { background: rgba(var(--accent-rgb), .1) !important; }
+.dock-return svg { width: 22px; height: 22px; fill: none; stroke: var(--accent-strong); stroke-width: 1.9; stroke-linecap: round; stroke-linejoin: round; filter: drop-shadow(0 0 7px rgba(var(--accent-rgb), .28)); }
 .dock-glyph { font: 700 20px/1 "Segoe UI Symbol", sans-serif; color: #dbeaf3; }
 .dock-grid { color: var(--accent); font-size: 25px; }
 .hypr-dock button i { position: absolute; bottom: 1px; width: 4px; height: 4px; border-radius: 50%; background: transparent; transition: background .2s, box-shadow .2s; }

@@ -564,10 +564,10 @@
 
   document.querySelectorAll("[data-workspace-target]").forEach(button => button.addEventListener("click", () => switchWorkspace(button.dataset.workspaceTarget)));
   layoutToggle?.addEventListener("click", toggleLayoutMode);
-  document.querySelector("[data-return-classic]")?.addEventListener("click", event => {
-    event.preventDefault();
-    returnToClassic();
-  });
+  document.querySelectorAll("[data-return-classic]").forEach(button => button.addEventListener("click", event => {
+      event.preventDefault();
+      returnToClassic();
+    }));
   document.querySelectorAll("[data-launcher-open]").forEach(button => button.addEventListener("click", openLauncher));
   document.querySelectorAll(".hypr-dock [data-app]").forEach(button => button.addEventListener("click", () => openApp(button.dataset.app)));
   document.querySelectorAll(".desktop-icon").forEach(button => {
