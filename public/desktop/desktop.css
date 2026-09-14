@@ -680,7 +680,7 @@ kbd {
   .language-toggle > strong { display: none; }
   .volume-pill { display: none; }
   .workspace-viewport { top: 52px; }
-  .desktop-icons { top: 12px; left: 12px; width: calc(100% - 24px); grid-template-columns: repeat(auto-fit, 72px); justify-content: center; justify-items: center; gap: 7px 18px; }
+  .desktop-icons { top: 12px; left: 12px; width: calc(100% - 24px); grid-template-columns: repeat(auto-fit, minmax(72px, 1fr)); justify-content: stretch; justify-items: center; row-gap: clamp(7px, 2vw, 12px); column-gap: clamp(18px, 5vw, 28px); }
   .desktop-icon { width: 72px; min-height: 68px; gap: 4px; padding: 4px; border-radius: 8px; }
   .desktop-icon > span:last-child { max-width: 66px; font-size: 10px; }
   .desktop-icon-shape { width: 34px; height: 34px; border-radius: 10px; }

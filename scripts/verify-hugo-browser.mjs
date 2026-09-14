@@ -293,6 +293,17 @@ try {
   let response = await page.goto(new URL("/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   assert.equal(await page.locator(".home-stage").count(), 1, "home workspace is missing");
+  const mobileHomeOrder = await page.evaluate(() => {
+    const topbar = document.querySelector(".workspace-topbar")?.getBoundingClientRect();
+    const profile = document.querySelector(".home-profile")?.getBoundingClientRect();
+    const avatar = document.querySelector(".profile-avatar-stage")?.getBoundingClientRect();
+    const switcher = document.querySelector(".avatar-style-switch")?.getBoundingClientRect();
+    const details = document.querySelector(".home-left")?.getBoundingClientRect();
+    return { topbarBottom: topbar?.bottom, profileTop: profile?.top, avatarTop: avatar?.top, switchTop: switcher?.top, profileBottom: profile?.bottom, detailsTop: details?.top };
+  });
+  assert.ok(mobileHomeOrder.profileTop >= mobileHomeOrder.topbarBottom, "mobile profile overlaps the top bar");
+  assert.ok(mobileHomeOrder.avatarTop < mobileHomeOrder.detailsTop && mobileHomeOrder.switchTop < mobileHomeOrder.detailsTop, "mobile avatar and style switch are not shown before homepage details");
+  assert.ok(mobileHomeOrder.profileBottom <= mobileHomeOrder.detailsTop, "mobile profile overlaps the homepage information area");
   assert.equal(await page.locator("#site-wallpaper").count(), 0, "duplicate home wallpaper layer remains");
   assert.equal(await page.locator('.home-backdrop source[srcset^="/optimized/images/"][srcset$="-mobileBackdrop.webp"]').count(), 1, "optimized mobile home cover is missing");
   assert.equal(await page.locator('link[rel="preload"][href^="/optimized/images/"][href$="-mobileBackdrop.webp"][media="(max-width: 760px)"]').count(), 1, "optimized mobile home cover is not preloaded");
@@ -357,6 +368,7 @@ try {
   assert.equal(await page.locator(".mobile-dock:visible").count(), 1, "mobile dock is missing");
   let widths = await page.evaluate(() => ({ body: document.body.scrollWidth, viewport: innerWidth }));
   assert.ok(widths.body <= widths.viewport, `mobile home overflows: ${widths.body}px > ${widths.viewport}px`);
+  await page.screenshot({ path: `${process.env.TEMP}\\hugo-home-profile-first-mobile-390x844.png`, fullPage: true });
 
   response = await page.goto(new URL("/blog/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);

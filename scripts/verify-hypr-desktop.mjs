@@ -299,6 +299,12 @@ try {
   }));
   assert.equal(new Set(responsiveMobileIcons.slice(0, 4).map(item => item.top)).size, 1, "390px mobile viewport does not expand to four icon columns");
   assert.ok(responsiveMobileIcons[4].top > responsiveMobileIcons[0].top, "responsive mobile icon rows overlap");
+  const responsiveMobileGrid = await mobilePage.locator(".desktop-icons").evaluate(element => {
+    const style = getComputedStyle(element);
+    return { columns: style.gridTemplateColumns.split(" ").filter(Boolean).length, columnGap: Number.parseFloat(style.columnGap) };
+  });
+  assert.equal(responsiveMobileGrid.columns, 4, "390px mobile viewport does not calculate four proportional tracks");
+  assert.ok(responsiveMobileGrid.columnGap > 18 && responsiveMobileGrid.columnGap < 20, `390px icon gap is not viewport-scaled: ${responsiveMobileGrid.columnGap}px`);
   await mobilePage.waitForSelector(".desktop-toast");
   await mobilePage.waitForTimeout(450);
   const mobileWelcomeAndToast = await mobilePage.locator(".hypr-window, .desktop-toast").evaluateAll(elements => elements.map(element => {
@@ -381,8 +387,12 @@ try {
   assert.ok(narrowIconShapes.every(item => item.width <= 34 && item.height <= 34), "mobile desktop icon artwork is still oversized");
   assert.equal(new Set(narrowAppIcons.slice(0, 3).map(item => Math.round(item.top))).size, 1, "mobile desktop does not place three applications in the first row");
   assert.ok(narrowAppIcons[3].top > narrowAppIcons[0].top, "mobile desktop application rows overlap");
-  const narrowColumnGaps = narrowAppIcons.slice(1, 3).map((item, index) => Math.round(item.left - narrowAppIcons[index].left - narrowAppIcons[index].width));
-  assert.ok(narrowColumnGaps.every(gap => Math.abs(gap - 18) <= 1), `mobile desktop icon gaps are not fixed at 18px: ${narrowColumnGaps.join(", ")}`);
+  const narrowGrid = await narrowPage.locator(".desktop-icons").evaluate(element => {
+    const style = getComputedStyle(element);
+    return { columns: style.gridTemplateColumns.split(" ").filter(Boolean).length, columnGap: Number.parseFloat(style.columnGap) };
+  });
+  assert.equal(narrowGrid.columns, 3, "360px mobile viewport does not calculate three proportional tracks");
+  assert.ok(Math.abs(narrowGrid.columnGap - 18) <= .1, `360px icon gap should begin at 18px: ${narrowGrid.columnGap}px`);
   const narrowBarGeometry = await narrowPage.locator(".waybar-left, .layout-mode-toggle, .layout-mode-glyph, .waybar-right").evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
     return { className: element.className, left: rect.left, right: rect.right, width: rect.width };
