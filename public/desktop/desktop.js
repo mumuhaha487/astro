@@ -87,8 +87,8 @@
     if (layoutToggle) {
       const stacked = layoutMode === "stacked";
       layoutToggle.setAttribute("aria-pressed", String(stacked));
-      layoutToggle.setAttribute("aria-label", stacked ? "切换为无缝平铺布局" : "切换为集中堆叠布局");
-      layoutToggle.querySelector(".layout-mode-label").textContent = stacked ? "集中堆叠" : "无缝平铺";
+      layoutToggle.setAttribute("aria-label", stacked ? "切换为液态平铺布局" : "切换为集中堆叠布局");
+      layoutToggle.querySelector(".layout-mode-label").textContent = stacked ? "集中堆叠" : "液态平铺";
     }
   }
 
@@ -99,23 +99,22 @@
     element.style.height = `${Math.max(1, Math.round(rect.height))}px`;
   }
 
-  function dwindle(items, rect, depth = 0) {
+  function dwindle(items, rect, gap = Math.max(0, Number.parseFloat(getComputedStyle(root).getPropertyValue("--window-gap")) || 0)) {
     if (!items.length) return;
     if (items.length === 1) {
       setRect(items[0], rect);
       return;
     }
-    const gap = 0;
     const vertical = rect.width > rect.height * 1.08;
     const ratio = items.length === 2 ? .5 : .54;
     if (vertical) {
       const firstWidth = (rect.width - gap) * ratio;
       setRect(items[0], { x: rect.x, y: rect.y, width: firstWidth, height: rect.height });
-      dwindle(items.slice(1), { x: rect.x + firstWidth + gap, y: rect.y, width: rect.width - firstWidth - gap, height: rect.height }, depth + 1);
+      dwindle(items.slice(1), { x: rect.x + firstWidth + gap, y: rect.y, width: rect.width - firstWidth - gap, height: rect.height }, gap);
     } else {
       const firstHeight = (rect.height - gap) * ratio;
       setRect(items[0], { x: rect.x, y: rect.y, width: rect.width, height: firstHeight });
-      dwindle(items.slice(1), { x: rect.x, y: rect.y + firstHeight + gap, width: rect.width, height: rect.height - firstHeight - gap }, depth + 1);
+      dwindle(items.slice(1), { x: rect.x, y: rect.y + firstHeight + gap, width: rect.width, height: rect.height - firstHeight - gap }, gap);
     }
   }
 
@@ -162,11 +161,11 @@
     return `
       <div class="welcome-app">
         <div class="welcome-heading"><div class="welcome-mark">△</div><div><p>ARCH LINUX · HYPRLAND</p><h1>木木em哈哈的桌面工作区</h1></div></div>
-        <p class="welcome-copy">这里不是一张静态“桌面皮肤”，而是一套可以操作的动态窗口工作区。窗口只有集中堆叠和无缝平铺两种布局；平铺会占满全部可用工作区，不留下空白。博客原有内容仍使用真实页面，只是被放进桌面窗口中。</p>
+        <p class="welcome-copy">这里不是一张静态“桌面皮肤”，而是一套可以操作的动态窗口工作区。窗口只有集中堆叠和液态平铺两种布局；平铺按比例填满工作区，以固定间距分隔，不留下大片空白。博客原有内容仍使用真实页面，只是被放进桌面窗口中。</p>
         <div class="welcome-grid">
           <section class="welcome-card"><span>01 / STACKED WINDOWS</span><h2>集中堆叠</h2><p>多个窗口按顺序集中层叠，标题栏始终可辨认，整体保持在屏幕范围内。</p></section>
           <section class="welcome-card"><span>02 / WORKSPACES</span><h2>多工作区</h2><p>顶部 1–5 是独立工作区，使用 Alt + 数字键可以快速切换。</p></section>
-          <section class="welcome-card"><span>03 / GAPLESS TILING</span><h2>无缝平铺</h2><p>按 Alt + G 在堆叠和平铺之间切换；右下角九宫格始终可以打开其他应用。</p></section>
+          <section class="welcome-card"><span>03 / LIQUID TILING</span><h2>液态平铺</h2><p>按 Alt + G 在堆叠和平铺之间切换；窗口保留圆角与间距，右下角九宫格始终可以打开其他应用。</p></section>
         </div>
         <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>G</kbd> 堆叠/平铺</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span></div>
       </div>`;
@@ -302,7 +301,7 @@
     root.dataset.layoutMode = layoutMode;
     applyLayoutMode(activeWorkspace);
     updateWaybar();
-    showToast("窗口布局", layoutMode === "stacked" ? "已集中堆叠；再按 Alt + G 平铺" : "已无缝平铺并占满全部工作区");
+    showToast("窗口布局", layoutMode === "stacked" ? "已集中堆叠；再按 Alt + G 平铺" : "已液态平铺并填满工作区");
   }
 
   function openApp(appId, options = {}) {

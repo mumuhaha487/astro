@@ -13,6 +13,26 @@ if (!executablePath) throw new Error("Chrome was not found");
 
 const browser = await chromium.launch({ executablePath, headless: true });
 
+function assertLiquidTiling(rects, layer, expectedGap, label) {
+  const layerArea = layer.width * layer.height;
+  const usedArea = rects.reduce((total, rect) => total + rect.width * rect.height, 0);
+  const unusedRatio = (layerArea - usedArea) / layerArea;
+  const separations = [];
+  for (let index = 0; index < rects.length; index += 1) {
+    for (let compare = index + 1; compare < rects.length; compare += 1) {
+      const first = rects[index];
+      const second = rects[compare];
+      const horizontalOverlap = Math.min(first.right, second.right) - Math.max(first.left, second.left);
+      const verticalOverlap = Math.min(first.bottom, second.bottom) - Math.max(first.top, second.top);
+      assert.ok(horizontalOverlap <= 1 || verticalOverlap <= 1, `${label} windows overlap`);
+      if (verticalOverlap > 4) separations.push(Math.max(second.left - first.right, first.left - second.right));
+      if (horizontalOverlap > 4) separations.push(Math.max(second.top - first.bottom, first.top - second.bottom));
+    }
+  }
+  assert.ok(unusedRatio > .002 && unusedRatio < .06, `${label} does not reserve a controlled liquid-window gap`);
+  assert.ok(separations.some(gap => Math.abs(gap - expectedGap) <= 1.5), `${label} does not expose the configured ${expectedGap}px gap`);
+}
+
 try {
   const desktop = await browser.newContext({ viewport: { width: 1600, height: 900 } });
   const page = await desktop.newPage();
@@ -24,7 +44,13 @@ try {
   const avatarSwitch = page.locator(".avatar-style-switch");
   assert.equal(await avatarSwitch.getAttribute("href"), "/desktop/");
   assert.match(await avatarSwitch.textContent(), /切换另外一种风格/);
-  await avatarSwitch.click();
+  const homeSwitch = page.locator(".home-desktop-switch");
+  const sidebarSwitch = page.locator(".sidebar-desktop-switch");
+  assert.equal(await homeSwitch.isVisible(), true, "visible homepage desktop switch is missing");
+  assert.equal(await sidebarSwitch.isVisible(), true, "persistent sidebar desktop switch is missing");
+  assert.match(await homeSwitch.textContent(), /切换另外一种风格/);
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-home-switch-1600x900.png`, fullPage: true });
+  await homeSwitch.click();
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "particles");
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "loading");
   await page.waitForFunction(() => document.querySelector(".desktop-transition-overlay")?.dataset.transitionState === "barrage");
@@ -61,6 +87,7 @@ try {
   assert.equal(new Set(stackedRects.map(rect => Math.round(rect.width))).size, 1, "stacked windows do not share one readable size");
   assert.ok(new Set(stackedRects.map(rect => `${Math.round(rect.left)}:${Math.round(rect.top)}`)).size > 1, "stacked windows do not form a visible cascade");
   assert.ok(stackedRects.every(rect => rect.width >= 600 && rect.height >= 420 && rect.left >= 0 && rect.right <= 1600 && rect.top >= 45 && rect.bottom <= 900), "stacked layout squeezes or overflows a window");
+  assert.ok(Number.parseFloat(await page.locator(".hypr-window").first().evaluate(element => getComputedStyle(element).borderTopLeftRadius)) >= 30, "stacked windows lost the large Hyprliquid corner radius");
 
   await page.keyboard.press("Alt+g");
   await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.layoutMode === "tiled");
@@ -73,12 +100,13 @@ try {
     const rect = element.getBoundingClientRect();
     return { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
   });
-  const tiledArea = tiledRects.reduce((total, rect) => total + rect.width * rect.height, 0);
+  const tiledGap = await page.locator("#hypr-desktop").evaluate(element => Number.parseFloat(getComputedStyle(element).getPropertyValue("--window-gap")));
   assert.equal(await page.locator("[data-layout-toggle]").getAttribute("aria-pressed"), "false", "layout toggle did not enter tiled mode");
   assert.equal(tiledRects.length, 3, "all open windows were not included in the tiled layout");
   assert.ok(tiledRects.every(rect => rect.left >= tiledLayer.left - 1 && rect.right <= tiledLayer.right + 1 && rect.top >= tiledLayer.top - 1 && rect.bottom <= tiledLayer.bottom + 1), "a tiled window overflows the usable work area");
-  assert.ok(tiledArea >= tiledLayer.width * tiledLayer.height * .995, "gapless tiling leaves unused work-area space");
+  assertLiquidTiling(tiledRects, tiledLayer, tiledGap, "desktop tiled layout");
   assert.equal(await page.locator(".hypr-dock [data-launcher-open]").isVisible(), true, "all-app launcher is hidden behind tiled windows");
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-liquid-tiled-1600x900.png`, fullPage: true });
   await page.keyboard.press("Alt+g");
   await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.layoutMode === "stacked");
   await page.waitForTimeout(550);
@@ -132,9 +160,13 @@ try {
     const rect = element.getBoundingClientRect();
     return { width: rect.width, height: rect.height, left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
   }));
-  const compactLayerArea = await compactPage.locator("#windows-layer").evaluate(element => element.clientWidth * element.clientHeight);
+  const compactLayer = await compactPage.locator("#windows-layer").evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+  });
+  const compactGap = await compactPage.locator("#hypr-desktop").evaluate(element => Number.parseFloat(getComputedStyle(element).getPropertyValue("--window-gap")));
   assert.ok(compactTiledRects.every(rect => rect.left >= 0 && rect.right <= 1024 && rect.top >= 45 && rect.bottom <= 768), "compact tiled layout overflows the viewport");
-  assert.ok(compactTiledRects.reduce((total, rect) => total + rect.width * rect.height, 0) >= compactLayerArea * .995, "compact tiled layout leaves empty work-area space");
+  assertLiquidTiling(compactTiledRects, compactLayer, compactGap, "compact tiled layout");
   await compact.close();
 
   const mobile = await browser.newContext({ viewport: { width: 390, height: 844 }, isMobile: true, hasTouch: true });
@@ -158,12 +190,16 @@ try {
     return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
   }));
   assert.ok(mobileWindows.every(rect => rect.left >= 0 && rect.right <= 390 && rect.top >= 45 && rect.bottom <= 844), "mobile layout mode creates a narrow or overflowing window");
-  const mobileLayerArea = await mobilePage.locator("#windows-layer").evaluate(element => element.clientWidth * element.clientHeight);
-  assert.ok(mobileWindows.reduce((total, rect) => total + (rect.right - rect.left) * (rect.bottom - rect.top), 0) >= mobileLayerArea * .995, "mobile tiled layout leaves empty work-area space");
+  const mobileLayer = await mobilePage.locator("#windows-layer").evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    return { width: rect.width, height: rect.height, left: rect.left, top: rect.top, right: rect.right, bottom: rect.bottom };
+  });
+  const mobileGap = await mobilePage.locator("#hypr-desktop").evaluate(element => Number.parseFloat(getComputedStyle(element).getPropertyValue("--window-gap")));
+  assertLiquidTiling(mobileWindows.map(rect => ({ ...rect, width: rect.right - rect.left, height: rect.bottom - rect.top })), mobileLayer, mobileGap, "mobile tiled layout");
   await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-mobile-390x844.png`, fullPage: true });
   await mobile.close();
 
-  console.log("Hyprland desktop verification passed: homepage entry, default stacked windows, reversible gapless tiling, always-on-top app launcher, workspaces, terminal, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
+  console.log("Hyprland desktop verification passed: discoverable homepage entry, default stacked windows, reversible spaced liquid tiling, rounded acrylic surfaces, always-on-top app launcher, workspaces, terminal, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
 } finally {
   await browser.close();
 }

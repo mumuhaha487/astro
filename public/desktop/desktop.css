@@ -13,6 +13,8 @@
   --shadow: 0 24px 70px rgba(0, 0, 0, .48);
   --ease-hypr: cubic-bezier(.22, .88, .25, 1);
   --wallpaper-brightness: .82;
+  --window-gap: 12px;
+  --window-radius: 34px;
 }
 
 * { box-sizing: border-box; }
@@ -97,11 +99,11 @@ kbd {
 @keyframes desktop-entry-fade { 0%,58%{opacity:1}100%{opacity:0;visibility:hidden;pointer-events:none} }
 
 .glass-surface {
-  border: 1px solid var(--line);
-  background: rgba(13, 18, 27, .76);
-  box-shadow: var(--shadow);
-  backdrop-filter: blur(24px) saturate(1.25);
-  -webkit-backdrop-filter: blur(24px) saturate(1.25);
+  border: 1px solid rgba(220, 239, 255, .28);
+  background: linear-gradient(145deg, rgba(42, 64, 82, .46), rgba(9, 17, 26, .62));
+  box-shadow: var(--shadow), inset 0 1px rgba(255, 255, 255, .18), inset 0 -1px rgba(84, 135, 170, .13);
+  backdrop-filter: blur(28px) saturate(1.38);
+  -webkit-backdrop-filter: blur(28px) saturate(1.38);
 }
 
 /* Waybar-like status bar */
@@ -116,10 +118,10 @@ kbd {
   gap: 14px;
   padding: 0 7px;
   border: 1px solid rgba(215, 237, 255, .17);
-  border-radius: 12px;
-  background: rgba(8, 12, 18, .72);
-  box-shadow: 0 10px 32px rgba(0, 0, 0, .28);
-  backdrop-filter: blur(22px) saturate(1.25);
+  border-radius: 20px;
+  background: linear-gradient(140deg, rgba(31, 51, 68, .55), rgba(7, 14, 22, .66));
+  box-shadow: 0 10px 32px rgba(0, 0, 0, .28), inset 0 1px rgba(255, 255, 255, .18);
+  backdrop-filter: blur(26px) saturate(1.35);
 }
 .waybar-group { display: flex; align-items: center; gap: 7px; min-width: 0; }
 .waybar-right { justify-content: flex-end; }
@@ -266,7 +268,7 @@ kbd {
 .desktop-selection { position: absolute; z-index: 3; border: 1px solid rgba(var(--accent-rgb), .6); background: rgba(var(--accent-rgb), .12); pointer-events: none; }
 
 /* Dynamic tiling windows */
-.windows-layer { position: absolute; z-index: 10; inset: 10px 12px 78px; pointer-events: none; }
+.windows-layer { position: absolute; z-index: 10; inset: 12px 14px 80px; pointer-events: none; }
 .hypr-window {
   --workspace-x: 0px;
   position: absolute;
@@ -275,10 +277,12 @@ kbd {
   overflow: hidden;
   display: grid;
   grid-template-rows: 41px minmax(0, 1fr);
-  border: 1px solid rgba(195, 219, 237, .24);
-  border-radius: 12px;
-  background: var(--surface-strong);
-  box-shadow: 0 18px 55px rgba(0, 0, 0, .42);
+  border: 1px solid rgba(220, 239, 255, .38);
+  border-radius: var(--window-radius);
+  background: linear-gradient(145deg, rgba(40, 67, 86, .5), rgba(7, 15, 24, .67));
+  box-shadow: 0 24px 72px rgba(0, 0, 0, .48), inset 0 1px rgba(255, 255, 255, .22), inset 0 -1px rgba(91, 167, 205, .16);
+  backdrop-filter: blur(30px) saturate(1.42);
+  -webkit-backdrop-filter: blur(30px) saturate(1.42);
   opacity: 1;
   transform: translate3d(0, 0, 0) scale(1);
   transform-origin: center;
@@ -290,7 +294,7 @@ kbd {
   will-change: left, top, width, height, transform;
 }
 .hypr-desktop[data-layout-mode="stacked"] .hypr-window {
-  box-shadow: 0 30px 86px rgba(0, 0, 0, .58), 0 0 0 1px rgba(var(--accent-rgb), .04);
+  box-shadow: 0 30px 86px rgba(0, 0, 0, .58), 0 0 0 1px rgba(var(--accent-rgb), .08), inset 0 1px rgba(255, 255, 255, .22);
 }
 .hypr-desktop[data-layout-mode="stacked"] .hypr-window.is-focused {
   box-shadow: 0 36px 100px rgba(0, 0, 0, .68), 0 0 0 1px rgba(var(--accent-rgb), .19);
@@ -298,7 +302,7 @@ kbd {
 .hypr-desktop[data-layout-mode="tiled"] .hypr-window {
   min-width: 0;
   min-height: 0;
-  border-radius: 0;
+  border-radius: var(--window-radius);
   resize: none;
 }
 .hypr-window::after {
@@ -306,7 +310,7 @@ kbd {
   position: absolute;
   inset: 0;
   border-radius: inherit;
-  box-shadow: inset 0 1px rgba(255, 255, 255, .06);
+  box-shadow: inset 0 1px rgba(255, 255, 255, .24), inset 1px 0 rgba(123, 202, 242, .09), inset -1px 0 rgba(236, 160, 205, .08);
   pointer-events: none;
 }
 .hypr-window.is-opening { animation: window-open .48s var(--ease-hypr) both; }
@@ -318,8 +322,8 @@ kbd {
   pointer-events: none;
 }
 .hypr-window.is-focused {
-  border-color: rgba(var(--accent-rgb), .85);
-  box-shadow: 0 22px 72px rgba(0, 0, 0, .52), 0 0 0 1px rgba(var(--accent-rgb), .18), 0 0 38px rgba(var(--accent-rgb), .09);
+  border-color: rgba(142, 228, 255, .88);
+  box-shadow: 0 25px 78px rgba(0, 0, 0, .52), 0 0 0 1px rgba(142, 228, 255, .2), 0 0 42px rgba(95, 212, 255, .12), inset 0 1px rgba(255, 255, 255, .25);
 }
 .hypr-window.is-floating { max-width: 100%; max-height: 100%; resize: both; }
 .window-titlebar {
@@ -328,8 +332,8 @@ kbd {
   justify-content: space-between;
   gap: 12px;
   padding: 0 8px 0 13px;
-  border-bottom: 1px solid rgba(210, 232, 247, .1);
-  background: linear-gradient(180deg, rgba(39, 50, 62, .84), rgba(22, 29, 38, .78));
+  border-bottom: 1px solid rgba(210, 237, 252, .16);
+  background: linear-gradient(180deg, rgba(42, 70, 90, .6), rgba(12, 24, 36, .52));
   cursor: default;
   touch-action: none;
 }
@@ -364,8 +368,8 @@ kbd {
 }
 .window-controls button:hover { color: #fff; background: rgba(255, 255, 255, .13); transform: scale(1.05); }
 .window-controls [data-window-action="close"]:hover { background: #d96878; }
-.window-content { position: relative; min-height: 0; overflow: hidden; background: rgba(10, 13, 18, .95); }
-.window-content iframe { width: 100%; height: 100%; display: block; border: 0; background: #151717; }
+.window-content { position: relative; min-height: 0; overflow: hidden; background: rgba(7, 15, 23, .36); }
+.window-content iframe { width: 100%; height: 100%; display: block; border: 0; background: #151717; opacity: .93; }
 .window-loading {
   position: absolute;
   inset: 41px 0 0;
@@ -469,7 +473,7 @@ kbd {
   align-items: center;
   gap: 5px;
   padding: 6px 8px;
-  border-radius: 16px;
+  border-radius: 22px;
   transform: translateX(-50%);
 }
 .hypr-dock button { position: relative; width: 43px; height: 43px; display: grid; place-items: center; border-radius: 12px; background: transparent; cursor: pointer; transition: transform .28s var(--ease-hypr), background .2s; }
@@ -496,6 +500,7 @@ kbd {
 .desktop-context > span { display: block; height: 1px; margin: 5px 3px; background: rgba(255, 255, 255, .08); }
 
 @media (max-width: 920px) {
+  :root { --window-gap: 8px; --window-radius: 28px; }
   .waybar { grid-template-columns: auto 1fr auto; }
   .waybar-title { display: none; }
   .waybar-right { grid-column: 3; }
@@ -505,6 +510,7 @@ kbd {
 }
 
 @media (max-width: 680px) {
+  :root { --window-gap: 6px; --window-radius: 20px; }
   .waybar { inset: max(6px, env(safe-area-inset-top)) 7px auto; height: 39px; gap: 5px; border-radius: 11px; }
   .arch-menu { width: 29px; }
   .workspace-switcher button { width: 23px; }
@@ -518,8 +524,8 @@ kbd {
   .desktop-icons { top: 14px; left: 12px; width: calc(100% - 24px); grid-template-columns: repeat(2, minmax(0, 1fr)); gap: 10px; }
   .desktop-icon { width: 100%; min-height: 92px; gap: 8px; }
   .desktop-icon-shape { width: 48px; height: 48px; border-radius: 15px; }
-  .windows-layer { inset: 0 0 65px; }
-  .hypr-window { min-width: 0; min-height: 0; border-radius: 0; border-left:0;border-right:0;grid-template-rows:39px minmax(0,1fr); }
+  .windows-layer { inset: 4px 6px 65px; }
+  .hypr-window { min-width: 0; min-height: 0; border-radius: var(--window-radius); grid-template-rows:39px minmax(0,1fr); }
   .hypr-window.is-floating { left: 0 !important; top: 0 !important; width: 100% !important; height: 100% !important; resize: none; }
   .hypr-desktop[data-layout-mode="stacked"] .hypr-window:not(.is-focused) { opacity: 0; pointer-events: none; transform: scale(.965); }
   .window-titlebar{padding-left:10px}

@@ -116,6 +116,11 @@ body[data-section="home"] .workspace-content{background:transparent}
 .avatar-style-switch:hover{background:rgba(56,57,57,.92);border-color:rgba(255,255,255,.42);transform:translateX(-50%) translateY(-2px)}
 .desktop-transitioning .avatar-style-switch{opacity:0;transform:translateX(-50%) scale(.72);pointer-events:none}
 .desktop-transitioning .profile-avatar,.desktop-transitioning .profile-particles{opacity:0!important}
+.home-desktop-switch{border-color:rgba(255,255,255,.22);background:rgba(30,31,31,.72);backdrop-filter:blur(14px)}
+.home-desktop-switch:hover{background:rgba(56,57,57,.9);border-color:rgba(255,255,255,.36)}
+.sidebar-desktop-switch{margin-top:9px;border:1px solid rgba(232,160,132,.24)!important;background:rgba(207,128,99,.08)!important;color:#f0d3c7!important}
+.sidebar-desktop-switch:hover{background:rgba(207,128,99,.18)!important;border-color:rgba(232,160,132,.42)!important}
+.sidebar-desktop-switch .icon{color:var(--accent-strong)}
 @keyframes home-reveal{from{opacity:0;transform:translateY(14px)}to{opacity:1;transform:translateY(0)}}
 @keyframes typewriter-caret{0%,45%{opacity:1}46%,100%{opacity:0}}
 
@@ -141,7 +146,7 @@ body[data-section="home"] .workspace-content{background:transparent}
 @keyframes desktop-loader-spin{to{transform:rotate(360deg)}}
 @keyframes desktop-barrage{0%{transform:translateX(5vw);opacity:0}12%{opacity:1}100%{transform:translateX(calc(-100vw - 100%));opacity:.18}}
 
-@media (max-width:760px){.profile-actions{flex-wrap:wrap}.avatar-style-switch{bottom:-15px;min-height:30px;padding:0 9px;font-size:.66rem}.desktop-transition-progress{width:150px}.desktop-transition-barrage span{letter-spacing:.08em}}
+@media (max-width:760px){.profile-actions{flex-wrap:wrap}.profile-actions .home-desktop-switch{flex:0 1 224px}.avatar-style-switch{bottom:-15px;min-height:30px;padding:0 9px;font-size:.66rem}.desktop-transition-progress{width:150px}.desktop-transition-barrage span{letter-spacing:.08em}}
 
 /* Blog */
 .taxonomy-strip{display:flex;gap:8px;overflow-x:auto;padding:0 0 18px;margin-bottom:10px;border-bottom:1px solid var(--line-soft);scrollbar-width:none}
