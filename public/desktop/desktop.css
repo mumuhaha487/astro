@@ -214,6 +214,7 @@ kbd {
 .workspace-switcher button.has-windows:not(.is-active) { color: #cfdfeb; }
 .workspace-switcher button.has-windows:not(.is-active) span { transform: scale(1.08); }
 .layout-mode-toggle {
+  flex: 0 0 auto;
   height: 28px;
   display: inline-flex;
   align-items: center;
@@ -229,14 +230,12 @@ kbd {
 .layout-mode-toggle:hover { color: #f2f9ff; background: rgba(var(--accent-rgb), .15); }
 .layout-mode-toggle:active { transform: scale(.94); }
 .layout-mode-toggle[aria-pressed="true"] { color: var(--accent-strong); background: rgba(var(--accent-rgb), .18); }
-.layout-mode-glyph { position: relative; width: 17px; height: 14px; display: block; }
-.layout-mode-glyph i { position: absolute; width: 10px; height: 8px; border: 1px solid currentColor; border-radius: 2px; background: #111923; transition: transform .38s var(--ease-hypr); }
-.layout-mode-glyph i:nth-child(1) { left: 0; top: 0; }
-.layout-mode-glyph i:nth-child(2) { left: 4px; top: 3px; }
-.layout-mode-glyph i:nth-child(3) { left: 7px; top: 6px; }
-.layout-mode-toggle:not([aria-pressed="true"]) .layout-mode-glyph i:nth-child(1) { transform: translate(-1px, 1px) scale(.85); }
-.layout-mode-toggle:not([aria-pressed="true"]) .layout-mode-glyph i:nth-child(2) { transform: translate(1px, -2px) scale(.8); }
-.layout-mode-toggle:not([aria-pressed="true"]) .layout-mode-glyph i:nth-child(3) { transform: translate(0, 1px) scale(.78); }
+.layout-mode-glyph { position: relative; width: 17px; height: 14px; display: block; overflow: hidden; border: 1px solid currentColor; border-radius: 3px; }
+.layout-mode-glyph::before, .layout-mode-glyph::after { content: ""; position: absolute; display: block; background: currentColor; transition: inset .28s var(--ease-hypr), width .28s var(--ease-hypr), height .28s var(--ease-hypr), box-shadow .28s var(--ease-hypr); }
+.layout-mode-glyph::before { left: 3px; right: 3px; top: 3px; height: 1px; box-shadow: 0 3px currentColor, 0 6px currentColor; }
+.layout-mode-glyph::after { width: 0; height: 0; }
+.layout-mode-toggle:not([aria-pressed="true"]) .layout-mode-glyph::before { left: 7px; right: auto; top: 0; bottom: 0; width: 1px; height: auto; box-shadow: none; }
+.layout-mode-toggle:not([aria-pressed="true"]) .layout-mode-glyph::after { left: 0; right: 0; top: 6px; width: auto; height: 1px; }
 .waybar-title {
   min-width: 0;
   display: flex;
@@ -451,11 +450,6 @@ kbd {
 .welcome-heading p { margin: 0 0 5px; color: var(--accent); font: 700 10px/1 ui-monospace, monospace; letter-spacing: .17em; }
 .welcome-heading h1 { margin: 0; font-size: clamp(22px, 3vw, 34px); line-height: 1.15; }
 .welcome-copy { max-width: 720px; margin: 0 0 30px; color: #a9bbc8; line-height: 1.8; }
-.welcome-grid { display: grid; grid-template-columns: repeat(3, minmax(0, 1fr)); gap: clamp(22px, 3vw, 42px); }
-.welcome-card { min-height: 0; padding: 0; border: 0; border-radius: 0; background: transparent; box-shadow: none; backdrop-filter: none; -webkit-backdrop-filter: none; }
-.welcome-card span { color: var(--accent); font: 700 11px/1 ui-monospace, monospace; }
-.welcome-card h2 { margin: 13px 0 7px; font-size: 15px; }
-.welcome-card p { margin: 0; color: #8296a6; font-size: 12px; line-height: 1.65; }
 .shortcut-row { display: flex; flex-wrap: wrap; gap: 8px 14px; margin-top: 25px; color: #8296a6; font-size: 11px; }
 .shortcut-row span { display: inline-flex; align-items: center; gap: 5px; }
 .terminal-app { height: 100%; display: grid; grid-template-rows: minmax(0, 1fr) auto; background: rgba(7, 11, 16, .98); color: #bfd4e1; font: 13px/1.62 "Cascadia Code", "JetBrains Mono", Consolas, monospace; user-select: text; }
@@ -566,7 +560,6 @@ kbd {
   .waybar-right { grid-column: 3; }
   .connection-pill, .volume-pill { width: 29px; padding: 0; justify-content: center; }
   .connection-pill span:last-child, .volume-pill span:last-child { display: none; }
-  .welcome-grid { grid-template-columns: 1fr; }
 }
 
 @media (max-width: 680px) {
@@ -576,7 +569,7 @@ kbd {
   .workspace-switcher button { width: 23px; }
   .workspace-switcher button.is-active { width: 33px; }
   .workspace-switcher button:nth-child(n+5) { display: none; }
-  .layout-mode-toggle { width: 29px; padding: 0; justify-content: center; }
+  .layout-mode-toggle { flex-basis: 29px; width: 29px; padding: 0; justify-content: center; }
   .layout-mode-label { display: none; }
   .classic-return { width: 29px; padding: 0; justify-content: center; }
   .classic-return span { display: none; }
@@ -604,8 +597,11 @@ kbd {
   .launcher footer { display: none; }
   .welcome-app { padding: 25px 20px 34px; }
   .welcome-heading { align-items: flex-start; }
-  .welcome-grid { grid-template-columns: 1fr; }
   .shortcut-row { display: none; }
+}
+
+@media (max-width: 375px) {
+  .waybar .classic-return { display: none; }
 }
 
 @media (prefers-reduced-motion: reduce) {

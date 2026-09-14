@@ -171,11 +171,6 @@
       <div class="welcome-app">
         <div class="welcome-heading"><div class="welcome-mark">${archLogo}</div><div><p>ARCH LINUX · HYPRLAND</p><h1>木木em哈哈的桌面工作区</h1></div></div>
         <p class="welcome-copy">这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。</p>
-        <div class="welcome-grid">
-          <section class="welcome-card"><span>01 / STACKED WINDOWS</span><h2>集中堆叠</h2><p>多个窗口按顺序集中层叠，标题栏始终可辨认，整体保持在屏幕范围内。</p></section>
-          <section class="welcome-card"><span>02 / WORKSPACES</span><h2>多工作区</h2><p>顶部 1–5 是独立工作区，使用 Alt + 数字键可以快速切换。</p></section>
-          <section class="welcome-card"><span>03 / LIQUID TILING</span><h2>液态平铺</h2><p>按 Alt + G 在堆叠和平铺之间切换；窗口保留圆角与间距，右下角九宫格始终可以打开其他应用。</p></section>
-        </div>
         <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>G</kbd> 堆叠/平铺</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span><span><kbd>Alt</kbd><kbd>B</kbd> 返回经典模式</span></div>
       </div>`;
   }

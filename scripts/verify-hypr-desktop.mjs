@@ -97,22 +97,7 @@ try {
   assert.equal(await page.locator(".hypr-dock [data-return-classic]").isVisible(), true, "dock has no classic-style return control");
   assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
   assert.equal(await page.locator(".welcome-copy").textContent(), "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。");
-  const welcomeCardSurfaces = await page.locator(".welcome-card").evaluateAll(elements => elements.map(element => {
-    const style = getComputedStyle(element);
-    return {
-      borderWidth: style.borderTopWidth,
-      borderRadius: style.borderTopLeftRadius,
-      background: style.backgroundColor,
-      boxShadow: style.boxShadow,
-      backdropFilter: style.backdropFilter || style.webkitBackdropFilter,
-    };
-  }));
-  assert.equal(welcomeCardSurfaces.length, 3, "welcome explanation sections are incomplete");
-  assert.ok(welcomeCardSurfaces.every(surface => surface.borderWidth === "0px"), "welcome explanation cards still have borders");
-  assert.ok(welcomeCardSurfaces.every(surface => surface.borderRadius === "0px"), "welcome explanation cards still have rounded frames");
-  assert.ok(welcomeCardSurfaces.every(surface => /rgba\([^)]*, 0\)/.test(surface.background)), "welcome explanation cards still have visible backgrounds");
-  assert.ok(welcomeCardSurfaces.every(surface => surface.boxShadow === "none"), "welcome explanation cards still have shadows");
-  assert.ok(welcomeCardSurfaces.every(surface => surface.backdropFilter === "none"), "welcome explanation cards still use backdrop blur");
+  assert.equal(await page.locator(".welcome-card, .welcome-grid").count(), 0, "removed welcome explanation sections remain");
 
   await page.locator('.hypr-dock [data-app="blog"]').click();
   await page.locator('.hypr-dock [data-app="tools"]').click();
@@ -299,6 +284,28 @@ try {
   assertLiquidTiling(mobileWindows.map(rect => ({ ...rect, width: rect.right - rect.left, height: rect.bottom - rect.top })), mobileLayer, mobileGap, "mobile tiled layout");
   await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-mobile-390x844.png`, fullPage: true });
   await mobile.close();
+
+  const narrow = await browser.newContext({ viewport: { width: 360, height: 780 }, isMobile: true, hasTouch: true });
+  const narrowPage = await narrow.newPage();
+  response = await narrowPage.goto(new URL("/desktop/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await narrowPage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
+  const narrowBarGeometry = await narrowPage.locator(".waybar-left, .layout-mode-toggle, .layout-mode-glyph, .waybar-right").evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    return { className: element.className, left: rect.left, right: rect.right, width: rect.width };
+  }));
+  const narrowLeft = narrowBarGeometry.find(rect => rect.className.includes("waybar-left"));
+  const narrowLayout = narrowBarGeometry.find(rect => rect.className === "layout-mode-toggle");
+  const narrowGlyph = narrowBarGeometry.find(rect => rect.className === "layout-mode-glyph");
+  const narrowRight = narrowBarGeometry.find(rect => rect.className.includes("waybar-right"));
+  assert.ok(narrowLeft && narrowLayout && narrowGlyph && narrowRight, "narrow status-bar geometry is incomplete");
+  assert.ok(narrowLeft.right <= narrowRight.left, "narrow status-bar groups overlap");
+  assert.equal(Math.round(narrowLayout.width), 29, "narrow layout button is compressed");
+  assert.ok(narrowLayout.left <= narrowGlyph.left && narrowGlyph.right <= narrowLayout.right, "layout glyph overflows its button");
+  assert.equal(await narrowPage.locator(".waybar .classic-return").isVisible(), false, "duplicate top return control still crowds the narrow status bar");
+  assert.equal(await narrowPage.locator(".hypr-dock [data-return-classic]").isVisible(), true, "narrow desktop lost its classic-mode return control");
+  await narrowPage.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-narrow-360x780.png`, fullPage: true });
+  await narrow.close();
 
   console.log("Hyprland desktop verification passed: Arch Linux switch icon, default stacked windows, reversible spaced liquid tiling, rounded acrylic surfaces, extended terminal commands, visible classic-mode return, always-on-top app launcher, workspaces, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
 } finally {
