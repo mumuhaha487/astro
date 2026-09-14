@@ -62,6 +62,8 @@
   translation: 心を乱さず、愛に縛られず、未来を恐れず、過去に怯えない。
 - id: read_blog
   translation: ブログを読む
+- id: switch_desktop_style
+  translation: デスクトップ表示に切り替える
 - id: writing_notes
   translation: 執筆 / ノート
 - id: blog_count

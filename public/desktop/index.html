@@ -1,0 +1,151 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <meta name="theme-color" content="#0c1118">
+  <meta name="color-scheme" content="dark">
+  <title>Mumuemhaha · Hyprland Desktop</title>
+  <meta name="description" content="以 Arch Linux 与 Hyprland 交互逻辑构建的木木em哈哈桌面工作区">
+  <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
+  <link rel="preload" as="image" href="/assets/desktop-banner/3.webp" media="(min-width: 761px)">
+  <link rel="preload" as="image" href="/assets/mobile-banner/3.webp" media="(max-width: 760px)">
+  <link rel="stylesheet" href="/desktop/desktop.css?v=20260914-local-preview">
+  <script src="/desktop/desktop.js?v=20260914-local-preview" defer></script>
+</head>
+<body>
+  <div class="hypr-desktop" id="hypr-desktop" data-workspace="1">
+    <picture class="desktop-wallpaper" aria-hidden="true">
+      <source id="wallpaper-mobile" media="(max-width: 760px)" srcset="/assets/mobile-banner/3.webp">
+      <img id="wallpaper-image" src="/assets/desktop-banner/3.webp" alt="" fetchpriority="high" decoding="async">
+    </picture>
+    <div class="desktop-shade" aria-hidden="true"></div>
+    <div class="desktop-glow desktop-glow-one" aria-hidden="true"></div>
+    <div class="desktop-glow desktop-glow-two" aria-hidden="true"></div>
+
+    <header class="waybar" aria-label="桌面状态栏">
+      <div class="waybar-group waybar-left">
+        <button class="arch-menu" type="button" data-launcher-open aria-label="打开应用启动器" title="应用启动器 · Alt + Space">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4c-1.3 3.2-2.1 5.3-3.6 8.5.9-.9 2.1-1.6 3.6-1.6s2.7.7 3.6 1.6C14.1 7.7 13.3 5.6 12 2.4Zm-5.2 12c-1.1 2-2.5 4.3-4.8 7.2 3.2-1.8 6-2.7 8.2-2.8-.7-.6-1.2-1.4-1.2-2.3 0-1.4 1.3-2.5 3-2.5s3 1.1 3 2.5c0 .9-.5 1.7-1.2 2.3 2.2.1 5 .9 8.2 2.8-2.3-2.9-3.7-5.2-4.8-7.2-1.4-1.3-3.2-2.1-5.2-2.1s-3.8.8-5.2 2.1Z"/></svg>
+        </button>
+        <nav class="workspace-switcher" aria-label="Hyprland 工作区">
+          <button type="button" data-workspace-target="1" class="is-active" aria-label="工作区 1"><span>1</span></button>
+          <button type="button" data-workspace-target="2" aria-label="工作区 2"><span>2</span></button>
+          <button type="button" data-workspace-target="3" aria-label="工作区 3"><span>3</span></button>
+          <button type="button" data-workspace-target="4" aria-label="工作区 4"><span>4</span></button>
+          <button type="button" data-workspace-target="5" aria-label="工作区 5"><span>5</span></button>
+        </nav>
+      </div>
+      <div class="waybar-title" id="waybar-title">
+        <span class="waybar-title-dot"></span>
+        <strong>Hyprland Desktop</strong>
+      </div>
+      <div class="waybar-group waybar-right">
+        <button class="waybar-pill connection-pill" type="button" data-quick-settings aria-label="打开快速设置">
+          <span class="network-icon" aria-hidden="true">⌁</span>
+          <span id="network-label">在线</span>
+        </button>
+        <button class="waybar-pill volume-pill" type="button" data-volume-toggle aria-label="切换音量显示">
+          <span aria-hidden="true">◖</span><span id="volume-label">68%</span>
+        </button>
+        <button class="clock-pill" type="button" data-calendar-toggle aria-label="查看日期">
+          <strong id="bar-clock">00:00</strong><span id="bar-date">09/14</span>
+        </button>
+      </div>
+    </header>
+
+    <main class="workspace-viewport" id="workspace-viewport" tabindex="-1">
+      <section class="desktop-icons" aria-label="桌面图标">
+        <button class="desktop-icon" type="button" data-app="home" aria-label="打开首页">
+          <span class="desktop-icon-shape icon-home"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m3 11 9-8 9 8v9a1 1 0 0 1-1 1h-5v-7H9v7H4a1 1 0 0 1-1-1Z"/></svg></span><span>首页</span>
+        </button>
+        <button class="desktop-icon" type="button" data-app="blog" aria-label="打开博客">
+          <span class="desktop-icon-shape icon-blog"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M4 4.5A2.5 2.5 0 0 1 6.5 2H20v17H6.5A2.5 2.5 0 0 0 4 21.5Zm0 0v17M8 7h8M8 11h7"/></svg></span><span>博客</span>
+        </button>
+        <button class="desktop-icon" type="button" data-app="tools" aria-label="打开工具箱">
+          <span class="desktop-icon-shape icon-tools"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M14.7 6.3a4 4 0 0 0-5-5l2.1 2.1-2.4 2.4-2.1-2.1a4 4 0 0 0 5 5L20 17.4 17.4 20Z"/></svg></span><span>工具箱</span>
+        </button>
+        <button class="desktop-icon" type="button" data-app="friends" aria-label="打开友情链接">
+          <span class="desktop-icon-shape icon-friends"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="6" cy="12" r="2.5"/><circle cx="18" cy="6" r="2.5"/><circle cx="18" cy="18" r="2.5"/><path d="m8.2 10.8 7.5-3.6M8.2 13.2l7.5 3.6"/></svg></span><span>友情链接</span>
+        </button>
+        <button class="desktop-icon" type="button" data-app="guestbook" aria-label="打开留言板">
+          <span class="desktop-icon-shape icon-message"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="M21 12a8 8 0 0 1-8 8H5l-3 2 1-5a8 8 0 1 1 18-5Z"/><path d="M8 12h.01M12 12h.01M16 12h.01"/></svg></span><span>留言板</span>
+        </button>
+        <button class="desktop-icon" type="button" data-app="terminal" aria-label="打开终端">
+          <span class="desktop-icon-shape icon-terminal"><svg viewBox="0 0 24 24" aria-hidden="true"><path d="m5 7 5 5-5 5M12 17h7"/></svg></span><span>终端</span>
+        </button>
+      </section>
+
+      <div class="windows-layer" id="windows-layer" aria-live="polite"></div>
+      <div class="desktop-selection" id="desktop-selection" hidden></div>
+    </main>
+
+    <aside class="quick-settings glass-surface" id="quick-settings" hidden aria-label="快速设置">
+      <div class="panel-heading"><div><small>CONTROL CENTER</small><strong>快速设置</strong></div><button type="button" data-panel-close aria-label="关闭">×</button></div>
+      <div class="quick-grid">
+        <button type="button" class="is-enabled"><span>⌁</span><strong>网络</strong><small>已连接</small></button>
+        <button type="button" class="is-enabled"><span>◖</span><strong>声音</strong><small>68%</small></button>
+        <button type="button"><span>☾</span><strong>夜间</strong><small>关闭</small></button>
+        <button type="button" data-wallpaper-next><span>◈</span><strong>壁纸</strong><small>切换</small></button>
+      </div>
+      <label class="range-control"><span>亮度</span><input type="range" min="35" max="100" value="82" data-brightness><output>82%</output></label>
+      <div class="system-line"><span>Arch Linux</span><span id="hardware-label">Hyprland</span></div>
+    </aside>
+
+    <aside class="calendar-panel glass-surface" id="calendar-panel" hidden aria-label="日期与时间">
+      <div class="calendar-time" id="calendar-time">00:00:00</div>
+      <div class="calendar-date" id="calendar-date">2026年9月14日</div>
+      <div class="calendar-week" id="calendar-week">星期一</div>
+      <div class="calendar-note"><span></span>保持好奇，继续创造。</div>
+    </aside>
+
+    <section class="launcher-backdrop" id="launcher" hidden aria-label="应用启动器">
+      <div class="launcher glass-surface" role="dialog" aria-modal="true" aria-labelledby="launcher-title">
+        <div class="launcher-search">
+          <svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-4-4"/></svg>
+          <input id="launcher-input" type="search" autocomplete="off" placeholder="搜索应用…" aria-label="搜索应用">
+          <kbd>ESC</kbd>
+        </div>
+        <p id="launcher-title">应用</p>
+        <div class="launcher-grid" id="launcher-grid"></div>
+        <footer><span><kbd>↑</kbd><kbd>↓</kbd> 选择</span><span><kbd>Enter</kbd> 打开</span></footer>
+      </div>
+    </section>
+
+    <nav class="hypr-dock glass-surface" aria-label="应用程序坞">
+      <button type="button" data-app="home" aria-label="首页" title="首页"><span class="dock-glyph">⌂</span><i></i></button>
+      <button type="button" data-app="blog" aria-label="博客" title="博客"><span class="dock-glyph">▤</span><i></i></button>
+      <button type="button" data-app="tools" aria-label="工具箱" title="工具箱"><span class="dock-glyph">⌘</span><i></i></button>
+      <button type="button" data-app="terminal" aria-label="终端" title="终端"><span class="dock-glyph">›_</span><i></i></button>
+      <span class="dock-separator"></span>
+      <button type="button" data-launcher-open aria-label="全部应用" title="全部应用 · Alt + Space"><span class="dock-glyph dock-grid">⠿</span></button>
+    </nav>
+
+    <div class="desktop-hint" id="desktop-hint"><kbd>Alt</kbd><span>+</span><kbd>Space</kbd><span>打开启动器</span></div>
+    <div class="toast-region" id="toast-region" aria-live="polite"></div>
+
+    <div class="desktop-context glass-surface" id="desktop-context" hidden role="menu">
+      <button type="button" data-context-action="terminal" role="menuitem">打开终端 <kbd>Alt+Enter</kbd></button>
+      <button type="button" data-context-action="launcher" role="menuitem">应用启动器 <kbd>Alt+Space</kbd></button>
+      <button type="button" data-context-action="wallpaper" role="menuitem">切换壁纸</button>
+      <span></span>
+      <button type="button" data-context-action="home" role="menuitem">返回原始风格</button>
+    </div>
+
+    <template id="window-template">
+      <article class="hypr-window" data-window-id="" data-workspace="1">
+        <header class="window-titlebar">
+          <div class="window-app-meta"><span class="window-app-icon"></span><div><strong class="window-app-title"></strong><small class="window-app-subtitle"></small></div></div>
+          <div class="window-controls">
+            <button type="button" data-window-action="float" aria-label="切换浮动" title="切换浮动 · Alt + F">◇</button>
+            <button type="button" data-window-action="maximize" aria-label="最大化" title="最大化">□</button>
+            <button type="button" data-window-action="close" aria-label="关闭" title="关闭 · Alt + Q">×</button>
+          </div>
+        </header>
+        <div class="window-content"></div>
+        <div class="window-loading"><span></span><small>正在打开</small></div>
+      </article>
+    </template>
+  </div>
+</body>
+</html>

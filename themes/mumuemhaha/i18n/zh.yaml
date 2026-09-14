@@ -62,6 +62,8 @@
   translation: 不乱于心，不困于情，不畏将来，不惧过去
 - id: read_blog
   translation: 阅读博客
+- id: switch_desktop_style
+  translation: 切换另外一种风格
 - id: writing_notes
   translation: 写作 / 笔记
 - id: blog_count

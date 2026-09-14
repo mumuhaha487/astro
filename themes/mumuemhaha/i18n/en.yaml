@@ -62,6 +62,8 @@
   translation: Stay calm, love freely, face the future, and release the past.
 - id: read_blog
   translation: Read the blog
+- id: switch_desktop_style
+  translation: Switch desktop style
 - id: writing_notes
   translation: Writing / Notes
 - id: blog_count

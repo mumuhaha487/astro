@@ -20,6 +20,7 @@
       <p class="profile-bio" data-typewriter="{{ i18n "profile_quote" }}" aria-label="{{ i18n "profile_quote" }}"><span data-typewriter-output aria-hidden="true">{{ i18n "profile_quote" }}</span></p>
       <div class="profile-actions">
         <a class="button button-primary" href="{{ "blog/" | relLangURL }}">{{ i18n "read_blog" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+        <a class="button button-ghost home-style-switch" href="/desktop/">{{ partial "icon.html" (dict "name" "monitor") }}{{ i18n "switch_desktop_style" }}</a>
       </div>
     </div>
     <div class="home-left">
