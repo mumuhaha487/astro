@@ -15,6 +15,7 @@ const requiredFiles = [
   "atom.xml",
   "api/allPostMeta.json",
   "api/calendar-data.json",
+  "api/friends.json",
   "pagefind/pagefind.js",
   "pagefind/pagefind-entry.json",
   "icons/search.svg",
@@ -81,6 +82,9 @@ assert.ok(posts.length > 0, "No published posts were generated");
 assert.equal(calendar.length, posts.length, "Post and calendar APIs disagree");
 
 for (const post of posts) {
+  for (const field of ["date", "tags", "image", "pinned", "readingTime", "wordCount"]) {
+    assert.ok(Object.hasOwn(post, field), `Desktop post metadata is missing ${field}: ${post.url}`);
+  }
   const pathname = decodeURIComponent(new URL(post.url, "https://vmss.cn").pathname).replace(/^\/+/, "");
   const outputPath = pathname.endsWith("/") ? join(pathname, "index.html") : pathname;
   const target = resolve(outputRoot, outputPath);
@@ -149,8 +153,19 @@ assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
 assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
-assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v8/, "Current desktop stylesheet cache version is missing");
-assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v8/, "Current desktop script cache version is missing");
+assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v9/, "Current desktop stylesheet cache version is missing");
+assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v9/, "Current desktop script cache version is missing");
+assert.doesNotMatch(desktopScript, /document\.createElement\("iframe"\)/, "Desktop applications still use iframe wrappers");
+assert.match(desktopScript, /function safeLocalURL\(/, "Desktop native views do not enforce same-origin reads");
+assert.match(desktopScript, /async function renderNativeArticle\(/, "Desktop article reader is missing");
+assert.match(desktopScript, /const pageSize = matchMedia\("\(max-width: 680px\)"\)\.matches \? 10 : 30/, "Desktop blog pagination is not viewport-aware");
+assert.match(desktopStyles, /\.native-scroll[^}]*overflow-y:\s*auto[^}]*touch-action:\s*pan-y/, "Native desktop views cannot scroll by touch");
+assert.match(desktopStyles, /\.launcher\s*\{[^}]*grid-template-rows:\s*auto auto minmax\(0, 1fr\) auto[^}]*overflow:\s*hidden/, "Launcher does not constrain its scroll area");
+assert.match(desktopStyles, /\.launcher-grid[^}]*overflow-y:\s*auto[^}]*touch-action:\s*pan-y/, "Launcher application list cannot scroll by touch");
+assert.match(desktopStyles, /\.hypr-desktop\s*\{[^}]*position:\s*fixed[^}]*inset:\s*0/, "Desktop root is not locked to the viewport");
+for (const [source, label] of [[desktopPage, "desktop page"], [desktopScript, "desktop script"]]) {
+  assert.doesNotMatch(source, /(?:github_pat_|ghp_[A-Za-z0-9]|[A-Za-z]:\\Users\\|[A-Za-z]:\\project\\|\/workspace\/)/, `${label} exposes a token or local filesystem path`);
+}
 assert.match(desktopScript, /function toggleLayoutMode\(\)/, "Global stacked/tiled window logic is missing");
 assert.match(desktopScript, /layoutMode === "stacked" \? "tiled" : "stacked"/, "Global window layout toggle is not reversible");
 assert.match(desktopScript, /getPropertyValue\("--window-gap"\)/, "Tiled windows do not read the responsive gap setting");

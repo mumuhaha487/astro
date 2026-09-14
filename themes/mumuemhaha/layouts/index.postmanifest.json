@@ -11,6 +11,11 @@
     "published" $page.Date.UnixMilli
     "date" ($page.Date.Format "2006-01-02")
     "category" ($page.Params.category | default "")
+    "tags" ($page.Params.tags | default (slice))
+    "image" (strings.TrimSpace ($page.Params.image | default ""))
+    "pinned" ($page.Params.pinned | default false)
+    "readingTime" $page.ReadingTime
+    "wordCount" $page.WordCount
     "password" (and ($page.Params.encrypted | default false) (ne ($page.Params.password | default "") ""))
     "encryptionPassword" ($page.Params.password | default "")
     "passwordHint" ($page.Params.passwordHint | default "")

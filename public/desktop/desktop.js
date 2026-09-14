@@ -23,12 +23,12 @@
 
   const apps = {
     welcome: { title: "欢迎", subtitle: "Hyprland Desktop", icon: "△", kind: "welcome" },
-    home: { title: "首页", subtitle: "vmss.cn", icon: "⌂", url: "/" },
-    blog: { title: "博客", subtitle: "文章与笔记", icon: "▤", url: "/blog/" },
-    tools: { title: "工具箱", subtitle: "本地实用工具", icon: "⌘", url: "/tools/" },
-    friends: { title: "友情链接", subtitle: "朋友们的站点", icon: "⌁", url: "/friends/" },
-    guestbook: { title: "留言板", subtitle: "访客留言", icon: "◌", url: "/guestbook/" },
-    archive: { title: "文章归档", subtitle: "时间轴", icon: "◫", url: "/archive/" },
+    home: { title: "首页", subtitle: "vmss.cn", icon: "⌂", kind: "home" },
+    blog: { title: "博客", subtitle: "文章与笔记", icon: "▤", kind: "blog" },
+    tools: { title: "工具箱", subtitle: "本地实用工具", icon: "⌘", kind: "tools" },
+    friends: { title: "友情链接", subtitle: "朋友们的站点", icon: "⌁", kind: "friends" },
+    guestbook: { title: "留言板", subtitle: "访客留言", icon: "◌", kind: "guestbook" },
+    archive: { title: "文章归档", subtitle: "时间轴", icon: "◫", kind: "archive" },
     terminal: { title: "终端", subtitle: "zsh · mumu@arch", icon: ">_", kind: "terminal" }
   };
   const launcherOrder = ["home", "blog", "tools", "friends", "guestbook", "archive", "terminal", "welcome"];
@@ -51,6 +51,16 @@
   let wallpaperIndex = clamp(Number(localStorage.getItem("hypr-wallpaper") || 3), 1, wallpaperCount);
   let launcherMatches = launcherOrder.slice();
   let launcherCursor = 0;
+  const localDataCache = new Map();
+  const toolEntries = [
+    { icon: "{}", title: "JSON 格式化", description: "校验、格式化或压缩 JSON 数据。", url: "/tools/json-formatter/" },
+    { icon: "64", title: "Base64 编解码", description: "支持中文和 Emoji 的本地编码、解码。", url: "/tools/base64/" },
+    { icon: "字", title: "文本统计", description: "实时统计字符、字词、行数和段落。", url: "/tools/text-stats/" },
+    { icon: "时", title: "时间戳转换", description: "Unix 时间戳与本地日期双向转换。", url: "/tools/timestamp/" },
+    { icon: "ID", title: "UUID 生成器", description: "一次生成指定数量的随机 UUID。", url: "/tools/uuid/" },
+    { icon: "⇄", title: "GitHub / Docker 加速", description: "使用镜像加速服务。", url: "/tools/docker-accelerator/" },
+    { icon: "兽", title: "兽音译者", description: "普通文本与四字符兽音双向转换。", url: "/tools/beast-translator/" },
+  ];
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -173,6 +183,292 @@
         <p class="welcome-copy">这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。</p>
         <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>G</kbd> 堆叠/平铺</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span><span><kbd>Alt</kbd><kbd>B</kbd> 返回经典模式</span></div>
       </div>`;
+  }
+
+  function safeLocalURL(value, allowedPrefixes = ["/"]) {
+    try {
+      const url = new URL(String(value || "/"), location.origin);
+      if (url.origin !== location.origin || !allowedPrefixes.some(prefix => url.pathname.startsWith(prefix))) return null;
+      return url;
+    } catch (_) {
+      return null;
+    }
+  }
+
+  async function fetchLocalJSON(path) {
+    const url = safeLocalURL(path, ["/api/"]);
+    if (!url) throw new Error("已拒绝非本站数据地址");
+    if (!localDataCache.has(url.pathname)) {
+      localDataCache.set(url.pathname, fetch(url, { credentials: "same-origin" }).then(response => {
+        if (!response.ok) throw new Error(`读取失败（${response.status}）`);
+        return response.json();
+      }).catch(error => {
+        localDataCache.delete(url.pathname);
+        throw error;
+      }));
+    }
+    return localDataCache.get(url.pathname);
+  }
+
+  function localAssetPath(value) {
+    const url = safeLocalURL(value);
+    return url ? `${url.pathname}${url.search}` : "";
+  }
+
+  function formatPostDate(post) {
+    if (post.date) return String(post.date).replaceAll("-", ".");
+    const date = new Date(Number(post.published));
+    return Number.isNaN(date.valueOf()) ? "" : date.toLocaleDateString("zh-CN").replaceAll("/", ".");
+  }
+
+  function nativePostCard(post) {
+    const image = localAssetPath(post.image);
+    const tags = (Array.isArray(post.tags) ? post.tags : []).slice(0, 3);
+    return `<article class="native-post-card${post.pinned ? " is-pinned" : ""}">
+      <button type="button" data-post-url="${escapeHTML(post.url)}" aria-label="阅读 ${escapeHTML(post.title)}">
+        <span class="native-post-cover">${image ? `<img src="${escapeHTML(image)}" alt="" loading="lazy" decoding="async">` : "<span>▤</span>"}</span>
+        <span class="native-post-body">
+          <span class="native-post-meta">${post.pinned ? "置顶 · " : ""}${escapeHTML(formatPostDate(post))}${post.category ? ` · ${escapeHTML(post.category)}` : ""}</span>
+          <strong>${escapeHTML(post.title)}</strong>
+          <span class="native-post-description">${escapeHTML(post.description || "打开阅读全文")}</span>
+          <span class="native-post-foot"><span>${tags.map(tag => `#${escapeHTML(tag)}`).join("　")}</span><i aria-hidden="true">→</i></span>
+        </span>
+      </button>
+    </article>`;
+  }
+
+  function nativePageShell(className, eyebrow, title, actions = "") {
+    const wrapper = document.createElement("section");
+    wrapper.className = `native-app ${className}`;
+    wrapper.innerHTML = `<header class="native-page-header"><div><p>${escapeHTML(eyebrow)}</p><h1>${escapeHTML(title)}</h1></div>${actions}</header><div class="native-scroll" data-native-scroll></div>`;
+    return wrapper;
+  }
+
+  function setWindowHeading(element, title, subtitle) {
+    element.querySelector(".window-app-title").textContent = title;
+    element.querySelector(".window-app-subtitle").textContent = subtitle;
+  }
+
+  function bindPostLinks(wrapper, element, restore) {
+    wrapper.addEventListener("click", event => {
+      const target = event.target.closest("[data-post-url]");
+      if (!target) return;
+      event.preventDefault();
+      renderNativeArticle(element, target.dataset.postUrl, restore);
+    });
+  }
+
+  async function createHomeApp(element) {
+    const wrapper = nativePageShell("native-home-app", "WELCOME / 2026", "木木em哈哈", '<button class="native-header-action" type="button" data-open-app="blog">全部文章 →</button>');
+    const scroll = wrapper.querySelector("[data-native-scroll]");
+    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取本站内容</p></div>';
+    wrapper.addEventListener("click", event => {
+      const appButton = event.target.closest("[data-open-app]");
+      if (appButton) openApp(appButton.dataset.openApp);
+    });
+    bindPostLinks(wrapper, element, () => createHomeApp(element));
+    try {
+      const posts = await fetchLocalJSON("/api/allPostMeta.json");
+      scroll.innerHTML = `<section class="native-home-intro"><p>不乱于心，不困于情，不畏将来，不惧过去</p><strong>${posts.length}</strong><span>篇文章</span></section>
+        <div class="native-section-heading"><h2>最近更新</h2><span>${escapeHTML(posts[0]?.date || "")}</span></div>
+        <div class="native-post-grid">${posts.slice(0, 6).map(nativePostCard).join("")}</div>`;
+    } catch (error) {
+      scroll.innerHTML = `<div class="native-error-state"><strong>内容暂时无法读取</strong><p>${escapeHTML(error.message)}</p><button type="button" data-native-retry>重新加载</button></div>`;
+      scroll.querySelector("[data-native-retry]")?.addEventListener("click", () => createHomeApp(element).then(next => wrapper.replaceWith(next)));
+    }
+    return wrapper;
+  }
+
+  async function createBlogApp(element) {
+    const wrapper = nativePageShell("native-blog-app", "WRITING / NOTES", "博客");
+    const scroll = wrapper.querySelector("[data-native-scroll]");
+    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取文章列表</p></div>';
+    try {
+      const posts = await fetchLocalJSON("/api/allPostMeta.json");
+      const categories = [...new Set(posts.map(post => post.category).filter(Boolean))];
+      let query = "";
+      let category = "";
+      let page = 1;
+      const restore = () => createBlogApp(element);
+      const render = () => {
+        const pageSize = matchMedia("(max-width: 680px)").matches ? 10 : 30;
+        const normalized = query.trim().toLowerCase();
+        const filtered = posts.filter(post => {
+          const searchable = `${post.title} ${post.description || ""} ${post.category || ""} ${(post.tags || []).join(" ")}`.toLowerCase();
+          return (!normalized || searchable.includes(normalized)) && (!category || post.category === category);
+        });
+        const pageCount = Math.max(1, Math.ceil(filtered.length / pageSize));
+        page = clamp(page, 1, pageCount);
+        const pagePosts = filtered.slice((page - 1) * pageSize, page * pageSize);
+        scroll.innerHTML = `<div class="native-blog-tools">
+            <label class="native-search"><span aria-hidden="true">⌕</span><input type="search" value="${escapeHTML(query)}" placeholder="搜索文章" aria-label="搜索文章"></label>
+            <label class="native-select"><span>分类</span><select aria-label="筛选分类"><option value="">全部</option>${categories.map(item => `<option value="${escapeHTML(item)}"${item === category ? " selected" : ""}>${escapeHTML(item)}</option>`).join("")}</select></label>
+          </div>
+          <div class="native-result-line"><span>共 ${filtered.length} 篇</span><span>第 ${page} / ${pageCount} 页</span></div>
+          <div class="native-post-grid">${pagePosts.map(nativePostCard).join("") || '<p class="native-empty-state">没有匹配的文章</p>'}</div>
+          <nav class="native-pagination" aria-label="文章分页"><button type="button" data-page="prev" ${page <= 1 ? "disabled" : ""} aria-label="上一页">←</button><span>${page} / ${pageCount}</span><button type="button" data-page="next" ${page >= pageCount ? "disabled" : ""} aria-label="下一页">→</button></nav>`;
+      };
+      wrapper.addEventListener("input", event => {
+        if (!event.target.matches(".native-search input")) return;
+        query = event.target.value;
+        page = 1;
+        render();
+        scroll.querySelector(".native-search input")?.focus();
+      });
+      wrapper.addEventListener("change", event => {
+        if (!event.target.matches(".native-select select")) return;
+        category = event.target.value;
+        page = 1;
+        render();
+      });
+      wrapper.addEventListener("click", event => {
+        const pager = event.target.closest("[data-page]");
+        if (!pager || pager.disabled) return;
+        page += pager.dataset.page === "next" ? 1 : -1;
+        render();
+        scroll.scrollTo({ top: 0, behavior: reducedMotion.matches ? "auto" : "smooth" });
+      });
+      bindPostLinks(wrapper, element, restore);
+      render();
+    } catch (error) {
+      scroll.innerHTML = `<div class="native-error-state"><strong>文章列表读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+    }
+    return wrapper;
+  }
+
+  async function createArchiveApp(element) {
+    const wrapper = nativePageShell("native-archive-app", "ARCHIVE", "文章归档");
+    const scroll = wrapper.querySelector("[data-native-scroll]");
+    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在整理归档</p></div>';
+    try {
+      const posts = await fetchLocalJSON("/api/allPostMeta.json");
+      const years = posts.reduce((groups, post) => {
+        const year = String(post.date || "未标注").slice(0, 4);
+        if (!groups.has(year)) groups.set(year, []);
+        groups.get(year).push(post);
+        return groups;
+      }, new Map());
+      scroll.innerHTML = [...years].map(([year, items]) => `<section class="native-archive-year"><header><strong>${escapeHTML(year)}</strong><span>${items.length} 篇</span></header><div>${items.map(post => `<button type="button" data-post-url="${escapeHTML(post.url)}"><time>${escapeHTML((post.date || "").slice(5).replace("-", "."))}</time><span>${post.pinned ? "⌖ " : ""}${escapeHTML(post.title)}</span><i>→</i></button>`).join("")}</div></section>`).join("");
+      bindPostLinks(wrapper, element, () => createArchiveApp(element));
+    } catch (error) {
+      scroll.innerHTML = `<div class="native-error-state"><strong>归档读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+    }
+    return wrapper;
+  }
+
+  async function createFriendsApp() {
+    const wrapper = nativePageShell("native-friends-app", "CONNECTIONS", "友情链接", '<a class="native-header-action" href="/friends/">申请友链 →</a>');
+    const scroll = wrapper.querySelector("[data-native-scroll]");
+    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取友链</p></div>';
+    try {
+      const data = await fetchLocalJSON("/api/friends.json");
+      scroll.innerHTML = `<div class="native-friend-grid">${data.items.map(friend => `<a class="native-friend" href="${escapeHTML(friend.url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHTML(friend.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHTML(friend.name)}</strong><small>${escapeHTML(friend.description || "访问站点")}</small><i>↗</i></a>`).join("")}</div>`;
+    } catch (error) {
+      scroll.innerHTML = `<div class="native-error-state"><strong>友链读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+    }
+    return wrapper;
+  }
+
+  function createToolsApp() {
+    const wrapper = nativePageShell("native-tools-app", "LOCAL UTILITIES", "工具箱");
+    wrapper.querySelector("[data-native-scroll]").innerHTML = `<div class="native-tool-grid">${toolEntries.map(tool => `<a class="native-tool" href="${tool.url}"><span>${escapeHTML(tool.icon)}</span><strong>${escapeHTML(tool.title)}</strong><small>${escapeHTML(tool.description)}</small><i>→</i></a>`).join("")}</div>`;
+    return wrapper;
+  }
+
+  function createGuestbookApp() {
+    const wrapper = nativePageShell("native-guestbook-app", "MESSAGES", "留言板");
+    wrapper.querySelector("[data-native-scroll]").innerHTML = '<div class="native-route-panel"><span>◌</span><strong>访客留言</strong><p>留言验证与提交将在站内完整页面中完成。</p><a href="/guestbook/">进入留言板 →</a></div>';
+    return wrapper;
+  }
+
+  function sanitizeArticleFragment(fragment) {
+    fragment.querySelectorAll("script, style, link, meta, base, form, object, embed").forEach(node => node.remove());
+    fragment.querySelectorAll("*").forEach(node => {
+      [...node.attributes].forEach(attribute => {
+        if (/^on/i.test(attribute.name) || attribute.name === "srcdoc") node.removeAttribute(attribute.name);
+        if (attribute.name === "style" && /url\s*\(/i.test(attribute.value)) node.removeAttribute("style");
+      });
+      if (node.matches("iframe")) {
+        const source = safeLocalURL(node.getAttribute("src"));
+        if (!source) node.remove();
+        else {
+          node.src = `${source.pathname}${source.search}`;
+          node.setAttribute("sandbox", "allow-scripts allow-forms allow-pointer-lock allow-popups");
+          node.setAttribute("loading", "lazy");
+        }
+      }
+      if (node.matches("img, source, video, audio")) {
+        const source = safeLocalURL(node.getAttribute("src"));
+        if (node.hasAttribute("src") && !source) node.remove();
+        else if (source) node.setAttribute("src", `${source.pathname}${source.search}`);
+        node.removeAttribute("srcset");
+        if (node.hasAttribute("poster")) {
+          const poster = safeLocalURL(node.getAttribute("poster"));
+          if (poster) node.setAttribute("poster", `${poster.pathname}${poster.search}`);
+          else node.removeAttribute("poster");
+        }
+      }
+      if (node.matches("a")) {
+        const href = node.getAttribute("href") || "";
+        if (/^(?:javascript|data):/i.test(href)) node.removeAttribute("href");
+        else {
+          try {
+            const target = new URL(href || "/", location.origin);
+            if (target.origin === location.origin) node.setAttribute("href", `${target.pathname}${target.search}${target.hash}`);
+            else if (/^https?:$/.test(target.protocol)) {
+              node.setAttribute("target", "_blank");
+              node.setAttribute("rel", "noopener noreferrer");
+            } else node.removeAttribute("href");
+          } catch (_) {
+            node.removeAttribute("href");
+          }
+        }
+      }
+    });
+    return fragment;
+  }
+
+  async function renderNativeArticle(element, path, restore) {
+    const url = safeLocalURL(path, ["/posts/"]);
+    if (!url) {
+      showToast("无法打开", "只允许读取本站文章");
+      return;
+    }
+    const content = element.querySelector(".window-content");
+    content.innerHTML = '<section class="native-app native-reader"><div class="native-loading-state"><span></span><p>正在读取文章</p></div></section>';
+    try {
+      const response = await fetch(url, { credentials: "same-origin" });
+      if (!response.ok) throw new Error(`文章读取失败（${response.status}）`);
+      const documentPage = new DOMParser().parseFromString(await response.text(), "text/html");
+      const source = documentPage.querySelector("#hugo-article-content");
+      if (!source) throw new Error("文章正文不存在");
+      const fragment = sanitizeArticleFragment(source.cloneNode(true));
+      const title = documentPage.querySelector(".article-header h1")?.textContent?.trim() || documentPage.title || "文章";
+      const meta = documentPage.querySelector(".article-meta")?.textContent?.replace(/\s+/g, " ").trim() || "本站文章";
+      const reader = nativePageShell("native-reader", "ARTICLE", title, '<button class="native-header-action" type="button" data-reader-back>← 返回</button>');
+      const scroll = reader.querySelector("[data-native-scroll]");
+      scroll.innerHTML = `<p class="native-reader-meta">${escapeHTML(meta)}</p><article class="native-article-body markdown-content"></article>`;
+      scroll.querySelector(".native-article-body").append(...fragment.childNodes);
+      reader.querySelector("[data-reader-back]").addEventListener("click", async () => {
+        const restored = await restore();
+        content.replaceChildren(restored);
+        setWindowHeading(element, apps[element.dataset.app].title, apps[element.dataset.app].subtitle);
+      });
+      reader.addEventListener("click", event => {
+        const anchor = event.target.closest("a[href]");
+        if (!anchor) return;
+        const target = new URL(anchor.href, location.origin);
+        if (target.origin === location.origin && target.pathname.startsWith("/posts/")) {
+          event.preventDefault();
+          renderNativeArticle(element, target.pathname, restore);
+        }
+      });
+      content.replaceChildren(reader);
+      setWindowHeading(element, title, "本站文章");
+    } catch (error) {
+      content.innerHTML = `<section class="native-app native-reader"><div class="native-error-state"><strong>文章无法打开</strong><p>${escapeHTML(error.message)}</p><button type="button" data-reader-back>返回列表</button></div></section>`;
+      content.querySelector("[data-reader-back]")?.addEventListener("click", async () => content.replaceChildren(await restore()));
+    }
   }
 
   function createTerminalContent(element) {
@@ -430,7 +726,7 @@
     focusWindow(element);
   }
 
-  function attachWindowContent(element, app) {
+  async function attachWindowContent(element, app) {
     const content = element.querySelector(".window-content");
     if (app.kind === "welcome") {
       content.innerHTML = welcomeMarkup();
@@ -443,21 +739,22 @@
       setTimeout(() => content.querySelector("input")?.focus(), 350);
       return;
     }
-    const frame = document.createElement("iframe");
-    frame.src = app.url;
-    frame.title = app.title;
-    frame.loading = "eager";
-    frame.referrerPolicy = "same-origin";
-    frame.addEventListener("load", () => {
-      element.classList.add("is-loaded");
-      try {
-        const frameTitle = frame.contentDocument?.title;
-        if (frameTitle) element.querySelector(".window-app-subtitle").textContent = frameTitle;
-      } catch (_) {
-        // Same-origin in production; title access is only a progressive enhancement.
-      }
-    });
-    content.append(frame);
+    const factories = {
+      home: () => createHomeApp(element),
+      blog: () => createBlogApp(element),
+      tools: () => createToolsApp(),
+      friends: () => createFriendsApp(),
+      guestbook: () => createGuestbookApp(),
+      archive: () => createArchiveApp(element),
+    };
+    try {
+      const view = await factories[app.kind]?.();
+      if (!view) throw new Error("应用视图不存在");
+      content.replaceChildren(view);
+    } catch (error) {
+      content.innerHTML = `<div class="native-error-state"><strong>应用无法打开</strong><p>${escapeHTML(error.message)}</p></div>`;
+    }
+    element.classList.add("is-loaded");
   }
 
   function applyLayoutMode(workspace = activeWorkspace) {
@@ -737,7 +1034,7 @@
     button.addEventListener("click", () => {
       document.querySelectorAll(".desktop-icon").forEach(icon => icon.classList.remove("is-selected"));
       button.classList.add("is-selected");
-      if (coarsePointer.matches) openApp(button.dataset.app);
+      if (coarsePointer.matches || innerWidth <= 680) openApp(button.dataset.app);
     });
     button.addEventListener("dblclick", () => openApp(button.dataset.app));
     button.addEventListener("keydown", event => {

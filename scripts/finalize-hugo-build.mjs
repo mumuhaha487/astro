@@ -8,9 +8,11 @@ const repositoryRoot = resolve(dirname(fileURLToPath(import.meta.url)), "..");
 const outputRoot = join(repositoryRoot, "dist");
 const manifestPath = join(outputRoot, "post-manifest.json");
 const generatedImageDataPath = join(repositoryRoot, "data", "generatedImages.json");
-const generatedImages = existsSync(generatedImageDataPath)
-  ? JSON.parse(await readFile(generatedImageDataPath, "utf8")).images || {}
+const friendsDataPath = join(repositoryRoot, "data", "friends.json");
+const generatedImageData = existsSync(generatedImageDataPath)
+  ? JSON.parse(await readFile(generatedImageDataPath, "utf8"))
   : {};
+const generatedImages = generatedImageData.images || {};
 
 if (!existsSync(manifestPath)) {
   throw new Error("Hugo did not produce dist/post-manifest.json");
@@ -20,13 +22,20 @@ const posts = JSON.parse(await readFile(manifestPath, "utf8"));
 const apiRoot = join(outputRoot, "api");
 await mkdir(apiRoot, { recursive: true });
 
-await writeFile(join(apiRoot, "allPostMeta.json"), JSON.stringify(posts.map((post) => ({
+const randomCovers = generatedImageData.randomCovers?.desktop || [];
+await writeFile(join(apiRoot, "allPostMeta.json"), JSON.stringify(posts.map((post, index) => ({
   id: post.id,
   url: post.url,
   title: post.title,
   description: post.description,
   published: post.published,
+  date: post.date,
   category: post.category,
+  tags: Array.isArray(post.tags) ? post.tags : [],
+  image: generatedImages[post.image]?.card || post.image || randomCovers[index % Math.max(1, randomCovers.length)] || "",
+  pinned: Boolean(post.pinned),
+  readingTime: Number(post.readingTime) || 1,
+  wordCount: Number(post.wordCount) || 0,
   password: post.password,
 }))));
 await writeFile(join(apiRoot, "calendar-data.json"), JSON.stringify(posts.map((post) => ({
@@ -34,6 +43,10 @@ await writeFile(join(apiRoot, "calendar-data.json"), JSON.stringify(posts.map((p
   title: post.title,
   date: post.date,
 }))));
+if (existsSync(friendsDataPath)) {
+  const friends = JSON.parse(await readFile(friendsDataPath, "utf8"));
+  await writeFile(join(apiRoot, "friends.json"), JSON.stringify({ items: Array.isArray(friends.items) ? friends.items : [] }));
+}
 
 for (const [sourceName, targetName] of [
   ["index.xml", "rss.xml"],

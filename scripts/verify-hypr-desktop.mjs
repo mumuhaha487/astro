@@ -99,13 +99,28 @@ try {
   assert.equal(await page.locator(".welcome-copy").textContent(), "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。");
   assert.equal(await page.locator(".welcome-card, .welcome-grid").count(), 0, "removed welcome explanation sections remain");
 
+  await page.locator('.hypr-dock [data-app="home"]').click();
+  await page.waitForSelector('.hypr-window[data-app="home"] .native-home-app');
+  assert.ok(await page.locator('.hypr-window[data-app="home"] .native-post-card').count() >= 1, "native home view has no recent articles");
+  assert.equal(await page.locator('.hypr-window[data-app="home"] iframe').count(), 0, "home still opens as an embedded website");
+  await page.locator('.hypr-window[data-app="home"] [data-window-action="close"]').click();
+  await page.waitForSelector('.hypr-window[data-app="home"]', { state: "detached" });
+
   await page.locator('.hypr-dock [data-app="blog"]').click();
   await page.locator('.hypr-dock [data-app="tools"]').click();
   await page.waitForFunction(() => document.querySelectorAll(".hypr-window").length === 3);
   await page.waitForFunction(() => [...document.querySelectorAll(".hypr-window[data-app=blog], .hypr-window[data-app=tools]")].every(windowElement => windowElement.classList.contains("is-loaded")));
   await page.waitForTimeout(650);
-  assert.equal(await page.locator('.hypr-window[data-app="blog"] iframe').getAttribute("src"), "/blog/");
-  assert.equal(await page.locator('.hypr-window[data-app="tools"] iframe').getAttribute("src"), "/tools/");
+  assert.equal(await page.locator('.hypr-window[data-app="blog"] .native-blog-app').count(), 1, "blog did not open as a native desktop view");
+  assert.equal(await page.locator('.hypr-window[data-app="tools"] .native-tools-app').count(), 1, "tools did not open as a native desktop view");
+  assert.equal(await page.locator('.window-content > iframe').count(), 0, "desktop applications still open in iframe wrappers");
+  assert.ok(await page.locator('.hypr-window[data-app="blog"] .native-post-card').count() >= 1, "native blog list is empty");
+  await page.locator('.hypr-dock [data-app="blog"]').click();
+  await page.locator('.hypr-window[data-app="blog"] .native-post-card').first().click();
+  await page.waitForSelector('.hypr-window[data-app="blog"] .native-reader .native-article-body');
+  assert.ok((await page.locator('.hypr-window[data-app="blog"] .native-article-body').textContent()).trim().length > 20, "native article reader has no content");
+  await page.locator('.hypr-window[data-app="blog"] [data-reader-back]').click();
+  await page.waitForSelector('.hypr-window[data-app="blog"] .native-blog-app');
 
   const stackedRects = await page.locator('.hypr-window.is-floating').evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
@@ -114,7 +129,7 @@ try {
   assert.equal(stackedRects.length, 3, "applications should open in the stacked layout");
   assert.equal(new Set(stackedRects.map(rect => Math.round(rect.width))).size, 1, "stacked windows do not share one readable size");
   assert.ok(new Set(stackedRects.map(rect => `${Math.round(rect.left)}:${Math.round(rect.top)}`)).size > 1, "stacked windows do not form a visible cascade");
-  assert.ok(stackedRects.every(rect => rect.width >= 600 && rect.height >= 420 && rect.left >= 0 && rect.right <= 1600 && rect.top >= 45 && rect.bottom <= 900), "stacked layout squeezes or overflows a window");
+  assert.ok(stackedRects.every(rect => rect.width >= 600 && rect.height >= 420 && rect.left >= 0 && rect.right <= 1600 && rect.top >= 45 && rect.bottom <= 900), `stacked layout squeezes or overflows a window: ${JSON.stringify(stackedRects)}`);
   assert.ok(Number.parseFloat(await page.locator(".hypr-window").first().evaluate(element => getComputedStyle(element).borderTopLeftRadius)) >= 30, "stacked windows lost the large Hyprliquid corner radius");
 
   await page.keyboard.press("Alt+g");
@@ -260,8 +275,38 @@ try {
   await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-welcome-unframed-mobile-390x844.png`, fullPage: true });
   await mobilePage.waitForSelector(".desktop-toast", { state: "detached" });
   await mobilePage.waitForTimeout(450);
+  await mobilePage.keyboard.press("Alt+Space");
+  const launcherGeometry = await mobilePage.locator(".launcher-grid").evaluate(element => ({ clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+  assert.ok(launcherGeometry.clientHeight > 0, "mobile launcher has no usable scroll area");
+  await mobilePage.locator('.launcher-app[data-launcher-app="welcome"]').scrollIntoViewIfNeeded();
+  const launcherLastItem = await mobilePage.locator('.launcher-app[data-launcher-app="welcome"]').evaluate(element => {
+    const rect = element.getBoundingClientRect();
+    const grid = element.closest(".launcher-grid").getBoundingClientRect();
+    return { top: rect.top, bottom: rect.bottom, gridTop: grid.top, gridBottom: grid.bottom };
+  });
+  assert.ok(launcherLastItem.top >= launcherLastItem.gridTop - 1 && launcherLastItem.bottom <= launcherLastItem.gridBottom + 1, "mobile launcher cannot scroll to its last application");
+  await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-launcher-mobile-390x844.png`, fullPage: true });
+  await mobilePage.keyboard.press("Escape");
   await mobilePage.locator('.hypr-dock [data-app="blog"]').tap();
   await mobilePage.waitForFunction(() => document.querySelector('.hypr-window[data-app="blog"]')?.classList.contains("is-loaded"));
+  await mobilePage.waitForSelector('.hypr-window[data-app="blog"] .native-blog-app');
+  await mobilePage.waitForTimeout(650);
+  assert.equal(await mobilePage.locator('.hypr-window[data-app="blog"] .native-post-card').count(), 10, "mobile native blog does not show ten posts per page");
+  const mobileScroll = await mobilePage.locator('.hypr-window[data-app="blog"] .native-scroll').evaluate(element => {
+    const before = element.scrollTop;
+    element.scrollTop = Math.min(180, element.scrollHeight - element.clientHeight);
+    return { before, after: element.scrollTop, clientHeight: element.clientHeight, scrollHeight: element.scrollHeight, touchAction: getComputedStyle(element).touchAction };
+  });
+  assert.ok(mobileScroll.scrollHeight > mobileScroll.clientHeight && mobileScroll.after > mobileScroll.before, "mobile blog content cannot scroll");
+  assert.equal(mobileScroll.touchAction, "pan-y", "mobile blog does not allow vertical touch panning");
+  await mobilePage.locator('.hypr-window[data-app="blog"] .native-scroll').evaluate(element => { element.scrollTop = 0; });
+  await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-blog-native-mobile-390x844.png`, fullPage: true });
+  await mobilePage.locator('.hypr-window[data-app="blog"] .native-post-card').nth(1).tap();
+  await mobilePage.waitForSelector('.hypr-window[data-app="blog"] .native-article-body');
+  const mobileArticleFont = await mobilePage.locator('.hypr-window[data-app="blog"] .native-article-body').evaluate(element => Number.parseFloat(getComputedStyle(element).fontSize));
+  assert.ok(mobileArticleFont <= 13, `mobile article font is too large (${mobileArticleFont}px)`);
+  assert.equal(await mobilePage.locator('.hypr-window[data-app="blog"] .native-article-body script').count(), 0, "native article reader retained executable scripts");
+  await mobilePage.screenshot({ path: `${process.env.TEMP}\\hypr-article-native-mobile-390x844.png`, fullPage: true });
   const mobileRect = await mobilePage.locator('.hypr-window[data-app="blog"]').evaluate(element => {
     const rect = element.getBoundingClientRect();
     return { left: rect.left, right: rect.right, top: rect.top, bottom: rect.bottom };
@@ -304,10 +349,49 @@ try {
   assert.ok(narrowLayout.left <= narrowGlyph.left && narrowGlyph.right <= narrowLayout.right, "layout glyph overflows its button");
   assert.equal(await narrowPage.locator(".waybar .classic-return").isVisible(), false, "duplicate top return control still crowds the narrow status bar");
   assert.equal(await narrowPage.locator(".hypr-dock [data-return-classic]").isVisible(), true, "narrow desktop lost its classic-mode return control");
+  await narrowPage.locator('.hypr-window[data-app="welcome"] [data-window-action="close"]').tap();
+  await narrowPage.waitForSelector('.hypr-window[data-app="welcome"]', { state: "detached" });
+  await narrowPage.locator('.desktop-icon[data-app="blog"]').tap();
+  await narrowPage.waitForSelector('.hypr-window[data-app="blog"] .native-blog-app');
+  await narrowPage.waitForTimeout(650);
+  assert.equal(await narrowPage.locator('.hypr-window[data-app="blog"]').count(), 1, "a single mobile tap does not open an application");
   await narrowPage.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-narrow-360x780.png`, fullPage: true });
   await narrow.close();
 
-  console.log("Hyprland desktop verification passed: Arch Linux switch icon, default stacked windows, reversible spaced liquid tiling, rounded acrylic surfaces, extended terminal commands, visible classic-mode return, always-on-top app launcher, workspaces, wallpaper switching, embedded routes, compact screens, and mobile behavior.");
+  const shortMobile = await browser.newContext({ viewport: { width: 360, height: 600 }, isMobile: true, hasTouch: true });
+  const shortPage = await shortMobile.newPage();
+  response = await shortPage.goto(new URL("/desktop/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
+  assert.equal(response?.status(), 200);
+  await shortPage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
+  await shortPage.keyboard.press("Alt+Space");
+  const shortLauncher = await shortPage.locator(".launcher-grid").evaluate(element => ({ clientHeight: element.clientHeight, scrollHeight: element.scrollHeight }));
+  assert.ok(shortLauncher.scrollHeight > shortLauncher.clientHeight, "short mobile launcher does not create a bounded scroll area");
+  await shortPage.locator('.launcher-app[data-launcher-app="welcome"]').scrollIntoViewIfNeeded();
+  const shortLastVisible = await shortPage.locator('.launcher-app[data-launcher-app="welcome"]').evaluate(element => {
+    const item = element.getBoundingClientRect();
+    const grid = element.closest(".launcher-grid").getBoundingClientRect();
+    return item.top >= grid.top - 1 && item.bottom <= grid.bottom + 1;
+  });
+  assert.equal(shortLastVisible, true, "short mobile launcher cannot reach its final row");
+  await shortPage.screenshot({ path: `${process.env.TEMP}\\hypr-launcher-short-mobile-360x600.png`, fullPage: true });
+  await shortPage.locator('.launcher-app[data-launcher-app="archive"]').tap();
+  await shortPage.waitForSelector('.hypr-window[data-app="archive"] .native-archive-app');
+  assert.equal(await shortPage.locator('.hypr-window[data-app="archive"] [data-post-url]').count(), 95, "native archive does not expose all posts");
+  await shortPage.locator('.hypr-window[data-app="archive"] [data-window-action="close"]').tap();
+  await shortPage.waitForSelector('.hypr-window[data-app="archive"]', { state: "detached" });
+  await shortPage.keyboard.press("Alt+Space");
+  await shortPage.locator('.launcher-app[data-launcher-app="friends"]').tap();
+  await shortPage.waitForSelector('.hypr-window[data-app="friends"] .native-friends-app');
+  assert.equal(await shortPage.locator('.hypr-window[data-app="friends"] .native-friend').count(), 4, "native friends view did not load local build data");
+  await shortPage.locator('.hypr-window[data-app="friends"] [data-window-action="close"]').tap();
+  await shortPage.waitForSelector('.hypr-window[data-app="friends"]', { state: "detached" });
+  await shortPage.keyboard.press("Alt+Space");
+  await shortPage.locator('.launcher-app[data-launcher-app="guestbook"]').tap();
+  await shortPage.waitForSelector('.hypr-window[data-app="guestbook"] .native-guestbook-app');
+  assert.equal(await shortPage.locator('.hypr-window[data-app="guestbook"] a[href="/guestbook/"]').count(), 1, "native guestbook gateway is missing its functional local route");
+  await shortMobile.close();
+
+  console.log("Hyprland desktop verification passed: native same-origin reading views, scrollable mobile launcher and content, responsive pagination, stacked and tiled windows, terminal commands, workspaces, wallpapers, compact screens, and mobile behavior.");
 } finally {
   await browser.close();
 }
