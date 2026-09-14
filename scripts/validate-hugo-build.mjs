@@ -14,6 +14,9 @@ const requiredFiles = [
   "rss.xml",
   "atom.xml",
   "api/allPostMeta.json",
+  "api/allPostMeta.zh.json",
+  "api/allPostMeta.en.json",
+  "api/allPostMeta.ja.json",
   "api/calendar-data.json",
   "api/friends.json",
   "pagefind/pagefind.js",
@@ -80,6 +83,15 @@ const posts = JSON.parse(await readFile(join(outputRoot, "api", "allPostMeta.jso
 const calendar = JSON.parse(await readFile(join(outputRoot, "api", "calendar-data.json"), "utf8"));
 assert.ok(posts.length > 0, "No published posts were generated");
 assert.equal(calendar.length, posts.length, "Post and calendar APIs disagree");
+for (const locale of ["zh", "en", "ja"]) {
+  const localizedPosts = JSON.parse(await readFile(join(outputRoot, "api", `allPostMeta.${locale}.json`), "utf8"));
+  assert.ok(localizedPosts.length > 0, `No ${locale} desktop posts were generated`);
+  if (locale !== "zh") assert.ok(localizedPosts.every(post => post.url.startsWith(`/${locale}/posts/`)), `${locale} desktop posts use the wrong route prefix`);
+  assert.ok(localizedPosts.every(post => !Object.hasOwn(post, "encryptionPassword") && typeof post.password === "boolean"), `${locale} desktop metadata exposes private password data`);
+}
+for (const relative of ["post-manifest.json", "en/post-manifest.json", "ja/post-manifest.json"]) {
+  assert.equal(existsSync(join(outputRoot, relative)), false, `Private source manifest remains in dist/${relative}`);
+}
 
 for (const post of posts) {
   for (const field of ["date", "tags", "image", "pinned", "readingTime", "wordCount"]) {
@@ -153,8 +165,13 @@ assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
 assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
-assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v11/, "Current desktop stylesheet cache version is missing");
-assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v11/, "Current desktop script cache version is missing");
+assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v12/, "Current desktop stylesheet cache version is missing");
+assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v12/, "Current desktop script cache version is missing");
+assert.match(desktopPage, /data-language-toggle/, "Desktop language switch is missing");
+assert.match(desktopPage, /<strong>English<\/strong>/, "English desktop language option is missing");
+assert.match(desktopPage, /<strong>日本語<\/strong>/, "Japanese desktop language option is not explicit");
+assert.match(desktopScript, /allPostMeta\.\$\{currentLocale\}\.json/, "Desktop does not load locale-specific article data");
+assert.match(desktopStyles, /grid-template-columns:\s*repeat\(auto-fit,\s*72px\)/, "Mobile desktop icons do not adapt columns to available width");
 assert.doesNotMatch(desktopScript, /document\.createElement\("iframe"\)/, "Desktop applications still use iframe wrappers");
 assert.match(desktopScript, /function safeLocalURL\(/, "Desktop native views do not enforce same-origin reads");
 assert.match(desktopScript, /async function renderNativeArticle\(/, "Desktop article reader is missing");

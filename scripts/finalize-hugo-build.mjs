@@ -18,31 +18,54 @@ if (!existsSync(manifestPath)) {
   throw new Error("Hugo did not produce dist/post-manifest.json");
 }
 
-const posts = JSON.parse(await readFile(manifestPath, "utf8"));
 const apiRoot = join(outputRoot, "api");
 await mkdir(apiRoot, { recursive: true });
 
 const randomCovers = generatedImageData.randomCovers?.desktop || [];
-await writeFile(join(apiRoot, "allPostMeta.json"), JSON.stringify(posts.map((post, index) => ({
-  id: post.id,
-  url: post.url,
-  title: post.title,
-  description: post.description,
-  published: post.published,
-  date: post.date,
-  category: post.category,
-  tags: Array.isArray(post.tags) ? post.tags : [],
-  image: generatedImages[post.image]?.card || post.image || randomCovers[index % Math.max(1, randomCovers.length)] || "",
-  pinned: Boolean(post.pinned),
-  readingTime: Number(post.readingTime) || 1,
-  wordCount: Number(post.wordCount) || 0,
-  password: post.password,
-}))));
-await writeFile(join(apiRoot, "calendar-data.json"), JSON.stringify(posts.map((post) => ({
-  id: post.id,
-  title: post.title,
-  date: post.date,
-}))));
+const localeManifests = [
+  { locale: "zh", path: manifestPath, required: true },
+  { locale: "en", path: join(outputRoot, "en", "post-manifest.json") },
+  { locale: "ja", path: join(outputRoot, "ja", "post-manifest.json") },
+];
+let defaultPosts = [];
+for (const manifest of localeManifests) {
+  if (!existsSync(manifest.path)) {
+    if (manifest.required) throw new Error("Hugo did not produce dist/post-manifest.json");
+    continue;
+  }
+  const posts = JSON.parse(await readFile(manifest.path, "utf8"));
+  const safePosts = posts.map((post, index) => ({
+    id: post.id,
+    url: post.url,
+    title: post.title,
+    description: post.description,
+    published: post.published,
+    date: post.date,
+    category: post.category,
+    tags: Array.isArray(post.tags) ? post.tags : [],
+    image: generatedImages[post.image]?.card || post.image || randomCovers[index % Math.max(1, randomCovers.length)] || "",
+    pinned: Boolean(post.pinned),
+    readingTime: Number(post.readingTime) || 1,
+    wordCount: Number(post.wordCount) || 0,
+    password: Boolean(post.password),
+  }));
+  await writeFile(join(apiRoot, `allPostMeta.${manifest.locale}.json`), JSON.stringify(safePosts));
+  await writeFile(join(apiRoot, `calendar-data.${manifest.locale}.json`), JSON.stringify(posts.map((post) => ({
+    id: post.id,
+    title: post.title,
+    date: post.date,
+  }))));
+  if (manifest.locale === "zh") {
+    defaultPosts = safePosts;
+    await writeFile(join(apiRoot, "allPostMeta.json"), JSON.stringify(safePosts));
+    await writeFile(join(apiRoot, "calendar-data.json"), JSON.stringify(posts.map((post) => ({
+      id: post.id,
+      title: post.title,
+      date: post.date,
+    }))));
+  }
+  await rm(manifest.path);
+}
 if (existsSync(friendsDataPath)) {
   const friends = JSON.parse(await readFile(friendsDataPath, "utf8"));
   await writeFile(join(apiRoot, "friends.json"), JSON.stringify({ items: Array.isArray(friends.items) ? friends.items : [] }));
@@ -84,8 +107,7 @@ for (const htmlPath of await listHtmlFiles(outputRoot)) {
   if (changed) await writeFile(htmlPath, html);
 }
 
-await rm(manifestPath);
-console.log(`Finalized Hugo output for ${posts.length} published posts.`);
+console.log(`Finalized Hugo output for ${defaultPosts.length} published posts.`);
 
 async function listHtmlFiles(directory) {
   const files = [];

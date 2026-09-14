@@ -12,6 +12,7 @@
   const layoutToggle = document.querySelector("[data-layout-toggle]");
   const quickSettings = document.getElementById("quick-settings");
   const calendarPanel = document.getElementById("calendar-panel");
+  const languagePanel = document.getElementById("language-panel");
   const contextMenu = document.getElementById("desktop-context");
   const selectionBox = document.getElementById("desktop-selection");
   const toastRegion = document.getElementById("toast-region");
@@ -22,15 +23,79 @@
   const archLogo = `<svg class="archlinux-logo" viewBox="0 0 24 24" aria-hidden="true"><path d="M12 2.4c-1.3 3.2-2.1 5.3-3.6 8.5.9-.9 2.1-1.6 3.6-1.6s2.7.7 3.6 1.6C14.1 7.7 13.3 5.6 12 2.4Zm-5.2 12c-1.1 2-2.5 4.3-4.8 7.2 3.2-1.8 6-2.7 8.2-2.8-.7-.6-1.2-1.4-1.2-2.3 0-1.4 1.3-2.5 3-2.5s3 1.1 3 2.5c0 .9-.5 1.7-1.2 2.3 2.2.1 5 .9 8.2 2.8-2.3-2.9-3.7-5.2-4.8-7.2-1.4-1.3-3.2-2.1-5.2-2.1s-3.8.8-5.2 2.1Z"/></svg>`;
 
   const apps = {
-    welcome: { title: "欢迎", subtitle: "Hyprland Desktop", icon: "△", kind: "welcome" },
-    home: { title: "首页", subtitle: "vmss.cn", icon: "⌂", kind: "home" },
-    blog: { title: "博客", subtitle: "文章与笔记", icon: "▤", kind: "blog" },
-    tools: { title: "工具箱", subtitle: "本地实用工具", icon: "⌘", kind: "tools" },
-    friends: { title: "友情链接", subtitle: "朋友们的站点", icon: "⌁", kind: "friends" },
-    guestbook: { title: "留言板", subtitle: "访客留言", icon: "◌", kind: "guestbook" },
-    archive: { title: "文章归档", subtitle: "时间轴", icon: "◫", kind: "archive" },
-    terminal: { title: "终端", subtitle: "zsh · mumu@arch", icon: ">_", kind: "terminal" }
+    welcome: { icon: "△", kind: "welcome" }, home: { icon: "⌂", kind: "home" },
+    blog: { icon: "▤", kind: "blog" }, tools: { icon: "⌘", kind: "tools" },
+    friends: { icon: "⌁", kind: "friends" }, guestbook: { icon: "◌", kind: "guestbook" },
+    archive: { icon: "◫", kind: "archive" }, terminal: { icon: ">_", kind: "terminal" },
   };
+  const locales = {
+    zh: {
+      htmlLang: "zh-CN", dateLocale: "zh-CN", short: "中", classicPath: "/",
+      apps: {
+        welcome: ["欢迎", "Hyprland Desktop"], home: ["首页", "vmss.cn"], blog: ["博客", "文章与笔记"],
+        tools: ["工具箱", "本地实用工具"], friends: ["友情链接", "朋友们的站点"], guestbook: ["留言板", "访客留言"],
+        archive: ["文章归档", "时间轴"], terminal: ["终端", "zsh · mumu@arch"],
+      },
+      workspace: "工作区", stacked: "集中堆叠", tiled: "液态平铺", switchTiled: "切换为液态平铺布局", switchStacked: "切换为集中堆叠布局",
+      welcomeTitle: "木木em哈哈的桌面工作区", welcomeCopy: "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。",
+      allPosts: "全部文章 →", loadingSite: "正在读取本站内容", quote: "不乱于心，不困于情，不畏将来，不惧过去", postsUnit: "篇文章", latest: "最近更新",
+      blogEyebrow: "WRITING / NOTES", search: "搜索文章", category: "分类", all: "全部", total: "共 {count} 篇", page: "第 {page} / {pages} 页", empty: "没有匹配的文章",
+      previous: "上一页", next: "下一页", pinned: "置顶 · ", readMore: "打开阅读全文", read: "阅读 {title}", loadingPosts: "正在读取文章列表",
+      archive: "文章归档", archiveCount: "{count} 篇", loadingArchive: "正在整理归档", applyFriend: "申请友链 →", loadingFriends: "正在读取友链", visitSite: "访问站点",
+      tools: "工具箱", guestbook: "留言板", visitorMessage: "访客留言", guestbookCopy: "留言验证与提交将在站内完整页面中完成。", enterGuestbook: "进入留言板 →",
+      loadingArticle: "正在读取文章", article: "文章", siteArticle: "本站文章", back: "← 返回", backList: "返回列表", articleUnavailable: "文章无法打开", localOnly: "只允许读取本站文章",
+      loadError: "内容暂时无法读取", listError: "文章列表读取失败", archiveError: "归档读取失败", friendsError: "友链读取失败", retry: "重新加载", appError: "应用无法打开",
+      language: "选择语言", launcher: "应用", launcherSearch: "搜索应用…", classic: "经典模式", online: "在线", offline: "离线", calendarNote: "保持好奇，继续创造。",
+      readyTitle: "桌面已就绪", readyMessage: "双击图标，或按 Alt + Space 打开应用", layoutTitle: "窗口布局", layoutStacked: "已集中堆叠；再按 Alt + G 平铺", layoutTiled: "已液态平铺并填满工作区",
+      shortcuts: ["启动器", "终端", "工作区", "堆叠/平铺", "关闭", "返回经典模式"],
+      terminalIntro: "输入 help 查看命令。支持应用别名、工作区和桌面控制。",
+      terminalHelp: ["可用命令：", "  help / commands / man           查看帮助", "  neofetch / fastfetch            查看桌面环境信息", "  ls [apps|workspaces] · tree     浏览应用与工作区", "  open <应用> · cd <应用|~>       打开页面；cd ~ 返回经典模式", "  workspace <1-5> / ws <1-5>     切换工作区", "  layout [stacked|tiled]          设置或切换窗口布局", "  wallpaper [next|1-6]            切换壁纸", "  cat <文件> · which <命令>       查看静态文件与命令路径", "  free -h · df -h · ps · ip a    常用 Linux 状态格式", "  pacman [-Q|-Syu] · sudo         Arch 命令静态演示", "  fortune · quote · matrix        趣味内容", "  pwd · date · whoami · hostname · id · uname · uptime", "  echo · printf · ping · history · clear · about", "  close / exit                    关闭终端窗口", "  home / classic / logout         返回经典博客模式", "快捷键：↑/↓ 回看历史 · Tab 补全 · Ctrl+L 清屏"],
+      toolsList: [
+        ["JSON 格式化", "校验、格式化或压缩 JSON 数据。"], ["Base64 编解码", "支持中文和 Emoji 的本地编码、解码。"], ["文本统计", "实时统计字符、字词、行数和段落。"],
+        ["时间戳转换", "Unix 时间戳与本地日期双向转换。"], ["UUID 生成器", "一次生成指定数量的随机 UUID。"], ["GitHub / Docker 加速", "使用镜像加速服务。"], ["兽音译者", "普通文本与四字符兽音双向转换。"],
+      ],
+    },
+    en: {
+      htmlLang: "en", dateLocale: "en-US", short: "EN", classicPath: "/en/",
+      apps: { welcome: ["Welcome", "Hyprland Desktop"], home: ["Home", "vmss.cn"], blog: ["Blog", "Articles and notes"], tools: ["Toolbox", "Local utilities"], friends: ["Friends", "Sites worth visiting"], guestbook: ["Guestbook", "Visitor messages"], archive: ["Archive", "Timeline"], terminal: ["Terminal", "zsh · mumu@arch"] },
+      workspace: "Workspace", stacked: "Stacked", tiled: "Tiled", switchTiled: "Switch to liquid tiling", switchStacked: "Switch to stacked windows",
+      welcomeTitle: "Mumuemhaha's desktop workspace", welcomeCopy: "An Arch Linux and Hyprland-inspired workspace for browsing every part of this blog in native desktop windows.",
+      allPosts: "All articles →", loadingSite: "Loading site content", quote: "Stay calm, stay free, face the future without fear.", postsUnit: "articles", latest: "Latest updates",
+      blogEyebrow: "WRITING / NOTES", search: "Search articles", category: "Category", all: "All", total: "{count} articles", page: "Page {page} / {pages}", empty: "No matching articles",
+      previous: "Previous page", next: "Next page", pinned: "Pinned · ", readMore: "Read the full article", read: "Read {title}", loadingPosts: "Loading article list",
+      archive: "Archive", archiveCount: "{count} articles", loadingArchive: "Preparing archive", applyFriend: "Apply for a link →", loadingFriends: "Loading friends", visitSite: "Visit site",
+      tools: "Toolbox", guestbook: "Guestbook", visitorMessage: "Visitor messages", guestbookCopy: "Verification and submission continue on the full site page.", enterGuestbook: "Open guestbook →",
+      loadingArticle: "Loading article", article: "Article", siteArticle: "Site article", back: "← Back", backList: "Back to list", articleUnavailable: "Article unavailable", localOnly: "Only local site articles can be opened",
+      loadError: "Content is temporarily unavailable", listError: "Could not load articles", archiveError: "Could not load archive", friendsError: "Could not load friends", retry: "Try again", appError: "Application could not open",
+      language: "Language", launcher: "Applications", launcherSearch: "Search applications…", classic: "Classic mode", online: "Online", offline: "Offline", calendarNote: "Stay curious. Keep creating.",
+      readyTitle: "Desktop ready", readyMessage: "Double-click an icon or press Alt + Space", layoutTitle: "Window layout", layoutStacked: "Windows stacked; press Alt + G to tile", layoutTiled: "Liquid tiling fills the workspace",
+      shortcuts: ["Launcher", "Terminal", "Workspaces", "Stack / tile", "Close", "Classic mode"],
+      terminalIntro: "Type help to list commands. App aliases, workspaces, and desktop controls are available.",
+      terminalHelp: ["Available commands:", "  help / commands / man           Show this help", "  neofetch / fastfetch            Show desktop environment details", "  ls [apps|workspaces] · tree     Browse apps and workspaces", "  open <app> · cd <app|~>         Open a page; cd ~ returns to classic mode", "  workspace <1-5> / ws <1-5>     Switch workspace", "  layout [stacked|tiled]          Set or toggle window layout", "  wallpaper [next|1-6]            Change wallpaper", "  cat <file> · which <command>    Inspect static files and command paths", "  free -h · df -h · ps · ip a    Linux-style status output", "  pacman [-Q|-Syu] · sudo         Static Arch command demos", "  fortune · quote · matrix        Extra terminal output", "  pwd · date · whoami · hostname · id · uname · uptime", "  echo · printf · ping · history · clear · about", "  close / exit                    Close the terminal window", "  home / classic / logout         Return to classic blog mode", "Shortcuts: ↑/↓ history · Tab completion · Ctrl+L clear"],
+      toolsList: [["JSON formatter", "Validate, format, or minify JSON."], ["Base64 codec", "Encode and decode Unicode text locally."], ["Text statistics", "Count characters, words, lines, and paragraphs."], ["Timestamp converter", "Convert Unix timestamps and local dates."], ["UUID generator", "Generate multiple random UUIDs."], ["GitHub / Docker accelerator", "Use configured mirror services."], ["Beast translator", "Convert text with the four-character codec."]],
+    },
+    ja: {
+      htmlLang: "ja", dateLocale: "ja-JP", short: "日", classicPath: "/ja/",
+      apps: { welcome: ["ようこそ", "Hyprland Desktop"], home: ["ホーム", "vmss.cn"], blog: ["ブログ", "記事とノート"], tools: ["ツール", "ローカルツール"], friends: ["リンク", "おすすめサイト"], guestbook: ["ゲストブック", "訪問者メッセージ"], archive: ["記事アーカイブ", "タイムライン"], terminal: ["ターミナル", "zsh · mumu@arch"] },
+      workspace: "ワークスペース", stacked: "スタック", tiled: "タイル", switchTiled: "液体タイル表示に切り替え", switchStacked: "スタック表示に切り替え",
+      welcomeTitle: "木木em哈哈のデスクトップ", welcomeCopy: "Arch Linux と Hyprland に着想を得た、ブログの各ページをネイティブウィンドウで閲覧できるワークスペースです。",
+      allPosts: "すべての記事 →", loadingSite: "サイトを読み込み中", quote: "心を乱さず、情に囚われず、未来を恐れず、過去を悔やまない。", postsUnit: "件の記事", latest: "最新記事",
+      blogEyebrow: "WRITING / NOTES", search: "記事を検索", category: "カテゴリー", all: "すべて", total: "全 {count} 件", page: "{page} / {pages} ページ", empty: "一致する記事はありません",
+      previous: "前のページ", next: "次のページ", pinned: "固定 · ", readMore: "記事を読む", read: "{title} を読む", loadingPosts: "記事一覧を読み込み中",
+      archive: "記事アーカイブ", archiveCount: "{count} 件", loadingArchive: "アーカイブを整理中", applyFriend: "リンクを申請 →", loadingFriends: "リンクを読み込み中", visitSite: "サイトを見る",
+      tools: "ツール", guestbook: "ゲストブック", visitorMessage: "訪問者メッセージ", guestbookCopy: "認証と投稿はサイト内の完全版ページで行います。", enterGuestbook: "ゲストブックを開く →",
+      loadingArticle: "記事を読み込み中", article: "記事", siteArticle: "サイトの記事", back: "← 戻る", backList: "一覧に戻る", articleUnavailable: "記事を開けません", localOnly: "このサイトの記事のみ開けます",
+      loadError: "コンテンツを読み込めません", listError: "記事一覧を読み込めません", archiveError: "アーカイブを読み込めません", friendsError: "リンクを読み込めません", retry: "再読み込み", appError: "アプリを開けません",
+      language: "言語", launcher: "アプリ", launcherSearch: "アプリを検索…", classic: "クラシック", online: "オンライン", offline: "オフライン", calendarNote: "好奇心を持ち、作り続けよう。",
+      readyTitle: "デスクトップの準備完了", readyMessage: "アイコンをダブルクリックするか Alt + Space を押してください", layoutTitle: "ウィンドウ配置", layoutStacked: "スタック表示です。Alt + G でタイル表示", layoutTiled: "ワークスペース全体にタイル表示しました",
+      shortcuts: ["ランチャー", "ターミナル", "ワークスペース", "スタック / タイル", "閉じる", "クラシックに戻る"],
+      terminalIntro: "help と入力するとコマンド一覧を表示します。アプリ、ワークスペース、デスクトップを操作できます。",
+      terminalHelp: ["利用可能なコマンド：", "  help / commands / man           ヘルプを表示", "  neofetch / fastfetch            デスクトップ環境を表示", "  ls [apps|workspaces] · tree     アプリとワークスペースを表示", "  open <アプリ> · cd <アプリ|~>   ページを開く。cd ~ でクラシックへ戻る", "  workspace <1-5> / ws <1-5>     ワークスペースを切り替え", "  layout [stacked|tiled]          ウィンドウ配置を変更", "  wallpaper [next|1-6]            壁紙を変更", "  cat <ファイル> · which <コマンド> 静的ファイルとパスを表示", "  free -h · df -h · ps · ip a    Linux 形式の状態を表示", "  pacman [-Q|-Syu] · sudo         Arch コマンドの静的デモ", "  fortune · quote · matrix        追加の出力", "  pwd · date · whoami · hostname · id · uname · uptime", "  echo · printf · ping · history · clear · about", "  close / exit                    ターミナルを閉じる", "  home / classic / logout         クラシックブログへ戻る", "ショートカット：↑/↓ 履歴 · Tab 補完 · Ctrl+L クリア"],
+      toolsList: [["JSON フォーマッター", "JSON を検証、整形、圧縮します。"], ["Base64 変換", "Unicode テキストをローカルで変換します。"], ["文字数カウント", "文字、単語、行、段落を集計します。"], ["タイムスタンプ変換", "Unix 時刻とローカル日時を変換します。"], ["UUID 生成", "複数のランダム UUID を生成します。"], ["GitHub / Docker 高速化", "設定済みミラーサービスを使用します。"], ["獣音翻訳", "4文字コードでテキストを相互変換します。"]],
+    },
+  };
+  const requestedLocale = new URLSearchParams(location.search).get("lang") || localStorage.getItem("hypr-locale") || "zh";
+  let currentLocale = Object.hasOwn(locales, requestedLocale) ? requestedLocale : "zh";
   const launcherOrder = ["home", "blog", "tools", "friends", "guestbook", "archive", "terminal", "welcome"];
   const terminalCommands = [
     "help", "commands", "man", "neofetch", "fastfetch", "ls", "tree", "pwd", "date", "whoami",
@@ -53,14 +118,27 @@
   let launcherCursor = 0;
   const localDataCache = new Map();
   const toolEntries = [
-    { icon: "{}", title: "JSON 格式化", description: "校验、格式化或压缩 JSON 数据。", url: "/tools/json-formatter/" },
-    { icon: "64", title: "Base64 编解码", description: "支持中文和 Emoji 的本地编码、解码。", url: "/tools/base64/" },
-    { icon: "字", title: "文本统计", description: "实时统计字符、字词、行数和段落。", url: "/tools/text-stats/" },
-    { icon: "时", title: "时间戳转换", description: "Unix 时间戳与本地日期双向转换。", url: "/tools/timestamp/" },
-    { icon: "ID", title: "UUID 生成器", description: "一次生成指定数量的随机 UUID。", url: "/tools/uuid/" },
-    { icon: "⇄", title: "GitHub / Docker 加速", description: "使用镜像加速服务。", url: "/tools/docker-accelerator/" },
-    { icon: "兽", title: "兽音译者", description: "普通文本与四字符兽音双向转换。", url: "/tools/beast-translator/" },
+    { icon: "{}", url: "/tools/json-formatter/" }, { icon: "64", url: "/tools/base64/" }, { icon: "字", url: "/tools/text-stats/" },
+    { icon: "时", url: "/tools/timestamp/" }, { icon: "ID", url: "/tools/uuid/" }, { icon: "⇄", url: "/tools/docker-accelerator/" }, { icon: "兽", url: "/tools/beast-translator/" },
   ];
+
+  function copy(key, replacements = {}) {
+    return Object.entries(replacements).reduce((value, [name, replacement]) => value.replaceAll(`{${name}}`, String(replacement)), locales[currentLocale][key] || key);
+  }
+
+  function appText(id) {
+    const app = apps[id] || apps.welcome;
+    const [title, subtitle] = locales[currentLocale].apps[id] || locales[currentLocale].apps.welcome;
+    return { ...app, title, subtitle };
+  }
+
+  function postDataPath() {
+    return `/api/allPostMeta.${currentLocale}.json`;
+  }
+
+  function localizedPath(path) {
+    return currentLocale === "zh" ? path : `/${currentLocale}${path}`;
+  }
 
   function clamp(value, min, max) {
     return Math.min(max, Math.max(min, value));
@@ -71,7 +149,7 @@
   }
 
   function appForWindow(element) {
-    return apps[element?.dataset.app || "welcome"] || apps.welcome;
+    return appText(element?.dataset.app || "welcome");
   }
 
   function currentWindows(workspace = activeWorkspace) {
@@ -88,7 +166,7 @@
   function updateWaybar() {
     const active = windows.get(activeWindowId) || focusedWindow();
     const app = active ? appForWindow(active) : null;
-    titleLabel.querySelector("strong").textContent = app ? `${app.title} — ${app.subtitle}` : `Hyprland Desktop · 工作区 ${activeWorkspace}`;
+    titleLabel.querySelector("strong").textContent = app ? `${app.title} — ${app.subtitle}` : `Hyprland Desktop · ${copy("workspace")} ${activeWorkspace}`;
     root.dataset.workspace = String(activeWorkspace);
     root.dataset.activeWorkspace = String(activeWorkspace);
     root.dataset.windowCount = String(windows.size);
@@ -106,8 +184,8 @@
     if (layoutToggle) {
       const stacked = layoutMode === "stacked";
       layoutToggle.setAttribute("aria-pressed", String(stacked));
-      layoutToggle.setAttribute("aria-label", stacked ? "切换为液态平铺布局" : "切换为集中堆叠布局");
-      layoutToggle.querySelector(".layout-mode-label").textContent = stacked ? "集中堆叠" : "液态平铺";
+      layoutToggle.setAttribute("aria-label", copy(stacked ? "switchTiled" : "switchStacked"));
+      layoutToggle.querySelector(".layout-mode-label").textContent = copy(stacked ? "stacked" : "tiled");
     }
   }
 
@@ -177,11 +255,12 @@
   }
 
   function welcomeMarkup() {
+    const shortcuts = locales[currentLocale].shortcuts;
     return `
       <div class="welcome-app">
-        <div class="welcome-heading"><div class="welcome-mark">${archLogo}</div><div><p>ARCH LINUX · HYPRLAND</p><h1>木木em哈哈的桌面工作区</h1></div></div>
-        <p class="welcome-copy">这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。</p>
-        <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>G</kbd> 堆叠/平铺</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span><span><kbd>Alt</kbd><kbd>B</kbd> 返回经典模式</span></div>
+        <div class="welcome-heading"><div class="welcome-mark">${archLogo}</div><div><p>ARCH LINUX · HYPRLAND</p><h1>${escapeHTML(copy("welcomeTitle"))}</h1></div></div>
+        <p class="welcome-copy">${escapeHTML(copy("welcomeCopy"))}</p>
+        <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> ${escapeHTML(shortcuts[0])}</span><span><kbd>Alt</kbd><kbd>Enter</kbd> ${escapeHTML(shortcuts[1])}</span><span><kbd>Alt</kbd><kbd>1–5</kbd> ${escapeHTML(shortcuts[2])}</span><span><kbd>Alt</kbd><kbd>G</kbd> ${escapeHTML(shortcuts[3])}</span><span><kbd>Alt</kbd><kbd>Q</kbd> ${escapeHTML(shortcuts[4])}</span><span><kbd>Alt</kbd><kbd>B</kbd> ${escapeHTML(shortcuts[5])}</span></div>
       </div>`;
   }
 
@@ -218,19 +297,19 @@
   function formatPostDate(post) {
     if (post.date) return String(post.date).replaceAll("-", ".");
     const date = new Date(Number(post.published));
-    return Number.isNaN(date.valueOf()) ? "" : date.toLocaleDateString("zh-CN").replaceAll("/", ".");
+    return Number.isNaN(date.valueOf()) ? "" : date.toLocaleDateString(locales[currentLocale].dateLocale).replaceAll("/", ".");
   }
 
   function nativePostCard(post) {
     const image = localAssetPath(post.image);
     const tags = (Array.isArray(post.tags) ? post.tags : []).slice(0, 3);
     return `<article class="native-post-card${post.pinned ? " is-pinned" : ""}">
-      <button type="button" data-post-url="${escapeHTML(post.url)}" aria-label="阅读 ${escapeHTML(post.title)}">
+      <button type="button" data-post-url="${escapeHTML(post.url)}" aria-label="${escapeHTML(copy("read", { title: post.title }))}">
         <span class="native-post-cover">${image ? `<img src="${escapeHTML(image)}" alt="" loading="lazy" decoding="async">` : "<span>▤</span>"}</span>
         <span class="native-post-body">
-          <span class="native-post-meta">${post.pinned ? "置顶 · " : ""}${escapeHTML(formatPostDate(post))}${post.category ? ` · ${escapeHTML(post.category)}` : ""}</span>
+          <span class="native-post-meta">${post.pinned ? escapeHTML(copy("pinned")) : ""}${escapeHTML(formatPostDate(post))}${post.category ? ` · ${escapeHTML(post.category)}` : ""}</span>
           <strong>${escapeHTML(post.title)}</strong>
-          <span class="native-post-description">${escapeHTML(post.description || "打开阅读全文")}</span>
+          <span class="native-post-description">${escapeHTML(post.description || copy("readMore"))}</span>
           <span class="native-post-foot"><span>${tags.map(tag => `#${escapeHTML(tag)}`).join("　")}</span><i aria-hidden="true">→</i></span>
         </span>
       </button>
@@ -259,32 +338,32 @@
   }
 
   async function createHomeApp(element) {
-    const wrapper = nativePageShell("native-home-app", "WELCOME / 2026", "木木em哈哈", '<button class="native-header-action" type="button" data-open-app="blog">全部文章 →</button>');
+    const wrapper = nativePageShell("native-home-app", "WELCOME / 2026", "木木em哈哈", `<button class="native-header-action" type="button" data-open-app="blog">${escapeHTML(copy("allPosts"))}</button>`);
     const scroll = wrapper.querySelector("[data-native-scroll]");
-    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取本站内容</p></div>';
+    scroll.innerHTML = `<div class="native-loading-state"><span></span><p>${escapeHTML(copy("loadingSite"))}</p></div>`;
     wrapper.addEventListener("click", event => {
       const appButton = event.target.closest("[data-open-app]");
       if (appButton) openApp(appButton.dataset.openApp);
     });
     bindPostLinks(wrapper, element, () => createHomeApp(element));
     try {
-      const posts = await fetchLocalJSON("/api/allPostMeta.json");
-      scroll.innerHTML = `<section class="native-home-intro"><p>不乱于心，不困于情，不畏将来，不惧过去</p><strong>${posts.length}</strong><span>篇文章</span></section>
-        <div class="native-section-heading"><h2>最近更新</h2><span>${escapeHTML(posts[0]?.date || "")}</span></div>
+      const posts = await fetchLocalJSON(postDataPath());
+      scroll.innerHTML = `<section class="native-home-intro"><p>${escapeHTML(copy("quote"))}</p><strong>${posts.length}</strong><span>${escapeHTML(copy("postsUnit"))}</span></section>
+        <div class="native-section-heading"><h2>${escapeHTML(copy("latest"))}</h2><span>${escapeHTML(posts[0]?.date || "")}</span></div>
         <div class="native-post-grid">${posts.slice(0, 6).map(nativePostCard).join("")}</div>`;
     } catch (error) {
-      scroll.innerHTML = `<div class="native-error-state"><strong>内容暂时无法读取</strong><p>${escapeHTML(error.message)}</p><button type="button" data-native-retry>重新加载</button></div>`;
+      scroll.innerHTML = `<div class="native-error-state"><strong>${escapeHTML(copy("loadError"))}</strong><p>${escapeHTML(error.message)}</p><button type="button" data-native-retry>${escapeHTML(copy("retry"))}</button></div>`;
       scroll.querySelector("[data-native-retry]")?.addEventListener("click", () => createHomeApp(element).then(next => wrapper.replaceWith(next)));
     }
     return wrapper;
   }
 
   async function createBlogApp(element) {
-    const wrapper = nativePageShell("native-blog-app", "WRITING / NOTES", "博客");
+    const wrapper = nativePageShell("native-blog-app", copy("blogEyebrow"), appText("blog").title);
     const scroll = wrapper.querySelector("[data-native-scroll]");
-    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取文章列表</p></div>';
+    scroll.innerHTML = `<div class="native-loading-state"><span></span><p>${escapeHTML(copy("loadingPosts"))}</p></div>`;
     try {
-      const posts = await fetchLocalJSON("/api/allPostMeta.json");
+      const posts = await fetchLocalJSON(postDataPath());
       const categories = [...new Set(posts.map(post => post.category).filter(Boolean))];
       let query = "";
       let category = "";
@@ -301,12 +380,12 @@
         page = clamp(page, 1, pageCount);
         const pagePosts = filtered.slice((page - 1) * pageSize, page * pageSize);
         scroll.innerHTML = `<div class="native-blog-tools">
-            <label class="native-search"><span aria-hidden="true">⌕</span><input type="search" value="${escapeHTML(query)}" placeholder="搜索文章" aria-label="搜索文章"></label>
-            <label class="native-select"><span>分类</span><select aria-label="筛选分类"><option value="">全部</option>${categories.map(item => `<option value="${escapeHTML(item)}"${item === category ? " selected" : ""}>${escapeHTML(item)}</option>`).join("")}</select></label>
+            <label class="native-search"><span aria-hidden="true">⌕</span><input type="search" value="${escapeHTML(query)}" placeholder="${escapeHTML(copy("search"))}" aria-label="${escapeHTML(copy("search"))}"></label>
+            <label class="native-select"><span>${escapeHTML(copy("category"))}</span><select aria-label="${escapeHTML(copy("category"))}"><option value="">${escapeHTML(copy("all"))}</option>${categories.map(item => `<option value="${escapeHTML(item)}"${item === category ? " selected" : ""}>${escapeHTML(item)}</option>`).join("")}</select></label>
           </div>
-          <div class="native-result-line"><span>共 ${filtered.length} 篇</span><span>第 ${page} / ${pageCount} 页</span></div>
-          <div class="native-post-grid">${pagePosts.map(nativePostCard).join("") || '<p class="native-empty-state">没有匹配的文章</p>'}</div>
-          <nav class="native-pagination" aria-label="文章分页"><button type="button" data-page="prev" ${page <= 1 ? "disabled" : ""} aria-label="上一页">←</button><span>${page} / ${pageCount}</span><button type="button" data-page="next" ${page >= pageCount ? "disabled" : ""} aria-label="下一页">→</button></nav>`;
+          <div class="native-result-line"><span>${escapeHTML(copy("total", { count: filtered.length }))}</span><span>${escapeHTML(copy("page", { page, pages: pageCount }))}</span></div>
+          <div class="native-post-grid">${pagePosts.map(nativePostCard).join("") || `<p class="native-empty-state">${escapeHTML(copy("empty"))}</p>`}</div>
+          <nav class="native-pagination" aria-label="${escapeHTML(copy("page", { page, pages: pageCount }))}"><button type="button" data-page="prev" ${page <= 1 ? "disabled" : ""} aria-label="${escapeHTML(copy("previous"))}">←</button><span>${page} / ${pageCount}</span><button type="button" data-page="next" ${page >= pageCount ? "disabled" : ""} aria-label="${escapeHTML(copy("next"))}">→</button></nav>`;
       };
       wrapper.addEventListener("input", event => {
         if (!event.target.matches(".native-search input")) return;
@@ -331,53 +410,53 @@
       bindPostLinks(wrapper, element, restore);
       render();
     } catch (error) {
-      scroll.innerHTML = `<div class="native-error-state"><strong>文章列表读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+      scroll.innerHTML = `<div class="native-error-state"><strong>${escapeHTML(copy("listError"))}</strong><p>${escapeHTML(error.message)}</p></div>`;
     }
     return wrapper;
   }
 
   async function createArchiveApp(element) {
-    const wrapper = nativePageShell("native-archive-app", "ARCHIVE", "文章归档");
+    const wrapper = nativePageShell("native-archive-app", "ARCHIVE", copy("archive"));
     const scroll = wrapper.querySelector("[data-native-scroll]");
-    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在整理归档</p></div>';
+    scroll.innerHTML = `<div class="native-loading-state"><span></span><p>${escapeHTML(copy("loadingArchive"))}</p></div>`;
     try {
-      const posts = await fetchLocalJSON("/api/allPostMeta.json");
+      const posts = await fetchLocalJSON(postDataPath());
       const years = posts.reduce((groups, post) => {
         const year = String(post.date || "未标注").slice(0, 4);
         if (!groups.has(year)) groups.set(year, []);
         groups.get(year).push(post);
         return groups;
       }, new Map());
-      scroll.innerHTML = [...years].map(([year, items]) => `<section class="native-archive-year"><header><strong>${escapeHTML(year)}</strong><span>${items.length} 篇</span></header><div>${items.map(post => `<button type="button" data-post-url="${escapeHTML(post.url)}"><time>${escapeHTML((post.date || "").slice(5).replace("-", "."))}</time><span>${post.pinned ? "⌖ " : ""}${escapeHTML(post.title)}</span><i>→</i></button>`).join("")}</div></section>`).join("");
+      scroll.innerHTML = [...years].map(([year, items]) => `<section class="native-archive-year"><header><strong>${escapeHTML(year)}</strong><span>${escapeHTML(copy("archiveCount", { count: items.length }))}</span></header><div>${items.map(post => `<button type="button" data-post-url="${escapeHTML(post.url)}"><time>${escapeHTML((post.date || "").slice(5).replace("-", "."))}</time><span>${post.pinned ? "⌖ " : ""}${escapeHTML(post.title)}</span><i>→</i></button>`).join("")}</div></section>`).join("");
       bindPostLinks(wrapper, element, () => createArchiveApp(element));
     } catch (error) {
-      scroll.innerHTML = `<div class="native-error-state"><strong>归档读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+      scroll.innerHTML = `<div class="native-error-state"><strong>${escapeHTML(copy("archiveError"))}</strong><p>${escapeHTML(error.message)}</p></div>`;
     }
     return wrapper;
   }
 
   async function createFriendsApp() {
-    const wrapper = nativePageShell("native-friends-app", "CONNECTIONS", "友情链接", '<a class="native-header-action" href="/friends/">申请友链 →</a>');
+    const wrapper = nativePageShell("native-friends-app", "CONNECTIONS", appText("friends").title, `<a class="native-header-action" href="${localizedPath("/friends/")}">${escapeHTML(copy("applyFriend"))}</a>`);
     const scroll = wrapper.querySelector("[data-native-scroll]");
-    scroll.innerHTML = '<div class="native-loading-state"><span></span><p>正在读取友链</p></div>';
+    scroll.innerHTML = `<div class="native-loading-state"><span></span><p>${escapeHTML(copy("loadingFriends"))}</p></div>`;
     try {
       const data = await fetchLocalJSON("/api/friends.json");
-      scroll.innerHTML = `<div class="native-friend-grid">${data.items.map(friend => `<a class="native-friend" href="${escapeHTML(friend.url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHTML(friend.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHTML(friend.name)}</strong><small>${escapeHTML(friend.description || "访问站点")}</small><i>↗</i></a>`).join("")}</div>`;
+      scroll.innerHTML = `<div class="native-friend-grid">${data.items.map(friend => `<a class="native-friend" href="${escapeHTML(friend.url)}" target="_blank" rel="noopener noreferrer"><span>${escapeHTML(friend.name.slice(0, 1).toUpperCase())}</span><strong>${escapeHTML(friend.name)}</strong><small>${escapeHTML(friend.description || copy("visitSite"))}</small><i>↗</i></a>`).join("")}</div>`;
     } catch (error) {
-      scroll.innerHTML = `<div class="native-error-state"><strong>友链读取失败</strong><p>${escapeHTML(error.message)}</p></div>`;
+      scroll.innerHTML = `<div class="native-error-state"><strong>${escapeHTML(copy("friendsError"))}</strong><p>${escapeHTML(error.message)}</p></div>`;
     }
     return wrapper;
   }
 
   function createToolsApp() {
-    const wrapper = nativePageShell("native-tools-app", "LOCAL UTILITIES", "工具箱");
-    wrapper.querySelector("[data-native-scroll]").innerHTML = `<div class="native-tool-grid">${toolEntries.map(tool => `<a class="native-tool" href="${tool.url}"><span>${escapeHTML(tool.icon)}</span><strong>${escapeHTML(tool.title)}</strong><small>${escapeHTML(tool.description)}</small><i>→</i></a>`).join("")}</div>`;
+    const wrapper = nativePageShell("native-tools-app", "LOCAL UTILITIES", copy("tools"));
+    wrapper.querySelector("[data-native-scroll]").innerHTML = `<div class="native-tool-grid">${toolEntries.map((tool, index) => `<a class="native-tool" href="${tool.url}"><span>${escapeHTML(tool.icon)}</span><strong>${escapeHTML(locales[currentLocale].toolsList[index][0])}</strong><small>${escapeHTML(locales[currentLocale].toolsList[index][1])}</small><i>→</i></a>`).join("")}</div>`;
     return wrapper;
   }
 
   function createGuestbookApp() {
-    const wrapper = nativePageShell("native-guestbook-app", "MESSAGES", "留言板");
-    wrapper.querySelector("[data-native-scroll]").innerHTML = '<div class="native-route-panel"><span>◌</span><strong>访客留言</strong><p>留言验证与提交将在站内完整页面中完成。</p><a href="/guestbook/">进入留言板 →</a></div>';
+    const wrapper = nativePageShell("native-guestbook-app", "MESSAGES", copy("guestbook"));
+    wrapper.querySelector("[data-native-scroll]").innerHTML = `<div class="native-route-panel"><span>◌</span><strong>${escapeHTML(copy("visitorMessage"))}</strong><p>${escapeHTML(copy("guestbookCopy"))}</p><a href="${localizedPath("/guestbook/")}">${escapeHTML(copy("enterGuestbook"))}</a></div>`;
     return wrapper;
   }
 
@@ -429,44 +508,46 @@
   }
 
   async function renderNativeArticle(element, path, restore) {
-    const url = safeLocalURL(path, ["/posts/"]);
+    const postPrefix = localizedPath("/posts/");
+    const url = safeLocalURL(path, [postPrefix]);
     if (!url) {
-      showToast("无法打开", "只允许读取本站文章");
+      showToast(copy("articleUnavailable"), copy("localOnly"));
       return;
     }
     const content = element.querySelector(".window-content");
-    content.innerHTML = '<section class="native-app native-reader"><div class="native-loading-state"><span></span><p>正在读取文章</p></div></section>';
+    content.innerHTML = `<section class="native-app native-reader"><div class="native-loading-state"><span></span><p>${escapeHTML(copy("loadingArticle"))}</p></div></section>`;
     try {
       const response = await fetch(url, { credentials: "same-origin" });
       if (!response.ok) throw new Error(`文章读取失败（${response.status}）`);
       const documentPage = new DOMParser().parseFromString(await response.text(), "text/html");
       const source = documentPage.querySelector("#hugo-article-content");
-      if (!source) throw new Error("文章正文不存在");
+      if (!source) throw new Error(copy("articleUnavailable"));
       const fragment = sanitizeArticleFragment(source.cloneNode(true));
-      const title = documentPage.querySelector(".article-header h1")?.textContent?.trim() || documentPage.title || "文章";
-      const meta = documentPage.querySelector(".article-meta")?.textContent?.replace(/\s+/g, " ").trim() || "本站文章";
-      const reader = nativePageShell("native-reader", "ARTICLE", title, '<button class="native-header-action" type="button" data-reader-back>← 返回</button>');
+      const title = documentPage.querySelector(".article-header h1")?.textContent?.trim() || documentPage.title || copy("article");
+      const meta = documentPage.querySelector(".article-meta")?.textContent?.replace(/\s+/g, " ").trim() || copy("siteArticle");
+      const reader = nativePageShell("native-reader", "ARTICLE", title, `<button class="native-header-action" type="button" data-reader-back>${escapeHTML(copy("back"))}</button>`);
       const scroll = reader.querySelector("[data-native-scroll]");
       scroll.innerHTML = `<p class="native-reader-meta">${escapeHTML(meta)}</p><article class="native-article-body markdown-content"></article>`;
       scroll.querySelector(".native-article-body").append(...fragment.childNodes);
       reader.querySelector("[data-reader-back]").addEventListener("click", async () => {
         const restored = await restore();
         content.replaceChildren(restored);
-        setWindowHeading(element, apps[element.dataset.app].title, apps[element.dataset.app].subtitle);
+        const app = appText(element.dataset.app);
+        setWindowHeading(element, app.title, app.subtitle);
       });
       reader.addEventListener("click", event => {
         const anchor = event.target.closest("a[href]");
         if (!anchor) return;
         const target = new URL(anchor.href, location.origin);
-        if (target.origin === location.origin && target.pathname.startsWith("/posts/")) {
+        if (target.origin === location.origin && target.pathname.startsWith(postPrefix)) {
           event.preventDefault();
           renderNativeArticle(element, target.pathname, restore);
         }
       });
       content.replaceChildren(reader);
-      setWindowHeading(element, title, "本站文章");
+      setWindowHeading(element, title, copy("siteArticle"));
     } catch (error) {
-      content.innerHTML = `<section class="native-app native-reader"><div class="native-error-state"><strong>文章无法打开</strong><p>${escapeHTML(error.message)}</p><button type="button" data-reader-back>返回列表</button></div></section>`;
+      content.innerHTML = `<section class="native-app native-reader"><div class="native-error-state"><strong>${escapeHTML(copy("articleUnavailable"))}</strong><p>${escapeHTML(error.message)}</p><button type="button" data-reader-back>${escapeHTML(copy("backList"))}</button></div></section>`;
       content.querySelector("[data-reader-back]")?.addEventListener("click", async () => content.replaceChildren(await restore()));
     }
   }
@@ -474,7 +555,7 @@
   function createTerminalContent(element) {
     const wrapper = document.createElement("div");
     wrapper.className = "terminal-app";
-    wrapper.innerHTML = `<div class="terminal-output"><span class="term-accent">mumu-desktop</span> <span class="term-green">ready</span>\n输入 <span class="term-pink">help</span> 查看命令。支持应用别名、工作区和桌面控制。\n\n</div><form class="terminal-command"><span class="terminal-prompt">mumu@arch ~ ❯</span><input aria-label="终端命令" autocomplete="off" spellcheck="false"></form>`;
+    wrapper.innerHTML = `<div class="terminal-output"><span class="term-accent">mumu-desktop</span> <span class="term-green">ready</span>\n${escapeHTML(copy("terminalIntro"))}\n\n</div><form class="terminal-command"><span class="terminal-prompt">mumu@arch ~ ❯</span><input aria-label="${escapeHTML(appText("terminal").title)}" autocomplete="off" spellcheck="false"></form>`;
     const output = wrapper.querySelector(".terminal-output");
     const form = wrapper.querySelector("form");
     const input = wrapper.querySelector("input");
@@ -568,32 +649,16 @@
 
     if (reducedMotion.matches) {
       overlay.classList.add("is-reduced-motion");
-      setTimeout(() => window.location.assign("/"), 220);
+      setTimeout(() => window.location.assign(locales[currentLocale].classicPath), 220);
       return;
     }
     requestAnimationFrame(() => overlay.classList.add("is-active"));
     setTimeout(() => { overlay.dataset.phase = "ready"; }, 720);
-    setTimeout(() => window.location.assign("/"), 1_180);
+    setTimeout(() => window.location.assign(locales[currentLocale].classicPath), 1_180);
   }
 
   function terminalHelp(output) {
-    appendTerminal(output, "可用命令：");
-    appendTerminal(output, "  help / commands / man           查看帮助");
-    appendTerminal(output, "  neofetch / fastfetch            查看桌面环境信息");
-    appendTerminal(output, "  ls [apps|workspaces] · tree     浏览应用与工作区");
-    appendTerminal(output, "  open <应用> · cd <应用|~>       打开页面；cd ~ 返回经典模式");
-    appendTerminal(output, "  workspace <1-5> / ws <1-5>     切换工作区");
-    appendTerminal(output, "  layout [stacked|tiled]          设置或切换窗口布局");
-    appendTerminal(output, "  wallpaper [next|1-6]            切换壁纸");
-    appendTerminal(output, "  cat <文件> · which <命令>       查看静态文件与命令路径");
-    appendTerminal(output, "  free -h · df -h · ps · ip a    常用 Linux 状态格式");
-    appendTerminal(output, "  pacman [-Q|-Syu] · sudo         Arch 命令静态演示");
-    appendTerminal(output, "  fortune · quote · matrix        趣味内容");
-    appendTerminal(output, "  pwd · date · whoami · hostname · id · uname · uptime");
-    appendTerminal(output, "  echo · printf · ping · history · clear · about");
-    appendTerminal(output, "  close / exit                    关闭终端窗口");
-    appendTerminal(output, "  home / classic / logout         返回经典博客模式");
-    appendTerminal(output, "快捷键：↑/↓ 回看历史 · Tab 补全 · Ctrl+L 清屏");
+    locales[currentLocale].terminalHelp.forEach(line => appendTerminal(output, line));
   }
 
   function resolveApp(value = "") {
@@ -601,6 +666,7 @@
     const aliases = {
       首页: "home", 博客: "blog", 工具: "tools", 工具箱: "tools", 友链: "friends", 友情链接: "friends",
       留言: "guestbook", 留言板: "guestbook", 归档: "archive", 文章归档: "archive", 终端: "terminal", 欢迎: "welcome",
+      ホーム: "home", ブログ: "blog", ツール: "tools", リンク: "friends", ゲストブック: "guestbook", アーカイブ: "archive", ターミナル: "terminal", ようこそ: "welcome",
     };
     return apps[normalized] ? normalized : aliases[normalized] || "";
   }
@@ -623,7 +689,7 @@
     } else if (name === "pwd") {
       appendTerminal(output, `/home/mumu/workspace-${activeWorkspace}`);
     } else if (name === "date") {
-      appendTerminal(output, new Date().toLocaleString("zh-CN", { hour12: false }));
+      appendTerminal(output, new Date().toLocaleString(locales[currentLocale].dateLocale, { hour12: false }));
     } else if (name === "whoami") {
       appendTerminal(output, "mumu");
     } else if (name === "hostname") {
@@ -749,10 +815,10 @@
     };
     try {
       const view = await factories[app.kind]?.();
-      if (!view) throw new Error("应用视图不存在");
+      if (!view) throw new Error(copy("appError"));
       content.replaceChildren(view);
     } catch (error) {
-      content.innerHTML = `<div class="native-error-state"><strong>应用无法打开</strong><p>${escapeHTML(error.message)}</p></div>`;
+      content.innerHTML = `<div class="native-error-state"><strong>${escapeHTML(copy("appError"))}</strong><p>${escapeHTML(error.message)}</p></div>`;
     }
     element.classList.add("is-loaded");
   }
@@ -801,12 +867,12 @@
     root.dataset.layoutMode = layoutMode;
     applyLayoutMode(activeWorkspace);
     updateWaybar();
-    showToast("窗口布局", layoutMode === "stacked" ? "已集中堆叠；再按 Alt + G 平铺" : "已液态平铺并填满工作区");
+    showToast(copy("layoutTitle"), copy(layoutMode === "stacked" ? "layoutStacked" : "layoutTiled"));
   }
 
   function openApp(appId, options = {}) {
-    const app = apps[appId];
-    if (!app) return;
+    if (!apps[appId]) return;
+    const app = appText(appId);
     const existing = [...windows.values()].find(element => element.dataset.app === appId && !element.classList.contains("is-closing"));
     if (existing && options.allowDuplicate !== true) {
       focusWindow(existing);
@@ -932,12 +998,12 @@
   function renderLauncher(query = "") {
     const normalized = query.trim().toLowerCase();
     launcherMatches = launcherOrder.filter(id => {
-      const app = apps[id];
+      const app = appText(id);
       return !normalized || `${id} ${app.title} ${app.subtitle}`.toLowerCase().includes(normalized);
     });
     launcherCursor = clamp(launcherCursor, 0, Math.max(0, launcherMatches.length - 1));
     launcherGrid.replaceChildren(...launcherMatches.map((id, index) => {
-      const app = apps[id];
+      const app = appText(id);
       const button = document.createElement("button");
       button.type = "button";
       button.className = `launcher-app${index === launcherCursor ? " is-keyboard-active" : ""}`;
@@ -963,6 +1029,8 @@
   function closePanels(except = null) {
     if (except !== quickSettings) quickSettings.hidden = true;
     if (except !== calendarPanel) calendarPanel.hidden = true;
+    if (except !== languagePanel) languagePanel.hidden = true;
+    document.querySelector("[data-language-toggle]")?.setAttribute("aria-expanded", String(except === languagePanel && !languagePanel.hidden));
     contextMenu.hidden = true;
   }
 
@@ -970,6 +1038,7 @@
     const willOpen = panel.hidden;
     closePanels(panel);
     panel.hidden = !willOpen;
+    if (panel === languagePanel) document.querySelector("[data-language-toggle]")?.setAttribute("aria-expanded", String(willOpen));
   }
 
   function setWallpaper(index, announce = true) {
@@ -991,18 +1060,75 @@
 
   function updateClock() {
     const now = new Date();
-    document.getElementById("bar-clock").textContent = now.toLocaleTimeString("zh-CN", { hour: "2-digit", minute: "2-digit", hour12: false });
-    document.getElementById("bar-date").textContent = now.toLocaleDateString("zh-CN", { month: "2-digit", day: "2-digit" });
-    document.getElementById("calendar-time").textContent = now.toLocaleTimeString("zh-CN", { hour12: false });
-    document.getElementById("calendar-date").textContent = now.toLocaleDateString("zh-CN", { year: "numeric", month: "long", day: "numeric" });
-    document.getElementById("calendar-week").textContent = now.toLocaleDateString("zh-CN", { weekday: "long" });
+    const locale = locales[currentLocale].dateLocale;
+    document.getElementById("bar-clock").textContent = now.toLocaleTimeString(locale, { hour: "2-digit", minute: "2-digit", hour12: false });
+    document.getElementById("bar-date").textContent = now.toLocaleDateString(locale, { month: "2-digit", day: "2-digit" });
+    document.getElementById("calendar-time").textContent = now.toLocaleTimeString(locale, { hour12: false });
+    document.getElementById("calendar-date").textContent = now.toLocaleDateString(locale, { year: "numeric", month: "long", day: "numeric" });
+    document.getElementById("calendar-week").textContent = now.toLocaleDateString(locale, { weekday: "long" });
   }
 
   function updateConnection() {
     const online = navigator.onLine;
-    document.getElementById("network-label").textContent = online ? "在线" : "离线";
+    document.getElementById("network-label").textContent = copy(online ? "online" : "offline");
     document.querySelector(".connection-pill").classList.toggle("is-offline", !online);
     if (!online) showToast("网络已断开", "本地桌面仍可继续操作");
+  }
+
+  function applyStaticLocale() {
+    const locale = locales[currentLocale];
+    document.documentElement.lang = locale.htmlLang;
+    root.dataset.locale = currentLocale;
+    document.getElementById("language-label").textContent = locale.short;
+    document.querySelector("#language-panel .panel-heading strong").textContent = copy("language");
+    document.querySelectorAll("[data-locale]").forEach(button => {
+      const active = button.dataset.locale === currentLocale;
+      button.classList.toggle("is-active", active);
+      button.setAttribute("aria-selected", String(active));
+    });
+    document.querySelectorAll(".desktop-icon[data-app]").forEach(button => {
+      const app = appText(button.dataset.app);
+      button.querySelector(":scope > span:last-child").textContent = app.title;
+      button.setAttribute("aria-label", `${app.title}`);
+    });
+    document.querySelectorAll(".hypr-dock [data-app]").forEach(button => {
+      const app = appText(button.dataset.app);
+      button.title = app.title;
+      button.setAttribute("aria-label", app.title);
+    });
+    document.querySelectorAll("[data-return-classic]").forEach(link => { link.href = locale.classicPath; });
+    document.querySelector(".classic-return span").textContent = copy("classic");
+    launcherInput.placeholder = copy("launcherSearch");
+    launcherInput.setAttribute("aria-label", copy("launcherSearch"));
+    document.getElementById("launcher-title").textContent = copy("launcher");
+    document.querySelector(".calendar-note").innerHTML = `<span></span>${escapeHTML(copy("calendarNote"))}`;
+    updateClock();
+    updateConnection();
+    renderLauncher();
+    updateWaybar();
+  }
+
+  async function setLocale(nextLocale) {
+    if (!Object.hasOwn(locales, nextLocale)) return;
+    currentLocale = nextLocale;
+    localStorage.setItem("hypr-locale", currentLocale);
+    const url = new URL(location.href);
+    if (currentLocale === "zh") url.searchParams.delete("lang");
+    else url.searchParams.set("lang", currentLocale);
+    history.replaceState(null, "", url);
+    applyStaticLocale();
+    closePanels();
+    await Promise.all([...windows.values()].map(async element => {
+      const app = appText(element.dataset.app);
+      setWindowHeading(element, app.title, app.subtitle);
+      element.setAttribute("aria-label", app.title);
+      const content = element.querySelector(".window-content");
+      content.replaceChildren();
+      element.classList.remove("is-loaded");
+      await attachWindowContent(element, app);
+    }));
+    applyLayoutMode(activeWorkspace);
+    updateWaybar();
   }
 
   function initEntrySequence() {
@@ -1043,6 +1169,12 @@
   });
   document.querySelector("[data-quick-settings]").addEventListener("click", () => togglePanel(quickSettings));
   document.querySelector("[data-calendar-toggle]").addEventListener("click", () => togglePanel(calendarPanel));
+  document.querySelector("[data-language-toggle]").addEventListener("click", () => togglePanel(languagePanel));
+  document.querySelector("[data-language-close]").addEventListener("click", closePanels);
+  languagePanel.addEventListener("click", event => {
+    const button = event.target.closest("[data-locale]");
+    if (button) setLocale(button.dataset.locale);
+  });
   document.querySelectorAll("[data-panel-close]").forEach(button => button.addEventListener("click", closePanels));
   document.querySelector("[data-wallpaper-next]").addEventListener("click", () => setWallpaper(wallpaperIndex + 1));
   document.querySelector("[data-brightness]").addEventListener("input", event => {
@@ -1178,8 +1310,7 @@
   window.addEventListener("online", updateConnection);
   window.addEventListener("offline", updateConnection);
 
-  updateClock();
-  updateConnection();
+  applyStaticLocale();
   initEntrySequence();
   setInterval(updateClock, 1000);
   document.getElementById("hardware-label").textContent = `Hyprland · ${navigator.hardwareConcurrency || "?"}T`;
@@ -1190,6 +1321,6 @@
     openApp("welcome");
     root.dataset.desktopReady = "true";
     setTimeout(() => document.getElementById("desktop-hint").classList.add("is-dismissed"), 7000);
-    setTimeout(() => showToast("桌面已就绪", "双击图标，或按 Alt + Space 打开应用"), 650);
+    setTimeout(() => showToast(copy("readyTitle"), copy("readyMessage")), 650);
   });
 })();

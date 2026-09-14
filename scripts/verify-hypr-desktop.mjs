@@ -95,6 +95,36 @@ try {
   assert.equal(await page.locator("[data-layout-toggle]").getAttribute("aria-pressed"), "true", "layout toggle state does not match the default stack");
   assert.equal(await page.locator(".waybar [data-return-classic]").isVisible(), true, "waybar cannot visibly return to classic mode");
   assert.equal(await page.locator(".hypr-dock [data-return-classic]").isVisible(), true, "dock has no classic-style return control");
+  assert.equal(await page.locator("[data-language-toggle]").isVisible(), true, "desktop language control is not visible");
+  const desktopIconPositions = await page.locator(".desktop-icon").evaluateAll(elements => elements.slice(0, 3).map(element => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), top: Math.round(rect.top) };
+  }));
+  assert.equal(new Set(desktopIconPositions.map(item => item.left)).size, 1, "desktop application icons are no longer arranged vertically");
+  assert.ok(desktopIconPositions[1].top > desktopIconPositions[0].top, "desktop application icons overlap vertically");
+  await page.locator("[data-language-toggle]").click();
+  assert.equal(await page.locator("#language-panel [data-locale]").count(), 3, "language panel does not expose three languages");
+  assert.equal(await page.locator('#language-panel [data-locale="ja"] strong').textContent(), "日本語", "Japanese is not named explicitly for Japanese visitors");
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-language-panel-1600x900.png`, fullPage: true });
+  await page.locator('#language-panel [data-locale="en"]').click();
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.locale === "en" && document.documentElement.lang === "en");
+  await page.waitForFunction(() => document.querySelector(".welcome-heading h1")?.textContent.includes("desktop workspace"));
+  await page.locator('.hypr-dock [data-app="blog"]').click();
+  await page.waitForSelector('.hypr-window[data-app="blog"] .native-blog-app');
+  assert.ok(await page.locator('.hypr-window[data-app="blog"] [data-post-url^="/en/posts/"]').count() > 0, "English desktop blog did not load English articles");
+  assert.match(await page.locator('.hypr-window[data-app="blog"] .native-result-line').textContent(), /articles/, "English blog controls are not translated");
+  await page.locator("[data-language-toggle]").click();
+  await page.locator('#language-panel [data-locale="ja"]').click();
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.locale === "ja" && document.documentElement.lang === "ja");
+  await page.waitForFunction(() => document.querySelector('.hypr-window[data-app="blog"] [data-post-url^="/ja/posts/"]'));
+  assert.match(await page.locator('.hypr-window[data-app="blog"] .native-result-line').textContent(), /全 \d+ 件/, "Japanese blog controls are not translated");
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-japanese-blog-1600x900.png`, fullPage: true });
+  await page.locator('.hypr-window[data-app="blog"] [data-window-action="close"]').click();
+  await page.waitForSelector('.hypr-window[data-app="blog"]', { state: "detached" });
+  await page.locator("[data-language-toggle]").click();
+  await page.locator('#language-panel [data-locale="zh"]').click();
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.locale === "zh-CN" || document.querySelector("#hypr-desktop")?.dataset.locale === "zh");
+  await page.waitForFunction(() => document.querySelector(".welcome-copy")?.textContent.startsWith("这是一个启发于"));
   assert.equal(await page.locator(".welcome-mark .archlinux-logo").count(), 1, "welcome title has no Arch Linux icon");
   assert.equal(await page.locator(".welcome-copy").textContent(), "这是一个启发于 Arch Linux + Hyprland，让你更加方便地浏览博客中的各个网页（甚至可以做到嵌套运行）。");
   assert.equal(await page.locator(".welcome-card, .welcome-grid").count(), 0, "removed welcome explanation sections remain");
@@ -263,6 +293,12 @@ try {
   response = await mobilePage.goto(new URL("/desktop/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   await mobilePage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
+  const responsiveMobileIcons = await mobilePage.locator(".desktop-icon").evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    return { left: Math.round(rect.left), top: Math.round(rect.top) };
+  }));
+  assert.equal(new Set(responsiveMobileIcons.slice(0, 4).map(item => item.top)).size, 1, "390px mobile viewport does not expand to four icon columns");
+  assert.ok(responsiveMobileIcons[4].top > responsiveMobileIcons[0].top, "responsive mobile icon rows overlap");
   await mobilePage.waitForSelector(".desktop-toast");
   await mobilePage.waitForTimeout(450);
   const mobileWelcomeAndToast = await mobilePage.locator(".hypr-window, .desktop-toast").evaluateAll(elements => elements.map(element => {
@@ -404,7 +440,7 @@ try {
   assert.equal(await shortPage.locator('.hypr-window[data-app="guestbook"] a[href="/guestbook/"]').count(), 1, "native guestbook gateway is missing its functional local route");
   await shortMobile.close();
 
-  console.log("Hyprland desktop verification passed: native same-origin reading views, scrollable mobile launcher and content, responsive pagination, stacked and tiled windows, terminal commands, workspaces, wallpapers, compact screens, and mobile behavior.");
+  console.log("Hyprland desktop verification passed: responsive mobile icon columns, vertical desktop icons, Chinese/English/Japanese native views, local article routes, scrollable mobile content, stacked/tiled windows, terminal commands, workspaces, wallpapers, and compact screens.");
 } finally {
   await browser.close();
 }
