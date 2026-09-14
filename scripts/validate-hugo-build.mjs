@@ -153,8 +153,8 @@ assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-
 assert.match(desktopPage, /data-return-classic/, "Desktop has no visible control for returning to classic mode");
 assert.match(desktopPage, /切回经典博客模式/, "Desktop classic-mode return control is not labelled");
 assert.match(desktopPage, /class="dock-return" href="\/" data-return-classic aria-label="切回原来的样式"/, "Dock is missing its classic-style return control");
-assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v9/, "Current desktop stylesheet cache version is missing");
-assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v9/, "Current desktop script cache version is missing");
+assert.match(desktopPage, /desktop\.css\?v=20260914-hyprliquid-v10/, "Current desktop stylesheet cache version is missing");
+assert.match(desktopPage, /desktop\.js\?v=20260914-hyprliquid-v10/, "Current desktop script cache version is missing");
 assert.doesNotMatch(desktopScript, /document\.createElement\("iframe"\)/, "Desktop applications still use iframe wrappers");
 assert.match(desktopScript, /function safeLocalURL\(/, "Desktop native views do not enforce same-origin reads");
 assert.match(desktopScript, /async function renderNativeArticle\(/, "Desktop article reader is missing");

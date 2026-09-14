@@ -335,6 +335,14 @@ try {
   response = await narrowPage.goto(new URL("/desktop/", baseUrl).toString(), { waitUntil: "domcontentloaded" });
   assert.equal(response?.status(), 200);
   await narrowPage.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.desktopReady === "true");
+  const narrowIconGeometry = await narrowPage.locator(".desktop-icon, .desktop-icon-shape").evaluateAll(elements => elements.map(element => {
+    const rect = element.getBoundingClientRect();
+    return { className: element.className, width: rect.width, height: rect.height };
+  }));
+  const narrowAppIcons = narrowIconGeometry.filter(item => item.className === "desktop-icon");
+  const narrowIconShapes = narrowIconGeometry.filter(item => item.className.includes("desktop-icon-shape"));
+  assert.ok(narrowAppIcons.every(item => item.width <= 72 && item.height >= 44 && item.height <= 68), "mobile desktop app targets are oversized or too small to tap");
+  assert.ok(narrowIconShapes.every(item => item.width <= 34 && item.height <= 34), "mobile desktop icon artwork is still oversized");
   const narrowBarGeometry = await narrowPage.locator(".waybar-left, .layout-mode-toggle, .layout-mode-glyph, .waybar-right").evaluateAll(elements => elements.map(element => {
     const rect = element.getBoundingClientRect();
     return { className: element.className, left: rect.left, right: rect.right, width: rect.width };
@@ -351,6 +359,7 @@ try {
   assert.equal(await narrowPage.locator(".hypr-dock [data-return-classic]").isVisible(), true, "narrow desktop lost its classic-mode return control");
   await narrowPage.locator('.hypr-window[data-app="welcome"] [data-window-action="close"]').tap();
   await narrowPage.waitForSelector('.hypr-window[data-app="welcome"]', { state: "detached" });
+  await narrowPage.screenshot({ path: `${process.env.TEMP}\\hypr-icons-mobile-360x780.png`, fullPage: true });
   await narrowPage.locator('.desktop-icon[data-app="blog"]').tap();
   await narrowPage.waitForSelector('.hypr-window[data-app="blog"] .native-blog-app');
   await narrowPage.waitForTimeout(650);
