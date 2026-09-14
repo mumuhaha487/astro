@@ -33,6 +33,9 @@ const requiredFiles = [
   "ja/blog/index.html",
   "ja/posts/测试文章标题/index.html",
   "tools/index.html",
+  "desktop/index.html",
+  "desktop/desktop.css",
+  "desktop/desktop.js",
   "tools/json-formatter/index.html",
   "tools/timestamp/index.html",
   "tools/text-stats/index.html",
@@ -92,6 +95,13 @@ for (const post of posts) {
 
 const home = await readFile(join(outputRoot, "index.html"), "utf8");
 const blog = await readFile(join(outputRoot, "blog", "index.html"), "utf8");
+const desktopPage = await readFile(join(outputRoot, "desktop", "index.html"), "utf8");
+const desktopScript = await readFile(join(outputRoot, "desktop", "desktop.js"), "utf8");
+const desktop = await readFile(join(outputRoot, "desktop", "index.html"), "utf8");
+assert.match(desktop, /id="windows-layer"/, "HyDE desktop window layer is missing");
+assert.equal((desktop.match(/data-workspace-target=/g) || []).length, 5, "HyDE desktop must expose five workspaces");
+assert.equal((desktop.match(/class="desktop-icon"/g) || []).length, 6, "HyDE desktop icon set is incomplete");
+assert.match(desktop, /id="desktop-entry-sequence"/, "HyDE barrage entry sequence is missing");
 assert.match(home, /class="home-stage"/, "Home workspace is missing");
 assert.match(home, /data-umami-stat="active"/, "Home active visitor statistic is missing");
 assert.match(home, /data-umami-stat="visitors"/, "Home unique visitor statistic is missing");
@@ -125,8 +135,17 @@ assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub cont
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three cards");
-assert.match(home, /hugo\.css\?v=20260913-responsive-loading/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20260913-responsive-loading/, "Current script cache version is missing");
+assert.match(home, /hugo\.css\?v=20260914-hyde-preview-v4/, "Current stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20260914-hyde-preview-v4/, "Current script cache version is missing");
+assert.match(home, /class="avatar-style-switch" href="\/desktop\/" data-desktop-transition/, "HyDE desktop transition trigger is missing from the avatar");
+assert.match(desktopPage, /data-layout-mode="stacked"/, "HyDE desktop does not default to stacked windows");
+assert.match(desktopPage, /data-layout-toggle/, "Global window layout toggle is missing");
+assert.match(desktopPage, /Alt \+ G/, "Global window layout shortcut is not explained");
+assert.match(desktopPage, /class="dock-glyph dock-grid"/, "Always-available all-app launcher is missing from the dock");
+assert.match(desktopScript, /function toggleLayoutMode\(\)/, "Global stacked/tiled window logic is missing");
+assert.match(desktopScript, /layoutMode === "stacked" \? "tiled" : "stacked"/, "Global window layout toggle is not reversible");
+assert.doesNotMatch(desktopPage, /data-window-action="(?:float|maximize)"/, "A third per-window layout mode remains available");
+assert.doesNotMatch(desktopScript, /toggleFloating|toggleMaximize|layoutMode === "arranged"/, "Legacy free/maximized layout logic remains available");
 assert.doesNotMatch(home, /cursor-ring|cursor-dot|has-custom-cursor/, "Removed custom cursor remains in the homepage output");
 assert.doesNotMatch(home, /particle-card|data-particle-card/, "Removed card particle rendering remains on the homepage");
 assert.match(home, /data-avatar-particles/, "Homepage avatar particle assembly is missing");
@@ -150,8 +169,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260913-responsive-loading/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260913-responsive-loading/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260914-hyde-preview-v4/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260914-hyde-preview-v4/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");

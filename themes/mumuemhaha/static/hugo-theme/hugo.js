@@ -201,6 +201,7 @@
     }
     initTypewriter();
     initAvatarParticles();
+    initDesktopStyleTransition();
     if ($("#home-visitors")) {
       $$('[data-umami-stat]').forEach((node) => { node.textContent = "0"; });
       const cachedStats = readCachedUmamiStats();
@@ -347,6 +348,145 @@
       requestAnimationFrame(render);
     };
     requestAnimationFrame(render);
+  }
+
+  function initDesktopStyleTransition() {
+    const trigger = $("[data-desktop-transition]");
+    const avatar = $("[data-avatar-image]");
+    if (!trigger || !avatar) return;
+    trigger.addEventListener("click", async (event) => {
+      if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey || trigger.dataset.transitioning === "true") return;
+      event.preventDefault();
+      const target = new URL(trigger.href, location.href);
+      target.searchParams.set("from", "classic");
+      if (reducedMotion.matches) {
+        location.assign(target.href);
+        return;
+      }
+      trigger.dataset.transitioning = "true";
+      const buttonRect = trigger.getBoundingClientRect();
+      const avatarRect = avatar.getBoundingClientRect();
+      try { await avatar.decode(); } catch {}
+      const overlay = document.createElement("div");
+      overlay.className = "desktop-transition-overlay";
+      overlay.setAttribute("role", "status");
+      overlay.setAttribute("aria-label", "正在切换到桌面风格");
+      overlay.innerHTML = `
+        <canvas class="desktop-transition-canvas" aria-hidden="true"></canvas>
+        <div class="desktop-transition-loading">
+          <span class="desktop-transition-loader" aria-hidden="true"></span>
+          <strong>LOADING HYDE DESKTOP</strong>
+          <small>正在整理工作区与窗口</small>
+          <span class="desktop-transition-progress" aria-hidden="true"><span></span></span>
+        </div>
+        <div class="desktop-transition-barrage" aria-hidden="true">
+          <span>ARCH LINUX · READY</span><span>HYPRLAND · WORKSPACES</span><span>木木EM哈哈 · DESKTOP</span>
+          <span>BLOG · TOOLS · FRIENDS</span><span>WINDOWS · FLOAT · TILE</span><span>EDGEONE · STATIC READY</span>
+        </div>`;
+      document.body.append(overlay);
+      document.body.classList.add("desktop-transitioning", "no-scroll");
+      document.body.setAttribute("aria-busy", "true");
+      const canvas = $("canvas", overlay);
+      const context = canvas.getContext("2d", { alpha: true });
+      if (!context) {
+        setTimeout(() => location.assign(target.href), 1_500);
+        return;
+      }
+      const dpr = Math.min(1.6, devicePixelRatio || 1);
+      const width = innerWidth;
+      const height = innerHeight;
+      canvas.width = Math.round(width * dpr);
+      canvas.height = Math.round(height * dpr);
+      context.scale(dpr, dpr);
+      const accent = getComputedStyle(document.documentElement).getPropertyValue("--accent-strong").trim() || "#e8a084";
+      const buttonParticles = Array.from({ length: 120 }, (_, index) => {
+        const edge = index % 4;
+        const x = edge === 0 ? buttonRect.left : edge === 2 ? buttonRect.right : buttonRect.left + Math.random() * buttonRect.width;
+        const y = edge === 1 ? buttonRect.top : edge === 3 ? buttonRect.bottom : buttonRect.top + Math.random() * buttonRect.height;
+        const angle = Math.atan2(y - (buttonRect.top + buttonRect.height / 2), x - (buttonRect.left + buttonRect.width / 2)) + (Math.random() - .5) * .7;
+        const speed = 70 + Math.random() * 150;
+        return { x, y, vx: Math.cos(angle) * speed, vy: Math.sin(angle) * speed, size: 1 + Math.random() * 2.2, color: index % 4 === 0 ? "#ffffff" : accent };
+      });
+      const sample = document.createElement("canvas");
+      const sampleSize = 96;
+      sample.width = sampleSize;
+      sample.height = sampleSize;
+      const sampleContext = sample.getContext("2d", { willReadFrequently: true });
+      const avatarParticles = [];
+      if (sampleContext && avatar.naturalWidth) {
+        const sourceSize = Math.min(avatar.naturalWidth, avatar.naturalHeight);
+        sampleContext.drawImage(avatar, (avatar.naturalWidth - sourceSize) / 2, (avatar.naturalHeight - sourceSize) / 2, sourceSize, sourceSize, 0, 0, sampleSize, sampleSize);
+        const pixels = sampleContext.getImageData(0, 0, sampleSize, sampleSize).data;
+        for (let y = 2; y < sampleSize - 2; y += 3) {
+          for (let x = 2; x < sampleSize - 2; x += 3) {
+            if (Math.hypot(x - sampleSize / 2, y - sampleSize / 2) > sampleSize / 2 - 2) continue;
+            const offset = (y * sampleSize + x) * 4;
+            if (pixels[offset + 3] < 82) continue;
+            avatarParticles.push({
+              nx: (x - sampleSize / 2) / sampleSize,
+              ny: (y - sampleSize / 2) / sampleSize,
+              color: `rgb(${pixels[offset]},${pixels[offset + 1]},${pixels[offset + 2]})`,
+              delay: Math.random() * .12,
+              jitter: Math.random() * Math.PI * 2,
+            });
+          }
+        }
+      }
+      if (!avatarParticles.length) {
+        for (let index = 0; index < 640; index += 1) {
+          const angle = Math.random() * Math.PI * 2;
+          const radius = Math.sqrt(Math.random()) * .48;
+          avatarParticles.push({ nx: Math.cos(angle) * radius, ny: Math.sin(angle) * radius, color: accent, delay: Math.random() * .12, jitter: angle });
+        }
+      }
+      overlay.dataset.transitionState = "particles";
+      const startedAt = performance.now();
+      const duration = 3_350;
+      const startCenter = { x: avatarRect.left + avatarRect.width / 2, y: avatarRect.top + avatarRect.height / 2 };
+      const endCenter = { x: width / 2, y: height / 2 };
+      const startScale = Math.max(avatarRect.width, 80);
+      const endScale = Math.max(width, height) * 1.65;
+      const render = (now) => {
+        const elapsed = now - startedAt;
+        context.clearRect(0, 0, width, height);
+        const buttonProgress = Math.min(1, elapsed / 620);
+        const buttonEase = 1 - (1 - buttonProgress) ** 3;
+        context.globalAlpha = 1 - buttonProgress;
+        for (const particle of buttonParticles) {
+          const seconds = elapsed / 1_000;
+          context.fillStyle = particle.color;
+          context.beginPath();
+          context.arc(particle.x + particle.vx * seconds * buttonEase, particle.y + particle.vy * seconds * buttonEase + 60 * seconds * seconds, particle.size, 0, Math.PI * 2);
+          context.fill();
+        }
+        const avatarProgress = Math.max(0, Math.min(1, (elapsed - 180) / 1_620));
+        const avatarEase = 1 - (1 - avatarProgress) ** 4;
+        const centerX = startCenter.x + (endCenter.x - startCenter.x) * avatarEase;
+        const centerY = startCenter.y + (endCenter.y - startCenter.y) * avatarEase;
+        const scale = startScale + (endScale - startScale) * avatarEase;
+        context.globalAlpha = avatarProgress < .68 ? 1 : Math.max(0, 1 - (avatarProgress - .68) / .32);
+        for (const particle of avatarParticles) {
+          const local = Math.max(0, Math.min(1, (avatarProgress - particle.delay) / (1 - particle.delay)));
+          const wobble = Math.sin(elapsed / 110 + particle.jitter) * (1 - local) * 2;
+          context.fillStyle = particle.color;
+          context.fillRect(centerX + particle.nx * scale + wobble, centerY + particle.ny * scale - wobble, Math.max(1.5, 2.5 * (1 - avatarEase * .45)), Math.max(1.5, 2.5 * (1 - avatarEase * .45)));
+        }
+        context.globalAlpha = 1;
+        const progress = Math.max(0, Math.min(.98, (elapsed - 900) / 2_250));
+        overlay.style.setProperty("--transition-progress", String(progress));
+        if (elapsed >= 1_280 && !overlay.classList.contains("is-loading")) {
+          overlay.classList.add("is-loading");
+          overlay.dataset.transitionState = "loading";
+        }
+        if (elapsed >= 2_220 && !overlay.classList.contains("is-barrage")) {
+          overlay.classList.add("is-barrage");
+          overlay.dataset.transitionState = "barrage";
+        }
+        if (elapsed < duration) requestAnimationFrame(render);
+        else location.assign(target.href);
+      };
+      requestAnimationFrame(render);
+    });
   }
 
 

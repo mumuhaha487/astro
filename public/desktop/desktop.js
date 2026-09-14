@@ -9,6 +9,7 @@
   const launcher = document.getElementById("launcher");
   const launcherInput = document.getElementById("launcher-input");
   const launcherGrid = document.getElementById("launcher-grid");
+  const layoutToggle = document.querySelector("[data-layout-toggle]");
   const quickSettings = document.getElementById("quick-settings");
   const calendarPanel = document.getElementById("calendar-panel");
   const contextMenu = document.getElementById("desktop-context");
@@ -37,6 +38,7 @@
   let activeWindowId = null;
   let serial = 0;
   let topZ = 20;
+  let layoutMode = "stacked";
   let wallpaperIndex = clamp(Number(localStorage.getItem("hypr-wallpaper") || 3), 1, wallpaperCount);
   let launcherMatches = launcherOrder.slice();
   let launcherCursor = 0;
@@ -82,6 +84,12 @@
       button.classList.toggle("is-running", matching.length > 0);
       button.classList.toggle("is-focused", matching.some(element => element.dataset.windowId === activeWindowId));
     });
+    if (layoutToggle) {
+      const stacked = layoutMode === "stacked";
+      layoutToggle.setAttribute("aria-pressed", String(stacked));
+      layoutToggle.setAttribute("aria-label", stacked ? "切换为无缝平铺布局" : "切换为集中堆叠布局");
+      layoutToggle.querySelector(".layout-mode-label").textContent = stacked ? "集中堆叠" : "无缝平铺";
+    }
   }
 
   function setRect(element, rect) {
@@ -97,7 +105,7 @@
       setRect(items[0], rect);
       return;
     }
-    const gap = 10;
+    const gap = 0;
     const vertical = rect.width > rect.height * 1.08;
     const ratio = items.length === 2 ? .5 : .54;
     if (vertical) {
@@ -109,21 +117,6 @@
       setRect(items[0], { x: rect.x, y: rect.y, width: rect.width, height: firstHeight });
       dwindle(items.slice(1), { x: rect.x, y: rect.y + firstHeight + gap, width: rect.width, height: rect.height - firstHeight - gap }, depth + 1);
     }
-  }
-
-  function layoutWorkspace(workspace) {
-    const all = currentWindows(workspace);
-    const maximized = all.filter(element => element.classList.contains("is-maximized"));
-    const tiled = all.filter(element => !element.classList.contains("is-floating") && !element.classList.contains("is-maximized"));
-    const width = layer.clientWidth;
-    const height = layer.clientHeight;
-    if (!width || !height) return;
-    dwindle(tiled, { x: 0, y: 0, width, height });
-    maximized.forEach(element => setRect(element, { x: 0, y: 0, width, height }));
-  }
-
-  function layoutAll() {
-    for (let workspace = 1; workspace <= 5; workspace += 1) layoutWorkspace(workspace);
   }
 
   function focusWindow(element) {
@@ -155,6 +148,7 @@
     });
     activeWindowId = focusedWindow(next)?.dataset.windowId || null;
     currentWindows().forEach(element => element.classList.toggle("is-focused", element.dataset.windowId === activeWindowId));
+    applyLayoutMode(next);
     updateWaybar();
     if (!reducedMotion.matches) {
       viewport.animate(
@@ -168,13 +162,13 @@
     return `
       <div class="welcome-app">
         <div class="welcome-heading"><div class="welcome-mark">△</div><div><p>ARCH LINUX · HYPRLAND</p><h1>木木em哈哈的桌面工作区</h1></div></div>
-        <p class="welcome-copy">这里不是一张静态“桌面皮肤”，而是一套可以操作的动态窗口工作区。打开多个应用会自动平铺；切换工作区、浮动窗口、最大化和关闭都有连续动画。博客原有内容仍使用真实页面，只是被放进桌面窗口中。</p>
+        <p class="welcome-copy">这里不是一张静态“桌面皮肤”，而是一套可以操作的动态窗口工作区。窗口只有集中堆叠和无缝平铺两种布局；平铺会占满全部可用工作区，不留下空白。博客原有内容仍使用真实页面，只是被放进桌面窗口中。</p>
         <div class="welcome-grid">
-          <section class="welcome-card"><span>01 / DYNAMIC TILING</span><h2>动态平铺</h2><p>新窗口根据可用空间自动分割，布局随窗口数量和屏幕尺寸实时调整。</p></section>
+          <section class="welcome-card"><span>01 / STACKED WINDOWS</span><h2>集中堆叠</h2><p>多个窗口按顺序集中层叠，标题栏始终可辨认，整体保持在屏幕范围内。</p></section>
           <section class="welcome-card"><span>02 / WORKSPACES</span><h2>多工作区</h2><p>顶部 1–5 是独立工作区，使用 Alt + 数字键可以快速切换。</p></section>
-          <section class="welcome-card"><span>03 / FLOATING</span><h2>平铺与浮动</h2><p>窗口右上角菱形按钮或 Alt + F 可切换浮动；浮动窗口支持拖动与缩放。</p></section>
+          <section class="welcome-card"><span>03 / GAPLESS TILING</span><h2>无缝平铺</h2><p>按 Alt + G 在堆叠和平铺之间切换；右下角九宫格始终可以打开其他应用。</p></section>
         </div>
-        <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span><span><kbd>Alt</kbd><kbd>F</kbd> 浮动</span></div>
+        <div class="shortcut-row"><span><kbd>Alt</kbd><kbd>Space</kbd> 启动器</span><span><kbd>Alt</kbd><kbd>Enter</kbd> 终端</span><span><kbd>Alt</kbd><kbd>1–5</kbd> 工作区</span><span><kbd>Alt</kbd><kbd>G</kbd> 堆叠/平铺</span><span><kbd>Alt</kbd><kbd>Q</kbd> 关闭</span></div>
       </div>`;
   }
 
@@ -264,19 +258,51 @@
     content.append(frame);
   }
 
-  function makeFloating(element) {
+  function applyLayoutMode(workspace = activeWorkspace) {
+    const items = currentWindows(workspace);
+    if (!items.length) return;
     const bounds = layer.getBoundingClientRect();
-    const order = currentWindows().indexOf(element);
-    const width = clamp(bounds.width * .68, 360, Math.max(360, bounds.width - 30));
-    const height = clamp(bounds.height * .72, 260, Math.max(260, bounds.height - 30));
-    element.classList.add("is-floating");
-    element.classList.remove("is-maximized");
-    setRect(element, {
-      x: clamp(36 + order * 22, 0, bounds.width - width),
-      y: clamp(28 + order * 18, 0, bounds.height - height),
-      width,
-      height
-    });
+    if (!bounds.width || !bounds.height) return;
+    if (layoutMode === "tiled") {
+      items.forEach((element, index) => {
+        element.classList.remove("is-floating", "is-maximized");
+        element.style.zIndex = String(20 + index);
+      });
+      dwindle(items, { x: 0, y: 0, width: bounds.width, height: bounds.height });
+    } else if (innerWidth <= 680) {
+      items.forEach((element, index) => {
+        element.classList.add("is-floating");
+        element.classList.remove("is-maximized");
+        setRect(element, { x: 0, y: 0, width: bounds.width, height: bounds.height });
+        element.style.zIndex = String(20 + index);
+      });
+    } else {
+      items.forEach(element => {
+        element.classList.add("is-floating");
+        element.classList.remove("is-maximized");
+      });
+      const width = clamp(bounds.width * .72, Math.min(620, bounds.width - 16), bounds.width - 16);
+      const height = clamp(bounds.height * .76, Math.min(430, bounds.height - 16), bounds.height - 16);
+      const count = items.length;
+      const shiftX = count > 1 ? Math.min(32, Math.max(0, (bounds.width - width - 18) / (count - 1))) : 0;
+      const shiftY = count > 1 ? Math.min(25, Math.max(0, (bounds.height - height - 18) / (count - 1))) : 0;
+      const startX = Math.max(8, (bounds.width - width - shiftX * (count - 1)) / 2);
+      const startY = Math.max(8, (bounds.height - height - shiftY * (count - 1)) / 2);
+      items.forEach((element, index) => {
+        setRect(element, { x: startX + shiftX * index, y: startY + shiftY * index, width, height });
+        element.style.zIndex = String(20 + index);
+      });
+    }
+    const active = windows.get(activeWindowId) || focusedWindow(workspace);
+    if (active) active.style.zIndex = String(++topZ);
+  }
+
+  function toggleLayoutMode() {
+    layoutMode = layoutMode === "stacked" ? "tiled" : "stacked";
+    root.dataset.layoutMode = layoutMode;
+    applyLayoutMode(activeWorkspace);
+    updateWaybar();
+    showToast("窗口布局", layoutMode === "stacked" ? "已集中堆叠；再按 Alt + G 平铺" : "已无缝平铺并占满全部工作区");
   }
 
   function openApp(appId, options = {}) {
@@ -302,10 +328,9 @@
     windows.set(id, element);
     bindWindow(element);
     attachWindowContent(element, app);
-    if (options.floating) makeFloating(element);
     element.classList.add("is-opening");
     setTimeout(() => element.classList.remove("is-opening"), 520);
-    layoutWorkspace(Number(element.dataset.workspace));
+    applyLayoutMode(Number(element.dataset.workspace));
     focusWindow(element);
     updateWaybar();
     return element;
@@ -323,38 +348,8 @@
       const next = focusedWindow(workspace);
       if (workspace === activeWorkspace && next) focusWindow(next);
       else updateWaybar();
-      layoutWorkspace(workspace);
+      applyLayoutMode(workspace);
     }, reducedMotion.matches ? 10 : 270);
-  }
-
-  function toggleFloating(element) {
-    if (!element) return;
-    if (element.classList.contains("is-floating")) {
-      element.classList.remove("is-floating", "is-maximized");
-      element.style.resize = "";
-      layoutWorkspace(Number(element.dataset.workspace));
-      showToast("窗口模式", "已回到动态平铺");
-    } else {
-      makeFloating(element);
-      showToast("窗口模式", "已切换为浮动窗口");
-    }
-    focusWindow(element);
-  }
-
-  function toggleMaximize(element) {
-    if (!element) return;
-    if (element.classList.contains("is-maximized")) {
-      element.classList.remove("is-maximized");
-      if (element.dataset.wasFloating === "true") element.classList.add("is-floating");
-      else element.classList.remove("is-floating");
-      layoutWorkspace(Number(element.dataset.workspace));
-    } else {
-      element.dataset.wasFloating = String(element.classList.contains("is-floating"));
-      element.classList.remove("is-floating");
-      element.classList.add("is-maximized");
-      layoutWorkspace(Number(element.dataset.workspace));
-    }
-    focusWindow(element);
   }
 
   function bindWindow(element) {
@@ -362,15 +357,14 @@
     element.querySelector(".window-controls").addEventListener("click", event => {
       const action = event.target.closest("[data-window-action]")?.dataset.windowAction;
       if (action === "close") closeWindow(element);
-      if (action === "float") toggleFloating(element);
-      if (action === "maximize") toggleMaximize(element);
+      if (action === "layout") toggleLayoutMode();
     });
     const titlebar = element.querySelector(".window-titlebar");
     titlebar.addEventListener("dblclick", event => {
-      if (!event.target.closest("button")) toggleMaximize(element);
+      if (!event.target.closest("button")) toggleLayoutMode();
     });
     titlebar.addEventListener("pointerdown", event => {
-      if (event.button !== 0 || event.target.closest("button") || !element.classList.contains("is-floating") || element.classList.contains("is-maximized")) return;
+      if (event.button !== 0 || event.target.closest("button") || layoutMode !== "stacked") return;
       event.preventDefault();
       focusWindow(element);
       const layerRect = layer.getBoundingClientRect();
@@ -488,7 +482,25 @@
     if (!online) showToast("网络已断开", "本地桌面仍可继续操作");
   }
 
+  function initEntrySequence() {
+    const entry = document.getElementById("desktop-entry-sequence");
+    if (!document.documentElement.classList.contains("from-classic")) {
+      entry?.remove();
+      return;
+    }
+    root.dataset.entryState = "barrage";
+    setTimeout(() => {
+      entry?.remove();
+      document.documentElement.classList.remove("from-classic");
+      root.dataset.entryState = "complete";
+      const cleanUrl = new URL(location.href);
+      cleanUrl.searchParams.delete("from");
+      history.replaceState(null, "", cleanUrl);
+    }, 1_950);
+  }
+
   document.querySelectorAll("[data-workspace-target]").forEach(button => button.addEventListener("click", () => switchWorkspace(button.dataset.workspaceTarget)));
+  layoutToggle?.addEventListener("click", toggleLayoutMode);
   document.querySelectorAll("[data-launcher-open]").forEach(button => button.addEventListener("click", openLauncher));
   document.querySelectorAll(".hypr-dock [data-app]").forEach(button => button.addEventListener("click", () => openApp(button.dataset.app)));
   document.querySelectorAll(".desktop-icon").forEach(button => {
@@ -614,9 +626,9 @@
     } else if (key === "q") {
       event.preventDefault();
       closeWindow(windows.get(activeWindowId));
-    } else if (key === "f") {
+    } else if (key === "g") {
       event.preventDefault();
-      toggleFloating(windows.get(activeWindowId));
+      toggleLayoutMode();
     } else if (key === "arrowright" || key === "arrowdown") {
       event.preventDefault();
       cycleFocus(1);
@@ -629,20 +641,23 @@
   let resizeFrame = 0;
   window.addEventListener("resize", () => {
     cancelAnimationFrame(resizeFrame);
-    resizeFrame = requestAnimationFrame(layoutAll);
+    resizeFrame = requestAnimationFrame(() => {
+      for (let workspace = 1; workspace <= 5; workspace += 1) applyLayoutMode(workspace);
+    });
   });
   window.addEventListener("online", updateConnection);
   window.addEventListener("offline", updateConnection);
 
   updateClock();
   updateConnection();
+  initEntrySequence();
   setInterval(updateClock, 1000);
   document.getElementById("hardware-label").textContent = `Hyprland · ${navigator.hardwareConcurrency || "?"}T`;
   setWallpaper(wallpaperIndex, false);
   renderLauncher();
   updateWaybar();
   requestAnimationFrame(() => {
-    openApp("welcome", { floating: true });
+    openApp("welcome");
     root.dataset.desktopReady = "true";
     setTimeout(() => document.getElementById("desktop-hint").classList.add("is-dismissed"), 7000);
     setTimeout(() => showToast("桌面已就绪", "双击图标，或按 Alt + Space 打开应用"), 650);
