@@ -153,8 +153,16 @@ try {
   assert.equal(errors.length, 0, `desktop emitted page errors: ${errors.join(" | ")}`);
   await page.screenshot({ path: `${process.env.TEMP}\\hypr-desktop-1600x900.png`, fullPage: true });
   await page.locator(".hypr-dock [data-return-classic]").click();
+  await page.waitForFunction(() => document.querySelector("#hypr-desktop")?.dataset.returnState === "collapsing");
+  assert.ok(await page.locator(".classic-return-window").count() >= 1, "return animation does not collapse the open windows");
+  await page.waitForFunction(() => document.querySelector(".classic-return-transition")?.dataset.phase === "ready");
+  assert.equal(await page.locator(".classic-return-message").isVisible(), true, "return animation confirmation never appears");
+  await page.waitForTimeout(220);
+  assert.ok(Number(await page.locator(".classic-return-message").evaluate(element => getComputedStyle(element).opacity)) > .45, "return animation confirmation remains visually hidden");
+  await page.screenshot({ path: `${process.env.TEMP}\\hypr-classic-return-transition.png`, fullPage: true });
   await page.waitForURL(new URL("/", baseUrl).toString());
   assert.equal(new URL(page.url()).pathname, "/", "classic-mode return control did not leave the desktop");
+  assert.equal(await page.locator("html.from-hypr-desktop").count(), 1, "classic homepage does not animate after the desktop return");
   await desktop.close();
 
   const compact = await browser.newContext({ viewport: { width: 1024, height: 768 } });

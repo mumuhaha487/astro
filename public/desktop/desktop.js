@@ -201,8 +201,46 @@
   }
 
   function returnToClassic() {
+    if (root.dataset.returnState === "collapsing") return;
     sessionStorage.setItem("desktop-returned-to-classic", "true");
-    window.location.assign("/");
+    root.dataset.returnState = "collapsing";
+    const trigger = document.activeElement?.closest?.("[data-return-classic]") || document.querySelector(".hypr-dock [data-return-classic]");
+    const triggerRect = trigger?.getBoundingClientRect();
+    const target = {
+      x: triggerRect ? triggerRect.left + triggerRect.width / 2 : window.innerWidth / 2,
+      y: triggerRect ? triggerRect.top + triggerRect.height / 2 : window.innerHeight - 34,
+    };
+    const overlay = document.createElement("div");
+    overlay.className = "classic-return-transition";
+    overlay.setAttribute("role", "status");
+    overlay.setAttribute("aria-label", "正在切回原来的样式");
+    overlay.style.setProperty("--return-x", `${target.x}px`);
+    overlay.style.setProperty("--return-y", `${target.y}px`);
+    overlay.innerHTML = `<div class="classic-return-target">${archLogo}<span></span></div><div class="classic-return-message"><strong>RETURNING TO CLASSIC</strong><small>正在切回原来的样式</small></div>`;
+    root.append(overlay);
+
+    currentWindows().forEach((windowElement, index) => {
+      const rect = windowElement.getBoundingClientRect();
+      const ghost = document.createElement("span");
+      ghost.className = "classic-return-window";
+      Object.assign(ghost.style, {
+        left: `${rect.left}px`, top: `${rect.top}px`, width: `${rect.width}px`, height: `${rect.height}px`,
+        "--return-dx": `${target.x - (rect.left + rect.width / 2)}px`,
+        "--return-dy": `${target.y - (rect.top + rect.height / 2)}px`,
+        "--return-rotate": `${(index % 2 ? 1 : -1) * (4 + index * 1.5)}deg`,
+        "--return-delay": `${index * 45}ms`,
+      });
+      overlay.prepend(ghost);
+    });
+
+    if (reducedMotion.matches) {
+      overlay.classList.add("is-reduced-motion");
+      setTimeout(() => window.location.assign("/"), 220);
+      return;
+    }
+    requestAnimationFrame(() => overlay.classList.add("is-active"));
+    setTimeout(() => { overlay.dataset.phase = "ready"; }, 720);
+    setTimeout(() => window.location.assign("/"), 1_180);
   }
 
   function terminalHelp(output) {
