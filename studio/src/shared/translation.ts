@@ -3,7 +3,7 @@ import type { TranslationLanguage } from "./types";
 export const TRANSLATION_LANGUAGES: readonly TranslationLanguage[] = ["en", "ja"];
 export const DEFAULT_TRANSLATION_API_URL = "https://deepseek.inc.re/";
 export const DEFAULT_TRANSLATION_MODEL = "deepseek/deepseek-v4-flash";
-export const TRANSLATION_CHUNK_MAX_LENGTH = 1_800;
+export const TRANSLATION_CHUNK_MAX_LENGTH = 1_200;
 
 export interface ProtectedMarkdown {
   text: string;
@@ -69,6 +69,19 @@ export function protectMarkdownForTranslation(markdown: string): ProtectedMarkdo
 }
 
 export function restoreProtectedMarkdown(translated: string, protectedMarkdown: ProtectedMarkdown): string {
+  const fragmentTokens = protectedMarkdown.fragments.map((fragment) => fragment.token);
+  const expectedTokens = [...fragmentTokens]
+    .sort((left, right) => protectedMarkdown.text.indexOf(left) - protectedMarkdown.text.indexOf(right));
+  const marker = fragmentTokens[0]?.replace(/_\d{5}__$/, "") || "__ASTRO_TRANSLATION_PROTECTED";
+  const tokenPattern = new RegExp(`${escapeRegExp(marker)}_\\d{5}__`, "g");
+  const actualTokens: string[] = translated.match(tokenPattern) ?? [];
+  if (actualTokens.length !== expectedTokens.length || expectedTokens.some((token) => !actualTokens.includes(token))) {
+    throw new Error("翻译结果没有完整保留代码、引用或资源标记，请重试");
+  }
+  if (actualTokens.some((token, index) => token !== expectedTokens[index])) {
+    throw new Error("翻译结果没有按原顺序保留代码、引用或资源标记，请重试");
+  }
+
   let restored = translated;
   for (const fragment of protectedMarkdown.fragments) {
     const occurrences = restored.split(fragment.token).length - 1;
@@ -78,6 +91,10 @@ export function restoreProtectedMarkdown(translated: string, protectedMarkdown: 
     restored = restored.replace(fragment.token, fragment.value);
   }
   return restored;
+}
+
+function escapeRegExp(value: string): string {
+  return value.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
 }
 
 export function splitTranslationText(value: string, maximumLength = TRANSLATION_CHUNK_MAX_LENGTH): TranslationTextChunk[] {

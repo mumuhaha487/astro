@@ -1,4 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { TRANSLATION_CHUNK_MAX_LENGTH } from "../shared/translation";
 import type { TranslationResult } from "../shared/types";
 import worker from "./index";
 
@@ -456,7 +457,7 @@ describe("multilingual publishing", () => {
     expect(result.translations[0].body).toContain("translated");
     expect(bodyAttempts.size).toBeGreaterThan(1);
     expect([...bodyAttempts.values()].every((attempts) => attempts === 2)).toBe(true);
-    expect(providerSources.every((source) => source.length <= 1_800)).toBe(true);
+    expect(providerSources.every((source) => source.length <= TRANSLATION_CHUNK_MAX_LENGTH)).toBe(true);
   });
 
   it("translates one browser-managed segment and enforces the segment limit", async () => {
@@ -489,9 +490,34 @@ describe("multilingual publishing", () => {
     const oversized = await worker.fetch(new Request("https://studio.example/api/translate/segment", {
       method: "POST",
       headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
-      body: JSON.stringify({ text: "x".repeat(1_801), language: "en", contentType: "Markdown 正文" }),
+      body: JSON.stringify({ text: "x".repeat(TRANSLATION_CHUNK_MAX_LENGTH + 1), language: "en", contentType: "Markdown 正文" }),
     }), env);
     expect(oversized.status).toBe(413);
+    expect(providerFetch).toHaveBeenCalledTimes(1);
+  });
+
+  it("leaves segment retries to the browser so one worker request makes one upstream attempt", async () => {
+    const { env } = memoryEnv();
+    const cookie = await loginCookie(env);
+    await worker.fetch(new Request("https://studio.example/api/settings/translation", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({
+        apiUrl: "https://translation.example/",
+        apiKey: "test-browser-retry-key",
+        model: "example/translator",
+      }),
+    }), env);
+    const providerFetch = vi.fn(async () => new Response("Gateway Timeout", { status: 504 }));
+    vi.stubGlobal("fetch", providerFetch);
+
+    const response = await worker.fetch(new Request("https://studio.example/api/translate/segment", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ text: "一段正文", language: "en", contentType: "Markdown 正文" }),
+    }), env);
+
+    expect(response.status).toBe(502);
     expect(providerFetch).toHaveBeenCalledTimes(1);
   });
 

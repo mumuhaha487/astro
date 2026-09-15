@@ -66,6 +66,16 @@ describe("Markdown translation protection", () => {
     expect(() => restoreProtectedMarkdown(`${protectedMarkdown.text} ${protectedMarkdown.fragments[0].token}`, protectedMarkdown)).toThrow(/完整保留/);
   });
 
+  it("rejects protected placeholders returned in a different order", () => {
+    const protectedMarkdown = protectMarkdownForTranslation("`first()` 然后 `second()`");
+    const [first, second] = protectedMarkdown.fragments;
+    const reversed = protectedMarkdown.text
+      .replace(first.token, "__TEMP_TRANSLATION_TOKEN__")
+      .replace(second.token, first.token)
+      .replace("__TEMP_TRANSLATION_TOKEN__", second.token);
+    expect(() => restoreProtectedMarkdown(reversed, protectedMarkdown)).toThrow(/原顺序/);
+  });
+
   it("splits long prose without dropping content", () => {
     const source = `${"a".repeat(20)}\n\n${"b".repeat(20)}\n\n${"c".repeat(20)}`;
     const chunks = splitTranslationText(source, 25);

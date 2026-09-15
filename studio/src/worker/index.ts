@@ -1602,7 +1602,9 @@ async function translateSegment(env: Env, input: unknown): Promise<{ text: strin
   if (!language) throw new HttpError(400, "翻译语言无效");
   if (!contentType) throw new HttpError(400, "翻译内容类型无效");
   const settings = await requireTranslationSettings(env);
-  return { text: await requestTranslation(settings, text, language, contentType) };
+  const translated = await requestTranslationOnce(settings, text, language, contentType);
+  assertTranslationTokens(text, translated);
+  return { text: translated };
 }
 
 async function translateProtectedValue(

@@ -124,7 +124,7 @@ const exampleDraftContent = exampleContent
   .replace("draft: false", "draft: true")
   .replace("pinned: true", "pinned: false");
 
-async function mockStudioApi(page, { includeDraft = false, failDrafts = false, mutations = [], postContent = exampleContent, webEmbedUploads = [] } = {}) {
+async function mockStudioApi(page, { includeDraft = false, failDrafts = false, failTranslation = false, mutations = [], postContent = exampleContent, webEmbedUploads = [] } = {}) {
   let postRecords = [examplePost];
   let draftRecords = includeDraft ? [exampleDraft] : [];
   let guestbookRecords = [
@@ -269,6 +269,7 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
       return json({ ...body, key: "visual-schedule", createdAt: new Date().toISOString() });
     }
     if (url.pathname === "/api/translate/segment" && request.method() === "POST") {
+      if (failTranslation) return json({ error: "边缘函数翻译请求超时" }, 504);
       const body = request.postDataJSON();
       if (body.contentType === "文章标题") {
         return json({ text: body.language === "en" ? "Translated article title" : "翻訳記事のタイトル" });
@@ -335,14 +336,14 @@ async function mockStudioApi(page, { includeDraft = false, failDrafts = false, m
   });
 }
 
-async function openEditor(viewport, { existing = false, includeDraft = false, postContent = exampleContent } = {}) {
+async function openEditor(viewport, { existing = false, includeDraft = false, failTranslation = false, postContent = exampleContent } = {}) {
   const context = await browser.newContext({ viewport, deviceScaleFactor: 1 });
   const page = await context.newPage();
   const pageErrors = [];
   const mutations = [];
   const webEmbedUploads = [];
   page.on("pageerror", (error) => pageErrors.push(error.message));
-  await mockStudioApi(page, { includeDraft, mutations, postContent, webEmbedUploads });
+  await mockStudioApi(page, { includeDraft, failTranslation, mutations, postContent, webEmbedUploads });
   await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
   if (existing) {
     await page.locator(".editor-back-button").click();
@@ -366,6 +367,36 @@ async function verifyPostListSurvivesDraftFailure() {
   assert.deepEqual(pageErrors, [], `independent list loading page errors: ${pageErrors.join("; ")}`);
   await context.close();
   return { postListSurvivedDraftFailure: true };
+}
+
+async function verifyTranslationFailureFallback() {
+  const { context, page, pageErrors } = await openEditor(
+    { width: 920, height: 700 },
+    { failTranslation: true },
+  );
+  await page.locator(".title-input").fill("自动翻译失败回退验证");
+  await page.locator(".studio-rich-content[contenteditable='true']").fill("这段正文用于验证翻译失败后的手动入口。");
+  await page.getByRole("button", { name: "发文设置" }).click();
+  const settings = page.locator(".advanced-fields");
+  const english = settings.getByLabel("English");
+  await english.scrollIntoViewIfNeeded();
+  await english.check();
+  const translateButton = settings.getByRole("button", { name: "翻译", exact: true });
+  await translateButton.scrollIntoViewIfNeeded();
+  await translateButton.click();
+  const dialog = page.getByRole("dialog", { name: "翻译文章" });
+  await dialog.getByRole("button", { name: /^自动翻译/ }).click();
+  await dialog.getByRole("alert").waitFor();
+  assert.match(await dialog.getByRole("alert").textContent(), /超时.*手动翻译/);
+  const manualFallback = dialog.getByRole("button", { name: "改用手动翻译" });
+  assert.equal(await manualFallback.isEnabled(), true);
+  await manualFallback.click();
+  await dialog.getByLabel("粘贴 English 完整 Markdown 译文").waitFor();
+  const screenshotPath = join(outputDirectory, "translation-timeout-manual-fallback.png");
+  await page.screenshot({ path: screenshotPath, animations: "disabled" });
+  assert.deepEqual(pageErrors, [], `translation fallback errors: ${pageErrors.join("; ")}`);
+  await context.close();
+  return { translationFailureFallback: true, screenshotPath };
 }
 
 async function verifyGuestbookAdmin() {
@@ -839,9 +870,27 @@ async function verifyDesktop() {
   await settingsDrawer.locator(".toggle-control").filter({ hasText: "置顶" }).locator("input").check({ force: true });
   await settingsDrawer.getByLabel("置顶优先级").fill("2");
   await settingsDrawer.getByLabel("English").check();
-  await settingsDrawer.getByRole("button", { name: "AI 翻译" }).click();
-  const translationDialog = page.getByRole("dialog", { name: "检查译文" });
+  await settingsDrawer.getByRole("button", { name: "翻译", exact: true }).click();
+  const translationDialog = page.getByRole("dialog", { name: "翻译文章" });
   await translationDialog.waitFor();
+  assert.equal(await translationDialog.getByRole("button", { name: /^自动翻译/ }).count(), 1);
+  assert.equal(await translationDialog.getByRole("button", { name: /^手动翻译/ }).count(), 1);
+  await translationDialog.getByRole("button", { name: /^手动翻译/ }).click();
+  assert.match(await translationDialog.getByLabel("English 翻译提示词").inputValue(), /完整 Markdown 文档/);
+  await page.screenshot({ path: join(outputDirectory, "desktop-1264-translation-manual.png"), animations: "disabled" });
+  await translationDialog.getByLabel("粘贴 English 完整 Markdown 译文").fill([
+    "---",
+    'title: "Manual translated title"',
+    'description: "Manual translated description"',
+    "---",
+    "",
+    "Manual translated body.",
+  ].join("\n"));
+  await translationDialog.getByRole("button", { name: "校验并载入译文" }).click();
+  await translationDialog.getByText("结构校验通过，译文已载入并会随草稿保存。").waitFor();
+  await translationDialog.getByRole("button", { name: "返回", exact: true }).click();
+  await translationDialog.getByRole("button", { name: /^自动翻译/ }).click();
+  await translationDialog.getByLabel("译文标题").waitFor();
   assert.equal(await translationDialog.getByRole("tab", { name: /English/ }).getAttribute("aria-selected"), "true");
   assert.equal(await translationDialog.getByLabel("译文标题").inputValue(), "Translated article title");
   assert.equal(await translationDialog.getByLabel("译文正文（Markdown）").inputValue(), "Translated article body.");
@@ -1915,6 +1964,36 @@ async function verifyMobile(width) {
     await codePreview.locator("#result", { hasText: "代码运行成功" }).waitFor();
     await page.locator(".code-runner-dialog").getByRole("button", { name: "取消" }).click();
     await page.locator(".code-runner-dialog").waitFor({ state: "detached" });
+
+    await page.getByRole("button", { name: "发文设置" }).click();
+    const mobileSettings = page.locator(".advanced-fields");
+    await mobileSettings.waitFor();
+    const englishTranslation = mobileSettings.getByLabel("English");
+    await englishTranslation.scrollIntoViewIfNeeded();
+    await englishTranslation.check();
+    const mobileTranslateButton = mobileSettings.getByRole("button", { name: "翻译", exact: true });
+    await mobileTranslateButton.scrollIntoViewIfNeeded();
+    await mobileTranslateButton.click();
+    const mobileTranslationDialog = page.getByRole("dialog", { name: "翻译文章" });
+    await mobileTranslationDialog.waitFor();
+    await mobileTranslationDialog.getByRole("button", { name: /^手动翻译/ }).click();
+    const translationDialogRect = await mobileTranslationDialog.evaluate((element) => {
+      const rect = element.getBoundingClientRect();
+      return {
+        top: Math.round(rect.top),
+        left: Math.round(rect.left),
+        width: Math.round(rect.width),
+        height: Math.round(rect.height),
+        scrollWidth: element.scrollWidth,
+        clientWidth: element.clientWidth,
+      };
+    });
+    assert.deepEqual(translationDialogRect, { top: 0, left: 0, width, height, scrollWidth: width, clientWidth: width });
+    assert.match(await mobileTranslationDialog.getByLabel("English 翻译提示词").inputValue(), /__ASTRO_TRANSLATION_PROTECTED/);
+    await mobileTranslationDialog.getByLabel("粘贴 English 完整 Markdown 译文").scrollIntoViewIfNeeded();
+    await page.screenshot({ path: join(outputDirectory, "mobile-390-translation-manual.png"), animations: "disabled" });
+    await mobileTranslationDialog.getByTitle("关闭").click();
+    await mobileTranslationDialog.waitFor({ state: "detached" });
   }
 
   await page.locator(".csdn-editor-toolbar").evaluate((element) => { element.scrollLeft = element.scrollWidth; });
@@ -2451,6 +2530,7 @@ try {
     await verifyContentCrud(),
     await verifyDraftPublishing(),
     await verifyScheduledPublish(),
+    await verifyTranslationFailureFallback(),
     await verifyPostListSurvivesDraftFailure(),
     await verifyGuestbookAdmin(),
     await verifyLinkCardsAndLargeImages(),

@@ -8,9 +8,11 @@ import {
   Check,
   ChevronDown,
   ChevronLeft,
+  ClipboardPaste,
   Clock3,
   Cloud,
   Code2,
+  Copy,
   Crop,
   ExternalLink,
   Eye,
@@ -60,7 +62,11 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 import { ApiError, api } from "./api";
-import { translateArticleBySegments } from "./translation";
+import {
+  buildManualTranslationPackage,
+  parseManualTranslation,
+  translateArticleBySegments,
+} from "./translation";
 import {
   type FrontmatterFields,
   hasUnsafeRichContent,
@@ -123,6 +129,7 @@ type SyncState = "idle" | "saving" | "saved" | "error";
 type MobilePanel = "outline" | null;
 type RunnableCodeTab = "html" | "css" | "javascript";
 type InsertPanel = "image" | "video" | "webpage" | "formula" | "link" | "template" | "resource" | "table" | null;
+type TranslationView = "choose" | "automatic" | "manual" | "review";
 
 interface SavedTemplate {
   id: string;
@@ -234,6 +241,7 @@ function App() {
   const [editorEpoch, setEditorEpoch] = useState(0);
   const [publishing, setPublishing] = useState(false);
   const [translationOpen, setTranslationOpen] = useState(false);
+  const [translationStartView, setTranslationStartView] = useState<TranslationView>("choose");
   const [translating, setTranslating] = useState(false);
   const [translationStatus, setTranslationStatus] = useState<string | null>(null);
   const [translationTargets, setTranslationTargets] = useState<TranslationLanguage[]>([]);
@@ -716,21 +724,17 @@ function App() {
     setSyncLabel("等待同步");
   }
 
-  async function translateSelectedLanguages() {
+  async function translateSelectedLanguages(): Promise<void> {
     if (!working || !fields || !translationTargets.length) {
-      showToast("请先选择英文或日文", "info");
-      return;
+      throw new Error("请先选择英文或日文");
     }
     if (!session?.translation.configured) {
-      setSettingsOpen(true);
-      showToast("请先在设置中填写 AI API 密钥", "info");
-      return;
+      throw new Error("自动翻译需要先在设置中填写 AI API 密钥");
     }
     const normalizedFields = currentFields() || fields;
     const titleError = validateTitle(normalizedFields.title);
     if (titleError) {
-      showToast(titleError, "error");
-      return;
+      throw new Error(titleError);
     }
     setTranslating(true);
     setTranslationStatus("正在准备分段");
@@ -759,8 +763,6 @@ function App() {
       }
       setTranslations(nextTranslations);
       markChanged();
-      setAdvancedOpen(false);
-      setTranslationOpen(true);
       setTranslationStatus("正在保存译文");
       setSyncState("saving");
       setSyncLabel("正在保存翻译草稿");
@@ -796,6 +798,7 @@ function App() {
       if (error instanceof ApiError && error.code === "TRANSLATION_NOT_CONFIGURED") {
         setSettingsOpen(true);
       }
+      throw error;
     } finally {
       setTranslating(false);
       setTranslationStatus(null);
@@ -804,10 +807,15 @@ function App() {
 
   function updateTranslation(language: TranslationLanguage, patch: Partial<TranslationResult>) {
     setTranslations((current) => {
-      const translation = current[language];
-      return translation
-        ? { ...current, [language]: { ...translation, ...patch, language } }
-        : current;
+      const translation = current[language] || {
+        language,
+        title: "",
+        description: "",
+        body: "",
+        path: "",
+        sha: "",
+      };
+      return { ...current, [language]: { ...translation, ...patch, language } };
     });
     markChanged();
   }
@@ -1555,8 +1563,13 @@ function App() {
                   translating={translating}
                   translationStatus={translationStatus}
                   onTranslationTarget={setTranslationTarget}
-                  onTranslate={() => void translateSelectedLanguages()}
+                  onTranslate={() => {
+                    setTranslationStartView("choose");
+                    setAdvancedOpen(false);
+                    setTranslationOpen(true);
+                  }}
                   onReviewTranslations={() => {
+                    setTranslationStartView("review");
                     setAdvancedOpen(false);
                     setTranslationOpen(true);
                   }}
@@ -1631,14 +1644,21 @@ function App() {
 
       {guestbookOpen ? <GuestbookDialog onClose={() => setGuestbookOpen(false)} /> : null}
 
-      {translationOpen && translationTargets.length ? (
+      {translationOpen && translationTargets.length && fields ? (
         <TranslationDialog
+          initialView={translationStartView}
           targets={translationTargets}
           translations={translations}
           translating={translating}
           translationStatus={translationStatus}
+          configured={Boolean(session?.translation.configured)}
+          source={{ title: fields.title, description: fields.description, body }}
           onChange={updateTranslation}
-          onRegenerate={() => void translateSelectedLanguages()}
+          onAutoTranslate={translateSelectedLanguages}
+          onOpenSettings={() => {
+            setTranslationOpen(false);
+            setSettingsOpen(true);
+          }}
           onClose={() => setTranslationOpen(false)}
         />
       ) : null}
@@ -2071,13 +2091,13 @@ function AdvancedFields({
           <div className="translation-actions">
             <button type="button" className="secondary-button" onClick={onTranslate} disabled={translating || !translationTargets.length}>
               {translating ? <LoaderCircle className="spin" size={15} /> : <Languages size={15} />}
-              {translating ? translationStatus || "正在准备分段" : "AI 翻译"}
+              {translating ? translationStatus || "正在准备分段" : "翻译"}
             </button>
             {translationTargets.some((language) => translations[language]) ? (
               <button type="button" className="text-button" onClick={onReviewTranslations}>检查译文</button>
             ) : null}
           </div>
-          <small>翻译标题、简介和普通正文；代码、引用、公式、HTML、链接及资源路径保持原文。</small>
+          <small>可选择浏览器分段自动翻译，或复制提示词后手动粘贴完整 Markdown 译文。</small>
         </div>
       </SettingRow>
 
@@ -3897,74 +3917,260 @@ function ArticlePreview({
 }
 
 function TranslationDialog({
+  initialView,
   targets,
   translations,
   translating,
   translationStatus,
+  configured,
+  source,
   onChange,
-  onRegenerate,
+  onAutoTranslate,
+  onOpenSettings,
   onClose,
 }: {
+  initialView: TranslationView;
   targets: TranslationLanguage[];
   translations: Partial<Record<TranslationLanguage, EditableTranslation>>;
   translating: boolean;
   translationStatus: string | null;
+  configured: boolean;
+  source: { title: string; description: string; body: string };
   onChange: (language: TranslationLanguage, patch: Partial<TranslationResult>) => void;
-  onRegenerate: () => void;
+  onAutoTranslate: () => Promise<void>;
+  onOpenSettings: () => void;
   onClose: () => void;
 }) {
+  const [view, setView] = useState<TranslationView>(initialView);
   const [activeLanguage, setActiveLanguage] = useState<TranslationLanguage>(targets[0] || "en");
+  const [autoError, setAutoError] = useState("");
+  const [manualInputs, setManualInputs] = useState<Partial<Record<TranslationLanguage, string>>>({});
+  const [manualFeedback, setManualFeedback] = useState<Partial<Record<TranslationLanguage, { tone: "success" | "error"; text: string }>>>({});
+  const manualPackages = useMemo(() => {
+    const packages = {} as Record<TranslationLanguage, ReturnType<typeof buildManualTranslationPackage>>;
+    for (const language of targets) {
+      packages[language] = buildManualTranslationPackage(
+        source.title,
+        source.description,
+        source.body,
+        language,
+      );
+    }
+    return packages;
+  }, [source.body, source.description, source.title, targets]);
   const active = translations[activeLanguage];
+
+  async function runAutomaticTranslation() {
+    setView("automatic");
+    setAutoError("");
+    if (!configured) {
+      setAutoError("自动翻译尚未配置 API 密钥。你可以打开设置，或直接改用手动翻译。");
+      return;
+    }
+    try {
+      await onAutoTranslate();
+      setView("review");
+    } catch (error) {
+      setAutoError(`${errorMessage(error)}。已完成的中文原文没有变化，可以改用手动翻译。`);
+    }
+  }
+
+  function setManualMessage(language: TranslationLanguage, tone: "success" | "error", text: string) {
+    setManualFeedback((current) => ({ ...current, [language]: { tone, text } }));
+  }
+
+  async function copyManualPrompt() {
+    try {
+      if (!navigator.clipboard?.writeText) throw new Error("浏览器没有开放剪贴板写入权限");
+      await navigator.clipboard.writeText(manualPackages[activeLanguage].prompt);
+      setManualMessage(activeLanguage, "success", "提示词已复制，可以粘贴给 AI。");
+    } catch (error) {
+      setManualMessage(activeLanguage, "error", `${errorMessage(error)}，请在提示词框内全选复制。`);
+    }
+  }
+
+  async function pasteManualTranslation() {
+    try {
+      if (!navigator.clipboard?.readText) throw new Error("浏览器没有开放剪贴板读取权限");
+      const value = await navigator.clipboard.readText();
+      if (!value.trim()) throw new Error("剪贴板中没有可粘贴的文本");
+      setManualInputs((current) => ({ ...current, [activeLanguage]: value }));
+      setManualMessage(activeLanguage, "success", "已从剪贴板读取译文，请校验后载入。");
+    } catch (error) {
+      setManualMessage(activeLanguage, "error", `${errorMessage(error)}，请直接在下方输入框粘贴。`);
+    }
+  }
+
+  function applyManualTranslation() {
+    const value = manualInputs[activeLanguage] || "";
+    try {
+      if (!value.trim()) throw new Error("请先粘贴完整 Markdown 译文");
+      const translated = parseManualTranslation(value, manualPackages[activeLanguage]);
+      onChange(activeLanguage, translated);
+      setManualMessage(activeLanguage, "success", "结构校验通过，译文已载入并会随草稿保存。");
+    } catch (error) {
+      setManualMessage(activeLanguage, "error", errorMessage(error));
+    }
+  }
+
+  const activeFeedback = manualFeedback[activeLanguage];
+  const hasAnyTranslation = targets.some((language) => translations[language]);
   return (
-    <div className="modal-backdrop" role="presentation" onMouseDown={(event) => { if (event.target === event.currentTarget) onClose(); }}>
-      <section className="translation-dialog" role="dialog" aria-modal="true" aria-labelledby="translation-title">
+    <div className="modal-backdrop translation-backdrop" role="presentation" onMouseDown={(event) => { if (!translating && event.target === event.currentTarget) onClose(); }}>
+      <section className={`translation-dialog translation-view-${view}`} role="dialog" aria-modal="true" aria-labelledby="translation-title">
         <header>
           <div>
-            <h2 id="translation-title"><Languages size={19} /> 检查译文</h2>
-            <span>发布时会与中文原文一起提交</span>
+            <h2 id="translation-title"><Languages size={19} /> 翻译文章</h2>
+            <span>{view === "review" ? "检查完成后，译文会与中文原文一起提交" : "自动分段或手动粘贴，中文原文始终保持不变"}</span>
           </div>
-          <button className="icon-button" onClick={onClose} title="关闭"><X size={18} /></button>
+          <button className="icon-button" onClick={onClose} disabled={translating} title="关闭"><X size={18} /></button>
         </header>
-        <div className="translation-tabs" role="tablist" aria-label="译文语言">
-          {targets.map((language) => (
+
+        {view === "choose" ? (
+          <div className="translation-choice">
             <button
               type="button"
-              role="tab"
-              aria-selected={language === activeLanguage}
-              className={language === activeLanguage ? "active" : ""}
-              onClick={() => setActiveLanguage(language)}
-              key={language}
+              className="translation-choice-option"
+              onClick={() => void runAutomaticTranslation()}
             >
-              {language === "en" ? "English" : "日本語"}
-              {translations[language] ? <Check size={13} /> : <AlertCircle size={13} />}
+              <span className="translation-choice-icon"><Languages size={22} /></span>
+              <strong>自动翻译</strong>
+              <span>由当前浏览器逐段、串行发送请求，完成后自动载入英文与日文译文。</span>
             </button>
-          ))}
-        </div>
-        {active ? (
-          <div className="translation-editor">
-            <label>
-              <span>译文标题</span>
-              <input value={active.title} onChange={(event) => onChange(activeLanguage, { title: event.target.value })} maxLength={160} />
-            </label>
-            <label>
-              <span>译文简介</span>
-              <textarea value={active.description} onChange={(event) => onChange(activeLanguage, { description: event.target.value })} rows={3} maxLength={480} />
-            </label>
-            <label className="translation-body-field">
-              <span>译文正文（Markdown）</span>
-              <textarea value={active.body} onChange={(event) => onChange(activeLanguage, { body: event.target.value })} spellCheck={false} />
-            </label>
+            <button
+              type="button"
+              className="translation-choice-option"
+              onClick={() => setView("manual")}
+            >
+              <span className="translation-choice-icon"><ClipboardPaste size={22} /></span>
+              <strong>手动翻译</strong>
+              <span>复制受保护的提示词给 AI，再将完整 Markdown 译文粘贴回来校验。</span>
+            </button>
           </div>
-        ) : (
-          <div className="translation-empty"><AlertCircle size={22} /><span>这个语言还没有译文，请运行 AI 翻译。</span></div>
-        )}
-        <footer>
-          <button className="secondary-button" type="button" onClick={onRegenerate} disabled={translating}>
-            {translating ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
-            {translating ? translationStatus || "正在准备分段" : "重新翻译已选语言"}
-          </button>
-          <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
-        </footer>
+        ) : null}
+
+        {view === "automatic" ? (
+          <div className="translation-automatic">
+            <span className="translation-workflow-icon"><Languages size={24} /></span>
+            <div>
+              <h3>浏览器分段自动翻译</h3>
+              <p>当前页面会按顺序发送每个小段，避免一次长请求拖垮边缘函数。代码、图片、链接、HTML 与公式会在本地校验后还原。</p>
+            </div>
+            {translating ? (
+              <div className="translation-progress" role="status">
+                <LoaderCircle className="spin" size={17} />
+                <span>{translationStatus || "正在准备分段"}</span>
+              </div>
+            ) : null}
+            {autoError ? (
+              <div className="translation-error" role="alert"><AlertCircle size={17} /><span>{autoError}</span></div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {view === "manual" || view === "review" ? (
+          <div className="translation-tabs" role="tablist" aria-label="译文语言">
+            {targets.map((language) => (
+              <button
+                type="button"
+                role="tab"
+                aria-selected={language === activeLanguage}
+                className={language === activeLanguage ? "active" : ""}
+                onClick={() => setActiveLanguage(language)}
+                key={language}
+              >
+                {language === "en" ? "English" : "日本語"}
+                {translations[language] ? <Check size={13} /> : <AlertCircle size={13} />}
+              </button>
+            ))}
+          </div>
+        ) : null}
+
+        {view === "manual" ? (
+          <div className="manual-translation">
+            <div className="manual-translation-step">
+              <div className="manual-translation-heading">
+                <div><strong>1. 复制提示词</strong><span>提示词中的占位符用于保护不可翻译内容。</span></div>
+                <button className="secondary-button" type="button" onClick={() => void copyManualPrompt()}><Copy size={15} />复制提示词</button>
+              </div>
+              <textarea aria-label={`${activeLanguage === "en" ? "English" : "日本語"} 翻译提示词`} value={manualPackages[activeLanguage].prompt} readOnly spellCheck={false} />
+            </div>
+            <div className="manual-translation-step manual-translation-result">
+              <div className="manual-translation-heading">
+                <div><strong>2. 粘贴完整 Markdown 译文</strong><span>必须包含 title、description frontmatter 和完整正文。</span></div>
+                <button className="secondary-button" type="button" onClick={() => void pasteManualTranslation()}><ClipboardPaste size={15} />从剪贴板粘贴</button>
+              </div>
+              <textarea
+                aria-label={`粘贴 ${activeLanguage === "en" ? "English" : "日本語"} 完整 Markdown 译文`}
+                value={manualInputs[activeLanguage] || ""}
+                onChange={(event) => {
+                  setManualInputs((current) => ({ ...current, [activeLanguage]: event.target.value }));
+                  setManualFeedback((current) => ({ ...current, [activeLanguage]: undefined }));
+                }}
+                placeholder="在这里粘贴 AI 返回的完整 Markdown 文档"
+                spellCheck={false}
+              />
+            </div>
+            {activeFeedback ? (
+              <div className={`manual-translation-feedback ${activeFeedback.tone}`} role={activeFeedback.tone === "error" ? "alert" : "status"}>
+                {activeFeedback.tone === "success" ? <Check size={16} /> : <AlertCircle size={16} />}
+                <span>{activeFeedback.text}</span>
+              </div>
+            ) : null}
+          </div>
+        ) : null}
+
+        {view === "review" ? (
+          active ? (
+            <div className="translation-editor">
+              <label>
+                <span>译文标题</span>
+                <input aria-label="译文标题" value={active.title} onChange={(event) => onChange(activeLanguage, { title: event.target.value })} maxLength={160} />
+              </label>
+              <label>
+                <span>译文简介</span>
+                <textarea aria-label="译文简介" value={active.description} onChange={(event) => onChange(activeLanguage, { description: event.target.value })} rows={3} maxLength={480} />
+              </label>
+              <label className="translation-body-field">
+                <span>译文正文（Markdown）</span>
+                <textarea aria-label="译文正文（Markdown）" value={active.body} onChange={(event) => onChange(activeLanguage, { body: event.target.value })} spellCheck={false} />
+              </label>
+            </div>
+          ) : (
+            <div className="translation-empty"><AlertCircle size={22} /><span>这个语言还没有译文，请返回选择自动或手动翻译。</span></div>
+          )
+        ) : null}
+
+        {view === "choose" ? (
+          <footer><button className="secondary-button" type="button" onClick={onClose}>取消</button></footer>
+        ) : null}
+        {view === "automatic" ? (
+          <footer>
+            <button className="text-button" type="button" onClick={() => setView("choose")} disabled={translating}>返回</button>
+            <button className="secondary-button" type="button" onClick={() => setView("manual")} disabled={translating}><ClipboardPaste size={15} />改用手动翻译</button>
+            {!configured ? (
+              <button className="primary-button" type="button" onClick={onOpenSettings}>打开翻译设置</button>
+            ) : (
+              <button className="primary-button" type="button" onClick={() => void runAutomaticTranslation()} disabled={translating}>
+                {translating ? <LoaderCircle className="spin" size={15} /> : <RefreshCw size={15} />}
+                {translating ? "翻译中" : autoError ? "重新自动翻译" : "开始自动翻译"}
+              </button>
+            )}
+          </footer>
+        ) : null}
+        {view === "manual" ? (
+          <footer>
+            <button className="text-button" type="button" onClick={() => setView("choose")}>返回</button>
+            {hasAnyTranslation ? <button className="secondary-button" type="button" onClick={() => setView("review")}>检查已载入译文</button> : null}
+            <button className="primary-button" type="button" onClick={applyManualTranslation}><Check size={15} />校验并载入译文</button>
+          </footer>
+        ) : null}
+        {view === "review" ? (
+          <footer>
+            <button className="secondary-button" type="button" onClick={() => setView("choose")}><RefreshCw size={15} />选择翻译方式</button>
+            <button className="primary-button" type="button" onClick={onClose}>完成检查</button>
+          </footer>
+        ) : null}
       </section>
     </div>
   );
