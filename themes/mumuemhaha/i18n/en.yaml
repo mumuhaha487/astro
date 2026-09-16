@@ -40,6 +40,32 @@
   translation: Open in a new window
 - id: profile_avatar
   translation: Mumuemhaha's avatar
+- id: account_open
+  translation: Sign in or register
+- id: account_eyebrow
+  translation: Account · testing
+- id: account_title
+  translation: Sign in
+- id: account_close
+  translation: Close account dialog
+- id: account_login
+  translation: Sign in
+- id: account_register
+  translation: Register
+- id: account_username
+  translation: Username
+- id: account_password
+  translation: Password
+- id: account_hint
+  translation: Username 3–24 letters, digits or underscores; password at least 12 characters.
+- id: account_signed_in
+  translation: Signed in as
+- id: account_logout
+  translation: Sign out
+- id: site_uptime_prefix
+  translation: Running for
+- id: site_uptime_suffix
+  translation: days · since
 - id: todays_status
   translation: Today's status
 - id: status_title

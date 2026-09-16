@@ -40,6 +40,32 @@
   translation: 新しいウィンドウで開く
 - id: profile_avatar
   translation: 木木em哈哈のアバター
+- id: account_open
+  translation: ログイン・登録
+- id: account_eyebrow
+  translation: アカウント · テスト中
+- id: account_title
+  translation: ログイン
+- id: account_close
+  translation: ダイアログを閉じる
+- id: account_login
+  translation: ログイン
+- id: account_register
+  translation: 登録
+- id: account_username
+  translation: ユーザー名
+- id: account_password
+  translation: パスワード
+- id: account_hint
+  translation: ユーザー名は英数字とアンダースコアの3～24文字、パスワードは12文字以上。
+- id: account_signed_in
+  translation: ログイン中
+- id: account_logout
+  translation: ログアウト
+- id: site_uptime_prefix
+  translation: 運営開始から
+- id: site_uptime_suffix
+  translation: 日 · 開始日
 - id: todays_status
   translation: 今日のステータス
 - id: status_title

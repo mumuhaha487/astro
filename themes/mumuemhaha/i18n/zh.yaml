@@ -40,6 +40,32 @@
   translation: 在新窗口打开
 - id: profile_avatar
   translation: 木木em哈哈的头像
+- id: account_open
+  translation: 登录或注册
+- id: account_eyebrow
+  translation: 账号 · 测试中
+- id: account_title
+  translation: 账号登录
+- id: account_close
+  translation: 关闭账号弹窗
+- id: account_login
+  translation: 登录
+- id: account_register
+  translation: 注册
+- id: account_username
+  translation: 用户名
+- id: account_password
+  translation: 密码
+- id: account_hint
+  translation: 用户名 3–24 位字母、数字或下划线；密码至少 12 位。
+- id: account_signed_in
+  translation: 当前登录
+- id: account_logout
+  translation: 退出登录
+- id: site_uptime_prefix
+  translation: 本站已运行
+- id: site_uptime_suffix
+  translation: 天 · 始于
 - id: todays_status
   translation: 今日小状态
 - id: status_title

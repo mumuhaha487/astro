@@ -41,6 +41,7 @@
             <h2>{{ i18n "status_title" }}</h2>
             <p>{{ i18n "status_description" }}</p>
             <div class="status-line"><span></span><time id="home-clock">{{ now.Format "2006-01-02 15:04" }}</time></div>
+            <p class="site-uptime" data-site-start-date="{{ site.Params.siteStartDate }}">{{ i18n "site_uptime_prefix" }} <strong data-site-uptime>...</strong> {{ i18n "site_uptime_suffix" }} <small>{{ replace site.Params.siteStartDate "-" "." }}</small></p>
           </div>
         </section>
         <section class="home-doc-item contact-panel">

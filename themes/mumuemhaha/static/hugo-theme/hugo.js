@@ -199,6 +199,18 @@
       update();
       setInterval(() => { if (!document.hidden) update(); }, 1000);
     }
+    const uptime = $$('[data-site-uptime]');
+    if (uptime.length) {
+      const [startYear, startMonth, startDay] = $("[data-site-start-date]").dataset.siteStartDate.split("-").map(Number);
+      const updateUptime = () => {
+        const parts = new Intl.DateTimeFormat("en-US", { timeZone: "Asia/Shanghai", year: "numeric", month: "numeric", day: "numeric" }).formatToParts(new Date());
+        const date = Object.fromEntries(parts.map(({ type, value }) => [type, Number(value)]));
+        const days = Math.max(0, Math.floor((Date.UTC(date.year, date.month - 1, date.day) - Date.UTC(startYear, startMonth - 1, startDay)) / 86_400_000));
+        uptime.forEach((node) => { node.textContent = numberFormatter.format(days); });
+      };
+      updateUptime();
+      setInterval(() => { if (!document.hidden) updateUptime(); }, 60_000);
+    }
     initTypewriter();
     initAvatarParticles();
     initDesktopStyleTransition();
@@ -209,6 +221,72 @@
       void updateUmamiStats();
       setInterval(() => { if (!document.hidden) updateUmamiStats(); }, 60_000);
     }
+  }
+
+  function initAccount() {
+    const dialog = $("#account-dialog");
+    const form = $("[data-account-form]", dialog || document);
+    const message = $("[data-account-message]", dialog || document);
+    const submit = $("[data-account-submit]", dialog || document);
+    const signedIn = $("[data-account-signed-in]", dialog || document);
+    const tabs = $("[data-account-tabs]", dialog || document);
+    if (!dialog || !form || !message || !submit || !signedIn || !tabs) return;
+    let mode = "login";
+    const labels = {
+      login: $('[data-account-tab="login"]', tabs).textContent,
+      register: $('[data-account-tab="register"]', tabs).textContent,
+    };
+    const setMode = (next) => {
+      mode = next;
+      $$('[data-account-tab]', tabs).forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.accountTab === mode)));
+      form.elements.password.autocomplete = mode === "register" ? "new-password" : "current-password";
+      submit.textContent = labels[mode];
+      message.textContent = "";
+      message.classList.remove("error");
+    };
+    const setUser = (user) => {
+      signedIn.hidden = !user;
+      form.hidden = Boolean(user);
+      tabs.hidden = Boolean(user);
+      $("[data-account-name]", signedIn).textContent = user?.username || "";
+      form.elements.password.value = "";
+    };
+    const showError = (error) => {
+      message.textContent = error;
+      message.classList.add("error");
+    };
+    const request = async (action, credentials) => {
+      const options = action === "session" ? {} : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, ...credentials }) };
+      const result = await fetch("/api/account", { ...options, credentials: "same-origin", cache: "no-store" });
+      const data = await result.json();
+      if (!result.ok) throw new Error(data.error || "账号服务暂时不可用");
+      return data;
+    };
+    $$('[data-account-open]').forEach((button) => button.addEventListener("click", async () => {
+      setMode("login");
+      dialog.showModal();
+      try { setUser((await request("session")).user); }
+      catch { setUser(null); showError("账号服务暂时不可用"); }
+    }));
+    $("[data-account-close]", dialog)?.addEventListener("click", () => dialog.close());
+    dialog.addEventListener("click", (event) => { if (event.target === dialog) dialog.close(); });
+    $$('[data-account-tab]', tabs).forEach((tab) => tab.addEventListener("click", () => setMode(tab.dataset.accountTab)));
+    form.addEventListener("submit", async (event) => {
+      event.preventDefault();
+      submit.disabled = true;
+      message.textContent = "";
+      message.classList.remove("error");
+      try { setUser((await request(mode, { username: form.elements.username.value, password: form.elements.password.value })).user); }
+      catch (error) { showError(error.message || "账号服务暂时不可用"); }
+      finally { submit.disabled = false; }
+    });
+    $("[data-account-logout]", signedIn)?.addEventListener("click", async (event) => {
+      const button = event.currentTarget;
+      button.disabled = true;
+      try { await request("logout"); setUser(null); setMode("login"); }
+      catch (error) { showError(error.message || "账号服务暂时不可用"); }
+      finally { button.disabled = false; }
+    });
   }
 
   function initAvatarParticles() {
@@ -1358,6 +1436,7 @@
   initDeferredAnalytics();
   initCardFadeMotion();
   initHome();
+  initAccount();
   initResponsivePostPagination();
   initProgressivePostLists();
   initSearch();

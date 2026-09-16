@@ -148,7 +148,7 @@ for (const [page, name] of [[home, "home"], [blog, "blog"]]) {
 assert.doesNotMatch(blog, /data-umami-stat=/, "Homepage statistics must only appear on the home page");
 assert.doesNotMatch(home, /(?:href|src)="\/discuss\//, "Forum link remains on the home page");
 assert.doesNotMatch(home, /data-forum-|\/api\/forum|forum-editor/, "Forum code remains on the home page");
-assert.match(home, /workspace-brand-title[^>]*>工作空间<\//, "Compact workspace brand is missing");
+assert.match(home, /workspace-brand-title[^>]*>妙想之地<\//, "Workspace brand is missing");
 assert.doesNotMatch(home, /workspace-brand[\s\S]{0,500}木木em哈哈/, "Removed sidebar identity remains");
 assert.doesNotMatch(home, /href="\/archive\/" data-nav="archive"/, "Removed archive sidebar link remains");
 assert.match(home, /href="\/friends\/" data-nav="friends"/, "Friends sidebar link is missing");
@@ -162,8 +162,11 @@ assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bili
 assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three content sections");
 assert.match(home, /class="home-doc-list home-doc-list-unframed"/, "Homepage information area still uses the framed glass container");
-assert.match(home, /hugo\.css\?v=20260915-hyprliquid-v5/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20260914-hyprliquid-v4/, "Current script cache version is missing");
+assert.match(home, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20260916-account-v1/, "Current script cache version is missing");
+assert.match(home, /data-site-start-date="2022-04-15"[^>]*>本站已运行 <strong data-site-uptime>/, "Homepage runtime counter is missing");
+assert.match(home, /data-account-open[^>]*aria-label="登录或注册"/, "Top-right account trigger is missing");
+assert.match(home, /目前登录的各个功能都在维护中，此时注册功能为正常,但是实际为测试功能。，后续可能会删除账号。/, "Account test warning is missing");
 assert.match(hugoStyles, /@media\(max-width:760px\)[\s\S]*?\.home-grid\{[^}]*flex-direction:column;/, "Mobile homepage does not place the profile first");
 assert.match(hugoStyles, /\.home-profile\{order:-1;/, "Mobile profile is not pinned ahead of homepage details");
 assert.match(home, /class="avatar-style-switch" href="\/desktop\/" data-desktop-transition/, "HyDE desktop transition trigger is missing from the avatar");
@@ -247,8 +250,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260914-hyprliquid-v4/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260915-hyprliquid-v5/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260916-account-v1/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
@@ -270,7 +273,7 @@ const archive = await readFile(join(outputRoot, "archive", "index.html"), "utf8"
 assert.equal((archive.match(/class="post-card(?: |")/g) || []).length, Math.min(blogServerPageSize, posts.length), "Archive first server page has the wrong number of posts");
 assert.match(archive, /data-responsive-post-list/, "Archive page is missing responsive pagination");
 assert.equal(home.includes("{{"), false, "Unrendered Hugo template found on home page");
-assert.match(home, /<title>Mumuemhaha Blog<\/title>/);
+assert.match(home, /<title>木哈文轩<\/title>/);
 assert.doesNotMatch(home, /data-hugo-pagefind-preload/, "Pagefind should load only after the visitor opens search");
 
 const translatedArticleFiles = [

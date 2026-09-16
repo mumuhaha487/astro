@@ -95,7 +95,7 @@ params:
   guestbookApi: https://md.vmss.cn
   guestbookTurnstileSiteKey: 0x4AAAAAAEqYCxmwdT2EkFet
   guestbookTurnstileVerifier: https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify
-  siteStartDate: 2023-04-01
+  siteStartDate: 2022-04-15
   wallpapers:
     desktop:
       - /assets/desktop-banner/1.webp

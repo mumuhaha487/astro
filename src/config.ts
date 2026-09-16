@@ -27,7 +27,7 @@ export const siteConfig: SiteConfig = {
 	title: "Mumuemhaha Blog",
 	subtitle: "木哈文轩",
 	siteURL: "https://vmss.cn/", // 请替换为你的站点URL，以斜杠结尾
-	siteStartDate: "2023-04-01", // 站点开始运行日期，用于站点统计组件计算运行天数
+	siteStartDate: "2022-04-15", // 站点开始运行日期，用于站点统计组件计算运行天数
 
 	timeZone: SITE_TIMEZONE,
 
