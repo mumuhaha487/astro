@@ -46,7 +46,12 @@ async function passwordHash(password, salt) {
   try {
     return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16)), iterations: ITERATIONS }, material, 256));
   } catch (cause) {
-    throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO_DERIVE", detail: cause?.name || "unknown" });
+    let probe = "unsupported";
+    try {
+      await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: new Uint8Array(16), iterations: 1 }, material, 256);
+      probe = "one_iteration_ok";
+    } catch { /* No password-derived value is exposed by this diagnostic. */ }
+    throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO_DERIVE", detail: `${probe}:${String(cause?.message || cause?.name || "unknown").slice(0, 90)}` });
   }
 }
 
