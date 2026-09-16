@@ -18,18 +18,39 @@ test("AI classification uses the fixed taxonomy and preserves repository order a
   assert.equal(categories.length, 12);
 });
 
-test("bounds AI tags and rejects incomplete classification", async () => {
+test("bounds AI tags and isolates incomplete classification", async () => {
   const classify = (tags) => validateClassification({ items: [{ id: 0, tags }] }, 1)[0];
   assert.deepEqual(classify(["AI", "金融", "未列出", "AI", "安全", "教程"]), ["AI", "金融", "安全"]);
   assert.deepEqual(classify(["Rust"]), ["其他"]);
   assert.deepEqual(classify(["AI", "其他"]), ["AI"]);
   assert.throws(() => validateClassification({ items: [{ id: 1, tags: ["AI"] }] }, 1));
   assert.throws(() => validateClassification({ items: [{ id: 0, tags: [] }] }, 1));
-  let attempts = 0;
-  await assert.rejects(() => classifyRepositories([{ repo: "bad/response" }], {
-    apiKey: "test", generate: async () => { attempts++; return { items: [] }; },
-  }), /AI tag classification failed/);
-  assert.equal(attempts, 2);
+  const warnings = [];
+  const originalWarn = console.warn;
+  console.warn = (message) => warnings.push(message);
+  try {
+    const calls = [];
+    const tagged = await classifyRepositories([{ repo: "good/ai" }, { repo: "bad/response" }, { repo: "good/security" }], {
+      apiKey: "test", generate: async (batch) => {
+        calls.push(batch.map((item) => item.repo));
+        if (batch.length > 1 || batch[0].repo === "bad/response") return { items: [] };
+        return { items: [{ id: 0, tags: [batch[0].repo === "good/ai" ? "AI" : "安全"] }] };
+      },
+    });
+    assert.deepEqual(tagged.map((item) => item.tags), [["AI"], ["其他"], ["安全"]]);
+    assert.ok(calls.some((batch) => batch.length === 3));
+    assert.ok(calls.some((batch) => batch.length === 1));
+    assert.ok(warnings.some((message) => message.includes("bad/response")));
+  } finally { console.warn = originalWarn; }
+  await assert.rejects(() => classifyRepositories([{ repo: "owner/repo" }], {
+    apiKey: "test", generate: async () => { throw new Error("AI tag service: HTTP 401"); },
+  }), /HTTP 401/);
+  console.warn = () => {};
+  try {
+    await assert.rejects(() => classifyRepositories(Array.from({ length: 5 }, (_, index) => ({ repo: `bad/${index}` })), {
+      apiKey: "test", generate: async () => ({ items: [] }),
+    }), /refusing mostly unclassified snapshot/);
+  } finally { console.warn = originalWarn; }
 });
 
 test("AI request sends the bounded taxonomy and repository evidence", async () => {

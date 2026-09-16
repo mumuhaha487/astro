@@ -2,20 +2,23 @@ import taxonomy from "../data/github_trending_tags.json" with { type: "json" };
 
 export const { categories, maxTags, version } = taxonomy;
 const model = "deepseek/deepseek-v4-flash";
+class TagResponseError extends Error {}
 
 export function validateClassification(response, count) {
   const text = typeof response === "string" ? response.replace(/^```(?:json)?\s*|\s*```$/g, "") : response;
-  const value = typeof text === "string" ? JSON.parse(text) : text;
-  if (!Array.isArray(value?.items) || value.items.length !== count) throw new Error("Incomplete AI tag classification");
+  let value;
+  try { value = typeof text === "string" ? JSON.parse(text) : text; }
+  catch { throw new TagResponseError("Invalid AI tag JSON"); }
+  if (!Array.isArray(value?.items) || value.items.length !== count) throw new TagResponseError("Incomplete AI tag classification");
   const result = Array(count);
   for (const item of value.items) {
-    if (!Number.isInteger(item.id) || item.id < 0 || item.id >= count || result[item.id]) throw new Error("Invalid AI tag classification ID");
-    if (!Array.isArray(item.tags) || item.tags.length < 1) throw new Error(`Invalid AI tags for item ${item.id}`);
+    if (!item || !Number.isInteger(item.id) || item.id < 0 || item.id >= count || result[item.id]) throw new TagResponseError("Invalid AI tag classification ID");
+    if (!Array.isArray(item.tags) || item.tags.length < 1) throw new TagResponseError(`Invalid AI tags for item ${item.id}`);
     const allowed = [...new Set(item.tags.filter((tag) => typeof tag === "string" && categories.includes(tag)))];
     const specific = allowed.filter((tag) => tag !== "其他");
     result[item.id] = specific.length ? specific.slice(0, maxTags) : ["其他"];
   }
-  if (result.some((tags) => !tags)) throw new Error("Missing AI tag classification ID");
+  if (result.some((tags) => !tags)) throw new TagResponseError("Missing AI tag classification ID");
   return result;
 }
 
@@ -29,21 +32,46 @@ async function generateTags(batch, apiKey) {
   });
   if (!response.ok) throw new Error(`AI tag service: HTTP ${response.status}`);
   const payload = await response.json();
-  if (!payload.choices?.[0]?.message?.content) throw new Error("Empty AI tag classification response");
+  if (!payload.choices?.[0]?.message?.content) throw new TagResponseError("Empty AI tag classification response");
   return payload.choices[0].message.content;
+}
+
+async function classifyBatch(batch, apiKey, generate, fallbacks, fallbackLimit) {
+  let lastError;
+  for (let attempt = 0; attempt < 3; attempt++) {
+    try { return validateClassification(await generate(batch, apiKey), batch.length); }
+    catch (error) {
+      if (/HTTP (401|403)\b/.test(error.message)) throw error;
+      lastError = error;
+      if (attempt < 2 && !(error instanceof TagResponseError)) await new Promise((done) => setTimeout(done, 1500 * (attempt + 1)));
+    }
+  }
+  if (!(lastError instanceof TagResponseError)) throw lastError;
+  if (batch.length === 1) {
+    console.warn(`AI could not classify ${batch[0].repo}; using 其他`);
+    fallbacks.push(batch[0].repo);
+    if (fallbacks.length > fallbackLimit) throw new Error(`AI classification unavailable for ${fallbacks.length} repositories; refusing mostly unclassified snapshot`);
+    return [["其他"]];
+  }
+  const midpoint = Math.ceil(batch.length / 2);
+  console.warn(`AI returned incomplete tags for ${batch.length} repositories; retrying smaller batches`);
+  return [
+    ...await classifyBatch(batch.slice(0, midpoint), apiKey, generate, fallbacks, fallbackLimit),
+    ...await classifyBatch(batch.slice(midpoint), apiKey, generate, fallbacks, fallbackLimit),
+  ];
 }
 
 export async function classifyRepositories(repositories, { apiKey, generate = generateTags, batchSize = 20 } = {}) {
   if (!apiKey) throw new Error("DEEPSEEK_API_KEY is required for AI tag classification");
   if (!Number.isInteger(batchSize) || batchSize < 1) throw new Error("Invalid AI tag batch size");
   const tagged = [];
+  const fallbacks = [];
+  const fallbackLimit = Math.max(2, Math.ceil(repositories.length * 0.1));
   for (let start = 0; start < repositories.length; start += batchSize) {
     const batch = repositories.slice(start, start + batchSize);
     let tags;
-    for (let attempt = 0; attempt < 2; attempt++) {
-      try { tags = validateClassification(await generate(batch, apiKey), batch.length); break; }
-      catch (error) { if (attempt === 1) throw new Error(`AI tag classification failed for batch ${Math.floor(start / batchSize) + 1}: ${error.message}`); }
-    }
+    try { tags = await classifyBatch(batch, apiKey, generate, fallbacks, fallbackLimit); }
+    catch (error) { throw new Error(`AI tag classification failed for batch ${Math.floor(start / batchSize) + 1}: ${error.message}`); }
     tagged.push(...batch.map((item, index) => ({ ...item, tags: tags[index] })));
   }
   return tagged;
