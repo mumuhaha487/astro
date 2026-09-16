@@ -18,17 +18,16 @@ test("AI classification uses the fixed taxonomy and preserves repository order a
   assert.equal(categories.length, 12);
 });
 
-test("rejects invented, duplicate, excessive and incomplete AI tags", async () => {
-  for (const items of [
-    [{ id: 0, tags: ["Rust"] }],
-    [{ id: 0, tags: ["AI", "AI"] }],
-    [{ id: 0, tags: ["AI", "安全", "教程", "Skill"] }],
-    [{ id: 0, tags: ["AI", "其他"] }],
-    [{ id: 1, tags: ["AI"] }],
-  ]) assert.throws(() => validateClassification({ items }, 1));
+test("bounds AI tags and rejects incomplete classification", async () => {
+  const classify = (tags) => validateClassification({ items: [{ id: 0, tags }] }, 1)[0];
+  assert.deepEqual(classify(["AI", "金融", "未列出", "AI", "安全", "教程"]), ["AI", "金融", "安全"]);
+  assert.deepEqual(classify(["Rust"]), ["其他"]);
+  assert.deepEqual(classify(["AI", "其他"]), ["AI"]);
+  assert.throws(() => validateClassification({ items: [{ id: 1, tags: ["AI"] }] }, 1));
+  assert.throws(() => validateClassification({ items: [{ id: 0, tags: [] }] }, 1));
   let attempts = 0;
   await assert.rejects(() => classifyRepositories([{ repo: "bad/response" }], {
-    apiKey: "test", generate: async () => { attempts++; return { items: [{ id: 0, tags: ["unlisted"] }] }; },
+    apiKey: "test", generate: async () => { attempts++; return { items: [] }; },
   }), /AI tag classification failed/);
   assert.equal(attempts, 2);
 });
