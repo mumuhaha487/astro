@@ -69,7 +69,7 @@
     showResults("正在搜索...");
     try {
       if (!searchEntries) {
-        const response = await fetch("/api/github-trending-search.json", { cache: "force-cache" });
+        const response = await fetch("/api/github-trending-search.json", { cache: "no-cache" });
         if (!response.ok) throw new Error("Search index unavailable");
         searchEntries = (await response.json()).entries;
       }

@@ -2,7 +2,7 @@ import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plain, request } from "./update-github-trending.mjs";
-import { classifyRepository } from "./github-trending-tags.mjs";
+import { version as tagVersion } from "./github-trending-tags.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const dataRoot = join(root, "data", "github_trending");
@@ -58,7 +58,8 @@ export function aggregatePeriod(snapshots, definition, limit = 100) {
       const key = item.repo.toLowerCase();
       let entry = repositories.get(key);
       if (!entry) {
-        entry = { repo: item.repo, name: item.name, url: item.url, language: item.language, description: item.description, tags: item.tags || classifyRepository(item), totalStars: 0, days: 0, firstPlaceDays: 0, bestRank: index + 1, latestSeen: snapshot.date };
+        if (!item.tags?.length) throw new Error(`Missing AI tags for ${item.repo} on ${snapshot.date}`);
+        entry = { repo: item.repo, name: item.name, url: item.url, language: item.language, description: item.description, tags: item.tags, totalStars: 0, days: 0, firstPlaceDays: 0, bestRank: index + 1, latestSeen: snapshot.date };
         repositories.set(key, entry);
       }
       entry.totalStars += item.starsToday;
@@ -69,14 +70,14 @@ export function aggregatePeriod(snapshots, definition, limit = 100) {
         entry.latestSeen = snapshot.date;
         entry.description = item.description || entry.description;
         entry.language = item.language || entry.language;
-        entry.tags = item.tags || classifyRepository(item);
+        entry.tags = item.tags;
       }
     });
   }
   const candidates = [...repositories.values()].sort((a, b) =>
     b.totalStars - a.totalStars || b.days - a.days || b.firstPlaceDays - a.firstPlaceDays || a.repo.localeCompare(b.repo),
   ).slice(0, limit);
-  return { ...definition, observedDays: selected.length, candidates };
+  return { ...definition, tagVersion, observedDays: selected.length, candidates };
 }
 
 export function buildSearchIndex(snapshots, periods) {
@@ -85,7 +86,7 @@ export function buildSearchIndex(snapshots, periods) {
     const key = item.repo.toLowerCase();
     let entry = entries.get(key);
     if (!entry) {
-      entry = { repo: item.repo, url: item.url, description: item.description, summary: "", language: item.language, tags: item.tags || classifyRepository(item), firstSeen: snapshot.date, lastSeen: snapshot.date, days: 0, peakStars: 0, dailyArticle: "", periods: {} };
+      entry = { repo: item.repo, url: item.url, description: item.description, summary: "", language: item.language, tags: item.tags, firstSeen: snapshot.date, lastSeen: snapshot.date, days: 0, peakStars: 0, dailyArticle: "", periods: {} };
       entries.set(key, entry);
     }
     entry.days++;
@@ -94,7 +95,7 @@ export function buildSearchIndex(snapshots, periods) {
       entry.lastSeen = snapshot.date;
       entry.description = item.description || entry.description;
       entry.language = item.language || entry.language;
-      entry.tags = item.tags || classifyRepository(item);
+      entry.tags = item.tags;
     }
     if (item.article && !entry.dailyArticle) entry.dailyArticle = item.article;
     if (item.summary) entry.summary = item.summary;

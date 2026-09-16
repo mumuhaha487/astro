@@ -1,7 +1,7 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
-import { classifyRepository } from "./github-trending-tags.mjs";
+import { classifyRepositories, version as tagVersion } from "./github-trending-tags.mjs";
 import { parse } from "node-html-parser";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -157,8 +157,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
       console.warn(`Could not fetch ${url}: ${error.message}`);
     }
   }
-  const candidates = rankRepositories(groups);
-  candidates.forEach((repo) => { repo.tags = classifyRepository(repo); });
+  const candidates = await classifyRepositories(rankRepositories(groups), { apiKey });
   if (candidates.length < 50) throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot`);
   const pool = selectFeatures(candidates, await previousNames(), 30);
   const generated = [];
@@ -181,7 +180,6 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
     const slug = repo.repo.toLowerCase().replace("/", "--");
     repo.article = `/github-trending/${date}/${slug}/`;
     repo.summary = analysis.summary;
-    repo.tags = classifyRepository(repo);
     generated.push({ filename: `${slug}.md`, content: articleMarkdown(repo, analysis, date) });
     console.log(`Prepared ${repo.repo}`);
   }
@@ -192,7 +190,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
   await mkdir(dataRoot, { recursive: true });
   await writeFile(join(dayRoot, "_index.md"), `---\ntitle: ${JSON.stringify(date)}\nperiod: daily\ndate: ${JSON.stringify(`${date}T00:00:00+08:00`)}\ndescription: ${JSON.stringify(`${date} GitHub 每日热门仓库`)}\n---\n`);
   for (const article of generated) await writeFile(join(dayRoot, article.filename), article.content);
-  await writeFile(join(dataRoot, `${date}.json`), JSON.stringify({ date, capturedAt: new Date().toISOString(), scope: "GitHub Trending daily and language pages; ranked by displayed stars today", candidates }, null, 2) + "\n");
+  await writeFile(join(dataRoot, `${date}.json`), JSON.stringify({ date, capturedAt: new Date().toISOString(), tagVersion, scope: "GitHub Trending daily and language pages; ranked by displayed stars today", candidates }, null, 2) + "\n");
   console.log(`Saved ${candidates.length} links and ${generated.length} detailed articles for ${date}`);
 }
 

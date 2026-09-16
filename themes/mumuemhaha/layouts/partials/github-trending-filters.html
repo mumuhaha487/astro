@@ -1,15 +1,9 @@
 {{- $candidates := . -}}
-{{- $tags := slice -}}
-{{- range $candidates -}}
-  {{- range (.tags | default (slice "其他")) -}}
-    {{- if not (in $tags .) -}}{{- $tags = $tags | append . -}}{{- end -}}
-  {{- end -}}
-{{- end -}}
 <nav class="taxonomy-strip trending-filters" aria-label="按项目分类筛选" data-trending-filters>
   <button type="button" class="active" data-trending-filter="all" aria-pressed="true">全部 <span>{{ len $candidates }}</span></button>
-  {{- range (sort $tags) -}}
+  {{- range hugo.Data.github_trending_tags.categories -}}
     {{- $tag := . -}}{{- $count := 0 -}}
     {{- range $candidates -}}{{- if in (.tags | default (slice "其他")) $tag -}}{{- $count = add $count 1 -}}{{- end -}}{{- end -}}
-    <button type="button" data-trending-filter="{{ $tag }}" aria-pressed="false">{{ $tag }} <span>{{ $count }}</span></button>
+    {{- if gt $count 0 -}}<button type="button" data-trending-filter="{{ $tag }}" aria-pressed="false">{{ $tag }} <span>{{ $count }}</span></button>{{- end -}}
   {{- end -}}
 </nav>

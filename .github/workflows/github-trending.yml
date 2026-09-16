@@ -28,6 +28,10 @@ jobs:
         run: npm ci --ignore-scripts --omit=dev
       - name: Verify ranking and deduplication
         run: node --test scripts/update-github-trending.test.mjs scripts/update-github-trending-periods.test.mjs scripts/github-trending-ui.test.mjs
+      - name: Backfill AI categories
+        env:
+          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+        run: node scripts/backfill-github-trending-tags.mjs
       - name: Curate daily repositories
         env:
           GITHUB_TOKEN: ${{ github.token }}
