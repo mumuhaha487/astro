@@ -44,6 +44,7 @@
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
   {{ if and .IsPage (eq $section "posts") }}<link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">{{ end }}
   <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260915-hyprliquid-v5">
+  {{ if eq $section "github-trending" }}<link rel="stylesheet" href="/hugo-theme/github-trending.css?v=1">{{ end }}
   {{ if eq $section "guestbook" }}<script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-turnstile-script></script>{{ end }}
 </head>
 <body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-random-post-covers="{{ jsonify $randomCoverPools }}" data-analytics-src="https://umami.vmss.cn/script.js" data-analytics-website-id="993c6970-8f42-4804-a055-38b6b9c01810" data-pagefind-ignore>
@@ -64,6 +65,7 @@
       <nav class="workspace-nav">
         <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
         <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
+        <a href="/github-trending/" data-nav="github-trending">{{ partial "icon.html" (dict "name" "github") }}<span>{{ i18n "github_trending" }}</span></a>
         <a href="{{ "friends/" | relLangURL }}" data-nav="friends">{{ partial "icon.html" (dict "name" "share") }}<span>{{ i18n "friends" }}</span></a>
         <a href="{{ "guestbook/" | relLangURL }}" data-nav="guestbook">{{ partial "icon.html" (dict "name" "messages") }}<span>{{ i18n "guestbook" }}</span></a>
         <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
@@ -76,7 +78,7 @@
       <header class="workspace-topbar">
         <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="{{ i18n "open_navigation" }}">{{ partial "icon.html" (dict "name" "menu") }}</button>
         <div class="topbar-title">
-          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (or (eq $section "posts") (eq $section "blog")) "book-open" (cond (eq $section "tools") "wrench" (cond (eq $section "archive") "calendar" (cond (eq $section "friends") "share" (cond (eq $section "guestbook") "messages" "layout"))))))) }}
+          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (or (eq $section "posts") (eq $section "blog")) "book-open" (cond (eq $section "github-trending") "github" (cond (eq $section "tools") "wrench" (cond (eq $section "archive") "calendar" (cond (eq $section "friends") "share" (cond (eq $section "guestbook") "messages" "layout")))))))) }}
           <span>{{ if .IsHome }}{{ i18n "home" }}{{ else if eq $section "posts" }}{{ i18n "blog" }}{{ else }}{{ .Title }}{{ end }}</span>
         </div>
         <div class="topbar-actions">

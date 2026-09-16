@@ -1,0 +1,13 @@
+{{ define "main" }}
+<article class="article-shell trending-article">
+  <header class="article-header">
+    <a class="back-link" href="{{ .Parent.RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}返回 {{ .Date.Format "2006-01-02" }} 榜单</a>
+    <div class="article-labels"><span class="badge">{{ .Params.language }}</span><span class="badge badge-accent">+{{ .Params.stars_today }} stars / day</span></div>
+    <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
+    <p class="trending-article-summary">{{ .Description }}</p>
+    <div class="article-meta"><span>{{ partial "icon.html" (dict "name" "calendar") }}{{ .Date.Format "2006-01-02" }}</span><span>{{ partial "icon.html" (dict "name" "github") }}GitHub Trending</span></div>
+    <a class="button button-primary trending-repo-link" href="{{ .Params.repository_url }}" target="_blank" rel="noopener noreferrer">查看 GitHub 仓库{{ partial "icon.html" (dict "name" "external-link") }}</a>
+  </header>
+  <div class="article-layout"><div class="article-main"><div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ .Content }}</div></div><aside class="article-toc"><span>项目解读</span>{{ .TableOfContents }}</aside></div>
+</article>
+{{ end }}

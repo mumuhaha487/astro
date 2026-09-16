@@ -1,0 +1,827 @@
+{
+  "date": "2026-09-16",
+  "capturedAt": "2026-09-16T10:35:45.483Z",
+  "scope": "GitHub Trending daily and language pages; ranked by displayed stars today",
+  "candidates": [
+    {
+      "repo": "alibaba/open-code-review",
+      "name": "open-code-review",
+      "url": "https://github.com/alibaba/open-code-review",
+      "starsToday": 2756,
+      "language": "Go",
+      "description": "Fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
+      "article": "/github-trending/2026-09-16/alibaba--open-code-review/",
+      "summary": "阿里开源的 Go 语言 AI 代码评审 CLI，读取 Git 差异或整份文件，用确定性管线加 LLM Agent 混合生成行级评论，内置多语言规则，兼容主流模型接口。"
+    },
+    {
+      "repo": "debpalash/VoiceStudio",
+      "name": "VoiceStudio",
+      "url": "https://github.com/debpalash/VoiceStudio",
+      "starsToday": 2072,
+      "language": "Python",
+      "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
+      "article": "/github-trending/2026-09-16/debpalash--voicestudio/",
+      "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。"
+    },
+    {
+      "repo": "JustVugg/colibri",
+      "name": "colibri",
+      "url": "https://github.com/JustVugg/colibri",
+      "starsToday": 2026,
+      "language": "C",
+      "description": "Run frontier MoE models on hardware you already own — pure C, zero deps, experts streamed from disk. Tiny engine, immense model. 🐦",
+      "article": "/github-trending/2026-09-16/justvugg--colibri/",
+      "summary": "Colibrì 是一个用纯 C 编写的 Mixture-of-Experts 推理引擎，把显存、内存与磁盘当作统一的分层存储，按需从磁盘流式加载被路由到的专家权重，目标是让消费级与异构硬件也能运行超大 MoE 模型。"
+    },
+    {
+      "repo": "cloudflare/security-audit-skill",
+      "name": "security-audit-skill",
+      "url": "https://github.com/cloudflare/security-audit-skill",
+      "starsToday": 1434,
+      "language": "JavaScript",
+      "description": "A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings",
+      "article": "/github-trending/2026-09-16/cloudflare--security-audit-skill/",
+      "summary": "这是一个面向编码代理的安全审计技能，通过侦察、覆盖驱动挖掘、候选验证、结构化输出、独立复核与中性报告六个阶段，产出可机器读取的审计结果。"
+    },
+    {
+      "repo": "tt-a1i/archify",
+      "name": "archify",
+      "url": "https://github.com/tt-a1i/archify",
+      "starsToday": 1373,
+      "language": "JavaScript",
+      "description": "Agent skill for beautiful, verifiable architecture, workflow, sequence, data-flow, and lifecycle diagrams—self-contained HTML with motion and crisp export.",
+      "article": "/github-trending/2026-09-16/tt-a1i--archify/",
+      "summary": "Archify 是面向 Cursor、Claude Code 等编程代理的 Node.js 技能，将代理生成的类型化 JSON IR 确定性编译为自包含 HTML 系统图并校验导出。"
+    },
+    {
+      "repo": "abue-ammar/tinycast",
+      "name": "tinycast",
+      "url": "https://github.com/abue-ammar/tinycast",
+      "starsToday": 1076,
+      "language": "Swift",
+      "description": "Tinycast — a tiny, fully native macOS launcher, hotkeys, and clipboard history.",
+      "article": "/github-trending/2026-09-16/abue-ammar--tinycast/",
+      "summary": "Tinycast 是用 Swift 编写的原生 macOS 启动器，集成全局热键、剪贴板历史与窗口管理，并可运行 Raycast 扩展。"
+    },
+    {
+      "repo": "Panniantong/Agent-Reach",
+      "name": "Agent-Reach",
+      "url": "https://github.com/Panniantong/Agent-Reach",
+      "starsToday": 960,
+      "language": "Python",
+      "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+      "article": "/github-trending/2026-09-16/panniantong--agent-reach/",
+      "summary": "Agent Reach 是一个 Python 编写的命令行能力层，为 AI Agent 统一选型、安装与体检网页、Twitter、Reddit、YouTube、GitHub、B站、小红书等平台的读取与搜索工具，README 称其为零 API 费用。"
+    },
+    {
+      "repo": "Lakr233/vphone-cli",
+      "name": "vphone-cli",
+      "url": "https://github.com/Lakr233/vphone-cli",
+      "starsToday": 907,
+      "language": "Swift",
+      "description": "",
+      "article": "/github-trending/2026-09-16/lakr233--vphone-cli/",
+      "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。"
+    },
+    {
+      "repo": "mattpocock/skills",
+      "name": "skills",
+      "url": "https://github.com/mattpocock/skills",
+      "starsToday": 820,
+      "language": "Shell",
+      "description": "Skills for Real Engineers. Straight from my .agents directory.",
+      "article": "/github-trending/2026-09-16/mattpocock--skills/",
+      "summary": "mattpocock/skills 整理自作者 .agents 目录，是一组面向编码代理的技能，用 Shell 编写，强调可组合、易改造，可通过 Claude Code 插件或 skills.sh 安装。"
+    },
+    {
+      "repo": "TauricResearch/TradingAgents",
+      "name": "TradingAgents",
+      "url": "https://github.com/TauricResearch/TradingAgents",
+      "starsToday": 727,
+      "language": "Python",
+      "description": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
+      "article": "/github-trending/2026-09-16/tauricresearch--tradingagents/",
+      "summary": "TradingAgents 是 TauricResearch 开源的 Python 多智能体 LLM 金融交易框架，用分析师、多空研究员、交易员与风控角色协作，由 LangGraph 组织流程。"
+    },
+    {
+      "repo": "NationalSecurityAgency/ghidra",
+      "name": "ghidra",
+      "url": "https://github.com/NationalSecurityAgency/ghidra",
+      "starsToday": 725,
+      "language": "Java",
+      "description": "Ghidra is a software reverse engineering (SRE) framework"
+    },
+    {
+      "repo": "multimodal-art-projection/YuE",
+      "name": "YuE",
+      "url": "https://github.com/multimodal-art-projection/YuE",
+      "starsToday": 701,
+      "language": "Python",
+      "description": "YuE2: frontier music generation with symbolic planning, zero-shot covers, and agentic music editing."
+    },
+    {
+      "repo": "SnailSploit/Claude-Red",
+      "name": "Claude-Red",
+      "url": "https://github.com/SnailSploit/Claude-Red",
+      "starsToday": 699,
+      "language": "Python",
+      "description": "claude-red is a curated library of offensive security skills designed for the Claude skills system. Each skill is a structured SKILL.md file that primes Claude with expert-level methodology for a specific attack surface — from SQLi to shellcode, EDR evasion to exploit development."
+    },
+    {
+      "repo": "Tencent/WeKnora",
+      "name": "WeKnora",
+      "url": "https://github.com/Tencent/WeKnora",
+      "starsToday": 696,
+      "language": "Go",
+      "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki."
+    },
+    {
+      "repo": "bojieli/ai-agent-book",
+      "name": "ai-agent-book",
+      "url": "https://github.com/bojieli/ai-agent-book",
+      "starsToday": 660,
+      "language": "Python",
+      "description": "《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码"
+    },
+    {
+      "repo": "ever-co/ever-gauzy",
+      "name": "ever-gauzy",
+      "url": "https://github.com/ever-co/ever-gauzy",
+      "starsToday": 634,
+      "language": "TypeScript",
+      "description": "Ever® Gauzy™ - Open Business Management Platform (ERP/CRM/HRM/ATS/PM) - https://gauzy.co"
+    },
+    {
+      "repo": "666ghj/MiroFish",
+      "name": "MiroFish",
+      "url": "https://github.com/666ghj/MiroFish",
+      "starsToday": 619,
+      "language": "Python",
+      "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物"
+    },
+    {
+      "repo": "asgeirtj/system_prompts_leaks",
+      "name": "system_prompts_leaks",
+      "url": "https://github.com/asgeirtj/system_prompts_leaks",
+      "starsToday": 579,
+      "language": "JavaScript",
+      "description": "Extracted system prompts from Anthropic - Claude Fable 5.1, Opus 5, Claude Design, Claude Code. OpenAI - ChatGPT GPT-6-Astra, Codex. Google - Gemini 3.8 Flash, 3.1 Pro, Antigravity. xAI - Grok, Grok Bot, Cursor, Kimi and more! Updated regularly."
+    },
+    {
+      "repo": "alphaXiv/OpenResearch",
+      "name": "OpenResearch",
+      "url": "https://github.com/alphaXiv/OpenResearch",
+      "starsToday": 531,
+      "language": "Rust",
+      "description": "Turn your coding agents into research agents"
+    },
+    {
+      "repo": "fleetbase/fleetbase",
+      "name": "fleetbase",
+      "url": "https://github.com/fleetbase/fleetbase",
+      "starsToday": 530,
+      "language": "JavaScript",
+      "description": "Modular logistics and supply chain operating system (LSOS)"
+    },
+    {
+      "repo": "obra/superpowers",
+      "name": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "starsToday": 522,
+      "language": "Shell",
+      "description": "An agentic skills framework & software development methodology that works."
+    },
+    {
+      "repo": "localsend/localsend",
+      "name": "localsend",
+      "url": "https://github.com/localsend/localsend",
+      "starsToday": 489,
+      "language": "Dart",
+      "description": "An open-source cross-platform alternative to AirDrop"
+    },
+    {
+      "repo": "peetzweg/opendisplay",
+      "name": "opendisplay",
+      "url": "https://github.com/peetzweg/opendisplay",
+      "starsToday": 461,
+      "language": "Swift",
+      "description": "Free, open-source Sidecar/Duet alternative — use your iPhone, iPad or Mac as a true second monitor for your primary Mac over USB or WiFi. Low latency H.264, Retina HiDPI, touch input."
+    },
+    {
+      "repo": "earendil-works/pi",
+      "name": "pi",
+      "url": "https://github.com/earendil-works/pi",
+      "starsToday": 458,
+      "language": "TypeScript",
+      "description": "AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI"
+    },
+    {
+      "repo": "ruvnet/RuView",
+      "name": "RuView",
+      "url": "https://github.com/ruvnet/RuView",
+      "starsToday": 421,
+      "language": "Rust",
+      "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video."
+    },
+    {
+      "repo": "reconurge/flowsint",
+      "name": "flowsint",
+      "url": "https://github.com/reconurge/flowsint",
+      "starsToday": 327,
+      "language": "TypeScript",
+      "description": "A modern platform for visual, flexible, and extensible graph-based investigations. For cybersecurity analysts and investigators."
+    },
+    {
+      "repo": "Crosstalk-Solutions/project-nomad",
+      "name": "project-nomad",
+      "url": "https://github.com/Crosstalk-Solutions/project-nomad",
+      "starsToday": 315,
+      "language": "TypeScript",
+      "description": "Project NOMAD is an offline-first knowledge and education server. Wikipedia, thousands of books, courses, maps, and optional local AI, all running on hardware you own with no internet required."
+    },
+    {
+      "repo": "openai/codex",
+      "name": "codex",
+      "url": "https://github.com/openai/codex",
+      "starsToday": 314,
+      "language": "Rust",
+      "description": "Lightweight coding agent that runs in your terminal"
+    },
+    {
+      "repo": "addyosmani/agent-skills",
+      "name": "agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills",
+      "starsToday": 307,
+      "language": "JavaScript",
+      "description": "Production-grade engineering skills for AI coding agents."
+    },
+    {
+      "repo": "tech-leads-club/agent-skills",
+      "name": "agent-skills",
+      "url": "https://github.com/tech-leads-club/agent-skills",
+      "starsToday": 296,
+      "language": "TypeScript",
+      "description": "The secure, validated skill registry for professional AI coding agents. Extend Antigravity, Claude Code, Cursor, Copilot and more with absolute confidence."
+    },
+    {
+      "repo": "calesthio/OpenMontage",
+      "name": "OpenMontage",
+      "url": "https://github.com/calesthio/OpenMontage",
+      "starsToday": 273,
+      "language": "Python",
+      "description": "World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio."
+    },
+    {
+      "repo": "Homebrew/BrewUI",
+      "name": "BrewUI",
+      "url": "https://github.com/Homebrew/BrewUI",
+      "starsToday": 271,
+      "language": "Swift",
+      "description": "📺 Homebrew's official macOS GUI"
+    },
+    {
+      "repo": "TencentCloud/CubeSandbox",
+      "name": "CubeSandbox",
+      "url": "https://github.com/TencentCloud/CubeSandbox",
+      "starsToday": 259,
+      "language": "Go",
+      "description": "Instant, Concurrent, Secure & Lightweight Sandbox for AI Agents."
+    },
+    {
+      "repo": "tonhowtf/omniget",
+      "name": "omniget",
+      "url": "https://github.com/tonhowtf/omniget",
+      "starsToday": 258,
+      "language": "Rust",
+      "description": "Download Udemy and Hotmart courses, YouTube videos, music and books — 1,800+ sites, no terminal. Free open-source desktop app for Windows, macOS and Linux, with a built-in course player, PDF/EPUB reader and music library. Powered by yt-dlp. Your files stay on your computer."
+    },
+    {
+      "repo": "danny-avila/LibreChat",
+      "name": "LibreChat",
+      "url": "https://github.com/danny-avila/LibreChat",
+      "starsToday": 254,
+      "language": "TypeScript",
+      "description": "Enhanced ChatGPT Clone: Features Agents, MCP, Skills, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, Groq, o1, GPT-5, Mistral, OpenRouter, Vertex AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter, langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets, open-source for self-hosting. Active"
+    },
+    {
+      "repo": "ExTV/Podroid",
+      "name": "Podroid",
+      "url": "https://github.com/ExTV/Podroid",
+      "starsToday": 254,
+      "language": "Kotlin",
+      "description": "A rootless Android app that boots Alpine Linux: run containers (Podman/Docker/LXC) and GUI desktop apps."
+    },
+    {
+      "repo": "roboflow/supervision",
+      "name": "supervision",
+      "url": "https://github.com/roboflow/supervision",
+      "starsToday": 217,
+      "language": "Python",
+      "description": "We write your reusable computer vision tools. 💜"
+    },
+    {
+      "repo": "tw93/Mole",
+      "name": "Mole",
+      "url": "https://github.com/tw93/Mole",
+      "starsToday": 214,
+      "language": "Shell",
+      "description": "🐹 Clean, uninstall, analyze, optimize, and monitor your Mac. Free open-source CLI, plus a native Mac app."
+    },
+    {
+      "repo": "dani-garcia/vaultwarden",
+      "name": "vaultwarden",
+      "url": "https://github.com/dani-garcia/vaultwarden",
+      "starsToday": 206,
+      "language": "Rust",
+      "description": "Unofficial Bitwarden compatible server written in Rust, formerly known as bitwarden_rs"
+    },
+    {
+      "repo": "melgarafael/DeskcommCRM",
+      "name": "DeskcommCRM",
+      "url": "https://github.com/melgarafael/DeskcommCRM",
+      "starsToday": 193,
+      "language": "TypeScript",
+      "description": "Open-source AI sales OS — self-hosted CRM with native AI agents + WhatsApp (WAHA). Open alternative to Kommo, Octadesk & Intercom for any business that sells by chat. MCP-ready, multi-tenant, LGPD."
+    },
+    {
+      "repo": "Lordog/dive-into-llms",
+      "name": "dive-into-llms",
+      "url": "https://github.com/Lordog/dive-into-llms",
+      "starsToday": 190,
+      "language": "Jupyter Notebook",
+      "description": "《动手学大模型Dive into LLMs》系列编程实践教程"
+    },
+    {
+      "repo": "rtk-ai/rtk",
+      "name": "rtk",
+      "url": "https://github.com/rtk-ai/rtk",
+      "starsToday": 190,
+      "language": "Rust",
+      "description": "CLI proxy that reduces LLM token consumption by 60-90% on common dev commands. Single Rust binary, zero dependencies"
+    },
+    {
+      "repo": "thesysdev/openui",
+      "name": "openui",
+      "url": "https://github.com/thesysdev/openui",
+      "starsToday": 190,
+      "language": "TypeScript",
+      "description": "The Open Standard for Generative UI"
+    },
+    {
+      "repo": "Mathieu2301/TradingView-API",
+      "name": "TradingView-API",
+      "url": "https://github.com/Mathieu2301/TradingView-API",
+      "starsToday": 176,
+      "language": "JavaScript",
+      "description": "📈 Get real-time stocks from TradingView"
+    },
+    {
+      "repo": "rustdesk/rustdesk",
+      "name": "rustdesk",
+      "url": "https://github.com/rustdesk/rustdesk",
+      "starsToday": 172,
+      "language": "Rust",
+      "description": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer."
+    },
+    {
+      "repo": "chen08209/FlClash",
+      "name": "FlClash",
+      "url": "https://github.com/chen08209/FlClash",
+      "starsToday": 144,
+      "language": "Dart",
+      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free."
+    },
+    {
+      "repo": "Neroued/ninfer",
+      "name": "ninfer",
+      "url": "https://github.com/Neroued/ninfer",
+      "starsToday": 144,
+      "language": "C++",
+      "description": "High-performance single-GPU inference for selected model checkpoints and GPUs."
+    },
+    {
+      "repo": "kunchenguid/firstmate",
+      "name": "firstmate",
+      "url": "https://github.com/kunchenguid/firstmate",
+      "starsToday": 141,
+      "language": "Shell",
+      "description": "Talk to one agent. Ship with a crew."
+    },
+    {
+      "repo": "ollama/ollama",
+      "name": "ollama",
+      "url": "https://github.com/ollama/ollama",
+      "starsToday": 140,
+      "language": "Go",
+      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models."
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "name": "Stirling-PDF",
+      "url": "https://github.com/Stirling-Tools/Stirling-PDF",
+      "starsToday": 139,
+      "language": "TypeScript",
+      "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere"
+    },
+    {
+      "repo": "kunchenguid/lavish-axi",
+      "name": "lavish-axi",
+      "url": "https://github.com/kunchenguid/lavish-axi",
+      "starsToday": 138,
+      "language": "JavaScript",
+      "description": "HTML is the new markdown. Lavish is the new editor for your HTML artifacts."
+    },
+    {
+      "repo": "cursor/plugins",
+      "name": "plugins",
+      "url": "https://github.com/cursor/plugins",
+      "starsToday": 133,
+      "language": "TypeScript",
+      "description": "Cursor plugin specification and official plugins"
+    },
+    {
+      "repo": "immich-app/immich",
+      "name": "immich",
+      "url": "https://github.com/immich-app/immich",
+      "starsToday": 132,
+      "language": "TypeScript",
+      "description": "High performance self-hosted photo and video management solution."
+    },
+    {
+      "repo": "MG1937/ASC",
+      "name": "ASC",
+      "url": "https://github.com/MG1937/ASC",
+      "starsToday": 129,
+      "language": "Python",
+      "description": "ASC is a super FAST Android decompiler front-end designed for Agents/Mobile Researchers."
+    },
+    {
+      "repo": "ggml-org/llama.cpp",
+      "name": "llama.cpp",
+      "url": "https://github.com/ggml-org/llama.cpp",
+      "starsToday": 128,
+      "language": "C++",
+      "description": "LLM inference in C/C++"
+    },
+    {
+      "repo": "max-sixty/worktrunk",
+      "name": "worktrunk",
+      "url": "https://github.com/max-sixty/worktrunk",
+      "starsToday": 128,
+      "language": "Rust",
+      "description": "Worktrunk is a CLI for Git worktree management, designed for parallel AI agent workflows"
+    },
+    {
+      "repo": "rustfs/rustfs",
+      "name": "rustfs",
+      "url": "https://github.com/rustfs/rustfs",
+      "starsToday": 121,
+      "language": "Rust",
+      "description": "🚀2.3x faster than MinIO for 4KB object payloads. RustFS is an open-source, S3-compatible high-performance object storage system supporting migration and coexistence with other S3-compatible platforms such as MinIO and Ceph."
+    },
+    {
+      "repo": "dgtlmoon/changedetection.io",
+      "name": "changedetection.io",
+      "url": "https://github.com/dgtlmoon/changedetection.io",
+      "starsToday": 114,
+      "language": "Python",
+      "description": "Best and simplest tool for website change detection, web page monitoring, and website change alerts. Perfect for tracking content changes, price drops, restock alerts, and website defacement monitoring—all for free or enjoy our SaaS plan!"
+    },
+    {
+      "repo": "godotengine/godot",
+      "name": "godot",
+      "url": "https://github.com/godotengine/godot",
+      "starsToday": 106,
+      "language": "C++",
+      "description": "Godot Engine – Multi-platform 2D and 3D game engine"
+    },
+    {
+      "repo": "vxcontrol/pentagi",
+      "name": "pentagi",
+      "url": "https://github.com/vxcontrol/pentagi",
+      "starsToday": 98,
+      "language": "Go",
+      "description": "Fully autonomous AI Agents system capable of performing complex penetration testing tasks"
+    },
+    {
+      "repo": "ItzCrazyKns/Vane",
+      "name": "Vane",
+      "url": "https://github.com/ItzCrazyKns/Vane",
+      "starsToday": 95,
+      "language": "TypeScript",
+      "description": "Vane is an AI-powered answering engine."
+    },
+    {
+      "repo": "plugin87/ux-ui-agent-skills",
+      "name": "ux-ui-agent-skills",
+      "url": "https://github.com/plugin87/ux-ui-agent-skills",
+      "starsToday": 93,
+      "language": "JavaScript",
+      "description": "Turn Claude into a senior design architect: DTCG tokens, 50 components, WCAG 2.2 AA-AAA, 138 design systems, any-framework code, and 43 objective gates that fail the build instead of faking success."
+    },
+    {
+      "repo": "microsoft/AI-Engineering-Coach",
+      "name": "AI-Engineering-Coach",
+      "url": "https://github.com/microsoft/AI-Engineering-Coach",
+      "starsToday": 92,
+      "language": "TypeScript",
+      "description": "better agentic engineering"
+    },
+    {
+      "repo": "rommapp/romm",
+      "name": "romm",
+      "url": "https://github.com/rommapp/romm",
+      "starsToday": 92,
+      "language": "Python",
+      "description": "A beautiful, powerful, self-hosted ROM manager and player."
+    },
+    {
+      "repo": "pacifio/atlas",
+      "name": "atlas",
+      "url": "https://github.com/pacifio/atlas",
+      "starsToday": 91,
+      "language": "Rust",
+      "description": "Source control for agents. Use multiple coding agents, track their changes and query them in one place"
+    },
+    {
+      "repo": "steipete/CodexBar",
+      "name": "CodexBar",
+      "url": "https://github.com/steipete/CodexBar",
+      "starsToday": 86,
+      "language": "Swift",
+      "description": "Show usage stats for OpenAI Codex and Claude Code, without having to login."
+    },
+    {
+      "repo": "unclecode/crawl4ai",
+      "name": "crawl4ai",
+      "url": "https://github.com/unclecode/crawl4ai",
+      "starsToday": 84,
+      "language": "Python",
+      "description": "🚀🤖 Crawl4AI: Open-source LLM Friendly Web Crawler & Scraper. Don't be shy, join here: https://discord.gg/jP8KfhDhyN"
+    },
+    {
+      "repo": "cjpais/Handy",
+      "name": "Handy",
+      "url": "https://github.com/cjpais/Handy",
+      "starsToday": 83,
+      "language": "Rust",
+      "description": "A free, open source, and extensible speech-to-text application that works completely offline."
+    },
+    {
+      "repo": "microsoft/ai-agents-for-beginners",
+      "name": "ai-agents-for-beginners",
+      "url": "https://github.com/microsoft/ai-agents-for-beginners",
+      "starsToday": 81,
+      "language": "Jupyter Notebook",
+      "description": "18 Lessons to Get Started Building AI Agents"
+    },
+    {
+      "repo": "vicinaehq/vicinae",
+      "name": "vicinae",
+      "url": "https://github.com/vicinaehq/vicinae",
+      "starsToday": 81,
+      "language": "C++",
+      "description": "A focused launcher for your desktop - native, fast, extensible"
+    },
+    {
+      "repo": "Mininglamp-OSS/octo-server",
+      "name": "octo-server",
+      "url": "https://github.com/Mininglamp-OSS/octo-server",
+      "starsToday": 80,
+      "language": "Go",
+      "description": "🐙 The Go backend powering OCTO — an open workplace built for humans × AI agents. REST & WebSocket APIs, Lobster (AI agent) orchestration, and WuKongIM real-time messaging control plane."
+    },
+    {
+      "repo": "aria2/aria2",
+      "name": "aria2",
+      "url": "https://github.com/aria2/aria2",
+      "starsToday": 77,
+      "language": "C++",
+      "description": "aria2 is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line. It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink."
+    },
+    {
+      "repo": "microsoft/generative-ai-for-beginners",
+      "name": "generative-ai-for-beginners",
+      "url": "https://github.com/microsoft/generative-ai-for-beginners",
+      "starsToday": 77,
+      "language": "Jupyter Notebook",
+      "description": "21 Lessons, Get Started Building with Generative AI"
+    },
+    {
+      "repo": "ComposioHQ/awesome-claude-skills",
+      "name": "awesome-claude-skills",
+      "url": "https://github.com/ComposioHQ/awesome-claude-skills",
+      "starsToday": 70,
+      "language": "Python",
+      "description": "A curated list of awesome Claude Skills, resources, and tools for customizing Claude AI workflows"
+    },
+    {
+      "repo": "yuliskov/SmartTube",
+      "name": "SmartTube",
+      "url": "https://github.com/yuliskov/SmartTube",
+      "starsToday": 70,
+      "language": "Java",
+      "description": "Browse media content with your own rules on Android TV"
+    },
+    {
+      "repo": "AppFlowy-IO/AppFlowy",
+      "name": "AppFlowy",
+      "url": "https://github.com/AppFlowy-IO/AppFlowy",
+      "starsToday": 68,
+      "language": "Dart",
+      "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative."
+    },
+    {
+      "repo": "CodeWithCJ/SparkyFitness",
+      "name": "SparkyFitness",
+      "url": "https://github.com/CodeWithCJ/SparkyFitness",
+      "starsToday": 65,
+      "language": "TypeScript",
+      "description": "SparkyFitness: Built for Families. Powered by AI. Track food, fitness, water, and health — together."
+    },
+    {
+      "repo": "anthropics/claude-plugins-official",
+      "name": "claude-plugins-official",
+      "url": "https://github.com/anthropics/claude-plugins-official",
+      "starsToday": 56,
+      "language": "Python",
+      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins."
+    },
+    {
+      "repo": "darkzOGx/youtube-automation-agent",
+      "name": "youtube-automation-agent",
+      "url": "https://github.com/darkzOGx/youtube-automation-agent",
+      "starsToday": 56,
+      "language": "JavaScript",
+      "description": "🎬 Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI. No coding required!"
+    },
+    {
+      "repo": "dwarvesf/hidden",
+      "name": "hidden",
+      "url": "https://github.com/dwarvesf/hidden",
+      "starsToday": 53,
+      "language": "Swift",
+      "description": "An ultra-light MacOS utility that helps hide menu bar icons"
+    },
+    {
+      "repo": "seaweedfs/seaweedfs",
+      "name": "seaweedfs",
+      "url": "https://github.com/seaweedfs/seaweedfs",
+      "starsToday": 53,
+      "language": "Go",
+      "description": "SeaweedFS is a distributed storage system for object storage (S3), file systems, and Iceberg tables, designed to handle billions of files with O(1) disk access and effortless horizontal scaling."
+    },
+    {
+      "repo": "majd/ipatool",
+      "name": "ipatool",
+      "url": "https://github.com/majd/ipatool",
+      "starsToday": 50,
+      "language": "Go",
+      "description": "Command-line tool that allows you to search for iOS, iPadOS, tvOS, visionOS, and macOS apps on the App Store, and download .ipa or macOS .pkg app packages."
+    },
+    {
+      "repo": "sysadminsmedia/homebox",
+      "name": "homebox",
+      "url": "https://github.com/sysadminsmedia/homebox",
+      "starsToday": 50,
+      "language": "Go",
+      "description": "A continuation of HomeBox the inventory and organization system built for the Home User"
+    },
+    {
+      "repo": "huynhsontung/Screenbox",
+      "name": "Screenbox",
+      "url": "https://github.com/huynhsontung/Screenbox",
+      "starsToday": 46,
+      "language": "C#",
+      "description": "LibVLC-based media player for the Universal Windows Platform"
+    },
+    {
+      "repo": "FrizzleM/SideInstaller",
+      "name": "SideInstaller",
+      "url": "https://github.com/FrizzleM/SideInstaller",
+      "starsToday": 43,
+      "language": "Swift",
+      "description": "An an app that installs Sidestore on iOS 27, fully on-device"
+    },
+    {
+      "repo": "manaflow-ai/cmux",
+      "name": "cmux",
+      "url": "https://github.com/manaflow-ai/cmux",
+      "starsToday": 43,
+      "language": "Swift",
+      "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability."
+    },
+    {
+      "repo": "Homebrew/brew",
+      "name": "brew",
+      "url": "https://github.com/Homebrew/brew",
+      "starsToday": 42,
+      "language": "Ruby",
+      "description": "🍺 The Package Manager for Everywhere"
+    },
+    {
+      "repo": "opengeos/GeoLibre",
+      "name": "GeoLibre",
+      "url": "https://github.com/opengeos/GeoLibre",
+      "starsToday": 42,
+      "language": "TypeScript",
+      "description": "A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data. It runs in the web browser, on the desktop, on mobile, and inside Jupyter notebooks."
+    },
+    {
+      "repo": "AAswordman/Operit",
+      "name": "Operit",
+      "url": "https://github.com/AAswordman/Operit",
+      "starsToday": 39,
+      "language": "Kotlin",
+      "description": "The most powerful AI agent and AI chat software on Android/Operit是一款Android上能力最为强大、发展最久的AI Agent"
+    },
+    {
+      "repo": "datawhalechina/happy-llm",
+      "name": "happy-llm",
+      "url": "https://github.com/datawhalechina/happy-llm",
+      "starsToday": 36,
+      "language": "Jupyter Notebook",
+      "description": "📚 从零开始构建大模型"
+    },
+    {
+      "repo": "Donchitos/Claude-Code-Game-Studios",
+      "name": "Claude-Code-Game-Studios",
+      "url": "https://github.com/Donchitos/Claude-Code-Game-Studios",
+      "starsToday": 36,
+      "language": "Shell",
+      "description": "Turn Claude Code into a full game dev studio — 49 AI agents, 72 workflow skills, and a complete coordination system mirroring real studio hierarchy."
+    },
+    {
+      "repo": "momenbasel/PureMac",
+      "name": "PureMac",
+      "url": "https://github.com/momenbasel/PureMac",
+      "starsToday": 36,
+      "language": "Swift",
+      "description": "Free, open-source macOS cleaner. CleanMyMac alternative with zero telemetry. Native SwiftUI, scheduled auto-cleaning, Xcode/Homebrew/system cache cleanup. MIT licensed."
+    },
+    {
+      "repo": "utkarshdalal/GameNative",
+      "name": "GameNative",
+      "url": "https://github.com/utkarshdalal/GameNative",
+      "starsToday": 35,
+      "language": "Kotlin",
+      "description": "Native PC gaming with Steam, Epic, GOG and Amazon integrations on Android"
+    },
+    {
+      "repo": "Mininglamp-OSS/octo-android",
+      "name": "octo-android",
+      "url": "https://github.com/Mininglamp-OSS/octo-android",
+      "starsToday": 34,
+      "language": "Java",
+      "description": "OCTO Android Client — Open-source enterprise IM"
+    },
+    {
+      "repo": "e2b-dev/runtime",
+      "name": "runtime",
+      "url": "https://github.com/e2b-dev/runtime",
+      "starsToday": 33,
+      "language": "Go",
+      "description": "The runtime behind every E2B stack: Cloud, Enterprise, and your own machine."
+    },
+    {
+      "repo": "navidrome/navidrome",
+      "name": "navidrome",
+      "url": "https://github.com/navidrome/navidrome",
+      "starsToday": 32,
+      "language": "Go",
+      "description": "🎧 Your Personal Streaming Service"
+    },
+    {
+      "repo": "Atmosphere-NX/Atmosphere",
+      "name": "Atmosphere",
+      "url": "https://github.com/Atmosphere-NX/Atmosphere",
+      "starsToday": 30,
+      "language": "C++",
+      "description": "Atmosphère is a work-in-progress customized firmware for the Nintendo Switch."
+    },
+    {
+      "repo": "bggRGjQaUbCoE/PiliPlus",
+      "name": "PiliPlus",
+      "url": "https://github.com/bggRGjQaUbCoE/PiliPlus",
+      "starsToday": 30,
+      "language": "Dart",
+      "description": "PiliPlus"
+    },
+    {
+      "repo": "sepinf-inc/IPED",
+      "name": "IPED",
+      "url": "https://github.com/sepinf-inc/IPED",
+      "starsToday": 30,
+      "language": "Java",
+      "description": "IPED Digital Forensic Tool. It is an open source software that can be used to process and analyze digital evidence, often seized at crime scenes by law enforcement or in a corporate investigation by private examiners."
+    },
+    {
+      "repo": "xuanyustudio/LocalMiniDrama",
+      "name": "LocalMiniDrama",
+      "url": "https://github.com/xuanyustudio/LocalMiniDrama",
+      "starsToday": 29,
+      "language": "JavaScript",
+      "description": "🎬 seedance2接入 开源本地 AI 短剧 & 漫剧生成工具 —— 从故事到成片一站式完成，数据不出本机，短剧工作流管理平台，高灵活度，AI真人剧，AI漫剧本地搞定。 Open-source local AI short drama maker: story → storyboard → video, fully offline, your data stays yours. 纳米流水线"
+    }
+  ]
+}

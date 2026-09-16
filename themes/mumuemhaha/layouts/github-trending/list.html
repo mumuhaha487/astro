@@ -1,0 +1,63 @@
+{{ define "main" }}
+{{- $archive := site.GetPage "/github-trending" -}}
+{{- $days := $archive.Sections.ByDate.Reverse -}}
+{{- $day := . -}}
+{{- if eq .RelPermalink $archive.RelPermalink -}}{{- with index $days 0 -}}{{- $day = . -}}{{- end -}}{{- end -}}
+{{- $date := $day.Title -}}
+{{- $snapshot := index hugo.Data.github_trending $date -}}
+{{- $candidates := $snapshot.candidates | default slice -}}
+{{- $featured := where $candidates "article" "ne" nil -}}
+{{- $languages := slice -}}
+{{- range $candidates -}}{{- if not (in $languages .language) -}}{{- $languages = $languages | append .language -}}{{- end -}}{{- end -}}
+<section class="content-page trending-page" data-trending-page>
+  <header class="page-heading">
+    <p>GITHUB / DAILY</p>
+    <h1>{{ i18n "github_trending" }}</h1>
+    <span>每天记录热门仓库，阅读项目文档，挑选此前未介绍过的项目。</span>
+  </header>
+  {{ if $candidates }}
+  <nav class="taxonomy-strip trending-dates" aria-label="按日期浏览">
+    <a href="{{ $archive.RelPermalink }}"{{ if eq .RelPermalink $archive.RelPermalink }} class="active" aria-current="page"{{ end }}>最新</a>
+    {{ range first 14 $days }}<a href="{{ .RelPermalink }}"{{ if and (ne $.RelPermalink $archive.RelPermalink) (eq .RelPermalink $.RelPermalink) }} class="active" aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
+  </nav>
+  <label class="trending-date-picker">全部日期 <select data-trending-date-select aria-label="选择榜单日期">{{ range $days }}<option value="{{ .RelPermalink }}"{{ if eq .Title $date }} selected{{ end }}>{{ .Title }}</option>{{ end }}</select></label>
+  <div class="trending-summary"><div><strong>{{ $date }}</strong><span>每日热门榜</span></div><div><strong>{{ len $candidates }}</strong><span>仓库链接</span></div><div><strong>{{ len $featured }}</strong><span>项目解读</span></div></div>
+  <div class="trending-heading"><h2>今日精选</h2><span>仅介绍此前未收录的仓库</span></div>
+  <div class="post-grid trending-grid">
+    {{ range $featured }}
+    <article class="post-card trending-card" data-trending-item data-language="{{ .language }}">
+      <a class="trending-cover" href="{{ .article }}" aria-label="阅读 {{ .repo }} 的解读">
+        {{ partial "icon.html" (dict "name" "github") }}<span>+{{ .starsToday }} stars / day</span>
+      </a>
+      <div class="post-card-body">
+        <div class="post-card-top"><span>{{ $date }}</span><span>{{ .language }}</span></div>
+        <h2><a href="{{ .article }}"><span>{{ .repo }}</span></a></h2>
+        <p>{{ .summary }}</p>
+        <div class="post-card-foot"><span>{{ .language }}</span><a class="post-open" href="{{ .article }}" aria-label="阅读 {{ .repo }}">{{ partial "icon.html" (dict "name" "arrow-right") }}</a></div>
+      </div>
+    </article>
+    {{ end }}
+  </div>
+  <p class="trending-empty" data-trending-featured-empty hidden>这个语言的项目今天没有入选精选，仍可查看下方完整榜单。</p>
+
+  <div class="trending-heading trending-list-heading"><div><h2>完整榜单</h2><p>来自 GitHub Trending 每日榜及语言榜，按页面显示的当日涨星数排序；不是全站所有仓库的绝对排名。</p></div><span>{{ len $candidates }} 个仓库</span></div>
+  <nav class="taxonomy-strip trending-filters" aria-label="按语言筛选" data-trending-filters>
+    <button type="button" class="active" data-trending-filter="all" aria-pressed="true">全部 <span>{{ len $candidates }}</span></button>
+    {{ range $languages }}{{- $language := . -}}{{- $count := len (where $candidates "language" $language) -}}<button type="button" data-trending-filter="{{ $language }}" aria-pressed="false">{{ $language }} <span>{{ $count }}</span></button>{{ end }}
+  </nav>
+  <ol class="trending-repositories" data-trending-repositories>
+    {{ range $index, $repo := $candidates }}
+    <li data-trending-item data-language="{{ .language }}">
+      <span class="trending-rank">{{ printf "%02d" (add $index 1) }}</span>
+      <div><a href="{{ .article | default .url }}"{{ if not .article }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .repo }}{{ if not .article }}{{ partial "icon.html" (dict "name" "external-link") }}{{ end }}</a><p>{{ .description | default "仓库暂未提供简短介绍，点击查看项目主页。" }}</p></div>
+      <span class="trending-language">{{ .language }}</span><span class="trending-stars">+{{ .starsToday }} ★</span>
+    </li>
+    {{ end }}
+  </ol>
+  <div class="trending-more"><button type="button" class="button button-ghost" data-trending-more hidden>显示更多项目</button></div>
+  {{ else }}
+  <div class="empty-state">首份榜单正在生成。每日更新完成后，这里会显示项目卡片与榜单。</div>
+  {{ end }}
+</section>
+{{ end }}
+{{ define "scripts" }}<script defer src="/hugo-theme/github-trending.js?v=1"></script>{{ end }}

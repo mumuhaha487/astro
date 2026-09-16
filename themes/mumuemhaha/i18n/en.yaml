@@ -6,6 +6,8 @@
   translation: Home
 - id: blog
   translation: Blog
+- id: github_trending
+  translation: Trending GitHub Projects
 - id: toolbox
   translation: Toolbox
 - id: tools

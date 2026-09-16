@@ -6,6 +6,8 @@
   translation: 首页
 - id: blog
   translation: 博客
+- id: github_trending
+  translation: 热门 GitHub 项目
 - id: toolbox
   translation: 工具箱
 - id: tools

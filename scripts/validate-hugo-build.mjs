@@ -24,6 +24,9 @@ const requiredFiles = [
   "icons/search.svg",
   "icons/lucide-sprite.svg",
   "blog/index.html",
+  "github-trending/index.html",
+  "hugo-theme/github-trending.css",
+  "hugo-theme/github-trending.js",
   "friends/index.html",
   "guestbook/index.html",
   "en/friends/index.html",
@@ -145,6 +148,7 @@ assert.match(home, /workspace-brand-title[^>]*>工作空间<\//, "Compact worksp
 assert.doesNotMatch(home, /workspace-brand[\s\S]{0,500}木木em哈哈/, "Removed sidebar identity remains");
 assert.doesNotMatch(home, /href="\/archive\/" data-nav="archive"/, "Removed archive sidebar link remains");
 assert.match(home, /href="\/friends\/" data-nav="friends"/, "Friends sidebar link is missing");
+assert.match(home, /href="\/github-trending\/" data-nav="github-trending"/, "GitHub trending sidebar link is missing");
 assert.match(home, /href="\/guestbook\/" data-nav="guestbook"/, "Guestbook sidebar link is missing");
 assert.match(home, /这是一个建立在21世纪的边缘小站。/, "Homepage status description is incorrect");
 assert.match(home, /一个可能特别有想法的博主。/, "Homepage status title is incorrect");

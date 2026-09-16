@@ -6,6 +6,8 @@
   translation: ホーム
 - id: blog
   translation: ブログ
+- id: github_trending
+  translation: 注目の GitHub プロジェクト
 - id: toolbox
   translation: ツールボックス
 - id: tools
