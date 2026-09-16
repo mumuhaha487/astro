@@ -8,6 +8,7 @@ language: "Python"
 stars_today: 2072
 comment: false
 tags:
+  - AI
   - 音视频
 ---
 

@@ -9,6 +9,7 @@ repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
 comment: false
 tags:
+  - AI
   - 音视频
 ---
 

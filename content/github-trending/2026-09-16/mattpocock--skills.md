@@ -8,9 +8,7 @@ language: "Shell"
 stars_today: 820
 comment: false
 tags:
-  - AI
   - Skill
-  - 开发工具
 ---
 
 mattpocock/skills 整理自作者 .agents 目录，是一组面向编码代理的技能，用 Shell 编写，强调可组合、易改造，可通过 Claude Code 插件或 skills.sh 安装。

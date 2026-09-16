@@ -9,7 +9,6 @@
       "language": "Go",
       "tags": [
         "AI",
-        "安全",
         "开发工具"
       ],
       "firstSeen": "2026-09-16",
@@ -18,8 +17,8 @@
       "peakStars": 2756,
       "dailyArticle": "/github-trending/2026-09-16/alibaba--open-code-review/",
       "periods": {
-        "monthly": "/github-trending/monthly/2026-09/alibaba--open-code-review/",
         "weekly": "/github-trending/weekly/2026-w38/alibaba--open-code-review/",
+        "monthly": "/github-trending/monthly/2026-09/alibaba--open-code-review/",
         "yearly": "/github-trending/yearly/2026/alibaba--open-code-review/"
       }
     },
@@ -30,6 +29,7 @@
       "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。",
       "language": "Python",
       "tags": [
+        "AI",
         "音视频"
       ],
       "firstSeen": "2026-09-16",
@@ -38,8 +38,8 @@
       "peakStars": 2072,
       "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
       "periods": {
-        "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
         "weekly": "/github-trending/weekly/2026-w38/debpalash--voicestudio/",
+        "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
         "yearly": "/github-trending/yearly/2026/debpalash--voicestudio/"
       }
     },
@@ -58,8 +58,8 @@
       "peakStars": 2026,
       "dailyArticle": "/github-trending/2026-09-16/justvugg--colibri/",
       "periods": {
-        "monthly": "/github-trending/monthly/2026-09/justvugg--colibri/",
         "weekly": "/github-trending/weekly/2026-w38/justvugg--colibri/",
+        "monthly": "/github-trending/monthly/2026-09/justvugg--colibri/",
         "yearly": "/github-trending/yearly/2026/justvugg--colibri/"
       }
     },
@@ -70,10 +70,8 @@
       "summary": "这是一个面向编码代理的安全审计技能，通过侦察、覆盖驱动挖掘、候选验证、结构化输出、独立复核与中性报告六个阶段，产出可机器读取的审计结果。",
       "language": "JavaScript",
       "tags": [
-        "AI",
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -89,10 +87,8 @@
       "summary": "Archify 是面向 Cursor、Claude Code 等编程代理的 Node.js 技能，将代理生成的类型化 JSON IR 确定性编译为自包含 HTML 系统图并校验导出。",
       "language": "JavaScript",
       "tags": [
-        "AI",
         "Skill",
-        "开发工具",
-        "数据"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -108,7 +104,7 @@
       "summary": "Tinycast 是用 Swift 编写的原生 macOS 启动器，集成全局热键、剪贴板历史与窗口管理，并可运行 Raycast 扩展。",
       "language": "Swift",
       "tags": [
-        "效率"
+        "其他"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -141,8 +137,8 @@
       "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。",
       "language": "Swift",
       "tags": [
-        "开发工具",
-        "移动端"
+        "移动端",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -158,9 +154,7 @@
       "summary": "mattpocock/skills 整理自作者 .agents 目录，是一组面向编码代理的技能，用 Shell 编写，强调可组合、易改造，可通过 Claude Code 插件或 skills.sh 安装。",
       "language": "Shell",
       "tags": [
-        "AI",
-        "Skill",
-        "开发工具"
+        "Skill"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -177,9 +171,7 @@
       "language": "Python",
       "tags": [
         "AI",
-        "开发工具",
-        "金融",
-        "效率"
+        "金融"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -212,6 +204,7 @@
       "summary": "",
       "language": "Python",
       "tags": [
+        "AI",
         "音视频"
       ],
       "firstSeen": "2026-09-16",
@@ -228,9 +221,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -246,7 +238,8 @@
       "summary": "",
       "language": "Go",
       "tags": [
-        "AI"
+        "AI",
+        "数据"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -262,9 +255,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "AI",
         "教程",
-        "开发工具"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -280,7 +272,7 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "效率"
+        "其他"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -296,7 +288,7 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "其他"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -312,7 +304,7 @@
       "summary": "",
       "language": "JavaScript",
       "tags": [
-        "开发工具"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -361,6 +353,7 @@
       "summary": "",
       "language": "Shell",
       "tags": [
+        "AI",
         "Skill",
         "开发工具"
       ],
@@ -394,8 +387,8 @@
       "summary": "",
       "language": "Swift",
       "tags": [
-        "移动端",
-        "网络"
+        "音视频",
+        "移动端"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -428,8 +421,8 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "音视频",
-        "网络"
+        "AI",
+        "数据"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -445,7 +438,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "安全"
+        "安全",
+        "数据"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -461,9 +455,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "AI",
-        "教程",
-        "云服务"
+        "数据",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -497,8 +490,7 @@
       "language": "JavaScript",
       "tags": [
         "AI",
-        "Skill",
-        "开发工具"
+        "Skill"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -515,9 +507,8 @@
       "language": "TypeScript",
       "tags": [
         "AI",
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -535,7 +526,6 @@
       "tags": [
         "AI",
         "Skill",
-        "开发工具",
         "音视频"
       ],
       "firstSeen": "2026-09-16",
@@ -552,7 +542,7 @@
       "summary": "",
       "language": "Swift",
       "tags": [
-        "其他"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -569,8 +559,7 @@
       "language": "Go",
       "tags": [
         "AI",
-        "安全",
-        "云服务"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -586,10 +575,7 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "教程",
-        "开发工具",
-        "音视频",
-        "网络"
+        "音视频"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -605,10 +591,7 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "AI",
-        "安全",
-        "Skill",
-        "开发工具"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -624,8 +607,8 @@
       "summary": "",
       "language": "Kotlin",
       "tags": [
-        "云服务",
-        "移动端"
+        "移动端",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -641,7 +624,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -673,7 +657,7 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "云服务"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -689,8 +673,7 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "AI",
-        "云服务"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -706,9 +689,8 @@
       "summary": "",
       "language": "Jupyter Notebook",
       "tags": [
-        "AI",
         "教程",
-        "开发工具"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -724,9 +706,8 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "AI",
         "开发工具",
-        "网络"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -742,7 +723,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -758,8 +740,8 @@
       "summary": "",
       "language": "JavaScript",
       "tags": [
-        "开发工具",
-        "金融"
+        "金融",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -775,7 +757,7 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "云服务"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -791,7 +773,7 @@
       "summary": "",
       "language": "Dart",
       "tags": [
-        "网络"
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -823,7 +805,8 @@
       "summary": "",
       "language": "Shell",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -839,7 +822,8 @@
       "summary": "",
       "language": "Go",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -855,7 +839,7 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "其他"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -887,7 +871,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "开发工具"
+        "开发工具",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -903,9 +888,7 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "云服务",
-        "音视频",
-        "效率"
+        "音视频"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -921,9 +904,9 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "AI",
         "安全",
-        "移动端"
+        "移动端",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -939,7 +922,8 @@
       "summary": "",
       "language": "C++",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -955,9 +939,8 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "AI",
         "开发工具",
-        "效率"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -973,7 +956,8 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "云服务"
+        "云服务",
+        "数据"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -989,7 +973,7 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "其他"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1005,7 +989,8 @@
       "summary": "",
       "language": "C++",
       "tags": [
-        "游戏"
+        "游戏",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1021,7 +1006,8 @@
       "summary": "",
       "language": "Go",
       "tags": [
-        "AI"
+        "AI",
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1053,9 +1039,8 @@
       "summary": "",
       "language": "JavaScript",
       "tags": [
-        "AI",
         "Skill",
-        "开发工具"
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1071,7 +1056,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1087,8 +1073,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "云服务",
-        "游戏"
+        "游戏",
+        "云服务"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1104,8 +1090,8 @@
       "summary": "",
       "language": "Rust",
       "tags": [
-        "AI",
-        "开发工具"
+        "开发工具",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1121,7 +1107,8 @@
       "summary": "",
       "language": "Swift",
       "tags": [
-        "开发工具"
+        "开发工具",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1138,7 +1125,7 @@
       "language": "Python",
       "tags": [
         "AI",
-        "数据"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1154,6 +1141,7 @@
       "summary": "",
       "language": "Rust",
       "tags": [
+        "AI",
         "音视频"
       ],
       "firstSeen": "2026-09-16",
@@ -1170,8 +1158,8 @@
       "summary": "",
       "language": "Jupyter Notebook",
       "tags": [
-        "AI",
-        "教程"
+        "教程",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1187,7 +1175,7 @@
       "summary": "",
       "language": "C++",
       "tags": [
-        "效率"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1204,7 +1192,7 @@
       "language": "Go",
       "tags": [
         "AI",
-        "云服务"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1220,7 +1208,7 @@
       "summary": "",
       "language": "C++",
       "tags": [
-        "网络"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1236,8 +1224,8 @@
       "summary": "",
       "language": "Jupyter Notebook",
       "tags": [
-        "AI",
-        "教程"
+        "教程",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1253,8 +1241,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "AI",
-        "Skill"
+        "Skill",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1288,7 +1276,7 @@
       "language": "Dart",
       "tags": [
         "AI",
-        "数据"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1320,7 +1308,8 @@
       "summary": "",
       "language": "Python",
       "tags": [
-        "开发工具"
+        "Skill",
+        "AI"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1337,8 +1326,7 @@
       "language": "JavaScript",
       "tags": [
         "AI",
-        "开发工具",
-        "效率"
+        "音视频"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1354,7 +1342,7 @@
       "summary": "",
       "language": "Swift",
       "tags": [
-        "其他"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1370,6 +1358,7 @@
       "summary": "",
       "language": "Go",
       "tags": [
+        "数据",
         "云服务"
       ],
       "firstSeen": "2026-09-16",
@@ -1387,7 +1376,7 @@
       "language": "Go",
       "tags": [
         "移动端",
-        "网络"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1435,7 +1424,8 @@
       "summary": "",
       "language": "Swift",
       "tags": [
-        "移动端"
+        "移动端",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1468,7 +1458,7 @@
       "summary": "",
       "language": "Ruby",
       "tags": [
-        "其他"
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1484,10 +1474,8 @@
       "summary": "",
       "language": "TypeScript",
       "tags": [
-        "云服务",
-        "移动端",
         "数据",
-        "网络"
+        "云服务"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1539,7 +1527,6 @@
       "tags": [
         "AI",
         "Skill",
-        "开发工具",
         "游戏"
       ],
       "firstSeen": "2026-09-16",
@@ -1605,7 +1592,8 @@
       "summary": "",
       "language": "Go",
       "tags": [
-        "云服务"
+        "云服务",
+        "开发工具"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1637,7 +1625,8 @@
       "summary": "",
       "language": "C++",
       "tags": [
-        "其他"
+        "游戏",
+        "安全"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1669,7 +1658,8 @@
       "summary": "",
       "language": "Java",
       "tags": [
-        "安全"
+        "安全",
+        "数据"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
@@ -1686,9 +1676,7 @@
       "language": "JavaScript",
       "tags": [
         "AI",
-        "音视频",
-        "数据",
-        "效率"
+        "音视频"
       ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",

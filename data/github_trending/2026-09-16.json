@@ -14,7 +14,6 @@
       "summary": "阿里开源的 Go 语言 AI 代码评审 CLI，读取 Git 差异或整份文件，用确定性管线加 LLM Agent 混合生成行级评论，内置多语言规则，兼容主流模型接口。",
       "tags": [
         "AI",
-        "安全",
         "开发工具"
       ]
     },
@@ -28,6 +27,7 @@
       "article": "/github-trending/2026-09-16/debpalash--voicestudio/",
       "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。",
       "tags": [
+        "AI",
         "音视频"
       ]
     },
@@ -54,10 +54,8 @@
       "article": "/github-trending/2026-09-16/cloudflare--security-audit-skill/",
       "summary": "这是一个面向编码代理的安全审计技能，通过侦察、覆盖驱动挖掘、候选验证、结构化输出、独立复核与中性报告六个阶段，产出可机器读取的审计结果。",
       "tags": [
-        "AI",
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ]
     },
     {
@@ -70,10 +68,8 @@
       "article": "/github-trending/2026-09-16/tt-a1i--archify/",
       "summary": "Archify 是面向 Cursor、Claude Code 等编程代理的 Node.js 技能，将代理生成的类型化 JSON IR 确定性编译为自包含 HTML 系统图并校验导出。",
       "tags": [
-        "AI",
         "Skill",
-        "开发工具",
-        "数据"
+        "开发工具"
       ]
     },
     {
@@ -86,7 +82,7 @@
       "article": "/github-trending/2026-09-16/abue-ammar--tinycast/",
       "summary": "Tinycast 是用 Swift 编写的原生 macOS 启动器，集成全局热键、剪贴板历史与窗口管理，并可运行 Raycast 扩展。",
       "tags": [
-        "效率"
+        "其他"
       ]
     },
     {
@@ -113,8 +109,8 @@
       "article": "/github-trending/2026-09-16/lakr233--vphone-cli/",
       "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。",
       "tags": [
-        "开发工具",
-        "移动端"
+        "移动端",
+        "开发工具"
       ]
     },
     {
@@ -127,9 +123,7 @@
       "article": "/github-trending/2026-09-16/mattpocock--skills/",
       "summary": "mattpocock/skills 整理自作者 .agents 目录，是一组面向编码代理的技能，用 Shell 编写，强调可组合、易改造，可通过 Claude Code 插件或 skills.sh 安装。",
       "tags": [
-        "AI",
-        "Skill",
-        "开发工具"
+        "Skill"
       ]
     },
     {
@@ -143,9 +137,7 @@
       "summary": "TradingAgents 是 TauricResearch 开源的 Python 多智能体 LLM 金融交易框架，用分析师、多空研究员、交易员与风控角色协作，由 LangGraph 组织流程。",
       "tags": [
         "AI",
-        "开发工具",
-        "金融",
-        "效率"
+        "金融"
       ]
     },
     {
@@ -168,6 +160,7 @@
       "language": "Python",
       "description": "YuE2: frontier music generation with symbolic planning, zero-shot covers, and agentic music editing.",
       "tags": [
+        "AI",
         "音视频"
       ]
     },
@@ -179,9 +172,8 @@
       "language": "Python",
       "description": "claude-red is a curated library of offensive security skills designed for the Claude skills system. Each skill is a structured SKILL.md file that primes Claude with expert-level methodology for a specific attack surface — from SQLi to shellcode, EDR evasion to exploit development.",
       "tags": [
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ]
     },
     {
@@ -192,7 +184,8 @@
       "language": "Go",
       "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki.",
       "tags": [
-        "AI"
+        "AI",
+        "数据"
       ]
     },
     {
@@ -203,9 +196,8 @@
       "language": "Python",
       "description": "《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码",
       "tags": [
-        "AI",
         "教程",
-        "开发工具"
+        "AI"
       ]
     },
     {
@@ -216,7 +208,7 @@
       "language": "TypeScript",
       "description": "Ever® Gauzy™ - Open Business Management Platform (ERP/CRM/HRM/ATS/PM) - https://gauzy.co",
       "tags": [
-        "效率"
+        "其他"
       ]
     },
     {
@@ -227,7 +219,7 @@
       "language": "Python",
       "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
       "tags": [
-        "其他"
+        "AI"
       ]
     },
     {
@@ -238,7 +230,7 @@
       "language": "JavaScript",
       "description": "Extracted system prompts from Anthropic - Claude Fable 5.1, Opus 5, Claude Design, Claude Code. OpenAI - ChatGPT GPT-6-Astra, Codex. Google - Gemini 3.8 Flash, 3.1 Pro, Antigravity. xAI - Grok, Grok Bot, Cursor, Kimi and more! Updated regularly.",
       "tags": [
-        "开发工具"
+        "AI"
       ]
     },
     {
@@ -272,6 +264,7 @@
       "language": "Shell",
       "description": "An agentic skills framework & software development methodology that works.",
       "tags": [
+        "AI",
         "Skill",
         "开发工具"
       ]
@@ -295,8 +288,8 @@
       "language": "Swift",
       "description": "Free, open-source Sidecar/Duet alternative — use your iPhone, iPad or Mac as a true second monitor for your primary Mac over USB or WiFi. Low latency H.264, Retina HiDPI, touch input.",
       "tags": [
-        "移动端",
-        "网络"
+        "音视频",
+        "移动端"
       ]
     },
     {
@@ -319,8 +312,8 @@
       "language": "Rust",
       "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
       "tags": [
-        "音视频",
-        "网络"
+        "AI",
+        "数据"
       ]
     },
     {
@@ -331,7 +324,8 @@
       "language": "TypeScript",
       "description": "A modern platform for visual, flexible, and extensible graph-based investigations. For cybersecurity analysts and investigators.",
       "tags": [
-        "安全"
+        "安全",
+        "数据"
       ]
     },
     {
@@ -342,9 +336,8 @@
       "language": "TypeScript",
       "description": "Project NOMAD is an offline-first knowledge and education server. Wikipedia, thousands of books, courses, maps, and optional local AI, all running on hardware you own with no internet required.",
       "tags": [
-        "AI",
-        "教程",
-        "云服务"
+        "数据",
+        "AI"
       ]
     },
     {
@@ -368,8 +361,7 @@
       "description": "Production-grade engineering skills for AI coding agents.",
       "tags": [
         "AI",
-        "Skill",
-        "开发工具"
+        "Skill"
       ]
     },
     {
@@ -381,9 +373,8 @@
       "description": "The secure, validated skill registry for professional AI coding agents. Extend Antigravity, Claude Code, Cursor, Copilot and more with absolute confidence.",
       "tags": [
         "AI",
-        "安全",
         "Skill",
-        "开发工具"
+        "安全"
       ]
     },
     {
@@ -396,7 +387,6 @@
       "tags": [
         "AI",
         "Skill",
-        "开发工具",
         "音视频"
       ]
     },
@@ -408,7 +398,7 @@
       "language": "Swift",
       "description": "📺 Homebrew's official macOS GUI",
       "tags": [
-        "其他"
+        "开发工具"
       ]
     },
     {
@@ -420,8 +410,7 @@
       "description": "Instant, Concurrent, Secure & Lightweight Sandbox for AI Agents.",
       "tags": [
         "AI",
-        "安全",
-        "云服务"
+        "安全"
       ]
     },
     {
@@ -432,10 +421,7 @@
       "language": "Rust",
       "description": "Download Udemy and Hotmart courses, YouTube videos, music and books — 1,800+ sites, no terminal. Free open-source desktop app for Windows, macOS and Linux, with a built-in course player, PDF/EPUB reader and music library. Powered by yt-dlp. Your files stay on your computer.",
       "tags": [
-        "教程",
-        "开发工具",
-        "音视频",
-        "网络"
+        "音视频"
       ]
     },
     {
@@ -446,10 +432,7 @@
       "language": "TypeScript",
       "description": "Enhanced ChatGPT Clone: Features Agents, MCP, Skills, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, Groq, o1, GPT-5, Mistral, OpenRouter, Vertex AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter, langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets, open-source for self-hosting. Active",
       "tags": [
-        "AI",
-        "安全",
-        "Skill",
-        "开发工具"
+        "AI"
       ]
     },
     {
@@ -460,8 +443,8 @@
       "language": "Kotlin",
       "description": "A rootless Android app that boots Alpine Linux: run containers (Podman/Docker/LXC) and GUI desktop apps.",
       "tags": [
-        "云服务",
-        "移动端"
+        "移动端",
+        "开发工具"
       ]
     },
     {
@@ -472,7 +455,8 @@
       "language": "Python",
       "description": "We write your reusable computer vision tools. 💜",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -494,7 +478,7 @@
       "language": "Rust",
       "description": "Unofficial Bitwarden compatible server written in Rust, formerly known as bitwarden_rs",
       "tags": [
-        "云服务"
+        "安全"
       ]
     },
     {
@@ -505,8 +489,7 @@
       "language": "TypeScript",
       "description": "Open-source AI sales OS — self-hosted CRM with native AI agents + WhatsApp (WAHA). Open alternative to Kommo, Octadesk & Intercom for any business that sells by chat. MCP-ready, multi-tenant, LGPD.",
       "tags": [
-        "AI",
-        "云服务"
+        "AI"
       ]
     },
     {
@@ -517,9 +500,8 @@
       "language": "Jupyter Notebook",
       "description": "《动手学大模型Dive into LLMs》系列编程实践教程",
       "tags": [
-        "AI",
         "教程",
-        "开发工具"
+        "AI"
       ]
     },
     {
@@ -530,9 +512,8 @@
       "language": "Rust",
       "description": "CLI proxy that reduces LLM token consumption by 60-90% on common dev commands. Single Rust binary, zero dependencies",
       "tags": [
-        "AI",
         "开发工具",
-        "网络"
+        "AI"
       ]
     },
     {
@@ -543,7 +524,8 @@
       "language": "TypeScript",
       "description": "The Open Standard for Generative UI",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -554,8 +536,8 @@
       "language": "JavaScript",
       "description": "📈 Get real-time stocks from TradingView",
       "tags": [
-        "开发工具",
-        "金融"
+        "金融",
+        "开发工具"
       ]
     },
     {
@@ -566,7 +548,7 @@
       "language": "Rust",
       "description": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer.",
       "tags": [
-        "云服务"
+        "开发工具"
       ]
     },
     {
@@ -577,7 +559,7 @@
       "language": "Dart",
       "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
       "tags": [
-        "网络"
+        "安全"
       ]
     },
     {
@@ -599,7 +581,8 @@
       "language": "Shell",
       "description": "Talk to one agent. Ship with a crew.",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -610,7 +593,8 @@
       "language": "Go",
       "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -621,7 +605,7 @@
       "language": "TypeScript",
       "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere",
       "tags": [
-        "其他"
+        "开发工具"
       ]
     },
     {
@@ -643,7 +627,8 @@
       "language": "TypeScript",
       "description": "Cursor plugin specification and official plugins",
       "tags": [
-        "开发工具"
+        "开发工具",
+        "AI"
       ]
     },
     {
@@ -654,9 +639,7 @@
       "language": "TypeScript",
       "description": "High performance self-hosted photo and video management solution.",
       "tags": [
-        "云服务",
-        "音视频",
-        "效率"
+        "音视频"
       ]
     },
     {
@@ -667,9 +650,9 @@
       "language": "Python",
       "description": "ASC is a super FAST Android decompiler front-end designed for Agents/Mobile Researchers.",
       "tags": [
-        "AI",
         "安全",
-        "移动端"
+        "移动端",
+        "开发工具"
       ]
     },
     {
@@ -680,7 +663,8 @@
       "language": "C++",
       "description": "LLM inference in C/C++",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -691,9 +675,8 @@
       "language": "Rust",
       "description": "Worktrunk is a CLI for Git worktree management, designed for parallel AI agent workflows",
       "tags": [
-        "AI",
         "开发工具",
-        "效率"
+        "AI"
       ]
     },
     {
@@ -704,7 +687,8 @@
       "language": "Rust",
       "description": "🚀2.3x faster than MinIO for 4KB object payloads. RustFS is an open-source, S3-compatible high-performance object storage system supporting migration and coexistence with other S3-compatible platforms such as MinIO and Ceph.",
       "tags": [
-        "云服务"
+        "云服务",
+        "数据"
       ]
     },
     {
@@ -715,7 +699,7 @@
       "language": "Python",
       "description": "Best and simplest tool for website change detection, web page monitoring, and website change alerts. Perfect for tracking content changes, price drops, restock alerts, and website defacement monitoring—all for free or enjoy our SaaS plan!",
       "tags": [
-        "其他"
+        "开发工具"
       ]
     },
     {
@@ -726,7 +710,8 @@
       "language": "C++",
       "description": "Godot Engine – Multi-platform 2D and 3D game engine",
       "tags": [
-        "游戏"
+        "游戏",
+        "开发工具"
       ]
     },
     {
@@ -737,7 +722,8 @@
       "language": "Go",
       "description": "Fully autonomous AI Agents system capable of performing complex penetration testing tasks",
       "tags": [
-        "AI"
+        "AI",
+        "安全"
       ]
     },
     {
@@ -759,9 +745,8 @@
       "language": "JavaScript",
       "description": "Turn Claude into a senior design architect: DTCG tokens, 50 components, WCAG 2.2 AA-AAA, 138 design systems, any-framework code, and 43 objective gates that fail the build instead of faking success.",
       "tags": [
-        "AI",
         "Skill",
-        "开发工具"
+        "AI"
       ]
     },
     {
@@ -772,7 +757,8 @@
       "language": "TypeScript",
       "description": "better agentic engineering",
       "tags": [
-        "AI"
+        "AI",
+        "开发工具"
       ]
     },
     {
@@ -783,8 +769,8 @@
       "language": "Python",
       "description": "A beautiful, powerful, self-hosted ROM manager and player.",
       "tags": [
-        "云服务",
-        "游戏"
+        "游戏",
+        "云服务"
       ]
     },
     {
@@ -795,8 +781,8 @@
       "language": "Rust",
       "description": "Source control for agents. Use multiple coding agents, track their changes and query them in one place",
       "tags": [
-        "AI",
-        "开发工具"
+        "开发工具",
+        "AI"
       ]
     },
     {
@@ -807,7 +793,8 @@
       "language": "Swift",
       "description": "Show usage stats for OpenAI Codex and Claude Code, without having to login.",
       "tags": [
-        "开发工具"
+        "开发工具",
+        "AI"
       ]
     },
     {
@@ -819,7 +806,7 @@
       "description": "🚀🤖 Crawl4AI: Open-source LLM Friendly Web Crawler & Scraper. Don't be shy, join here: https://discord.gg/jP8KfhDhyN",
       "tags": [
         "AI",
-        "数据"
+        "开发工具"
       ]
     },
     {
@@ -830,6 +817,7 @@
       "language": "Rust",
       "description": "A free, open source, and extensible speech-to-text application that works completely offline.",
       "tags": [
+        "AI",
         "音视频"
       ]
     },
@@ -841,8 +829,8 @@
       "language": "Jupyter Notebook",
       "description": "18 Lessons to Get Started Building AI Agents",
       "tags": [
-        "AI",
-        "教程"
+        "教程",
+        "AI"
       ]
     },
     {
@@ -853,7 +841,7 @@
       "language": "C++",
       "description": "A focused launcher for your desktop - native, fast, extensible",
       "tags": [
-        "效率"
+        "开发工具"
       ]
     },
     {
@@ -865,7 +853,7 @@
       "description": "🐙 The Go backend powering OCTO — an open workplace built for humans × AI agents. REST & WebSocket APIs, Lobster (AI agent) orchestration, and WuKongIM real-time messaging control plane.",
       "tags": [
         "AI",
-        "云服务"
+        "开发工具"
       ]
     },
     {
@@ -876,7 +864,7 @@
       "language": "C++",
       "description": "aria2 is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line. It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink.",
       "tags": [
-        "网络"
+        "开发工具"
       ]
     },
     {
@@ -887,8 +875,8 @@
       "language": "Jupyter Notebook",
       "description": "21 Lessons, Get Started Building with Generative AI",
       "tags": [
-        "AI",
-        "教程"
+        "教程",
+        "AI"
       ]
     },
     {
@@ -899,8 +887,8 @@
       "language": "Python",
       "description": "A curated list of awesome Claude Skills, resources, and tools for customizing Claude AI workflows",
       "tags": [
-        "AI",
-        "Skill"
+        "Skill",
+        "AI"
       ]
     },
     {
@@ -924,7 +912,7 @@
       "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
       "tags": [
         "AI",
-        "数据"
+        "开发工具"
       ]
     },
     {
@@ -946,7 +934,8 @@
       "language": "Python",
       "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
       "tags": [
-        "开发工具"
+        "Skill",
+        "AI"
       ]
     },
     {
@@ -958,8 +947,7 @@
       "description": "🎬 Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI. No coding required!",
       "tags": [
         "AI",
-        "开发工具",
-        "效率"
+        "音视频"
       ]
     },
     {
@@ -970,7 +958,7 @@
       "language": "Swift",
       "description": "An ultra-light MacOS utility that helps hide menu bar icons",
       "tags": [
-        "其他"
+        "开发工具"
       ]
     },
     {
@@ -981,6 +969,7 @@
       "language": "Go",
       "description": "SeaweedFS is a distributed storage system for object storage (S3), file systems, and Iceberg tables, designed to handle billions of files with O(1) disk access and effortless horizontal scaling.",
       "tags": [
+        "数据",
         "云服务"
       ]
     },
@@ -993,7 +982,7 @@
       "description": "Command-line tool that allows you to search for iOS, iPadOS, tvOS, visionOS, and macOS apps on the App Store, and download .ipa or macOS .pkg app packages.",
       "tags": [
         "移动端",
-        "网络"
+        "开发工具"
       ]
     },
     {
@@ -1026,7 +1015,8 @@
       "language": "Swift",
       "description": "An an app that installs Sidestore on iOS 27, fully on-device",
       "tags": [
-        "移动端"
+        "移动端",
+        "开发工具"
       ]
     },
     {
@@ -1049,7 +1039,7 @@
       "language": "Ruby",
       "description": "🍺 The Package Manager for Everywhere",
       "tags": [
-        "其他"
+        "开发工具"
       ]
     },
     {
@@ -1060,10 +1050,8 @@
       "language": "TypeScript",
       "description": "A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data. It runs in the web browser, on the desktop, on mobile, and inside Jupyter notebooks.",
       "tags": [
-        "云服务",
-        "移动端",
         "数据",
-        "网络"
+        "云服务"
       ]
     },
     {
@@ -1100,7 +1088,6 @@
       "tags": [
         "AI",
         "Skill",
-        "开发工具",
         "游戏"
       ]
     },
@@ -1146,7 +1133,8 @@
       "language": "Go",
       "description": "The runtime behind every E2B stack: Cloud, Enterprise, and your own machine.",
       "tags": [
-        "云服务"
+        "云服务",
+        "开发工具"
       ]
     },
     {
@@ -1168,7 +1156,8 @@
       "language": "C++",
       "description": "Atmosphère is a work-in-progress customized firmware for the Nintendo Switch.",
       "tags": [
-        "其他"
+        "游戏",
+        "安全"
       ]
     },
     {
@@ -1190,7 +1179,8 @@
       "language": "Java",
       "description": "IPED Digital Forensic Tool. It is an open source software that can be used to process and analyze digital evidence, often seized at crime scenes by law enforcement or in a corporate investigation by private examiners.",
       "tags": [
-        "安全"
+        "安全",
+        "数据"
       ]
     },
     {
@@ -1202,10 +1192,9 @@
       "description": "🎬 seedance2接入 开源本地 AI 短剧 & 漫剧生成工具 —— 从故事到成片一站式完成，数据不出本机，短剧工作流管理平台，高灵活度，AI真人剧，AI漫剧本地搞定。 Open-source local AI short drama maker: story → storyboard → video, fully offline, your data stays yours. 纳米流水线",
       "tags": [
         "AI",
-        "音视频",
-        "数据",
-        "效率"
+        "音视频"
       ]
     }
-  ]
+  ],
+  "tagVersion": 2
 }

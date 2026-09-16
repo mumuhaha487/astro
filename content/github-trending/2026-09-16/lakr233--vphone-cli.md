@@ -8,8 +8,8 @@ language: "Swift"
 stars_today: 907
 comment: false
 tags:
-  - 开发工具
   - 移动端
+  - 开发工具
 ---
 
 vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。
