@@ -6,6 +6,22 @@ const ITERATIONS = 120_000;
 const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/;
 const encoder = new TextEncoder();
 
+export function resolveKV(env, globals = globalThis) {
+  const explicit = env?.BLOG_AUTH_KV || globals.BLOG_AUTH_KV;
+  if (explicit && typeof explicit.get === "function" && typeof explicit.put === "function") return explicit;
+  const found = new Set();
+  for (const scope of [env, globals]) {
+    if (!scope) continue;
+    for (const name of Object.getOwnPropertyNames(scope)) {
+      try {
+        const value = scope[name];
+        if (value && typeof value.get === "function" && typeof value.put === "function" && typeof value.delete === "function") found.add(value);
+      } catch { /* Some runtime globals cannot be read directly. */ }
+    }
+  }
+  return found.size === 1 ? [...found][0] : null;
+}
+
 function response(data, status = 200, cookie) {
   const headers = new Headers({ "content-type": "application/json; charset=utf-8", "cache-control": "no-store" });
   if (cookie) headers.set("set-cookie", cookie);
@@ -104,8 +120,8 @@ export async function handleAccountRequest(request, store) {
 }
 
 export default async function onRequest({ request, env }) {
-  // The dedicated namespace must be bound to this Makers project as BLOG_AUTH_KV.
-  const store = env?.BLOG_AUTH_KV || (typeof BLOG_AUTH_KV !== "undefined" ? BLOG_AUTH_KV : null);
+  // Prefer the account binding; a single existing project KV binding is also safe to reuse.
+  const store = resolveKV(env);
   try { return await handleAccountRequest(request, store); }
   catch (error) {
     console.error("Account request failed", error);

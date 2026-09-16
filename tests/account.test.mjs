@@ -1,7 +1,7 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 
-import { handleAccountRequest } from "../edge-functions/api/account.js";
+import onRequest, { handleAccountRequest, resolveKV } from "../edge-functions/api/account.js";
 
 class MemoryKV {
   values = new Map();
@@ -39,4 +39,13 @@ test("register, session, sign out and login without storing a plaintext password
 test("fails closed without a KV binding and rejects cross-origin writes", async () => {
   assert.equal((await handleAccountRequest(request("GET"), null)).status, 503);
   assert.equal((await handleAccountRequest(request("POST", { action: "register" }, null, "https://other.test"), new MemoryKV())).status, 403);
+});
+
+test("resolves one bound KV namespace but refuses ambiguous bindings", async () => {
+  const accounts = new MemoryKV();
+  const another = new MemoryKV();
+  assert.equal(resolveKV({ existing_kv: accounts }, {}), accounts);
+  assert.equal(resolveKV({ BLOG_AUTH_KV: accounts, another_kv: another }, {}), accounts);
+  assert.equal(resolveKV({ first: accounts, second: another }, {}), null);
+  assert.equal((await onRequest({ request: request("GET"), env: { BLOG_AUTH_KV: accounts } })).status, 200);
 });
