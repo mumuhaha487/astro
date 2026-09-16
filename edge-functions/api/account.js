@@ -37,8 +37,12 @@ async function sha256(value) {
 }
 
 async function passwordHash(password, salt) {
-  const material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16)), iterations: ITERATIONS }, material, 256));
+  try {
+    const material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16)), iterations: ITERATIONS }, material, 256));
+  } catch (cause) {
+    throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO" });
+  }
 }
 
 function sameHash(left, right) {
@@ -99,13 +103,16 @@ export async function handleAccountRequest(request, store) {
     return response({ error: "账号须为 3-24 位字母、数字或下划线，密码须为 12-128 位" }, 400);
   }
   const key = ACCOUNT_PREFIX + username.toLowerCase();
-  let account = await store.get(key, { type: "json" });
+  let account;
+  try { account = await store.get(key, { type: "json" }); }
+  catch (cause) { throw Object.assign(new Error("Account lookup failed", { cause }), { code: "KV_READ_ACCOUNT" }); }
 
   if (payload.action === "register") {
     if (account) return response({ error: "账号已存在" }, 409);
     const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
     account = { username, salt, hash: await passwordHash(password, salt), created: Date.now() };
-    await store.put(key, JSON.stringify(account));
+    try { await store.put(key, JSON.stringify(account)); }
+    catch (cause) { throw Object.assign(new Error("Account write failed", { cause }), { code: "KV_WRITE_ACCOUNT" }); }
   } else {
     if (!account || typeof account.salt !== "string" || typeof account.hash !== "string") {
       return response({ error: "账号或密码错误" }, 401);
@@ -115,7 +122,8 @@ export async function handleAccountRequest(request, store) {
   }
 
   const token = hex(crypto.getRandomValues(new Uint8Array(32)));
-  await store.put(SESSION_PREFIX + await sha256(token), JSON.stringify({ username: account.username, expires: Date.now() + SESSION_AGE * 1000 }));
+  try { await store.put(SESSION_PREFIX + await sha256(token), JSON.stringify({ username: account.username, expires: Date.now() + SESSION_AGE * 1000 })); }
+  catch (cause) { throw Object.assign(new Error("Session write failed", { cause }), { code: "KV_WRITE_SESSION" }); }
   return response({ user: { username: account.username } }, 200, setCookie(token, SESSION_AGE));
 }
 
@@ -125,6 +133,6 @@ export default async function onRequest({ request, env }) {
   try { return await handleAccountRequest(request, store); }
   catch (error) {
     console.error("Account request failed", error);
-    return response({ error: "账号服务暂时不可用" }, 503);
+    return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED" }, 503);
   }
 }
