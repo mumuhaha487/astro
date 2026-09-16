@@ -12,7 +12,11 @@
       "days": 1,
       "peakStars": 2756,
       "dailyArticle": "/github-trending/2026-09-16/alibaba--open-code-review/",
-      "periods": {}
+      "periods": {
+        "weekly": "/github-trending/weekly/2026-w38/alibaba--open-code-review/",
+        "monthly": "/github-trending/monthly/2026-09/alibaba--open-code-review/",
+        "yearly": "/github-trending/yearly/2026/alibaba--open-code-review/"
+      }
     },
     {
       "repo": "debpalash/VoiceStudio",
@@ -25,7 +29,11 @@
       "days": 1,
       "peakStars": 2072,
       "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
-      "periods": {}
+      "periods": {
+        "weekly": "/github-trending/weekly/2026-w38/debpalash--voicestudio/",
+        "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
+        "yearly": "/github-trending/yearly/2026/debpalash--voicestudio/"
+      }
     },
     {
       "repo": "JustVugg/colibri",
@@ -38,7 +46,11 @@
       "days": 1,
       "peakStars": 2026,
       "dailyArticle": "/github-trending/2026-09-16/justvugg--colibri/",
-      "periods": {}
+      "periods": {
+        "weekly": "/github-trending/weekly/2026-w38/justvugg--colibri/",
+        "monthly": "/github-trending/monthly/2026-09/justvugg--colibri/",
+        "yearly": "/github-trending/yearly/2026/justvugg--colibri/"
+      }
     },
     {
       "repo": "cloudflare/security-audit-skill",
