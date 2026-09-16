@@ -37,11 +37,16 @@ async function sha256(value) {
 }
 
 async function passwordHash(password, salt) {
+  let material;
   try {
-    const material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+    material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
+  } catch (cause) {
+    throw Object.assign(new Error("Password key import failed", { cause }), { code: "CRYPTO_IMPORT", detail: cause?.name || "unknown" });
+  }
+  try {
     return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16)), iterations: ITERATIONS }, material, 256));
   } catch (cause) {
-    throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO" });
+    throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO_DERIVE", detail: cause?.name || "unknown" });
   }
 }
 
@@ -133,6 +138,6 @@ export default async function onRequest({ request, env }) {
   try { return await handleAccountRequest(request, store); }
   catch (error) {
     console.error("Account request failed", error);
-    return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED" }, 503);
+    return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED", detail: error?.detail || undefined }, 503);
   }
 }
