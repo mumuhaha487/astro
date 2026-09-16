@@ -1,6 +1,7 @@
 import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
+import { classifyRepository } from "./github-trending-tags.mjs";
 import { parse } from "node-html-parser";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -133,6 +134,7 @@ function articleMarkdown(repo, analysis, date) {
     repository: repo.repo,
     repository_url: repo.url,
     language: repo.language,
+    tags: repo.tags,
     stars_today: repo.starsToday,
     comment: false,
   };
@@ -156,6 +158,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
     }
   }
   const candidates = rankRepositories(groups);
+  candidates.forEach((repo) => { repo.tags = classifyRepository(repo); });
   if (candidates.length < 50) throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot`);
   const pool = selectFeatures(candidates, await previousNames(), 30);
   const generated = [];
@@ -178,6 +181,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
     const slug = repo.repo.toLowerCase().replace("/", "--");
     repo.article = `/github-trending/${date}/${slug}/`;
     repo.summary = analysis.summary;
+    repo.tags = classifyRepository(repo);
     generated.push({ filename: `${slug}.md`, content: articleMarkdown(repo, analysis, date) });
     console.log(`Prepared ${repo.repo}`);
   }

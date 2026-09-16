@@ -7,6 +7,11 @@ repository_url: "https://github.com/tt-a1i/archify"
 language: "JavaScript"
 stars_today: 1373
 comment: false
+tags:
+  - AI
+  - Skill
+  - 开发工具
+  - 数据
 ---
 
 Archify 是面向 Cursor、Claude Code 等编程代理的 Node.js 技能，将代理生成的类型化 JSON IR 确定性编译为自包含 HTML 系统图并校验导出。

@@ -8,6 +8,10 @@ repository: "alibaba/open-code-review"
 repository_url: "https://github.com/alibaba/open-code-review"
 language: "Go"
 comment: false
+tags:
+  - AI
+  - 安全
+  - 开发工具
 ---
 
 阿里巴巴开源的 AI 代码审查 CLI 工具，用 Go 编写，将确定性工程流水线与 LLM Agent 结合，输出精确到行的评论，兼容 OpenAI 与 Anthropic。

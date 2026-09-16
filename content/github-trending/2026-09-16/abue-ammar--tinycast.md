@@ -7,6 +7,8 @@ repository_url: "https://github.com/abue-ammar/tinycast"
 language: "Swift"
 stars_today: 1076
 comment: false
+tags:
+  - 效率
 ---
 
 Tinycast 是用 Swift 编写的原生 macOS 启动器，集成全局热键、剪贴板历史与窗口管理，并可运行 Raycast 扩展。

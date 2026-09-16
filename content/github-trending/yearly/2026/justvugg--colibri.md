@@ -8,6 +8,8 @@ repository: "JustVugg/colibri"
 repository_url: "https://github.com/JustVugg/colibri"
 language: "C"
 comment: false
+tags:
+  - AI
 ---
 
 Colibrì 是纯 C、零引擎依赖的 MoE 推理引擎，把显存、内存与磁盘当作统一分层，按需流式加载专家，让 744B 级模型在已有硬件上运行。

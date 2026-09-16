@@ -8,6 +8,8 @@ repository: "debpalash/VoiceStudio"
 repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
 comment: false
+tags:
+  - 音视频
 ---
 
 VoiceStudio 是 AGPL-3.0 的开源本地语音工作台，把声音克隆、音色设计、视频配音、听写、转写与有声书制作整合进桌面应用，项目自述支持 646 种语言，并自称为完全本地的 ElevenLabs 替代方案。

@@ -7,6 +7,8 @@ repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
 stars_today: 2072
 comment: false
+tags:
+  - 音视频
 ---
 
 VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。

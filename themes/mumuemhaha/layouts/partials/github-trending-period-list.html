@@ -8,9 +8,10 @@
 {{- $candidates := $snapshot.candidates | default slice -}}
 {{- $featured := where $candidates "article" "ne" nil -}}
 {{- $scope := dict "weekly" "WEEKLY" "monthly" "MONTHLY" "yearly" "YEARLY" -}}
+{{- $descriptions := dict "weekly" "每周热点" "monthly" "每月热点" "yearly" "每年热点" -}}
 <section class="content-page trending-page trending-period-page" data-trending-page>
   <header class="page-heading trending-page-heading">
-    <div><p>GITHUB / {{ index $scope $period }}</p><h1>{{ .Title }}</h1><span>按已采集日期累计每日涨星数据，追踪持续受到关注的项目。</span></div>
+    <div><p>GITHUB / {{ index $scope $period }}</p><h1>{{ .Title }}</h1><span>{{ index $descriptions $period }}</span></div>
     {{ partial "github-trending-search.html" . }}
   </header>
   {{ partial "github-trending-navigation.html" (dict "active" $period) }}
@@ -26,13 +27,14 @@
     <div><strong>{{ len $candidates }} 个</strong><span>上榜仓库</span></div>
   </div>
   <p class="trending-coverage">此榜按已采集的 {{ $snapshot.observedDays }} 天计算，持续更新；未采集的日期不计入累计值，当前周期未结束时名次仅供参考。</p>
+  {{ partial "github-trending-filters.html" $candidates }}
   <div class="trending-heading"><h2>持续热门</h2><span>入选项目提供独立深度解读</span></div>
   <div class="trending-feature-list">
     {{ range $index, $repo := $featured }}
-    <article class="trending-feature" data-trending-item data-language="{{ .language }}">
+    <article class="trending-feature" data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}">
       <span class="trending-feature-rank">{{ printf "%02d" (add $index 1) }}</span>
       <div class="trending-feature-main">
-        <div class="trending-feature-meta"><span>{{ .language }}</span><span>上榜 {{ .days }} 天</span><span>登顶 {{ .firstPlaceDays }} 天</span></div>
+        <div class="trending-feature-meta">{{ partial "github-trending-tags.html" .tags }}<span>上榜 {{ .days }} 天</span><span>登顶 {{ .firstPlaceDays }} 天</span></div>
         <h2><a href="{{ .article }}">{{ .repo }}</a></h2>
         <p>{{ .summary | default .description }}</p>
         <a class="trending-feature-read" href="{{ .article }}">阅读{{ cond (eq $period "weekly") "每周" (cond (eq $period "monthly") "每月" "每年") }}解读 {{ partial "icon.html" (dict "name" "arrow-right") }}</a>
@@ -41,19 +43,14 @@
     </article>
     {{ end }}
   </div>
-  <p class="trending-empty" data-trending-featured-empty hidden>这个语言的项目暂未入选深度解读，可以查看下方完整榜单。</p>
+  <p class="trending-empty" data-trending-featured-empty hidden>这个分类的项目暂未入选深度解读，可以查看下方完整榜单。</p>
   <div class="trending-heading trending-list-heading"><div><h2>累计榜单</h2><p>同一仓库在一个周期内每天最多计入一次，按已记录的涨星数累计排序。</p></div><span>{{ len $candidates }} 个仓库</span></div>
-  <nav class="taxonomy-strip trending-filters" aria-label="按语言筛选" data-trending-filters>
-    <button type="button" class="active" data-trending-filter="all" aria-pressed="true">全部 <span>{{ len $candidates }}</span></button>
-    {{- $languages := slice -}}{{- range $candidates -}}{{- if not (in $languages .language) -}}{{- $languages = $languages | append .language -}}{{- end -}}{{- end -}}
-    {{ range $languages }}{{- $language := . -}}<button type="button" data-trending-filter="{{ $language }}" aria-pressed="false">{{ $language }} <span>{{ len (where $candidates "language" $language) }}</span></button>{{ end }}
-  </nav>
   <ol class="trending-repositories trending-period-repositories">
     {{ range $index, $repo := $candidates }}
-    <li data-trending-item data-language="{{ .language }}">
+    <li data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}">
       <span class="trending-rank">{{ printf "%02d" (add $index 1) }}</span>
-      <div><a href="{{ .article | default .url }}"{{ if not .article }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .repo }}{{ if not .article }}{{ partial "icon.html" (dict "name" "external-link") }}{{ end }}</a><p>{{ .description | default "查看项目仓库" }}</p></div>
-      <span class="trending-language">{{ .days }} 天</span><span class="trending-stars">+{{ .totalStars }} ★</span>
+      <div><a href="{{ .article | default .url }}"{{ if not .article }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .repo }}{{ if not .article }}{{ partial "icon.html" (dict "name" "external-link") }}{{ end }}</a><p>{{ .description | default "查看项目仓库" }}</p>{{ partial "github-trending-tags.html" .tags }} <span class="trending-days">上榜 {{ .days }} 天</span></div>
+      <span class="trending-stars">+{{ .totalStars }} ★</span>
     </li>
     {{ end }}
   </ol>

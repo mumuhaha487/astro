@@ -1,6 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
 import { parseTrending, rankRepositories, selectFeatures } from "./update-github-trending.mjs";
+import { classifyRepository } from "./github-trending-tags.mjs";
+
+test("assigns multiple project categories without treating languages as tags", () => {
+  assert.deepEqual(classifyRepository({ repo: "example/security-audit-skill", description: "AI agent skill for security audits" }), ["AI", "安全", "Skill"]);
+  assert.deepEqual(classifyRepository({ repo: "example/learn", description: "Beginner tutorials for building games in Rust" }), ["教程", "游戏"]);
+  assert.deepEqual(classifyRepository({ repo: "example/unknown", description: "" }), ["其他"]);
+});
 
 test("parses daily growth and repository metadata", () => {
   const html = `<article class="Box-row"><h2><a href="/Example/Alpha">Alpha</a></h2><p class="col-9">Useful  framework</p><span itemprop="programmingLanguage">Rust</span><span>1,234 stars today</span></article>`;

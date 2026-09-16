@@ -7,14 +7,19 @@
       "description": "Fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
       "summary": "阿里开源的 Go 语言 AI 代码评审 CLI，读取 Git 差异或整份文件，用确定性管线加 LLM Agent 混合生成行级评论，内置多语言规则，兼容主流模型接口。",
       "language": "Go",
+      "tags": [
+        "AI",
+        "安全",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
       "peakStars": 2756,
       "dailyArticle": "/github-trending/2026-09-16/alibaba--open-code-review/",
       "periods": {
-        "weekly": "/github-trending/weekly/2026-w38/alibaba--open-code-review/",
         "monthly": "/github-trending/monthly/2026-09/alibaba--open-code-review/",
+        "weekly": "/github-trending/weekly/2026-w38/alibaba--open-code-review/",
         "yearly": "/github-trending/yearly/2026/alibaba--open-code-review/"
       }
     },
@@ -24,14 +29,17 @@
       "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
       "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。",
       "language": "Python",
+      "tags": [
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
       "peakStars": 2072,
       "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
       "periods": {
-        "weekly": "/github-trending/weekly/2026-w38/debpalash--voicestudio/",
         "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
+        "weekly": "/github-trending/weekly/2026-w38/debpalash--voicestudio/",
         "yearly": "/github-trending/yearly/2026/debpalash--voicestudio/"
       }
     },
@@ -41,14 +49,17 @@
       "description": "Run frontier MoE models on hardware you already own — pure C, zero deps, experts streamed from disk. Tiny engine, immense model. 🐦",
       "summary": "Colibrì 是一个用纯 C 编写的 Mixture-of-Experts 推理引擎，把显存、内存与磁盘当作统一的分层存储，按需从磁盘流式加载被路由到的专家权重，目标是让消费级与异构硬件也能运行超大 MoE 模型。",
       "language": "C",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
       "peakStars": 2026,
       "dailyArticle": "/github-trending/2026-09-16/justvugg--colibri/",
       "periods": {
-        "weekly": "/github-trending/weekly/2026-w38/justvugg--colibri/",
         "monthly": "/github-trending/monthly/2026-09/justvugg--colibri/",
+        "weekly": "/github-trending/weekly/2026-w38/justvugg--colibri/",
         "yearly": "/github-trending/yearly/2026/justvugg--colibri/"
       }
     },
@@ -58,6 +69,12 @@
       "description": "A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings",
       "summary": "这是一个面向编码代理的安全审计技能，通过侦察、覆盖驱动挖掘、候选验证、结构化输出、独立复核与中性报告六个阶段，产出可机器读取的审计结果。",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -71,6 +88,12 @@
       "description": "Agent skill for beautiful, verifiable architecture, workflow, sequence, data-flow, and lifecycle diagrams—self-contained HTML with motion and crisp export.",
       "summary": "Archify 是面向 Cursor、Claude Code 等编程代理的 Node.js 技能，将代理生成的类型化 JSON IR 确定性编译为自包含 HTML 系统图并校验导出。",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具",
+        "数据"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -84,6 +107,9 @@
       "description": "Tinycast — a tiny, fully native macOS launcher, hotkeys, and clipboard history.",
       "summary": "Tinycast 是用 Swift 编写的原生 macOS 启动器，集成全局热键、剪贴板历史与窗口管理，并可运行 Raycast 扩展。",
       "language": "Swift",
+      "tags": [
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -97,6 +123,10 @@
       "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
       "summary": "Agent Reach 是一个 Python 编写的命令行能力层，为 AI Agent 统一选型、安装与体检网页、Twitter、Reddit、YouTube、GitHub、B站、小红书等平台的读取与搜索工具，README 称其为零 API 费用。",
       "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -110,6 +140,10 @@
       "description": "",
       "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。",
       "language": "Swift",
+      "tags": [
+        "开发工具",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -123,6 +157,11 @@
       "description": "Skills for Real Engineers. Straight from my .agents directory.",
       "summary": "mattpocock/skills 整理自作者 .agents 目录，是一组面向编码代理的技能，用 Shell 编写，强调可组合、易改造，可通过 Claude Code 插件或 skills.sh 安装。",
       "language": "Shell",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -136,6 +175,12 @@
       "description": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
       "summary": "TradingAgents 是 TauricResearch 开源的 Python 多智能体 LLM 金融交易框架，用分析师、多空研究员、交易员与风控角色协作，由 LangGraph 组织流程。",
       "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具",
+        "金融",
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -149,6 +194,10 @@
       "description": "Ghidra is a software reverse engineering (SRE) framework",
       "summary": "",
       "language": "Java",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -162,6 +211,9 @@
       "description": "YuE2: frontier music generation with symbolic planning, zero-shot covers, and agentic music editing.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -175,6 +227,11 @@
       "description": "claude-red is a curated library of offensive security skills designed for the Claude skills system. Each skill is a structured SKILL.md file that primes Claude with expert-level methodology for a specific attack surface — from SQLi to shellcode, EDR evasion to exploit development.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "安全",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -188,6 +245,9 @@
       "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -201,6 +261,11 @@
       "description": "《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI",
+        "教程",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -214,6 +279,9 @@
       "description": "Ever® Gauzy™ - Open Business Management Platform (ERP/CRM/HRM/ATS/PM) - https://gauzy.co",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -227,6 +295,9 @@
       "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -240,6 +311,9 @@
       "description": "Extracted system prompts from Anthropic - Claude Fable 5.1, Opus 5, Claude Design, Claude Code. OpenAI - ChatGPT GPT-6-Astra, Codex. Google - Gemini 3.8 Flash, 3.1 Pro, Antigravity. xAI - Grok, Grok Bot, Cursor, Kimi and more! Updated regularly.",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -253,6 +327,10 @@
       "description": "Turn your coding agents into research agents",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -266,6 +344,9 @@
       "description": "Modular logistics and supply chain operating system (LSOS)",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -279,6 +360,10 @@
       "description": "An agentic skills framework & software development methodology that works.",
       "summary": "",
       "language": "Shell",
+      "tags": [
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -292,6 +377,9 @@
       "description": "An open-source cross-platform alternative to AirDrop",
       "summary": "",
       "language": "Dart",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -305,6 +393,10 @@
       "description": "Free, open-source Sidecar/Duet alternative — use your iPhone, iPad or Mac as a true second monitor for your primary Mac over USB or WiFi. Low latency H.264, Retina HiDPI, touch input.",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "移动端",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -318,6 +410,10 @@
       "description": "AI agent toolkit: unified LLM API, agent loop, TUI, coding agent CLI",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -331,6 +427,10 @@
       "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "音视频",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -344,6 +444,9 @@
       "description": "A modern platform for visual, flexible, and extensible graph-based investigations. For cybersecurity analysts and investigators.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "安全"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -357,6 +460,11 @@
       "description": "Project NOMAD is an offline-first knowledge and education server. Wikipedia, thousands of books, courses, maps, and optional local AI, all running on hardware you own with no internet required.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI",
+        "教程",
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -370,6 +478,10 @@
       "description": "Lightweight coding agent that runs in your terminal",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -383,6 +495,11 @@
       "description": "Production-grade engineering skills for AI coding agents.",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -396,6 +513,12 @@
       "description": "The secure, validated skill registry for professional AI coding agents. Extend Antigravity, Claude Code, Cursor, Copilot and more with absolute confidence.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -409,6 +532,12 @@
       "description": "World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具",
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -422,6 +551,9 @@
       "description": "📺 Homebrew's official macOS GUI",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -435,6 +567,11 @@
       "description": "Instant, Concurrent, Secure & Lightweight Sandbox for AI Agents.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "AI",
+        "安全",
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -448,6 +585,12 @@
       "description": "Download Udemy and Hotmart courses, YouTube videos, music and books — 1,800+ sites, no terminal. Free open-source desktop app for Windows, macOS and Linux, with a built-in course player, PDF/EPUB reader and music library. Powered by yt-dlp. Your files stay on your computer.",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "教程",
+        "开发工具",
+        "音视频",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -461,6 +604,12 @@
       "description": "Enhanced ChatGPT Clone: Features Agents, MCP, Skills, DeepSeek, Anthropic, AWS, OpenAI, Responses API, Azure, Groq, o1, GPT-5, Mistral, OpenRouter, Vertex AI, Gemini, Artifacts, AI model switching, message search, Code Interpreter, langchain, DALL-E-3, OpenAPI Actions, Functions, Secure Multi-User Auth, Presets, open-source for self-hosting. Active",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -474,6 +623,10 @@
       "description": "A rootless Android app that boots Alpine Linux: run containers (Podman/Docker/LXC) and GUI desktop apps.",
       "summary": "",
       "language": "Kotlin",
+      "tags": [
+        "云服务",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -487,6 +640,9 @@
       "description": "We write your reusable computer vision tools. 💜",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -500,6 +656,9 @@
       "description": "🐹 Clean, uninstall, analyze, optimize, and monitor your Mac. Free open-source CLI, plus a native Mac app.",
       "summary": "",
       "language": "Shell",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -513,6 +672,9 @@
       "description": "Unofficial Bitwarden compatible server written in Rust, formerly known as bitwarden_rs",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -526,6 +688,10 @@
       "description": "Open-source AI sales OS — self-hosted CRM with native AI agents + WhatsApp (WAHA). Open alternative to Kommo, Octadesk & Intercom for any business that sells by chat. MCP-ready, multi-tenant, LGPD.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI",
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -539,6 +705,11 @@
       "description": "《动手学大模型Dive into LLMs》系列编程实践教程",
       "summary": "",
       "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -552,6 +723,11 @@
       "description": "CLI proxy that reduces LLM token consumption by 60-90% on common dev commands. Single Rust binary, zero dependencies",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -565,6 +741,9 @@
       "description": "The Open Standard for Generative UI",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -578,6 +757,10 @@
       "description": "📈 Get real-time stocks from TradingView",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "开发工具",
+        "金融"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -591,6 +774,9 @@
       "description": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer.",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -604,6 +790,9 @@
       "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
       "summary": "",
       "language": "Dart",
+      "tags": [
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -617,6 +806,9 @@
       "description": "High-performance single-GPU inference for selected model checkpoints and GPUs.",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -630,6 +822,9 @@
       "description": "Talk to one agent. Ship with a crew.",
       "summary": "",
       "language": "Shell",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -643,6 +838,9 @@
       "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -656,6 +854,9 @@
       "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -669,6 +870,9 @@
       "description": "HTML is the new markdown. Lavish is the new editor for your HTML artifacts.",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -682,6 +886,9 @@
       "description": "Cursor plugin specification and official plugins",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -695,6 +902,11 @@
       "description": "High performance self-hosted photo and video management solution.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "云服务",
+        "音视频",
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -708,6 +920,11 @@
       "description": "ASC is a super FAST Android decompiler front-end designed for Agents/Mobile Researchers.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI",
+        "安全",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -721,6 +938,9 @@
       "description": "LLM inference in C/C++",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -734,6 +954,11 @@
       "description": "Worktrunk is a CLI for Git worktree management, designed for parallel AI agent workflows",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具",
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -747,6 +972,9 @@
       "description": "🚀2.3x faster than MinIO for 4KB object payloads. RustFS is an open-source, S3-compatible high-performance object storage system supporting migration and coexistence with other S3-compatible platforms such as MinIO and Ceph.",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -760,6 +988,9 @@
       "description": "Best and simplest tool for website change detection, web page monitoring, and website change alerts. Perfect for tracking content changes, price drops, restock alerts, and website defacement monitoring—all for free or enjoy our SaaS plan!",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -773,6 +1004,9 @@
       "description": "Godot Engine – Multi-platform 2D and 3D game engine",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "游戏"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -786,6 +1020,9 @@
       "description": "Fully autonomous AI Agents system capable of performing complex penetration testing tasks",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -799,6 +1036,9 @@
       "description": "Vane is an AI-powered answering engine.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -812,6 +1052,11 @@
       "description": "Turn Claude into a senior design architect: DTCG tokens, 50 components, WCAG 2.2 AA-AAA, 138 design systems, any-framework code, and 43 objective gates that fail the build instead of faking success.",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -825,6 +1070,9 @@
       "description": "better agentic engineering",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -838,6 +1086,10 @@
       "description": "A beautiful, powerful, self-hosted ROM manager and player.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "云服务",
+        "游戏"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -851,6 +1103,10 @@
       "description": "Source control for agents. Use multiple coding agents, track their changes and query them in one place",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -864,6 +1120,9 @@
       "description": "Show usage stats for OpenAI Codex and Claude Code, without having to login.",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -877,6 +1136,10 @@
       "description": "🚀🤖 Crawl4AI: Open-source LLM Friendly Web Crawler & Scraper. Don't be shy, join here: https://discord.gg/jP8KfhDhyN",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI",
+        "数据"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -890,6 +1153,9 @@
       "description": "A free, open source, and extensible speech-to-text application that works completely offline.",
       "summary": "",
       "language": "Rust",
+      "tags": [
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -903,6 +1169,10 @@
       "description": "18 Lessons to Get Started Building AI Agents",
       "summary": "",
       "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -916,6 +1186,9 @@
       "description": "A focused launcher for your desktop - native, fast, extensible",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -929,6 +1202,10 @@
       "description": "🐙 The Go backend powering OCTO — an open workplace built for humans × AI agents. REST & WebSocket APIs, Lobster (AI agent) orchestration, and WuKongIM real-time messaging control plane.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "AI",
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -942,6 +1219,9 @@
       "description": "aria2 is a lightweight multi-protocol & multi-source, cross platform download utility operated in command-line. It supports HTTP/HTTPS, FTP, SFTP, BitTorrent and Metalink.",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -955,6 +1235,10 @@
       "description": "21 Lessons, Get Started Building with Generative AI",
       "summary": "",
       "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -968,6 +1252,10 @@
       "description": "A curated list of awesome Claude Skills, resources, and tools for customizing Claude AI workflows",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -981,6 +1269,10 @@
       "description": "Browse media content with your own rules on Android TV",
       "summary": "",
       "language": "Java",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -994,6 +1286,10 @@
       "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
       "summary": "",
       "language": "Dart",
+      "tags": [
+        "AI",
+        "数据"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1007,6 +1303,9 @@
       "description": "SparkyFitness: Built for Families. Powered by AI. Track food, fitness, water, and health — together.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1020,6 +1319,9 @@
       "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
       "summary": "",
       "language": "Python",
+      "tags": [
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1033,6 +1335,11 @@
       "description": "🎬 Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI. No coding required!",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "开发工具",
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1046,6 +1353,9 @@
       "description": "An ultra-light MacOS utility that helps hide menu bar icons",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1059,6 +1369,9 @@
       "description": "SeaweedFS is a distributed storage system for object storage (S3), file systems, and Iceberg tables, designed to handle billions of files with O(1) disk access and effortless horizontal scaling.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1072,6 +1385,10 @@
       "description": "Command-line tool that allows you to search for iOS, iPadOS, tvOS, visionOS, and macOS apps on the App Store, and download .ipa or macOS .pkg app packages.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "移动端",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1085,6 +1402,9 @@
       "description": "A continuation of HomeBox the inventory and organization system built for the Home User",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1098,6 +1418,9 @@
       "description": "LibVLC-based media player for the Universal Windows Platform",
       "summary": "",
       "language": "C#",
+      "tags": [
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1111,6 +1434,9 @@
       "description": "An an app that installs Sidestore on iOS 27, fully on-device",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1124,6 +1450,10 @@
       "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability.",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1137,6 +1467,9 @@
       "description": "🍺 The Package Manager for Everywhere",
       "summary": "",
       "language": "Ruby",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1150,6 +1483,12 @@
       "description": "A lightweight, cloud-native GIS platform for visualizing, exploring, and analyzing geospatial data. It runs in the web browser, on the desktop, on mobile, and inside Jupyter notebooks.",
       "summary": "",
       "language": "TypeScript",
+      "tags": [
+        "云服务",
+        "移动端",
+        "数据",
+        "网络"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1163,6 +1502,10 @@
       "description": "The most powerful AI agent and AI chat software on Android/Operit是一款Android上能力最为强大、发展最久的AI Agent",
       "summary": "",
       "language": "Kotlin",
+      "tags": [
+        "AI",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1176,6 +1519,10 @@
       "description": "📚 从零开始构建大模型",
       "summary": "",
       "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1189,6 +1536,12 @@
       "description": "Turn Claude Code into a full game dev studio — 49 AI agents, 72 workflow skills, and a complete coordination system mirroring real studio hierarchy.",
       "summary": "",
       "language": "Shell",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具",
+        "游戏"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1202,6 +1555,9 @@
       "description": "Free, open-source macOS cleaner. CleanMyMac alternative with zero telemetry. Native SwiftUI, scheduled auto-cleaning, Xcode/Homebrew/system cache cleanup. MIT licensed.",
       "summary": "",
       "language": "Swift",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1215,6 +1571,10 @@
       "description": "Native PC gaming with Steam, Epic, GOG and Amazon integrations on Android",
       "summary": "",
       "language": "Kotlin",
+      "tags": [
+        "游戏",
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1228,6 +1588,9 @@
       "description": "OCTO Android Client — Open-source enterprise IM",
       "summary": "",
       "language": "Java",
+      "tags": [
+        "移动端"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1241,6 +1604,9 @@
       "description": "The runtime behind every E2B stack: Cloud, Enterprise, and your own machine.",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "云服务"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1254,6 +1620,9 @@
       "description": "🎧 Your Personal Streaming Service",
       "summary": "",
       "language": "Go",
+      "tags": [
+        "音视频"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1267,6 +1636,9 @@
       "description": "Atmosphère is a work-in-progress customized firmware for the Nintendo Switch.",
       "summary": "",
       "language": "C++",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1280,6 +1652,9 @@
       "description": "PiliPlus",
       "summary": "",
       "language": "Dart",
+      "tags": [
+        "其他"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1293,6 +1668,9 @@
       "description": "IPED Digital Forensic Tool. It is an open source software that can be used to process and analyze digital evidence, often seized at crime scenes by law enforcement or in a corporate investigation by private examiners.",
       "summary": "",
       "language": "Java",
+      "tags": [
+        "安全"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,
@@ -1306,6 +1684,12 @@
       "description": "🎬 seedance2接入 开源本地 AI 短剧 & 漫剧生成工具 —— 从故事到成片一站式完成，数据不出本机，短剧工作流管理平台，高灵活度，AI真人剧，AI漫剧本地搞定。 Open-source local AI short drama maker: story → storyboard → video, fully offline, your data stays yours. 纳米流水线",
       "summary": "",
       "language": "JavaScript",
+      "tags": [
+        "AI",
+        "音视频",
+        "数据",
+        "效率"
+      ],
       "firstSeen": "2026-09-16",
       "lastSeen": "2026-09-16",
       "days": 1,

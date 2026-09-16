@@ -8,6 +8,8 @@ repository: "debpalash/VoiceStudio"
 repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
 comment: false
+tags:
+  - 音视频
 ---
 
 VoiceStudio 是开源本地语音工作台，提供语音克隆、语音设计、视频配音、听写、转录与有声书制作，带 Electron 桌面界面，可切换语音与转录引擎，项目方称支持 646 种语言。

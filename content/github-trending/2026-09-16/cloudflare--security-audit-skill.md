@@ -7,6 +7,11 @@ repository_url: "https://github.com/cloudflare/security-audit-skill"
 language: "JavaScript"
 stars_today: 1434
 comment: false
+tags:
+  - AI
+  - 安全
+  - Skill
+  - 开发工具
 ---
 
 这是一个面向编码代理的安全审计技能，通过侦察、覆盖驱动挖掘、候选验证、结构化输出、独立复核与中性报告六个阶段，产出可机器读取的审计结果。

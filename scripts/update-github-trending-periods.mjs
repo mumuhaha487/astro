@@ -2,6 +2,7 @@ import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { plain, request } from "./update-github-trending.mjs";
+import { classifyRepository } from "./github-trending-tags.mjs";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
 const dataRoot = join(root, "data", "github_trending");
@@ -57,7 +58,7 @@ export function aggregatePeriod(snapshots, definition, limit = 100) {
       const key = item.repo.toLowerCase();
       let entry = repositories.get(key);
       if (!entry) {
-        entry = { repo: item.repo, name: item.name, url: item.url, language: item.language, description: item.description, totalStars: 0, days: 0, firstPlaceDays: 0, bestRank: index + 1, latestSeen: snapshot.date };
+        entry = { repo: item.repo, name: item.name, url: item.url, language: item.language, description: item.description, tags: item.tags || classifyRepository(item), totalStars: 0, days: 0, firstPlaceDays: 0, bestRank: index + 1, latestSeen: snapshot.date };
         repositories.set(key, entry);
       }
       entry.totalStars += item.starsToday;
@@ -68,6 +69,7 @@ export function aggregatePeriod(snapshots, definition, limit = 100) {
         entry.latestSeen = snapshot.date;
         entry.description = item.description || entry.description;
         entry.language = item.language || entry.language;
+        entry.tags = item.tags || classifyRepository(item);
       }
     });
   }
@@ -83,7 +85,7 @@ export function buildSearchIndex(snapshots, periods) {
     const key = item.repo.toLowerCase();
     let entry = entries.get(key);
     if (!entry) {
-      entry = { repo: item.repo, url: item.url, description: item.description, summary: "", language: item.language, firstSeen: snapshot.date, lastSeen: snapshot.date, days: 0, peakStars: 0, dailyArticle: "", periods: {} };
+      entry = { repo: item.repo, url: item.url, description: item.description, summary: "", language: item.language, tags: item.tags || classifyRepository(item), firstSeen: snapshot.date, lastSeen: snapshot.date, days: 0, peakStars: 0, dailyArticle: "", periods: {} };
       entries.set(key, entry);
     }
     entry.days++;
@@ -92,6 +94,7 @@ export function buildSearchIndex(snapshots, periods) {
       entry.lastSeen = snapshot.date;
       entry.description = item.description || entry.description;
       entry.language = item.language || entry.language;
+      entry.tags = item.tags || classifyRepository(item);
     }
     if (item.article && !entry.dailyArticle) entry.dailyArticle = item.article;
     if (item.summary) entry.summary = item.summary;
@@ -171,7 +174,7 @@ function articleMarkdown(repo, analysis, definition) {
   const frontmatter = {
     title: repo.repo, period: definition.period, period_key: definition.key,
     date: `${definition.through}T00:00:00+08:00`, description: analysis.summary,
-    repository: repo.repo, repository_url: repo.url, language: repo.language, comment: false,
+    repository: repo.repo, repository_url: repo.url, language: repo.language, tags: repo.tags, comment: false,
   };
   return `---\n${Object.entries(frontmatter).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n")}\n---\n\n${analysis.summary}\n\n${Object.entries(labels).map(([key, label]) => `## ${label}\n\n${analysis[key]}`).join("\n\n")}\n\n[查看 GitHub 仓库](${repo.url})\n\n> 解读依据仓库 README 与简介，周期榜名次和数据按已采集的日期动态计算；项目文档和实际能力可能变化。\n`;
 }

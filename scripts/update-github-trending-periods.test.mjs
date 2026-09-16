@@ -4,7 +4,7 @@ import { aggregatePeriod, buildSearchIndex, periodDefinitions } from "./update-g
 
 const repo = (name, stars, article = "") => ({
   repo: `owner/${name}`, name, url: `https://github.com/owner/${name}`,
-  language: "Go", description: `${name} tool`, starsToday: stars, ...(article ? { article } : {}),
+  language: "Go", description: `${name} tool`, tags: ["AI", "Skill"], starsToday: stars, ...(article ? { article } : {}),
 });
 
 test("ISO weeks cross years and calendar periods stay distinct", () => {
@@ -24,6 +24,7 @@ test("cumulative ranking counts one observed day at a time", () => {
   const [week] = periodDefinitions("2026-09-16");
   const result = aggregatePeriod(snapshots, week);
   assert.equal(result.observedDays, 3);
+  assert.deepEqual(result.candidates[0].tags, ["AI", "Skill"]);
   assert.deepEqual(result.candidates.map((item) => [item.name, item.totalStars, item.days, item.firstPlaceDays]), [
     ["Alpha", 280, 3, 2], ["Beta", 230, 2, 1], ["Gamma", 90, 1, 0],
   ]);
@@ -44,5 +45,6 @@ test("search index finds archive entries and period articles without duplicate r
   assert.equal(result[0].days, 2);
   assert.equal(result[0].dailyArticle, "/daily/alpha/");
   assert.equal(result[0].periods.weekly, "/weekly/alpha/");
+  assert.deepEqual(result[0].tags, ["AI", "Skill"]);
   assert.equal(result[1].repo, "owner/Beta");
 });

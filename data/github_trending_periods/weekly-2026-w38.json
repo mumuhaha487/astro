@@ -19,7 +19,12 @@
       "bestRank": 1,
       "latestSeen": "2026-09-16",
       "summary": "Open Code Review 是阿里巴巴开源的 AI 代码审查命令行工具，用确定性工程约束流程，用 LLM Agent 做动态判断，输出行级精确的评审意见，内置多语言规则并兼容 OpenAI、Anthropic 接口。",
-      "article": "/github-trending/weekly/2026-w38/alibaba--open-code-review/"
+      "article": "/github-trending/weekly/2026-w38/alibaba--open-code-review/",
+      "tags": [
+        "AI",
+        "安全",
+        "开发工具"
+      ]
     },
     {
       "repo": "debpalash/VoiceStudio",
@@ -33,7 +38,10 @@
       "bestRank": 2,
       "latestSeen": "2026-09-16",
       "summary": "VoiceStudio 是开源本地语音工作台，提供语音克隆、语音设计、视频配音、听写、转录与有声书制作，带 Electron 桌面界面，可切换语音与转录引擎，项目方称支持 646 种语言。",
-      "article": "/github-trending/weekly/2026-w38/debpalash--voicestudio/"
+      "article": "/github-trending/weekly/2026-w38/debpalash--voicestudio/",
+      "tags": [
+        "音视频"
+      ]
     },
     {
       "repo": "JustVugg/colibri",
@@ -47,7 +55,10 @@
       "bestRank": 3,
       "latestSeen": "2026-09-16",
       "summary": "Colibrì 是用纯 C 编写的 MoE 推理引擎，把显存、内存与磁盘视为同一份权重的分层落位处，按需流式加载专家权重，让数百 GB 级模型在自有硬件上运行。",
-      "article": "/github-trending/weekly/2026-w38/justvugg--colibri/"
+      "article": "/github-trending/weekly/2026-w38/justvugg--colibri/",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "cloudflare/security-audit-skill",
@@ -59,7 +70,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 4,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "tt-a1i/archify",
@@ -71,7 +88,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 5,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill",
+        "数据"
+      ]
     },
     {
       "repo": "abue-ammar/tinycast",
@@ -83,7 +105,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 6,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "效率"
+      ]
     },
     {
       "repo": "Panniantong/Agent-Reach",
@@ -95,7 +120,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 7,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "Lakr233/vphone-cli",
@@ -107,7 +136,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 8,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "mattpocock/skills",
@@ -119,7 +151,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 9,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
     },
     {
       "repo": "TauricResearch/TradingAgents",
@@ -131,7 +167,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 10,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具",
+        "金融"
+      ]
     },
     {
       "repo": "NationalSecurityAgency/ghidra",
@@ -143,7 +184,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 11,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "安全",
+        "开发工具"
+      ]
     },
     {
       "repo": "multimodal-art-projection/YuE",
@@ -155,7 +200,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 12,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频"
+      ]
     },
     {
       "repo": "SnailSploit/Claude-Red",
@@ -167,7 +215,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 13,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "安全",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "Tencent/WeKnora",
@@ -179,7 +232,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 14,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "bojieli/ai-agent-book",
@@ -191,7 +247,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 15,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程",
+        "开发工具"
+      ]
     },
     {
       "repo": "ever-co/ever-gauzy",
@@ -203,7 +264,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 16,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "效率"
+      ]
     },
     {
       "repo": "666ghj/MiroFish",
@@ -215,7 +279,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 17,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "asgeirtj/system_prompts_leaks",
@@ -227,7 +294,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 18,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "alphaXiv/OpenResearch",
@@ -239,7 +309,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 19,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "fleetbase/fleetbase",
@@ -251,7 +325,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 20,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "obra/superpowers",
@@ -263,7 +340,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 21,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "localsend/localsend",
@@ -275,7 +356,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 22,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "peetzweg/opendisplay",
@@ -287,7 +371,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 23,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "移动端",
+        "网络"
+      ]
     },
     {
       "repo": "earendil-works/pi",
@@ -299,7 +387,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 24,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "ruvnet/RuView",
@@ -311,7 +403,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 25,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频",
+        "网络"
+      ]
     },
     {
       "repo": "reconurge/flowsint",
@@ -323,7 +419,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 26,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "安全"
+      ]
     },
     {
       "repo": "Crosstalk-Solutions/project-nomad",
@@ -335,7 +434,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 27,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程",
+        "云服务"
+      ]
     },
     {
       "repo": "openai/codex",
@@ -347,7 +451,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 28,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "addyosmani/agent-skills",
@@ -359,7 +467,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 29,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "tech-leads-club/agent-skills",
@@ -371,7 +484,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 30,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "calesthio/OpenMontage",
@@ -383,7 +502,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 31,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具",
+        "音视频"
+      ]
     },
     {
       "repo": "Homebrew/BrewUI",
@@ -395,7 +520,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 32,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "TencentCloud/CubeSandbox",
@@ -407,7 +535,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 33,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "安全",
+        "云服务"
+      ]
     },
     {
       "repo": "tonhowtf/omniget",
@@ -419,7 +552,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 34,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "教程",
+        "开发工具",
+        "音视频",
+        "网络"
+      ]
     },
     {
       "repo": "danny-avila/LibreChat",
@@ -431,7 +570,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 35,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "安全",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "ExTV/Podroid",
@@ -443,7 +588,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 36,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务",
+        "移动端"
+      ]
     },
     {
       "repo": "roboflow/supervision",
@@ -455,7 +604,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 37,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "tw93/Mole",
@@ -467,7 +619,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 38,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "dani-garcia/vaultwarden",
@@ -479,7 +634,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 39,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务"
+      ]
     },
     {
       "repo": "melgarafael/DeskcommCRM",
@@ -491,7 +649,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 40,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "云服务"
+      ]
     },
     {
       "repo": "Lordog/dive-into-llms",
@@ -503,7 +665,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 41,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程",
+        "开发工具"
+      ]
     },
     {
       "repo": "rtk-ai/rtk",
@@ -515,7 +682,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 42,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具",
+        "网络"
+      ]
     },
     {
       "repo": "thesysdev/openui",
@@ -527,7 +699,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 43,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "Mathieu2301/TradingView-API",
@@ -539,7 +714,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 44,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具",
+        "金融"
+      ]
     },
     {
       "repo": "rustdesk/rustdesk",
@@ -551,7 +730,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 45,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务"
+      ]
     },
     {
       "repo": "chen08209/FlClash",
@@ -563,7 +745,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 46,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "网络"
+      ]
     },
     {
       "repo": "Neroued/ninfer",
@@ -575,7 +760,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 47,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "kunchenguid/firstmate",
@@ -587,7 +775,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 48,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "ollama/ollama",
@@ -599,7 +790,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 49,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "Stirling-Tools/Stirling-PDF",
@@ -611,7 +805,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 50,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "kunchenguid/lavish-axi",
@@ -623,7 +820,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 51,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "cursor/plugins",
@@ -635,7 +835,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 52,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "immich-app/immich",
@@ -647,7 +850,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 53,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务",
+        "音视频",
+        "效率"
+      ]
     },
     {
       "repo": "MG1937/ASC",
@@ -659,7 +867,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 54,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "安全",
+        "移动端"
+      ]
     },
     {
       "repo": "ggml-org/llama.cpp",
@@ -671,7 +884,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 55,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "max-sixty/worktrunk",
@@ -683,7 +899,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 56,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具",
+        "效率"
+      ]
     },
     {
       "repo": "rustfs/rustfs",
@@ -695,7 +916,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 57,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务"
+      ]
     },
     {
       "repo": "dgtlmoon/changedetection.io",
@@ -707,7 +931,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 58,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "godotengine/godot",
@@ -719,7 +946,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 59,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "游戏"
+      ]
     },
     {
       "repo": "vxcontrol/pentagi",
@@ -731,7 +961,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 60,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "ItzCrazyKns/Vane",
@@ -743,7 +976,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 61,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "plugin87/ux-ui-agent-skills",
@@ -755,7 +991,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 62,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ]
     },
     {
       "repo": "microsoft/AI-Engineering-Coach",
@@ -767,7 +1008,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 63,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "rommapp/romm",
@@ -779,7 +1023,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 64,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务",
+        "游戏"
+      ]
     },
     {
       "repo": "pacifio/atlas",
@@ -791,7 +1039,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 65,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "steipete/CodexBar",
@@ -803,7 +1055,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 66,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "unclecode/crawl4ai",
@@ -815,7 +1070,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 67,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "数据"
+      ]
     },
     {
       "repo": "cjpais/Handy",
@@ -827,7 +1086,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 68,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频"
+      ]
     },
     {
       "repo": "microsoft/ai-agents-for-beginners",
@@ -839,7 +1101,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 69,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程"
+      ]
     },
     {
       "repo": "vicinaehq/vicinae",
@@ -851,7 +1117,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 70,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "效率"
+      ]
     },
     {
       "repo": "Mininglamp-OSS/octo-server",
@@ -863,7 +1132,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 71,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "云服务"
+      ]
     },
     {
       "repo": "aria2/aria2",
@@ -875,7 +1148,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 72,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "网络"
+      ]
     },
     {
       "repo": "microsoft/generative-ai-for-beginners",
@@ -887,7 +1163,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 73,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程"
+      ]
     },
     {
       "repo": "ComposioHQ/awesome-claude-skills",
@@ -899,7 +1179,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 74,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
     },
     {
       "repo": "yuliskov/SmartTube",
@@ -911,7 +1195,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 75,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频",
+        "移动端"
+      ]
     },
     {
       "repo": "AppFlowy-IO/AppFlowy",
@@ -923,7 +1211,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 76,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "数据"
+      ]
     },
     {
       "repo": "CodeWithCJ/SparkyFitness",
@@ -935,7 +1227,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 77,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI"
+      ]
     },
     {
       "repo": "anthropics/claude-plugins-official",
@@ -947,7 +1242,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 78,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "开发工具"
+      ]
     },
     {
       "repo": "darkzOGx/youtube-automation-agent",
@@ -959,7 +1257,12 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 79,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具",
+        "效率"
+      ]
     },
     {
       "repo": "dwarvesf/hidden",
@@ -971,7 +1274,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 80,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "seaweedfs/seaweedfs",
@@ -983,7 +1289,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 81,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务"
+      ]
     },
     {
       "repo": "majd/ipatool",
@@ -995,7 +1304,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 82,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "移动端",
+        "网络"
+      ]
     },
     {
       "repo": "sysadminsmedia/homebox",
@@ -1007,7 +1320,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 83,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "huynhsontung/Screenbox",
@@ -1019,7 +1335,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 84,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频"
+      ]
     },
     {
       "repo": "FrizzleM/SideInstaller",
@@ -1031,7 +1350,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 85,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "移动端"
+      ]
     },
     {
       "repo": "manaflow-ai/cmux",
@@ -1043,7 +1365,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 86,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
     },
     {
       "repo": "Homebrew/brew",
@@ -1055,7 +1381,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 87,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "opengeos/GeoLibre",
@@ -1067,7 +1396,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 88,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务",
+        "移动端",
+        "数据",
+        "网络"
+      ]
     },
     {
       "repo": "AAswordman/Operit",
@@ -1079,7 +1414,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 89,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "移动端"
+      ]
     },
     {
       "repo": "datawhalechina/happy-llm",
@@ -1091,7 +1430,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 90,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "教程"
+      ]
     },
     {
       "repo": "Donchitos/Claude-Code-Game-Studios",
@@ -1103,7 +1446,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 91,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具",
+        "游戏"
+      ]
     },
     {
       "repo": "momenbasel/PureMac",
@@ -1115,7 +1464,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 92,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "utkarshdalal/GameNative",
@@ -1127,7 +1479,11 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 93,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "游戏",
+        "移动端"
+      ]
     },
     {
       "repo": "Mininglamp-OSS/octo-android",
@@ -1139,7 +1495,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 94,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "移动端"
+      ]
     },
     {
       "repo": "e2b-dev/runtime",
@@ -1151,7 +1510,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 95,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "云服务"
+      ]
     },
     {
       "repo": "navidrome/navidrome",
@@ -1163,7 +1525,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 96,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "音视频"
+      ]
     },
     {
       "repo": "Atmosphere-NX/Atmosphere",
@@ -1175,7 +1540,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 97,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "bggRGjQaUbCoE/PiliPlus",
@@ -1187,7 +1555,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 98,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "其他"
+      ]
     },
     {
       "repo": "sepinf-inc/IPED",
@@ -1199,7 +1570,10 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 99,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "安全"
+      ]
     },
     {
       "repo": "xuanyustudio/LocalMiniDrama",
@@ -1211,7 +1585,13 @@
       "days": 1,
       "firstPlaceDays": 0,
       "bestRank": 100,
-      "latestSeen": "2026-09-16"
+      "latestSeen": "2026-09-16",
+      "tags": [
+        "AI",
+        "音视频",
+        "数据",
+        "效率"
+      ]
     }
   ]
 }

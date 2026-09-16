@@ -54,7 +54,7 @@ test("project search loads on demand, exposes period articles, and clears", asyn
       calls++;
       return { ok: true, json: async () => ({ entries: [{
         repo: "owner/Alpha", description: "Build tool", summary: "项目工具",
-        language: "Go", days: 3, lastSeen: "2026-09-16", peakStars: 100,
+        language: "Go", tags: ["AI", "Skill"], days: 3, lastSeen: "2026-09-16", peakStars: 100,
         url: "https://github.com/owner/Alpha", dailyArticle: "/github-trending/alpha/",
         periods: { weekly: "/github-trending/weekly/alpha/", monthly: "/github-trending/monthly/alpha/", yearly: "/github-trending/yearly/alpha/" },
       }] }) };
@@ -69,6 +69,7 @@ test("project search loads on demand, exposes period articles, and clears", asyn
   assert.equal(results.children[0].textContent, "找到 1 个项目");
   const result = results.children[1];
   assert.equal(result.children[0].href, "/github-trending/alpha/");
+  assert.match(result.children[0].children[2].textContent, /AI · Skill/);
   assert.deepEqual(result.children[1].children.map((link) => link.textContent), ["周评", "月评", "年评"]);
   await form.events.submit({ preventDefault() {} });
   assert.equal(calls, 1, "Submitting should use the cached index");
@@ -76,4 +77,29 @@ test("project search loads on demand, exposes period articles, and clears", asyn
   clear.events.click();
   assert.equal(input.value, "");
   assert.equal(results.hidden, true);
+});
+
+test("a category matches multi-tag projects and resets pagination", () => {
+  const document = new Element();
+  const page = new Element();
+  const button = new Element();
+  button.dataset.trendingFilter = "安全";
+  const all = new Element();
+  all.dataset.trendingFilter = "all";
+  const matching = new Element();
+  matching.dataset.tags = "AI|安全|Skill";
+  const other = new Element();
+  other.dataset.tags = "教程";
+  const more = new Element();
+  page.lists["[data-trending-filter]"] = [all, button];
+  page.lists[".trending-repositories li"] = [matching, other];
+  page.targets["[data-trending-more]"] = more;
+  document.targets["[data-trending-page]"] = page;
+  const source = readFileSync(new URL("../themes/mumuemhaha/static/hugo-theme/github-trending.js", import.meta.url), "utf8");
+  vm.runInNewContext(source, { document, matchMedia: () => ({ matches: true, addEventListener() {} }) });
+  button.events.click();
+  assert.equal(matching.hidden, false);
+  assert.equal(other.hidden, true);
+  assert.equal(button["aria-pressed"], "true");
+  assert.equal(more.hidden, true);
 });

@@ -33,7 +33,7 @@
       const detail = document.createElement("span");
       detail.textContent = entry.summary || entry.description || "查看项目仓库";
       const meta = document.createElement("small");
-      meta.textContent = `${entry.language} · 上榜 ${entry.days} 天 · 最近 ${entry.lastSeen}`;
+      meta.textContent = `${(entry.tags || ["其他"]).join(" · ")} · 上榜 ${entry.days} 天 · 最近 ${entry.lastSeen}`;
       link.append(title, detail, meta);
       item.append(link);
       const alternatives = document.createElement("div");
@@ -76,7 +76,7 @@
       if (version !== searchVersion) return;
       const terms = query.split(/\s+/).filter(Boolean);
       const matches = searchEntries.filter((entry) => {
-        const haystack = `${entry.repo} ${entry.summary || ""} ${entry.description} ${entry.language}`.toLocaleLowerCase();
+        const haystack = `${entry.repo} ${entry.summary || ""} ${entry.description} ${(entry.tags || []).join(" ")}`.toLocaleLowerCase();
         return terms.every((term) => haystack.includes(term));
       }).sort((a, b) => {
         const aName = a.repo.toLocaleLowerCase();
@@ -100,25 +100,25 @@
   input?.addEventListener("keydown", (event) => { if (event.key === "Escape") { input.value = ""; searchVersion++; hideResults(); clear.hidden = true; } });
   document.addEventListener("click", (event) => { if (search && !search.contains(event.target)) hideResults(); });
   const mobile = matchMedia("(max-width: 760px)");
-  let language = "all";
+  let activeTag = "all";
   let shown = mobile.matches ? 10 : 30;
 
   const render = () => {
     buttons.forEach((button) => {
-      const active = button.dataset.trendingFilter === language;
+      const active = button.dataset.trendingFilter === activeTag;
       button.classList.toggle("active", active);
       button.setAttribute("aria-pressed", String(active));
     });
     let visibleCards = 0;
     cards.forEach((card) => {
-      const match = language === "all" || card.dataset.language === language;
+      const match = activeTag === "all" || (card.dataset.tags || "").split("|").includes(activeTag);
       card.hidden = !match;
       if (match) visibleCards++;
     });
     if (empty) empty.hidden = visibleCards !== 0;
     let count = 0;
     rows.forEach((row) => {
-      const match = language === "all" || row.dataset.language === language;
+      const match = activeTag === "all" || (row.dataset.tags || "").split("|").includes(activeTag);
       if (match) count++;
       row.hidden = !match || count > shown;
     });
@@ -126,7 +126,7 @@
   };
 
   buttons.forEach((button) => button.addEventListener("click", () => {
-    language = button.dataset.trendingFilter;
+    activeTag = button.dataset.trendingFilter;
     shown = mobile.matches ? 10 : 30;
     render();
   }));

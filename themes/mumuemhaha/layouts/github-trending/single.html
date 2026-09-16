@@ -5,7 +5,7 @@
 <article class="article-shell trending-article">
   <header class="article-header">
     <a class="back-link" href="{{ .Parent.RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}返回 {{ .Date.Format "2006-01-02" }} 榜单</a>
-    <div class="article-labels"><span class="badge">{{ .Params.language }}</span><span class="badge badge-accent">+{{ .Params.stars_today }} stars / day</span></div>
+    <div class="article-labels">{{ range (.Params.tags | default (slice "其他")) }}<span class="badge">{{ . }}</span>{{ end }}<span class="badge badge-accent">+{{ .Params.stars_today }} stars / day</span></div>
     <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
     <p class="trending-article-summary">{{ .Description }}</p>
     <div class="article-meta"><span>{{ partial "icon.html" (dict "name" "calendar") }}{{ .Date.Format "2006-01-02" }}</span><span>{{ partial "icon.html" (dict "name" "github") }}GitHub Trending</span></div>

@@ -7,6 +7,9 @@ repository_url: "https://github.com/Panniantong/Agent-Reach"
 language: "Python"
 stars_today: 960
 comment: false
+tags:
+  - AI
+  - 开发工具
 ---
 
 Agent Reach 是一个 Python 编写的命令行能力层，为 AI Agent 统一选型、安装与体检网页、Twitter、Reddit、YouTube、GitHub、B站、小红书等平台的读取与搜索工具，README 称其为零 API 费用。

@@ -7,6 +7,11 @@ repository_url: "https://github.com/TauricResearch/TradingAgents"
 language: "Python"
 stars_today: 727
 comment: false
+tags:
+  - AI
+  - 开发工具
+  - 金融
+  - 效率
 ---
 
 TradingAgents 是 TauricResearch 开源的 Python 多智能体 LLM 金融交易框架，用分析师、多空研究员、交易员与风控角色协作，由 LangGraph 组织流程。

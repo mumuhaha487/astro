@@ -7,6 +7,8 @@ repository_url: "https://github.com/JustVugg/colibri"
 language: "C"
 stars_today: 2026
 comment: false
+tags:
+  - AI
 ---
 
 Colibrì 是一个用纯 C 编写的 Mixture-of-Experts 推理引擎，把显存、内存与磁盘当作统一的分层存储，按需从磁盘流式加载被路由到的专家权重，目标是让消费级与异构硬件也能运行超大 MoE 模型。

@@ -4,7 +4,7 @@
 <article class="article-shell trending-article trending-period-article">
   <header class="article-header">
     <a class="back-link" href="{{ .Parent.RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}返回 {{ $snapshot.label }} 榜单</a>
-    <div class="article-labels"><span class="badge badge-accent">{{ $snapshot.label }}</span><span class="badge">{{ .Params.language }}</span></div>
+    <div class="article-labels"><span class="badge badge-accent">{{ $snapshot.label }}</span>{{ range (.Params.tags | default (slice "其他")) }}<span class="badge">{{ . }}</span>{{ end }}</div>
     <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
     <p class="trending-article-summary">{{ .Description }}</p>
     <div class="trending-article-stats"><div><strong>+{{ $repo.totalStars }}</strong><span>累计涨星</span></div><div><strong>{{ $repo.days }} 天</strong><span>上榜天数</span></div><div><strong>{{ $repo.firstPlaceDays }} 天</strong><span>登顶天数</span></div></div>
