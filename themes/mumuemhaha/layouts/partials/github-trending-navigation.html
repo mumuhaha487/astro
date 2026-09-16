@@ -1,0 +1,6 @@
+<nav class="trending-period-nav" aria-label="热门项目时间范围">
+  <a href="/github-trending/"{{ if eq .active "daily" }} class="active" aria-current="page"{{ end }}>每日</a>
+  <a href="/github-trending/weekly/"{{ if eq .active "weekly" }} class="active" aria-current="page"{{ end }}>每周</a>
+  <a href="/github-trending/monthly/"{{ if eq .active "monthly" }} class="active" aria-current="page"{{ end }}>每月</a>
+  <a href="/github-trending/yearly/"{{ if eq .active "yearly" }} class="active" aria-current="page"{{ end }}>每年</a>
+</nav>

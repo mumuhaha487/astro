@@ -1,0 +1,15 @@
+{{- $key := .Params.period_key -}}
+{{- $snapshot := index hugo.Data.github_trending_periods $key -}}
+{{- $repo := index (where $snapshot.candidates "repo" .Params.repository) 0 -}}
+<article class="article-shell trending-article trending-period-article">
+  <header class="article-header">
+    <a class="back-link" href="{{ .Parent.RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}返回 {{ $snapshot.label }} 榜单</a>
+    <div class="article-labels"><span class="badge badge-accent">{{ $snapshot.label }}</span><span class="badge">{{ .Params.language }}</span></div>
+    <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
+    <p class="trending-article-summary">{{ .Description }}</p>
+    <div class="trending-article-stats"><div><strong>+{{ $repo.totalStars }}</strong><span>累计涨星</span></div><div><strong>{{ $repo.days }} 天</strong><span>上榜天数</span></div><div><strong>{{ $repo.firstPlaceDays }} 天</strong><span>登顶天数</span></div></div>
+    <p class="trending-article-coverage">统计范围：{{ $snapshot.start }} 至 {{ $snapshot.through }}，实际采集 {{ $snapshot.observedDays }} 天。周期未结束时排名可能变化。</p>
+    <a class="button button-primary trending-repo-link" href="{{ .Params.repository_url }}" target="_blank" rel="noopener noreferrer">查看 GitHub 仓库{{ partial "icon.html" (dict "name" "external-link") }}</a>
+  </header>
+  <div class="article-layout"><div class="article-main"><div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ .Content }}</div></div><aside class="article-toc"><span>深度解读</span>{{ .TableOfContents }}</aside></div>
+</article>

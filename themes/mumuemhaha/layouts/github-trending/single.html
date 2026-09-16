@@ -1,4 +1,7 @@
 {{ define "main" }}
+{{ if in (slice "weekly" "monthly" "yearly") (.Params.period | default "") }}
+{{ partial "github-trending-period-single.html" . }}
+{{ else }}
 <article class="article-shell trending-article">
   <header class="article-header">
     <a class="back-link" href="{{ .Parent.RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}返回 {{ .Date.Format "2006-01-02" }} 榜单</a>
@@ -10,4 +13,5 @@
   </header>
   <div class="article-layout"><div class="article-main"><div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ .Content }}</div></div><aside class="article-toc"><span>项目解读</span>{{ .TableOfContents }}</aside></div>
 </article>
+{{ end }}
 {{ end }}

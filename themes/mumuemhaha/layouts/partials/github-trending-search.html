@@ -1,0 +1,8 @@
+<div class="trending-search" data-trending-search>
+  <form role="search" data-trending-search-form>
+    {{ partial "icon.html" (dict "name" "search") }}
+    <input type="search" data-trending-search-input placeholder="搜索项目名称、用途或语言" autocomplete="off" aria-label="搜索全部热门 GitHub 项目" aria-controls="trending-search-results">
+    <button type="button" data-trending-search-clear aria-label="清除搜索" title="清除搜索" hidden>{{ partial "icon.html" (dict "name" "x") }}</button>
+  </form>
+  <div class="trending-search-results" id="trending-search-results" data-trending-search-results aria-live="polite" hidden></div>
+</div>

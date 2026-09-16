@@ -1,6 +1,10 @@
 {{ define "main" }}
+{{- $period := .Params.period | default "daily" -}}
+{{- if in (slice "weekly" "monthly" "yearly") $period -}}
+  {{- partial "github-trending-period-list.html" . -}}
+{{- else -}}
 {{- $archive := site.GetPage "/github-trending" -}}
-{{- $days := $archive.Sections.ByDate.Reverse -}}
+{{- $days := (where $archive.Sections "Params.period" "daily").ByDate.Reverse -}}
 {{- $day := . -}}
 {{- if eq .RelPermalink $archive.RelPermalink -}}{{- with index $days 0 -}}{{- $day = . -}}{{- end -}}{{- end -}}
 {{- $date := $day.Title -}}
@@ -10,11 +14,11 @@
 {{- $languages := slice -}}
 {{- range $candidates -}}{{- if not (in $languages .language) -}}{{- $languages = $languages | append .language -}}{{- end -}}{{- end -}}
 <section class="content-page trending-page" data-trending-page>
-  <header class="page-heading">
-    <p>GITHUB / DAILY</p>
-    <h1>{{ i18n "github_trending" }}</h1>
-    <span>每天记录热门仓库，阅读项目文档，挑选此前未介绍过的项目。</span>
+  <header class="page-heading trending-page-heading">
+    <div><p>GITHUB / DAILY</p><h1>{{ i18n "github_trending" }}</h1><span>每天记录热门仓库，阅读项目文档，挑选此前未介绍过的项目。</span></div>
+    {{ partial "github-trending-search.html" . }}
   </header>
+  {{ partial "github-trending-navigation.html" (dict "active" "daily") }}
   {{ if $candidates }}
   <nav class="taxonomy-strip trending-dates" aria-label="按日期浏览">
     <a href="{{ $archive.RelPermalink }}"{{ if eq .RelPermalink $archive.RelPermalink }} class="active" aria-current="page"{{ end }}>最新</a>
@@ -59,5 +63,6 @@
   <div class="empty-state">首份榜单正在生成。每日更新完成后，这里会显示项目卡片与榜单。</div>
   {{ end }}
 </section>
+{{- end -}}
 {{ end }}
-{{ define "scripts" }}<script defer src="/hugo-theme/github-trending.js?v=1"></script>{{ end }}
+{{ define "scripts" }}<script defer src="/hugo-theme/github-trending.js?v=2"></script>{{ end }}

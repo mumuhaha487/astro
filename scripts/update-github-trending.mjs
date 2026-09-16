@@ -50,7 +50,7 @@ export function selectFeatures(repositories, seenNames, limit = 10) {
   return selected;
 }
 
-async function request(url, options = {}, attempts = 3) {
+export async function request(url, options = {}, attempts = 3) {
   for (let attempt = 0; attempt < attempts; attempt++) {
     try {
       const response = await fetch(url, { signal: AbortSignal.timeout(45000), ...options });
@@ -70,11 +70,14 @@ async function request(url, options = {}, attempts = 3) {
 
 async function previousNames() {
   const names = new Set();
-  for (const date of await readdir(contentRoot, { withFileTypes: true }).catch(() => [])) {
-    if (!date.isDirectory()) continue;
-    for (const filename of await readdir(join(contentRoot, date.name))) {
-      if (!filename.endsWith(".md") || filename === "_index.md") continue;
-      const content = await readFile(join(contentRoot, date.name, filename), "utf8");
+  const directories = [contentRoot];
+  while (directories.length) {
+    const directory = directories.pop();
+    for (const entry of await readdir(directory, { withFileTypes: true }).catch(() => [])) {
+      const path = join(directory, entry.name);
+      if (entry.isDirectory()) { directories.push(path); continue; }
+      if (!entry.name.endsWith(".md") || entry.name === "_index.md") continue;
+      const content = await readFile(path, "utf8");
       const repo = /^repository:\s*["']?([^\s"']+)["']?$/m.exec(content)?.[1];
       if (repo) names.add(repo.split("/").at(-1).toLowerCase());
     }
@@ -82,7 +85,7 @@ async function previousNames() {
   return names;
 }
 
-function plain(value) {
+export function plain(value) {
   return String(value || "").replace(/[<>]/g, (char) => char === "<" ? "&lt;" : "&gt;").replace(/\r?\n+/g, " ").trim();
 }
 
@@ -124,6 +127,7 @@ function articleMarkdown(repo, analysis, date) {
   ];
   const frontmatter = {
     title: repo.repo,
+    period: "daily",
     date: `${date}T00:00:00+08:00`,
     description: analysis.summary,
     repository: repo.repo,
@@ -182,7 +186,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
   const dayRoot = join(contentRoot, date);
   await mkdir(dayRoot, { recursive: true });
   await mkdir(dataRoot, { recursive: true });
-  await writeFile(join(dayRoot, "_index.md"), `---\ntitle: ${JSON.stringify(date)}\ndate: ${JSON.stringify(`${date}T00:00:00+08:00`)}\ndescription: ${JSON.stringify(`${date} GitHub 每日热门仓库`)}\n---\n`);
+  await writeFile(join(dayRoot, "_index.md"), `---\ntitle: ${JSON.stringify(date)}\nperiod: daily\ndate: ${JSON.stringify(`${date}T00:00:00+08:00`)}\ndescription: ${JSON.stringify(`${date} GitHub 每日热门仓库`)}\n---\n`);
   for (const article of generated) await writeFile(join(dayRoot, article.filename), article.content);
   await writeFile(join(dataRoot, `${date}.json`), JSON.stringify({ date, capturedAt: new Date().toISOString(), scope: "GitHub Trending daily and language pages; ranked by displayed stars today", candidates }, null, 2) + "\n");
   console.log(`Saved ${candidates.length} links and ${generated.length} detailed articles for ${date}`);
