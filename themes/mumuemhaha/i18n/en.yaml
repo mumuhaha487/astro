@@ -58,6 +58,8 @@
   translation: Password
 - id: account_hint
   translation: Username 3–24 letters, digits or underscores; password at least 12 characters.
+- id: account_processing
+  translation: Checking account…
 - id: account_signed_in
   translation: Signed in as
 - id: account_logout

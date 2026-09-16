@@ -58,6 +58,8 @@
   translation: 密码
 - id: account_hint
   translation: 用户名 3–24 位字母、数字或下划线；密码至少 12 位。
+- id: account_processing
+  translation: 正在验证账号…
 - id: account_signed_in
   translation: 当前登录
 - id: account_logout

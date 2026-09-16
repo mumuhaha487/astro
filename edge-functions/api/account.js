@@ -2,8 +2,10 @@ const ACCOUNT_PREFIX = "blog_account_";
 const SESSION_PREFIX = "blog_session_";
 const COOKIE = "blog_session";
 const SESSION_AGE = 7 * 24 * 60 * 60;
-const ITERATIONS = 120_000;
+const ITERATIONS = 600_000;
 const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/;
+const HEX_32 = /^[a-f0-9]{32}$/;
+const HEX_64 = /^[a-f0-9]{64}$/;
 const encoder = new TextEncoder();
 
 export function resolveKV(env, globals = globalThis) {
@@ -34,31 +36,6 @@ function hex(bytes) {
 
 async function sha256(value) {
   return hex(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
-}
-
-async function passwordHash(password, salt) {
-  let material;
-  try {
-    material = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveBits"]);
-  } catch (cause) {
-    throw Object.assign(new Error("Password key import failed", { cause }), { code: "CRYPTO_IMPORT", detail: cause?.name || "unknown" });
-  }
-  const saltBytes = Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16));
-  try {
-    return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: saltBytes, iterations: ITERATIONS }, material, 256));
-  } catch (cause) {
-    try {
-      return hex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: { name: "SHA-256" }, salt: saltBytes.buffer, iterations: ITERATIONS }, material, 256));
-    } catch (alternate) {
-      try {
-        const derivationKey = await crypto.subtle.importKey("raw", encoder.encode(password), "PBKDF2", false, ["deriveKey"]);
-        const derived = await crypto.subtle.deriveKey({ name: "PBKDF2", hash: { name: "SHA-256" }, salt: saltBytes.buffer, iterations: ITERATIONS }, derivationKey, { name: "HMAC", hash: "SHA-256", length: 256 }, true, ["sign"]);
-        return hex(await crypto.subtle.exportKey("raw", derived));
-      } catch (keyError) {
-        throw Object.assign(new Error("Password derivation failed", { cause }), { code: "CRYPTO_DERIVE", detail: [cause, alternate, keyError].map((error) => String(error?.message || error?.name || "unknown").slice(0, 45)).join(" | ") });
-      }
-    }
-  }
 }
 
 function sameHash(left, right) {
@@ -94,6 +71,13 @@ export async function handleAccountRequest(request, store) {
     return response({ error: "账号服务尚未配置 KV 存储" }, 503);
   }
   if (request.method === "GET") {
+    const lookup = new URL(request.url).searchParams.get("username");
+    if (lookup !== null) {
+      if (!USERNAME_PATTERN.test(lookup)) return response({ error: "用户名格式不正确" }, 400);
+      const account = await store.get(ACCOUNT_PREFIX + lookup.toLowerCase(), { type: "json" });
+      const salt = HEX_32.test(account?.salt || "") ? account.salt : hex(crypto.getRandomValues(new Uint8Array(16)));
+      return response({ salt, iterations: account?.iterations || ITERATIONS });
+    }
     const session = await currentSession(request, store);
     return response({ user: session ? { username: session.username } : null }, 200, session ? undefined : setCookie("", 0));
   }
@@ -114,9 +98,9 @@ export async function handleAccountRequest(request, store) {
   if (payload.action !== "register" && payload.action !== "login") return response({ error: "操作不受支持" }, 400);
 
   const username = typeof payload.username === "string" ? payload.username.trim() : "";
-  const password = payload.password;
-  if (!USERNAME_PATTERN.test(username) || typeof password !== "string" || password.length < 12 || password.length > 128) {
-    return response({ error: "账号须为 3-24 位字母、数字或下划线，密码须为 12-128 位" }, 400);
+  const verifier = payload.verifier;
+  if (!USERNAME_PATTERN.test(username) || typeof verifier !== "string" || !HEX_64.test(verifier)) {
+    return response({ error: "账号或密码格式不正确" }, 400);
   }
   const key = ACCOUNT_PREFIX + username.toLowerCase();
   let account;
@@ -125,15 +109,16 @@ export async function handleAccountRequest(request, store) {
 
   if (payload.action === "register") {
     if (account) return response({ error: "账号已存在" }, 409);
-    const salt = hex(crypto.getRandomValues(new Uint8Array(16)));
-    account = { username, salt, hash: await passwordHash(password, salt), created: Date.now() };
+    if (typeof payload.salt !== "string" || !HEX_32.test(payload.salt)) return response({ error: "注册参数不正确" }, 400);
+    const comparisonSalt = hex(crypto.getRandomValues(new Uint8Array(16)));
+    account = { username, salt: payload.salt, iterations: ITERATIONS, comparisonSalt, hash: await sha256(comparisonSalt + verifier), created: Date.now() };
     try { await store.put(key, JSON.stringify(account)); }
     catch (cause) { throw Object.assign(new Error("Account write failed", { cause }), { code: "KV_WRITE_ACCOUNT" }); }
   } else {
-    if (!account || typeof account.salt !== "string" || typeof account.hash !== "string") {
+    if (!account || !HEX_32.test(account.comparisonSalt || "") || !HEX_64.test(account.hash || "")) {
       return response({ error: "账号或密码错误" }, 401);
     }
-    const actual = await passwordHash(password, account.salt);
+    const actual = await sha256(account.comparisonSalt + verifier);
     if (!sameHash(actual, account.hash)) return response({ error: "账号或密码错误" }, 401);
   }
 
@@ -149,6 +134,6 @@ export default async function onRequest({ request, env }) {
   try { return await handleAccountRequest(request, store); }
   catch (error) {
     console.error("Account request failed", error);
-    return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED", detail: error?.detail || undefined }, 503);
+    return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED" }, 503);
   }
 }

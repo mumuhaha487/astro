@@ -236,6 +236,13 @@
       login: $('[data-account-tab="login"]', tabs).textContent,
       register: $('[data-account-tab="register"]', tabs).textContent,
     };
+    const bytesToHex = (bytes) => [...new Uint8Array(bytes)].map((byte) => byte.toString(16).padStart(2, "0")).join("");
+    const deriveVerifier = async (password, salt, iterations) => {
+      if (!/^[a-f0-9]{32}$/.test(salt) || !Number.isInteger(iterations) || iterations < 100_000 || iterations > 1_000_000) throw new Error("账号参数无效");
+      const material = await crypto.subtle.importKey("raw", new TextEncoder().encode(password), "PBKDF2", false, ["deriveBits"]);
+      const saltBytes = Uint8Array.from(salt.match(/.{2}/g), (part) => parseInt(part, 16));
+      return bytesToHex(await crypto.subtle.deriveBits({ name: "PBKDF2", hash: "SHA-256", salt: saltBytes, iterations }, material, 256));
+    };
     const setMode = (next) => {
       mode = next;
       $$('[data-account-tab]', tabs).forEach((tab) => tab.setAttribute("aria-selected", String(tab.dataset.accountTab === mode)));
@@ -256,9 +263,10 @@
       message.classList.add("error");
     };
     const request = async (action, credentials) => {
-      const options = action === "session" ? {} : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, ...credentials }) };
-      const result = await fetch("/api/account", { ...options, credentials: "same-origin", cache: "no-store" });
-      const data = await result.json();
+      const options = action === "session" || action === "salt" ? {} : { method: "POST", headers: { "content-type": "application/json" }, body: JSON.stringify({ action, ...credentials }) };
+      const url = action === "salt" ? `/api/account?username=${encodeURIComponent(credentials.username)}` : "/api/account";
+      const result = await fetch(url, { ...options, credentials: "same-origin", cache: "no-store" });
+      const data = await result.json().catch(() => ({}));
       if (!result.ok) throw new Error(data.error || "账号服务暂时不可用");
       return data;
     };
@@ -274,9 +282,15 @@
     form.addEventListener("submit", async (event) => {
       event.preventDefault();
       submit.disabled = true;
-      message.textContent = "";
+      message.textContent = dialog.dataset.accountProcessing || "";
       message.classList.remove("error");
-      try { setUser((await request(mode, { username: form.elements.username.value, password: form.elements.password.value })).user); }
+      try {
+        const username = form.elements.username.value.trim();
+        const password = form.elements.password.value;
+        const saltInfo = mode === "register" ? { salt: bytesToHex(crypto.getRandomValues(new Uint8Array(16))), iterations: 600_000 } : await request("salt", { username });
+        const verifier = await deriveVerifier(password, saltInfo.salt, saltInfo.iterations);
+        setUser((await request(mode, { username, verifier, ...(mode === "register" ? { salt: saltInfo.salt } : {}) })).user);
+      }
       catch (error) { showError(error.message || "账号服务暂时不可用"); }
       finally { submit.disabled = false; }
     });

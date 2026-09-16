@@ -58,6 +58,8 @@
   translation: パスワード
 - id: account_hint
   translation: ユーザー名は英数字とアンダースコアの3～24文字、パスワードは12文字以上。
+- id: account_processing
+  translation: アカウントを確認中…
 - id: account_signed_in
   translation: ログイン中
 - id: account_logout

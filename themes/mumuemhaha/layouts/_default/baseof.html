@@ -114,7 +114,7 @@
     </div>
   </dialog>
 
-  <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-title">
+  <dialog class="account-dialog" id="account-dialog" aria-labelledby="account-title" data-account-processing="{{ i18n "account_processing" }}">
     <section class="account-panel">
       <header>
         <div><small>{{ i18n "account_eyebrow" }}</small><h2 id="account-title">{{ i18n "account_title" }}</h2></div>
@@ -144,7 +144,7 @@
     <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
     <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "tools" }}</span></a>
   </nav>
-  <script src="/hugo-theme/hugo.js?v=20260916-account-v1"></script>
+  <script src="/hugo-theme/hugo.js?v=20260916-account-v2"></script>
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>

@@ -163,7 +163,7 @@ assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missin
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three content sections");
 assert.match(home, /class="home-doc-list home-doc-list-unframed"/, "Homepage information area still uses the framed glass container");
 assert.match(home, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20260916-account-v1/, "Current script cache version is missing");
+assert.match(home, /hugo\.js\?v=20260916-account-v2/, "Current script cache version is missing");
 assert.match(home, /data-site-start-date="2022-04-15"[^>]*>本站已运行 <strong data-site-uptime>/, "Homepage runtime counter is missing");
 assert.match(home, /data-account-open[^>]*aria-label="登录或注册"/, "Top-right account trigger is missing");
 assert.match(home, /目前登录的各个功能都在维护中，此时注册功能为正常,但是实际为测试功能。，后续可能会删除账号。/, "Account test warning is missing");
@@ -250,7 +250,7 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260916-account-v1/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.js\?v=20260916-account-v2/, "Current interactive asset version is missing");
 assert.match(blog, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
