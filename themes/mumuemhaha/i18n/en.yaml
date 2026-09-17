@@ -57,7 +57,7 @@
 - id: account_password
   translation: Password
 - id: account_hint
-  translation: Username 3–24 letters, digits or underscores; password at least 12 characters.
+  translation: Use 3–24 letters, digits or underscores. Usernames must be unique; official and system names are reserved. Password at least 12 characters.
 - id: account_processing
   translation: Checking account…
 - id: account_signed_in

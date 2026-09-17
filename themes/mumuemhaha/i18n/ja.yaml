@@ -57,7 +57,7 @@
 - id: account_password
   translation: パスワード
 - id: account_hint
-  translation: ユーザー名は英数字とアンダースコアの3～24文字、パスワードは12文字以上。
+  translation: ユーザー名は英数字とアンダースコアの3～24文字で、重複や公式・システム名は使用できません。パスワードは12文字以上。
 - id: account_processing
   translation: アカウントを確認中…
 - id: account_signed_in

@@ -57,7 +57,7 @@
 - id: account_password
   translation: 密码
 - id: account_hint
-  translation: 用户名 3–24 位字母、数字或下划线；密码至少 12 位。
+  translation: 用户名为 3–24 位字母、数字或下划线，不可重复或使用官方/系统名称；密码至少 12 位。
 - id: account_processing
   translation: 正在验证账号…
 - id: account_signed_in

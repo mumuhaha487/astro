@@ -1,9 +1,19 @@
+import { getStore, PreconditionFailedError } from "@edgeone/pages-blob";
+
 const ACCOUNT_PREFIX = "blog_account_";
+const BLOB_ACCOUNT_PREFIX = "accounts/";
 const SESSION_PREFIX = "blog_session_";
 const COOKIE = "blog_session";
 const SESSION_AGE = 7 * 24 * 60 * 60;
 const ITERATIONS = 600_000;
 const USERNAME_PATTERN = /^[A-Za-z0-9_]{3,24}$/;
+const RESERVED_NAMES = new Set([
+  "admin", "administrator", "root", "sysadmin", "superuser", "owner", "official", "staff",
+  "moderator", "mod", "support", "help", "helpdesk", "info", "contact", "service",
+  "customerservice", "security", "webmaster", "postmaster", "hostmaster", "abuse",
+  "billing", "noreply", "system", "site", "www", "api", "bot", "team", "blog",
+  "vmss", "mumuemhaha", "github", "edgeone",
+]);
 const HEX_32 = /^[a-f0-9]{32}$/;
 const HEX_64 = /^[a-f0-9]{64}$/;
 const encoder = new TextEncoder();
@@ -45,6 +55,11 @@ function sameHash(left, right) {
   return difference === 0;
 }
 
+function reservedUsername(username) {
+  const parts = username.toLowerCase().split(/[_\d]+/).filter(Boolean);
+  return parts.some((part) => RESERVED_NAMES.has(part)) || RESERVED_NAMES.has(parts.join(""));
+}
+
 function cookieValue(request) {
   const match = request.headers.get("cookie")?.match(/(?:^|;\s*)blog_session=([a-f0-9]{64})(?:;|$)/);
   return match?.[1] || null;
@@ -66,15 +81,20 @@ async function currentSession(request, store) {
   return session;
 }
 
-export async function handleAccountRequest(request, store) {
+export async function handleAccountRequest(request, store, accountStore) {
   if (!store || typeof store.get !== "function" || typeof store.put !== "function") {
     return response({ error: "账号服务尚未配置 KV 存储" }, 503);
+  }
+  if (!accountStore || typeof accountStore.get !== "function" || typeof accountStore.setJSON !== "function") {
+    return response({ error: "账号服务尚未配置账号存储" }, 503);
   }
   if (request.method === "GET") {
     const lookup = new URL(request.url).searchParams.get("username");
     if (lookup !== null) {
       if (!USERNAME_PATTERN.test(lookup)) return response({ error: "用户名格式不正确" }, 400);
-      const account = await store.get(ACCOUNT_PREFIX + lookup.toLowerCase(), { type: "json" });
+      const key = lookup.toLowerCase();
+      const account = await store.get(ACCOUNT_PREFIX + key, { type: "json" })
+        || await accountStore.get(BLOB_ACCOUNT_PREFIX + key, { type: "json", consistency: "strong" });
       const salt = HEX_32.test(account?.salt || "") ? account.salt : hex(crypto.getRandomValues(new Uint8Array(16)));
       return response({ salt, iterations: account?.iterations || ITERATIONS });
     }
@@ -102,7 +122,11 @@ export async function handleAccountRequest(request, store) {
   if (!USERNAME_PATTERN.test(username) || typeof verifier !== "string" || !HEX_64.test(verifier)) {
     return response({ error: "账号或密码格式不正确" }, 400);
   }
-  const key = ACCOUNT_PREFIX + username.toLowerCase();
+  if (payload.action === "register" && reservedUsername(username)) {
+    return response({ error: "该用户名不能用于注册，请使用个人名称" }, 400);
+  }
+  const normalized = username.toLowerCase();
+  const key = ACCOUNT_PREFIX + normalized;
   let account;
   try { account = await store.get(key, { type: "json" }); }
   catch (cause) { throw Object.assign(new Error("Account lookup failed", { cause }), { code: "KV_READ_ACCOUNT" }); }
@@ -112,9 +136,16 @@ export async function handleAccountRequest(request, store) {
     if (typeof payload.salt !== "string" || !HEX_32.test(payload.salt)) return response({ error: "注册参数不正确" }, 400);
     const comparisonSalt = hex(crypto.getRandomValues(new Uint8Array(16)));
     account = { username, salt: payload.salt, iterations: ITERATIONS, comparisonSalt, hash: await sha256(comparisonSalt + verifier), created: Date.now() };
-    try { await store.put(key, JSON.stringify(account)); }
-    catch (cause) { throw Object.assign(new Error("Account write failed", { cause }), { code: "KV_WRITE_ACCOUNT" }); }
+    try { await accountStore.setJSON(BLOB_ACCOUNT_PREFIX + normalized, account, { onlyIfNew: true }); }
+    catch (cause) {
+      if (cause instanceof PreconditionFailedError || cause?.code === "PRECONDITION_FAILED") return response({ error: "账号已存在" }, 409);
+      throw Object.assign(new Error("Account write failed", { cause }), { code: "BLOB_WRITE_ACCOUNT" });
+    }
   } else {
+    if (!account) {
+      try { account = await accountStore.get(BLOB_ACCOUNT_PREFIX + normalized, { type: "json", consistency: "strong" }); }
+      catch (cause) { throw Object.assign(new Error("Account lookup failed", { cause }), { code: "BLOB_READ_ACCOUNT" }); }
+    }
     if (!account || !HEX_32.test(account.comparisonSalt || "") || !HEX_64.test(account.hash || "")) {
       return response({ error: "账号或密码错误" }, 401);
     }
@@ -128,10 +159,10 @@ export async function handleAccountRequest(request, store) {
   return response({ user: { username: account.username } }, 200, setCookie(token, SESSION_AGE));
 }
 
-export default async function onRequest({ request, env }) {
+export default async function onRequest({ request, env, accountStore }) {
   // Prefer the account binding; a single existing project KV binding is also safe to reuse.
   const store = resolveKV(env);
-  try { return await handleAccountRequest(request, store); }
+  try { return await handleAccountRequest(request, store, accountStore || getStore("blog-accounts")); }
   catch (error) {
     console.error("Account request failed", error);
     return response({ error: "账号服务暂时不可用", code: error?.code || "UNEXPECTED" }, 503);
