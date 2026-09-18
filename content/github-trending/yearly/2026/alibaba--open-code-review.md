@@ -11,6 +11,7 @@ comment: false
 tags:
   - AI
   - 开发工具
+  - 安全
 ---
 
 阿里巴巴开源、源自其内部运行两年的 AI 代码审查助手，采用确定性工程与 LLM Agent 混合架构，从 Git diff 生成行级精确审查意见的 Go 语言 CLI 工具。

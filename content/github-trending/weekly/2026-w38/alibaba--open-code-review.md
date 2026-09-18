@@ -11,6 +11,7 @@ comment: false
 tags:
   - AI
   - 开发工具
+  - 安全
 ---
 
 Open Code Review 是阿里巴巴开源的 AI 代码审查命令行工具，用确定性工程约束流程，用 LLM Agent 做动态判断，输出行级精确的评审意见，内置多语言规则并兼容 OpenAI、Anthropic 接口。
