@@ -9,8 +9,8 @@ repository_url: "https://github.com/alibaba/open-code-review"
 language: "Go"
 comment: false
 tags:
-  - 开发工具
   - AI
+  - 开发工具
   - 安全
 ---
 
