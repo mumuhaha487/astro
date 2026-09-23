@@ -1,12 +1,13 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
+import { resolveDeepSeekModel, selectDeepSeekModel } from "./deepseek-client.mjs";
 import { parseTrending, rankRepositories, request, selectFeatures } from "./update-github-trending.mjs";
 import { categories, classifyRepositories, validateClassification } from "./github-trending-tags.mjs";
 
 test("AI classification uses the fixed taxonomy and preserves repository order across batches", async () => {
   const repositories = [{ repo: "a/security", description: "" }, { repo: "b/skills" }, { repo: "c/unknown" }];
   const batches = [];
-  const result = await classifyRepositories(repositories, { apiKey: "test", batchSize: 2, generate: async (batch) => {
+  const result = await classifyRepositories(repositories, { apiKey: "test", model: "test-model", batchSize: 2, generate: async (batch) => {
     batches.push(batch.map((repo) => repo.repo));
     return batch.length === 2
       ? JSON.stringify({ items: [{ id: 1, tags: ["AI", "Skill"] }, { id: 0, tags: ["安全", "开发工具"] }] })
@@ -31,7 +32,7 @@ test("bounds AI tags and isolates incomplete classification", async () => {
   try {
     const calls = [];
     const tagged = await classifyRepositories([{ repo: "good/ai" }, { repo: "bad/response" }, { repo: "good/security" }], {
-      apiKey: "test", generate: async (batch) => {
+      apiKey: "test", model: "test-model", generate: async (batch) => {
         calls.push(batch.map((item) => item.repo));
         if (batch.length > 1 || batch[0].repo === "bad/response") return { items: [] };
         return { items: [{ id: 0, tags: [batch[0].repo === "good/ai" ? "AI" : "安全"] }] };
@@ -43,12 +44,12 @@ test("bounds AI tags and isolates incomplete classification", async () => {
     assert.ok(warnings.some((message) => message.includes("bad/response")));
   } finally { console.warn = originalWarn; }
   await assert.rejects(() => classifyRepositories([{ repo: "owner/repo" }], {
-    apiKey: "test", generate: async () => { throw new Error("AI tag service: HTTP 401"); },
+    apiKey: "test", model: "test-model", generate: async () => { throw new Error("AI tag service: HTTP 401"); },
   }), /HTTP 401/);
   console.warn = () => {};
   try {
     await assert.rejects(() => classifyRepositories(Array.from({ length: 5 }, (_, index) => ({ repo: `bad/${index}` })), {
-      apiKey: "test", generate: async () => ({ items: [] }),
+      apiKey: "test", model: "test-model", generate: async () => ({ items: [] }),
     }), /refusing mostly unclassified snapshot/);
   } finally { console.warn = originalWarn; }
 });
@@ -63,12 +64,25 @@ test("AI request sends the bounded taxonomy and repository evidence", async () =
     return { ok: true, json: async () => ({ choices: [{ message: { content: '{"items":[{"id":0,"tags":["教程"]}]}' } }] }) };
   };
   try {
-    const tagged = await classifyRepositories([{ repo: "owner/guide", description: "A course" }], { apiKey: "test" });
+    const tagged = await classifyRepositories([{ repo: "owner/guide", description: "A course" }], { apiKey: "test", model: "test-model" });
     assert.deepEqual(tagged[0].tags, ["教程"]);
     assert.match(body.messages[0].content, /AI、安全/);
     assert.match(body.messages[0].content, /1 至 3/);
     assert.match(body.messages[1].content, /owner\/guide/);
+    assert.equal(body.model, "test-model");
   } finally { globalThis.fetch = originalFetch; }
+});
+
+test("discovers a currently available DeepSeek text model", async () => {
+  assert.equal(selectDeepSeekModel(["embedding/model", "deepseek/deepseek-v4.1-flash", "deepseek/chat"]), "deepseek/deepseek-v4.1-flash");
+  assert.equal(selectDeepSeekModel(["deepseek/old", "deepseek/custom"], "deepseek/custom"), "deepseek/custom");
+  assert.throws(() => selectDeepSeekModel(["other/model"]), /No DeepSeek text model/);
+  const model = await resolveDeepSeekModel("test", { fetchImpl: async (url, options) => {
+    assert.equal(url, "https://deepseek.inc.re/v1/models");
+    assert.equal(options.headers.Authorization, "Bearer test");
+    return { ok: true, json: async () => ({ data: [{ id: "deepseek/deepseek-v4.1-flash" }] }) };
+  } });
+  assert.equal(model, "deepseek/deepseek-v4.1-flash");
 });
 
 test("parses daily growth and repository metadata", () => {

@@ -2,6 +2,7 @@ import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyRepositories, version as tagVersion } from "./github-trending-tags.mjs";
+import { resolveDeepSeekModel } from "./deepseek-client.mjs";
 import { parse } from "node-html-parser";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -9,7 +10,6 @@ const contentRoot = join(root, "content", "github-trending");
 const dataRoot = join(root, "data", "github_trending");
 const languages = ["", "python", "typescript", "javascript", "rust", "go", "java", "c++", "c%23", "shell", "swift", "kotlin", "ruby", "php", "dart", "jupyter-notebook"];
 const sections = ["purpose", "advantages", "innovations", "scenarios", "usefulness", "limitations"];
-const model = "deepseek/deepseek-v4-flash";
 
 export function parseTrending(html) {
   return parse(html).querySelectorAll("article.Box-row").flatMap((article) => {
@@ -114,7 +114,7 @@ function validAnalysis(value) {
     && sections.every((section) => typeof value[section] === "string" && value[section].trim().length >= 35);
 }
 
-async function analyze(repo, readme, apiKey) {
+async function analyze(repo, readme, apiKey, model) {
   const input = JSON.stringify({ repository: repo.repo, description: repo.description, language: repo.language, readme: readme.slice(0, 17000) });
   const response = await request("https://deepseek.inc.re/v1/chat/completions", {
     method: "POST",
@@ -165,6 +165,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
   try { await readFile(join(dataRoot, `${date}.json`)); console.log(`Snapshot ${date} exists; nothing to update.`); return; }
   catch (error) { if (error.code !== "ENOENT") throw error; }
 
+  const model = await resolveDeepSeekModel(apiKey);
   const groups = [];
   const fetchFailures = [];
   for (const language of languages) {
@@ -177,7 +178,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
       console.warn(`Could not fetch ${url}: ${error.message}`);
     }
   }
-  const candidates = await classifyRepositories(rankRepositories(groups), { apiKey });
+  const candidates = await classifyRepositories(rankRepositories(groups), { apiKey, model });
   if (candidates.length < 50) {
     const details = fetchFailures.length ? ` Fetch failures: ${fetchFailures.join(" | ")}` : "";
     throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot.${details}`);
@@ -193,7 +194,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
     if (!readme) continue;
     let analysis;
     for (let attempt = 0; attempt < 2; attempt++) {
-      try { analysis = await analyze(repo, readme, apiKey); break; }
+      try { analysis = await analyze(repo, readme, apiKey, model); break; }
       catch (error) {
         if (/HTTP 401|HTTP 403/.test(error.message)) throw error;
         console.warn(`Analysis attempt ${attempt + 1} failed for ${repo.repo}: ${error.message}`);
