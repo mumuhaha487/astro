@@ -38,20 +38,17 @@ jobs:
           GITHUB_TOKEN: ${{ github.token }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
-          max_attempts=20
-          for attempt in $(seq 1 "$max_attempts"); do
-            echo "Generation attempt $attempt/$max_attempts"
+          attempt=1
+          while true; do
+            echo "Generation attempt $attempt"
             if node scripts/update-github-trending.mjs && node scripts/update-github-trending-periods.mjs; then
               exit 0
-            fi
-            if [ "$attempt" -eq "$max_attempts" ]; then
-              echo "Generation still failed after $max_attempts attempts."
-              exit 1
             fi
             delay=$((attempt * 60))
             if [ "$delay" -gt 900 ]; then delay=900; fi
             echo "Generation failed; retrying in $delay seconds."
             sleep "$delay"
+            attempt=$((attempt + 1))
           done
       - name: Commit dated snapshot and articles
         run: |
