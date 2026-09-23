@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { parseTrending, rankRepositories, selectFeatures } from "./update-github-trending.mjs";
+import { parseTrending, rankRepositories, request, selectFeatures } from "./update-github-trending.mjs";
 import { categories, classifyRepositories, validateClassification } from "./github-trending-tags.mjs";
 
 test("AI classification uses the fixed taxonomy and preserves repository order across batches", async () => {
@@ -78,6 +78,30 @@ test("parses daily growth and repository metadata", () => {
     starsToday: 1234, language: "Rust", description: "Useful framework",
   }]);
   assert.deepEqual(parseTrending('<article class="Box-row"><h2><a href="/bad/path/more">x</a></h2><span>12 stars today</span></article>'), []);
+});
+
+test("retries transient network failures and stops on permanent HTTP errors", async () => {
+  const originalFetch = globalThis.fetch;
+  try {
+    let calls = 0;
+    globalThis.fetch = async () => {
+      calls++;
+      if (calls < 3) throw new TypeError("fetch failed");
+      return { ok: true };
+    };
+    assert.equal((await request("https://example.test/transient", {}, 3, 0)).ok, true);
+    assert.equal(calls, 3);
+
+    calls = 0;
+    globalThis.fetch = async () => {
+      calls++;
+      return { ok: false, status: 404, headers: new Headers() };
+    };
+    await assert.rejects(() => request("https://example.test/missing", {}, 3, 0), /HTTP 404/);
+    assert.equal(calls, 1);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("ranks unique repositories and skips names featured previously", () => {

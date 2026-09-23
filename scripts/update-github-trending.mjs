@@ -51,22 +51,40 @@ export function selectFeatures(repositories, seenNames, limit = 10) {
   return selected;
 }
 
-export async function request(url, options = {}, attempts = 3) {
+function retryDelay(response, attempt, baseDelayMs) {
+  const retryAfter = response?.headers?.get?.("retry-after");
+  if (retryAfter) {
+    const seconds = Number(retryAfter);
+    if (Number.isFinite(seconds)) return Math.max(seconds * 1000, baseDelayMs);
+    const date = Date.parse(retryAfter);
+    if (Number.isFinite(date)) return Math.max(date - Date.now(), baseDelayMs);
+  }
+  return Math.min(baseDelayMs * (2 ** attempt), 30000);
+}
+
+export async function request(url, options = {}, attempts = 6, baseDelayMs = 1500) {
+  let lastError;
   for (let attempt = 0; attempt < attempts; attempt++) {
+    let response;
     try {
-      const response = await fetch(url, { signal: AbortSignal.timeout(45000), ...options });
+      response = await fetch(url, { signal: AbortSignal.timeout(45000), ...options });
       if (response.ok) return response;
-      if (response.status !== 429 && response.status < 500) {
+      const rateLimited = response.status === 403 && response.headers.get("x-ratelimit-remaining") === "0";
+      if (response.status !== 429 && response.status < 500 && !rateLimited) {
         const error = new Error(`${url}: HTTP ${response.status}`);
         error.retryable = false;
         throw error;
       }
-      if (attempt === attempts - 1) throw new Error(`${url}: HTTP ${response.status}`);
+      throw new Error(`${url}: HTTP ${response.status}`);
     } catch (error) {
-      if (attempt === attempts - 1 || error.retryable === false) throw error;
+      lastError = error;
+      if (attempt === attempts - 1 || error.retryable === false) break;
     }
-    await new Promise((done) => setTimeout(done, 1500 * (attempt + 1)));
+    const delay = retryDelay(response, attempt, baseDelayMs);
+    console.warn(`Request attempt ${attempt + 1}/${attempts} failed for ${url}: ${lastError.message}; retrying in ${delay}ms`);
+    await new Promise((done) => setTimeout(done, delay));
   }
+  throw lastError;
 }
 
 async function previousNames() {
@@ -148,17 +166,22 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
   catch (error) { if (error.code !== "ENOENT") throw error; }
 
   const groups = [];
+  const fetchFailures = [];
   for (const language of languages) {
     const url = `https://github.com/trending${language ? `/${language}` : ""}?since=daily`;
     try {
       const response = await request(url, { headers: { "User-Agent": "mumuemhaha-trending-curator" } });
       groups.push(parseTrending(await response.text()));
     } catch (error) {
+      fetchFailures.push(`${url}: ${error.message}`);
       console.warn(`Could not fetch ${url}: ${error.message}`);
     }
   }
   const candidates = await classifyRepositories(rankRepositories(groups), { apiKey });
-  if (candidates.length < 50) throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot`);
+  if (candidates.length < 50) {
+    const details = fetchFailures.length ? ` Fetch failures: ${fetchFailures.join(" | ")}` : "";
+    throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot.${details}`);
+  }
   const pool = selectFeatures(candidates, await previousNames(), 30);
   const generated = [];
   for (const repo of pool) {

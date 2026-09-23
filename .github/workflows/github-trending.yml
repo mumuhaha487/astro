@@ -16,12 +16,12 @@ concurrency:
 jobs:
   update:
     runs-on: ubuntu-latest
-    timeout-minutes: 35
+    timeout-minutes: 350
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v6
         with:
           persist-credentials: true
-      - uses: actions/setup-node@v4
+      - uses: actions/setup-node@v6
         with:
           node-version: "22"
           cache: npm
@@ -33,16 +33,26 @@ jobs:
         env:
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: node scripts/backfill-github-trending-tags.mjs
-      - name: Curate daily repositories
+      - name: Generate trending data with retries
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-        run: node scripts/update-github-trending.mjs
-      - name: Build cumulative rankings and search
-        env:
-          GITHUB_TOKEN: ${{ github.token }}
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-        run: node scripts/update-github-trending-periods.mjs
+        run: |
+          max_attempts=20
+          for attempt in $(seq 1 "$max_attempts"); do
+            echo "Generation attempt $attempt/$max_attempts"
+            if node scripts/update-github-trending.mjs && node scripts/update-github-trending-periods.mjs; then
+              exit 0
+            fi
+            if [ "$attempt" -eq "$max_attempts" ]; then
+              echo "Generation still failed after $max_attempts attempts."
+              exit 1
+            fi
+            delay=$((attempt * 60))
+            if [ "$delay" -gt 900 ]; then delay=900; fi
+            echo "Generation failed; retrying in $delay seconds."
+            sleep "$delay"
+          done
       - name: Commit dated snapshot and articles
         run: |
           git add content/github-trending data/github_trending data/github_trending_periods public/api/github-trending-search.json
