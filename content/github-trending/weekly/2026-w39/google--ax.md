@@ -7,7 +7,9 @@ description: "AX 是 Google 开源的声明式智能体编排运行时，用 Go 
 repository: "google/ax"
 repository_url: "https://github.com/google/ax"
 language: "Go"
-tags: ["AI"]
+tags:
+  - AI
+  - 开发工具
 comment: false
 ---
 

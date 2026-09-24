@@ -7,7 +7,8 @@ description: "OpenStock 是 Open Dev Society 推出的开源股票市场应用�
 repository: "Open-Dev-Society/OpenStock"
 repository_url: "https://github.com/Open-Dev-Society/OpenStock"
 language: "TypeScript"
-tags: ["金融","数据"]
+tags:
+  - 金融
 comment: false
 ---
 

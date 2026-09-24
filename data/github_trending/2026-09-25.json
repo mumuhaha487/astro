@@ -1,0 +1,1174 @@
+{
+  "date": "2026-09-25",
+  "capturedAt": "2026-09-24T23:38:40.548Z",
+  "tagVersion": 2,
+  "scope": "GitHub Trending daily and language pages; ranked by displayed stars today",
+  "candidates": [
+    {
+      "repo": "vectorize-io/hindsight",
+      "name": "hindsight",
+      "url": "https://github.com/vectorize-io/hindsight",
+      "starsToday": 1607,
+      "language": "Python",
+      "description": "Hindsight: Agent Memory That Learns",
+      "tags": [
+        "AI"
+      ],
+      "article": "/github-trending/2026-09-25/vectorize-io--hindsight/",
+      "summary": "Hindsight 是 Vectorize 开源的智能体记忆系统，强调让智能体随时间学习，而非仅回忆对话历史。它通过 retain、recall、reflect 三个操作管理世界事实、经验、观察与心智模型，并支持 HTTP 服务、嵌入式 Python、多语言客户端及 MCP 接口。"
+    },
+    {
+      "repo": "google/ax",
+      "name": "ax",
+      "url": "https://github.com/google/ax",
+      "starsToday": 1376,
+      "language": "Go",
+      "description": "Google's open agentic orchestration runtime",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "hydra-db/hydradb",
+      "name": "hydradb",
+      "url": "https://github.com/hydra-db/hydradb",
+      "starsToday": 1232,
+      "language": "Rust",
+      "description": "HydraDB - fast graph database on object storage",
+      "tags": [
+        "数据"
+      ]
+    },
+    {
+      "repo": "dream-num/univer",
+      "name": "univer",
+      "url": "https://github.com/dream-num/univer",
+      "starsToday": 1060,
+      "language": "TypeScript",
+      "description": "The Office Harness for AI Agents — Spreadsheets, Docs, Slides, Canvas, Relational Tables, and PDF in one runtime.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Nasiko-Labs/nasiko",
+      "name": "nasiko",
+      "url": "https://github.com/Nasiko-Labs/nasiko",
+      "starsToday": 1038,
+      "language": "Rust",
+      "description": "Developer Control Plane for your AI Agents",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "farion1231/cc-switch",
+      "name": "cc-switch",
+      "url": "https://github.com/farion1231/cc-switch",
+      "starsToday": 957,
+      "language": "Rust",
+      "description": "A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Build & Hermes Agent. Only official website: ccswitch.io",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-25/farion1231--cc-switch/",
+      "summary": "CC Switch 是一款基于 Rust 与 Tauri 2 构建的跨平台桌面一体化助手，用于统一管理并切换 Claude Code、Codex、OpenCode、OpenClaw、Grok Build、Hermes Agent 等多款 AI 编码代理工具的配置。"
+    },
+    {
+      "repo": "stablyai/orca",
+      "name": "orca",
+      "url": "https://github.com/stablyai/orca",
+      "starsToday": 942,
+      "language": "TypeScript",
+      "description": "Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "experientiallabs/experiential",
+      "name": "experiential",
+      "url": "https://github.com/experientiallabs/experiential",
+      "starsToday": 774,
+      "language": "Python",
+      "description": "Experiential is the open source, zero markup gateway for BYOK, self-hosted and 1000+ marketplace models. It learns from your traffic to cut costs, recommend better models, and train a specialized model you own.",
+      "tags": [
+        "AI",
+        "云服务"
+      ],
+      "article": "/github-trending/2026-09-25/experientiallabs--experiential/",
+      "summary": "Experiential 是一个开源网关与路由，提供 OpenAI 兼容 API，统一接入托管、BYOK 及本地模型，支持访问与预算控制，并能利用流量训练定制路由或模型。"
+    },
+    {
+      "repo": "mattpocock/skills",
+      "name": "skills",
+      "url": "https://github.com/mattpocock/skills",
+      "starsToday": 661,
+      "language": "Shell",
+      "description": "Skills for Real Engineers. Straight from my .agents directory.",
+      "tags": [
+        "Skill"
+      ]
+    },
+    {
+      "repo": "obra/superpowers",
+      "name": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "starsToday": 606,
+      "language": "Shell",
+      "description": "An agentic skills framework & software development methodology that works.",
+      "tags": [
+        "Skill"
+      ]
+    },
+    {
+      "repo": "pbakaus/impeccable",
+      "name": "impeccable",
+      "url": "https://github.com/pbakaus/impeccable",
+      "starsToday": 564,
+      "language": "JavaScript",
+      "description": "The design language that makes your AI harness better at design.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "anthropics/financial-services",
+      "name": "financial-services",
+      "url": "https://github.com/anthropics/financial-services",
+      "starsToday": 510,
+      "language": "Python",
+      "description": "",
+      "tags": [
+        "金融"
+      ]
+    },
+    {
+      "repo": "superdesigndev/treg",
+      "name": "treg",
+      "url": "https://github.com/superdesigndev/treg",
+      "starsToday": 470,
+      "language": "Python",
+      "description": "OpenRouter for agent tools. Join community here: https://discord.gg/6mQYYfFMAn",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "strands-agents/harness-sdk",
+      "name": "harness-sdk",
+      "url": "https://github.com/strands-agents/harness-sdk",
+      "starsToday": 463,
+      "language": "Python",
+      "description": "Build an agent harness and control it end-to-end. Open-source SDK for production AI agents in Python & TypeScript - any model, any cloud.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-25/strands-agents--harness-sdk/",
+      "summary": "Strands Agents 是开源 SDK，用 Python 和 TypeScript 构建与运行 AI 智能体。仓库包含 Strands harness、双语言 SDK、CLI 与文档站，支持多模型与多智能体模式。"
+    },
+    {
+      "repo": "agent-substrate/substrate",
+      "name": "substrate",
+      "url": "https://github.com/agent-substrate/substrate",
+      "starsToday": 439,
+      "language": "Go",
+      "description": "Agent Substrate: the core system",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "every-app/open-seo",
+      "name": "open-seo",
+      "url": "https://github.com/every-app/open-seo",
+      "starsToday": 426,
+      "language": "TypeScript",
+      "description": "Open source alternative to Semrush and Ahrefs",
+      "tags": [
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-25/every-app--open-seo/",
+      "summary": "OpenSEO 是 TypeScript 编写的开源 SEO 工具，定位为 Semrush 与 Ahrefs 的替代方案，采用按量付费模式，用户自备 DataForSEO API 密钥获取数据，并提供 MCP 服务器与 Agent Skills 供 AI 代理直接调用 SEO 数据。"
+    },
+    {
+      "repo": "HKUDS/CLI-Anything",
+      "name": "CLI-Anything",
+      "url": "https://github.com/HKUDS/CLI-Anything",
+      "starsToday": 415,
+      "language": "Python",
+      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-25/hkuds--cli-anything/",
+      "summary": "CLI-Anything 是香港大学数据科学实验室开源的项目，通过生成命令行界面（CLI）让各类软件可被 AI Agent 调用，并提供 CLI-Hub 注册中心用于浏览、安装和分享社区构建的 CLI 工具。"
+    },
+    {
+      "repo": "TNT-Likely/PanWatch",
+      "name": "PanWatch",
+      "url": "https://github.com/TNT-Likely/PanWatch",
+      "starsToday": 386,
+      "language": "Python",
+      "description": "盯盘侠 PanWatch · 自托管 AI 盯盘助手，集成 TradingAgents 多 Agent 投资决策 | A股/港股/美股实时监控、持仓管理、智能分析、全渠道推送",
+      "tags": [
+        "AI",
+        "金融"
+      ],
+      "article": "/github-trending/2026-09-25/tnt-likely--panwatch/",
+      "summary": "盯盘侠 PanWatch 是一个自托管的 AI 盯盘助手，集成 TradingAgents 多 Agent 框架，覆盖 A 股、港股、美股实时监控、持仓管理与分析，并通过多渠道推送通知。"
+    },
+    {
+      "repo": "davila7/claude-code-templates",
+      "name": "claude-code-templates",
+      "url": "https://github.com/davila7/claude-code-templates",
+      "starsToday": 382,
+      "language": "Python",
+      "description": "CLI tool for configuring and monitoring Claude Code",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "rohitg00/ai-engineering-from-scratch",
+      "name": "ai-engineering-from-scratch",
+      "url": "https://github.com/rohitg00/ai-engineering-from-scratch",
+      "starsToday": 310,
+      "language": "Python",
+      "description": "Learn it. Build it. Ship it for others.",
+      "tags": [
+        "教程"
+      ],
+      "article": "/github-trending/2026-09-25/rohitg00--ai-engineering-from-scratch/",
+      "summary": "一个开源 AI 工程课程仓库，包含 20 个阶段、523 节课，覆盖从数学基础到智能体与生产的完整链路，支持 Python、TypeScript、Rust、Julia 多语言实现。"
+    },
+    {
+      "repo": "clash-verge-rev/clash-verge-rev",
+      "name": "clash-verge-rev",
+      "url": "https://github.com/clash-verge-rev/clash-verge-rev",
+      "starsToday": 308,
+      "language": "Rust",
+      "description": "A modern GUI client based on Tauri, designed to run in Windows, macOS and Linux for tailored proxy experience",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "op7418/Humanizer-zh",
+      "name": "Humanizer-zh",
+      "url": "https://github.com/op7418/Humanizer-zh",
+      "starsToday": 290,
+      "language": "Python",
+      "description": "Humanizer 的汉化版本，Claude Code Skills，旨在消除文本中 AI 生成的痕迹。",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "article": "/github-trending/2026-09-25/op7418--humanizer-zh/",
+      "summary": "这是一个面向 Claude Code 的中文文本润色 Skill，输入文字或文件，按编辑原则去除空话、重复与模板化表达，同时保留事实、确定程度和作者声音，默认交付最终稿而非检测报告。"
+    },
+    {
+      "repo": "mvt-project/mvt",
+      "name": "mvt",
+      "url": "https://github.com/mvt-project/mvt",
+      "starsToday": 275,
+      "language": "Python",
+      "description": "MVT (Mobile Verification Toolkit) helps with conducting forensics of mobile devices in order to find signs of a potential compromise.",
+      "tags": [
+        "安全",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "harry7557558/spirula-studio",
+      "name": "spirula-studio",
+      "url": "https://github.com/harry7557558/spirula-studio",
+      "starsToday": 264,
+      "language": "C++",
+      "description": "Cross-vendor 3D Gaussian Splatting trainer - video to splat to mesh, Vulkan or CUDA.",
+      "tags": [
+        "开发工具",
+        "音视频"
+      ],
+      "article": "/github-trending/2026-09-25/harry7557558--spirula-studio/",
+      "summary": "Spirula Studio 是一个自包含的跨平台 3D 高斯泼溅训练工具，用 C++ 编写，支持从视频或照片到泼溅再到网格的全流程，无需 Python 或 COLMAP，通过 Vulkan 或 CUDA 后端在 NVIDIA、AMD、Intel 和 Apple GPU 上运行。"
+    },
+    {
+      "repo": "can1357/oh-my-pi",
+      "name": "oh-my-pi",
+      "url": "https://github.com/can1357/oh-my-pi",
+      "starsToday": 210,
+      "language": "TypeScript",
+      "description": "⌥ Coding agent with the IDE wired in. Built by Stencil Labs.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "harry0703/MoneyPrinterTurbo",
+      "name": "MoneyPrinterTurbo",
+      "url": "https://github.com/harry0703/MoneyPrinterTurbo",
+      "starsToday": 184,
+      "language": "Python",
+      "description": "利用 AI 大模型和自动化工作流，根据主题或关键词一键生成高清短视频。Generate HD short videos from a topic or keyword with an automated AI workflow.",
+      "tags": [
+        "AI",
+        "音视频"
+      ]
+    },
+    {
+      "repo": "laoma2053/awesome-zhuiju-free",
+      "name": "awesome-zhuiju-free",
+      "url": "https://github.com/laoma2053/awesome-zhuiju-free",
+      "starsToday": 181,
+      "language": "JavaScript",
+      "description": "免费无广告的追剧资源指南，人工精选资源、每天检测资源有效性。收录在线影视、影视APP、网盘搜索、磁力BT、字幕、TVBox / 影视仓空壳软件/配置地址、IPTV直播源、会员拼团、影视相关开源项目。开源，社区共同维护。",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "block/buzz",
+      "name": "buzz",
+      "url": "https://github.com/block/buzz",
+      "starsToday": 176,
+      "language": "Rust",
+      "description": "A hive mind communication platform",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "FxEmbed/FxEmbed",
+      "name": "FxEmbed",
+      "url": "https://github.com/FxEmbed/FxEmbed",
+      "starsToday": 165,
+      "language": "TypeScript",
+      "description": "Fix X/Twitter and Bluesky embeds! Use multiple images, videos, polls, translations and more on Discord, Telegram and others",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "vorssaint/vorssaint-utils",
+      "name": "vorssaint-utils",
+      "url": "https://github.com/vorssaint/vorssaint-utils",
+      "starsToday": 164,
+      "language": "Swift",
+      "description": "Free and open-source macOS menu bar toolkit.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "cactus-compute/needle",
+      "name": "needle",
+      "url": "https://github.com/cactus-compute/needle",
+      "starsToday": 161,
+      "language": "Python",
+      "description": "Automation foundation model for tiny devices: 2-bit, 8-29 MB, tool calls, structured extraction and embeddings on phones, wearables, smart homes, robots, cars and microcontrollers.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "anthropics/skills",
+      "name": "skills",
+      "url": "https://github.com/anthropics/skills",
+      "starsToday": 158,
+      "language": "Python",
+      "description": "Public repository for Agent Skills",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "jaywcjlove/awesome-mac",
+      "name": "awesome-mac",
+      "url": "https://github.com/jaywcjlove/awesome-mac",
+      "starsToday": 155,
+      "language": "Swift",
+      "description": " This project is dedicated to collecting high-quality macOS software and organizing them systematically by different categories for easy search and use.",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "weave-os/router",
+      "name": "router",
+      "url": "https://github.com/weave-os/router",
+      "starsToday": 154,
+      "language": "Go",
+      "description": "Model router for agentic systems. Routes every prompt to the right model in <50ms. Cut costs 40-70% with just an endpoint change.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "julyx10/lap",
+      "name": "lap",
+      "url": "https://github.com/julyx10/lap",
+      "starsToday": 151,
+      "language": "Vue",
+      "description": "An offline-first photo manager for large local libraries",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "juspay/hyperswitch",
+      "name": "hyperswitch",
+      "url": "https://github.com/juspay/hyperswitch",
+      "starsToday": 149,
+      "language": "Rust",
+      "description": "Open source, composable payments platform | PCI compliant | SaaS and Self-host options | Enables connectivity to multiple payment, payout, fraud, vault and tokenization providers | Uplifts authorization with intelligent routing and revenue recovery | Reduce payment processing costs with cost observability | Reduces payment ops with reconciliation",
+      "tags": [
+        "金融"
+      ]
+    },
+    {
+      "repo": "remotion-dev/remotion",
+      "name": "remotion",
+      "url": "https://github.com/remotion-dev/remotion",
+      "starsToday": 135,
+      "language": "TypeScript",
+      "description": "🎥 Make videos programmatically with React",
+      "tags": [
+        "音视频",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "zeronsh/zeron",
+      "name": "zeron",
+      "url": "https://github.com/zeronsh/zeron",
+      "starsToday": 129,
+      "language": "Rust",
+      "description": "A native control plane for Claude Code, Codex, Cursor, Devin and other coding agents.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "router-for-me/CLIProxyAPI",
+      "name": "CLIProxyAPI",
+      "url": "https://github.com/router-for-me/CLIProxyAPI",
+      "starsToday": 124,
+      "language": "Go",
+      "description": "Wrap Antigravity, ChatGPT Codex, Claude Code, Grok Build, Muse Code, Davin as an OpenAI/Gemini/Claude/Codex compatible API service, allowing you to enjoy the free Gemini Series, GPT Series, Grok Series, Claude model through API",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Mathieu2301/TradingView-API",
+      "name": "TradingView-API",
+      "url": "https://github.com/Mathieu2301/TradingView-API",
+      "starsToday": 110,
+      "language": "JavaScript",
+      "description": "📈 Get real-time stocks from TradingView",
+      "tags": [
+        "金融"
+      ]
+    },
+    {
+      "repo": "ophub/amlogic-s9xxx-armbian",
+      "name": "amlogic-s9xxx-armbian",
+      "url": "https://github.com/ophub/amlogic-s9xxx-armbian",
+      "starsToday": 110,
+      "language": "Shell",
+      "description": "Supports running Armbian on Amlogic, Allwinner, and Rockchip devices. Support a311d, s922x, s905x3, s905x2, s912, s905d, s905x, s905w, s905, s905l, rk3588, rk3568, rk3399, rk3328, h6, etc.",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "alirezarezvani/claude-skills",
+      "name": "claude-skills",
+      "url": "https://github.com/alirezarezvani/claude-skills",
+      "starsToday": 96,
+      "language": "Python",
+      "description": "380 Claude Code skills & agent skills & plugins (30+ Agents, 70+ custom commands, 380+ skills, customizable references, scripts)for Claude Code, Codex, Gemini CLI, Cursor, and 8 more coding agents — engineering, marketing, product, compliance, C-level advisory, research, business operations, commercial & finance, and your daily productivity skills.",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "microsoft/generative-ai-for-beginners",
+      "name": "generative-ai-for-beginners",
+      "url": "https://github.com/microsoft/generative-ai-for-beginners",
+      "starsToday": 96,
+      "language": "Jupyter Notebook",
+      "description": "21 Lessons, Get Started Building with Generative AI",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "androoAGI/starnet",
+      "name": "starnet",
+      "url": "https://github.com/androoAGI/starnet",
+      "starsToday": 95,
+      "language": "JavaScript",
+      "description": "A living pixel-art station where real AI agents do real work. Local-first desktop agent harness - bring your own key, watch your crew actually run.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "cursor/plugins",
+      "name": "plugins",
+      "url": "https://github.com/cursor/plugins",
+      "starsToday": 90,
+      "language": "TypeScript",
+      "description": "Cursor plugin specification and official plugins",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "ArvinLovegood/go-stock",
+      "name": "go-stock",
+      "url": "https://github.com/ArvinLovegood/go-stock",
+      "starsToday": 87,
+      "language": "Go",
+      "description": "🦄🦄🦄AI赋能股票分析：AI加持的股票分析/选股工具。股票行情获取，AI热点资讯分析，AI资金/财务分析，涨跌报警推送。支持A股，港股，美股。支持市场整体/个股情绪分析，AI辅助选股等。数据全部保留在本地。支持DeepSeek，OpenAI， Ollama，LMStudio，AnythingLLM，硅基流动，火山方舟，阿里云百炼等平台或模型。",
+      "tags": [
+        "AI",
+        "金融"
+      ]
+    },
+    {
+      "repo": "aayushch/laya",
+      "name": "laya",
+      "url": "https://github.com/aayushch/laya",
+      "starsToday": 79,
+      "language": "Python",
+      "description": "Laya is an open-source, local-first AI notification command center that aggregates Slack, Gmail, GitHub, Jira, Notion, Outlook, Calendar (and more) notifications using local LLMs via Ollama and LM Studio. Supports cloud models via BYOK.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "iOfficeAI/OfficeCLI",
+      "name": "OfficeCLI",
+      "url": "https://github.com/iOfficeAI/OfficeCLI",
+      "starsToday": 76,
+      "language": "C#",
+      "description": "OfficeCLI is the first and best Office suite purpose-built for AI agents to read, edit, and automate Word, Excel, and PowerPoint files. Free, open-source, single binary, no Office installation required.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "mnfst/awesome-free-llm-apis",
+      "name": "awesome-free-llm-apis",
+      "url": "https://github.com/mnfst/awesome-free-llm-apis",
+      "starsToday": 74,
+      "language": "JavaScript",
+      "description": "List of Permanent Free LLM API (API Keys)",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "steipete/CodexBar",
+      "name": "CodexBar",
+      "url": "https://github.com/steipete/CodexBar",
+      "starsToday": 73,
+      "language": "Swift",
+      "description": "Show usage stats for OpenAI Codex and Claude Code, without having to login.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "leejet/stable-diffusion.cpp",
+      "name": "stable-diffusion.cpp",
+      "url": "https://github.com/leejet/stable-diffusion.cpp",
+      "starsToday": 69,
+      "language": "C++",
+      "description": "Diffusion model(SD,Flux,Wan,Qwen Image,Z-Image,...) inference in pure C/C++",
+      "tags": [
+        "AI",
+        "音视频"
+      ]
+    },
+    {
+      "repo": "lahfir/agent-desktop",
+      "name": "agent-desktop",
+      "url": "https://github.com/lahfir/agent-desktop",
+      "starsToday": 65,
+      "language": "Rust",
+      "description": "Agent Desktop gives any agent reliable computer use on the desktop. Built with Rust, it sees any app's real UI structure through OS accessibility trees and operates it — refs stay stable and actions stay safe to retry, instead of guessing from pixels.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "remorses/gpuix",
+      "name": "gpuix",
+      "url": "https://github.com/remorses/gpuix",
+      "starsToday": 62,
+      "language": "Rust",
+      "description": "Node.js & React bindings for Zed’s GPUI. Build memory efficient native apps with React and no Electron",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "2dust/v2rayNG",
+      "name": "v2rayNG",
+      "url": "https://github.com/2dust/v2rayNG",
+      "starsToday": 51,
+      "language": "Kotlin",
+      "description": "A V2Ray client for Android, support Xray core and v2fly core",
+      "tags": [
+        "安全",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "gkd-kit/gkd",
+      "name": "gkd",
+      "url": "https://github.com/gkd-kit/gkd",
+      "starsToday": 51,
+      "language": "Kotlin",
+      "description": "基于无障碍，高级选择器，订阅规则的自定义屏幕点击安卓应用 | An Android APP with custom screen tapping based on Accessibility, Advanced Selectors, and Subscription Rules",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "pdone/lx-music-source",
+      "name": "lx-music-source",
+      "url": "https://github.com/pdone/lx-music-source",
+      "starsToday": 50,
+      "language": "JavaScript",
+      "description": "洛雪音乐源",
+      "tags": [
+        "音视频"
+      ]
+    },
+    {
+      "repo": "longbridge/gpui-kit",
+      "name": "gpui-kit",
+      "url": "https://github.com/longbridge/gpui-kit",
+      "starsToday": 48,
+      "language": "Rust",
+      "description": "Rust GUI components for building fantastic cross-platform desktop application by using GPUI.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Mintplex-Labs/anything-llm",
+      "name": "anything-llm",
+      "url": "https://github.com/Mintplex-Labs/anything-llm",
+      "starsToday": 48,
+      "language": "JavaScript",
+      "description": "Stop renting your intelligence. Own it with AnythingLLM. Everything you need for a powerful local-first agent experience",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "chatwoot/chatwoot",
+      "name": "chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot",
+      "starsToday": 45,
+      "language": "Ruby",
+      "description": "Open-source live-chat, email support, omni-channel desk. An alternative to Intercom, Zendesk, Salesforce Service Cloud etc. 🔥💬",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "astral-sh/uv",
+      "name": "uv",
+      "url": "https://github.com/astral-sh/uv",
+      "starsToday": 43,
+      "language": "Rust",
+      "description": "An extremely fast Python package and project manager, written in Rust.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "BuilderIO/skills",
+      "name": "skills",
+      "url": "https://github.com/BuilderIO/skills",
+      "starsToday": 43,
+      "language": "JavaScript",
+      "description": "Skills for agents",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "jackfrued/Python-100-Days",
+      "name": "Python-100-Days",
+      "url": "https://github.com/jackfrued/Python-100-Days",
+      "starsToday": 43,
+      "language": "Jupyter Notebook",
+      "description": "Python - 100天从新手到大师",
+      "tags": [
+        "教程"
+      ]
+    },
+    {
+      "repo": "momenbasel/PureMac",
+      "name": "PureMac",
+      "url": "https://github.com/momenbasel/PureMac",
+      "starsToday": 43,
+      "language": "Swift",
+      "description": "Free, open-source macOS cleaner. CleanMyMac alternative with zero telemetry. Native SwiftUI, scheduled auto-cleaning, Xcode/Homebrew/system cache cleanup. MIT licensed.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "coollabsio/coolify",
+      "name": "coolify",
+      "url": "https://github.com/coollabsio/coolify",
+      "starsToday": 41,
+      "language": "PHP",
+      "description": "An open-source, self-hostable PaaS alternative to Vercel, Heroku & Netlify that lets you easily deploy static sites, databases, full-stack applications and 280+ one-click services on your own servers.",
+      "tags": [
+        "云服务",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "maximhq/bifrost",
+      "name": "bifrost",
+      "url": "https://github.com/maximhq/bifrost",
+      "starsToday": 41,
+      "language": "Go",
+      "description": "Fastest enterprise AI gateway (50x faster than LiteLLM) with adaptive load balancer, cluster mode, guardrails, 1000+ models support & <100 µs overhead at 5k RPS.",
+      "tags": [
+        "AI",
+        "开发工具",
+        "云服务"
+      ]
+    },
+    {
+      "repo": "jlcodes99/cockpit-tools",
+      "name": "cockpit-tools",
+      "url": "https://github.com/jlcodes99/cockpit-tools",
+      "starsToday": 40,
+      "language": "Rust",
+      "description": "🚀 通用 AI IDE 账号管理工具：支持 Antigravity / Codex / GitHub Copilot / Windsurf / Kiro / Cursor / Gemini-cli / CodeBuddy，多账号切换、配额监控、自动唤醒与多开实例管理。 🚀 Universal AI IDE account manager for Antigravity / Codex / GitHub Copilot / Windsurf / Kiro / Cursor / Gemini-cli / CodeBuddy, with multi-account switching, quota monitoring, wake-up automation, and multi-insta",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "gosom/google-maps-scraper",
+      "name": "google-maps-scraper",
+      "url": "https://github.com/gosom/google-maps-scraper",
+      "starsToday": 38,
+      "language": "Go",
+      "description": "scrape data from Google Maps. Extracts data such as the name, address, phone number, website URL, rating, reviews number, latitude and longitude, reviews,email and more for each place",
+      "tags": [
+        "数据",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "manaflow-ai/cmux",
+      "name": "cmux",
+      "url": "https://github.com/manaflow-ai/cmux",
+      "starsToday": 37,
+      "language": "Swift",
+      "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "stepfun-ai/Step-Code",
+      "name": "Step-Code",
+      "url": "https://github.com/stepfun-ai/Step-Code",
+      "starsToday": 37,
+      "language": "TypeScript",
+      "description": "",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "projectdiscovery/nuclei",
+      "name": "nuclei",
+      "url": "https://github.com/projectdiscovery/nuclei",
+      "starsToday": 35,
+      "language": "Go",
+      "description": "Nuclei is a fast, customizable vulnerability scanner powered by the global security community and built on a simple YAML-based DSL, enabling collaboration to tackle trending vulnerabilities on the internet. It helps you find vulnerabilities in your applications, APIs, networks, DNS, and cloud configurations.",
+      "tags": [
+        "安全",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "ashishps1/awesome-system-design-resources",
+      "name": "awesome-system-design-resources",
+      "url": "https://github.com/ashishps1/awesome-system-design-resources",
+      "starsToday": 33,
+      "language": "Java",
+      "description": "Learn System Design concepts and prepare for interviews using free resources.",
+      "tags": [
+        "教程"
+      ]
+    },
+    {
+      "repo": "autobrr/autobrr",
+      "name": "autobrr",
+      "url": "https://github.com/autobrr/autobrr",
+      "starsToday": 33,
+      "language": "Go",
+      "description": "Modern, easy to use download automation for torrents and usenet.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "InlitX/streak",
+      "name": "streak",
+      "url": "https://github.com/InlitX/streak",
+      "starsToday": 33,
+      "language": "Dart",
+      "description": "Minimal, private, ad-free habit tracker built with Flutter — track habits, build streaks, all offline.",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "usebruno/bruno",
+      "name": "bruno",
+      "url": "https://github.com/usebruno/bruno",
+      "starsToday": 33,
+      "language": "JavaScript",
+      "description": "Opensource IDE For Exploring and Testing API's (lightweight alternative to Postman/Insomnia)",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "SimplifyJobs/Summer2027-Internships",
+      "name": "Summer2027-Internships",
+      "url": "https://github.com/SimplifyJobs/Summer2027-Internships",
+      "starsToday": 32,
+      "language": "Python",
+      "description": "Summer 2027 software engineering, data science, AI, quant, product management, and hardware internship postings. Updated daily by Simplify and Pitt CSC.",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "cloudflare/cloudflare-os",
+      "name": "cloudflare-os",
+      "url": "https://github.com/cloudflare/cloudflare-os",
+      "starsToday": 31,
+      "language": "TypeScript",
+      "description": "Agent workspace built on Cloudflare Workers for creating documents, building apps, and running agents with your company’s context and systems.",
+      "tags": [
+        "AI",
+        "云服务",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "babalae/better-genshin-impact",
+      "name": "better-genshin-impact",
+      "url": "https://github.com/babalae/better-genshin-impact",
+      "starsToday": 30,
+      "language": "C#",
+      "description": "📦BetterGI · 更好的原神 - 自动拾取 | 自动剧情 | 全自动钓鱼(AI) | 全自动七圣召唤 | 自动伐木 | 自动刷本 | 自动采集/挖矿/锄地 | 一条龙 | 全连音游 | 自动烹饪 | 桌面分身 - UI Automation Testing Tools For Genshin Impact",
+      "tags": [
+        "游戏"
+      ]
+    },
+    {
+      "repo": "getarcaneapp/arcane",
+      "name": "arcane",
+      "url": "https://github.com/getarcaneapp/arcane",
+      "starsToday": 30,
+      "language": "Go",
+      "description": "Modern Docker Management, Designed for Everyone",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ]
+    },
+    {
+      "repo": "open-gsd/gsd-core",
+      "name": "gsd-core",
+      "url": "https://github.com/open-gsd/gsd-core",
+      "starsToday": 30,
+      "language": "JavaScript",
+      "description": "Git. Ship. Done - Core",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "GopeedLab/gopeed",
+      "name": "gopeed",
+      "url": "https://github.com/GopeedLab/gopeed",
+      "starsToday": 29,
+      "language": "Dart",
+      "description": "A fast, modern download manager for HTTP, BitTorrent, Magnet, and ed2k. Cross-platform, built with Golang and Flutter.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "kestra-io/kestra",
+      "name": "kestra",
+      "url": "https://github.com/kestra-io/kestra",
+      "starsToday": 29,
+      "language": "Java",
+      "description": "Event Driven Orchestration & Scheduling Platform for Mission Critical Applications",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Atmosphere-NX/Atmosphere",
+      "name": "Atmosphere",
+      "url": "https://github.com/Atmosphere-NX/Atmosphere",
+      "starsToday": 27,
+      "language": "C++",
+      "description": "Atmosphère is a work-in-progress customized firmware for the Nintendo Switch.",
+      "tags": [
+        "游戏"
+      ]
+    },
+    {
+      "repo": "fastapi/full-stack-fastapi-template",
+      "name": "full-stack-fastapi-template",
+      "url": "https://github.com/fastapi/full-stack-fastapi-template",
+      "starsToday": 26,
+      "language": "TypeScript",
+      "description": "Full-stack web application template with FastAPI, React, SQLModel, PostgreSQL, Vite, Tailwind CSS, shadcn/ui, FastAPI Cloud, and Docker Compose.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Z4nzu/hackingtool",
+      "name": "hackingtool",
+      "url": "https://github.com/Z4nzu/hackingtool",
+      "starsToday": 26,
+      "language": "Python",
+      "description": "ALL IN ONE Hacking Tool For Hackers",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "agentscope-ai/agentscope-java",
+      "name": "agentscope-java",
+      "url": "https://github.com/agentscope-ai/agentscope-java",
+      "starsToday": 25,
+      "language": "Java",
+      "description": "Build distributed, production-grade, long-running agents.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "apache/kafka",
+      "name": "kafka",
+      "url": "https://github.com/apache/kafka",
+      "starsToday": 25,
+      "language": "Java",
+      "description": "Apache Kafka - A distributed event streaming platform",
+      "tags": [
+        "数据"
+      ]
+    },
+    {
+      "repo": "Fable2Recomp/Fable2Recomp",
+      "name": "Fable2Recomp",
+      "url": "https://github.com/Fable2Recomp/Fable2Recomp",
+      "starsToday": 25,
+      "language": "C++",
+      "description": "A Fable 2 Recomp",
+      "tags": [
+        "游戏"
+      ]
+    },
+    {
+      "repo": "KaringX/karing",
+      "name": "karing",
+      "url": "https://github.com/KaringX/karing",
+      "starsToday": 25,
+      "language": "Dart",
+      "description": "Simple & Powerful proxy utility, Support routing rules for clash/sing-box",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "flexprice/flexprice",
+      "name": "flexprice",
+      "url": "https://github.com/flexprice/flexprice",
+      "starsToday": 24,
+      "language": "Go",
+      "description": "Usage-based pricing and billing for developers 🔓 Cloud or self-hosted ⚙️ No-code UI 💰 Realtime usage metering 🎟 Credits & top-ups 🔑 Control feature access",
+      "tags": [
+        "金融"
+      ]
+    },
+    {
+      "repo": "Themaister/pyrowave",
+      "name": "pyrowave",
+      "url": "https://github.com/Themaister/pyrowave",
+      "starsToday": 24,
+      "language": "C++",
+      "description": "",
+      "tags": [
+        "音视频"
+      ]
+    },
+    {
+      "repo": "throneproj/Throne",
+      "name": "Throne",
+      "url": "https://github.com/throneproj/Throne",
+      "starsToday": 24,
+      "language": "C++",
+      "description": "Cross-platform GUI proxy utility (Empowered by sing-box)",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "ente/ente",
+      "name": "ente",
+      "url": "https://github.com/ente/ente",
+      "starsToday": 23,
+      "language": "Dart",
+      "description": "💚 End-to-end encrypted cloud for everything.",
+      "tags": [
+        "云服务",
+        "安全"
+      ]
+    },
+    {
+      "repo": "FluidInference/FluidAudio",
+      "name": "FluidAudio",
+      "url": "https://github.com/FluidInference/FluidAudio",
+      "starsToday": 23,
+      "language": "Swift",
+      "description": "Frontier CoreML audio models in your apps — text-to-speech, speech-to-text, voice activity detection, and speaker diarization. In Swift, powered by SOTA open source.",
+      "tags": [
+        "音视频",
+        "AI"
+      ]
+    },
+    {
+      "repo": "Freika/dawarich",
+      "name": "dawarich",
+      "url": "https://github.com/Freika/dawarich",
+      "starsToday": 23,
+      "language": "Ruby",
+      "description": "Your favorite self-hostable alternative to Google Timeline (Google Location History)",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "HuangZhuoRui/LocationSpoofer",
+      "name": "LocationSpoofer",
+      "url": "https://github.com/HuangZhuoRui/LocationSpoofer",
+      "starsToday": 23,
+      "language": "Kotlin",
+      "description": "虚拟定位软件，主要是定位，集成了 WiFi、蓝牙、基站等方案，主要有定点模拟和路线模拟。非全局方案，需要单独 hook 对应的软件(因为不想单独去适配各大手机厂商的系统)，",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "JunkFood02/Seal",
+      "name": "Seal",
+      "url": "https://github.com/JunkFood02/Seal",
+      "starsToday": 23,
+      "language": "Kotlin",
+      "description": "🦭 Video/Audio Downloader for Android, based on yt-dlp",
+      "tags": [
+        "移动端",
+        "音视频"
+      ]
+    },
+    {
+      "repo": "keepassxreboot/keepassxc",
+      "name": "keepassxc",
+      "url": "https://github.com/keepassxreboot/keepassxc",
+      "starsToday": 23,
+      "language": "C++",
+      "description": "KeePassXC is a cross-platform community-driven port of the Windows application “KeePass Password Safe”.",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "NVIDIA/Model-Optimizer",
+      "name": "Model-Optimizer",
+      "url": "https://github.com/NVIDIA/Model-Optimizer",
+      "starsToday": 22,
+      "language": "Python",
+      "description": "A unified library of SOTA model optimization techniques like quantization, distillation, pruning, neural architecture search, speculative decoding, etc. It compresses deep learning models for downstream deployment frameworks like TensorRT-LLM, TensorRT, vLLM, etc. to optimize inference speed.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "ZeroLu/awesome-seedance",
+      "name": "awesome-seedance",
+      "url": "https://github.com/ZeroLu/awesome-seedance",
+      "starsToday": 21,
+      "language": "Shell",
+      "description": "The ultimate collection of high-fidelity Seedance 2.0 prompts and Seedance AI resources. Discover Seedance 2.0 how to use for cinematic film, anime, UGC, social media, meme and advertising. Includes Seedance API guides and advanced video generation workflows.",
+      "tags": [
+        "AI",
+        "音视频"
+      ]
+    },
+    {
+      "repo": "bjarneo/cliamp",
+      "name": "cliamp",
+      "url": "https://github.com/bjarneo/cliamp",
+      "starsToday": 20,
+      "language": "Go",
+      "description": "cliamp - Terminal music player inspired by winamp",
+      "tags": [
+        "音视频",
+        "开发工具"
+      ]
+    }
+  ]
+}
