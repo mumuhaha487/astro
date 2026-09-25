@@ -37,6 +37,18 @@
                   "updatedAt": "2026-09-25T08:18:00.215Z"
                 }
               ]
+            },
+            {
+              "id": "84c63f72-6380-41fc-979a-cf6299af27ea",
+              "name": "DeepSeek",
+              "models": [
+                {
+                  "id": "b6bd480d-538b-4fab-9e93-0cf9c8232beb",
+                  "name": "DeepSeek-V4.1-flash-thinking（web端）",
+                  "updatedAt": "2026-09-25T14:05:04.246Z",
+                  "url": "/model-arena/submissions/d7e07208-d2fe-4438-9df4-3996f5f07ea6/index.html"
+                }
+              ]
             }
           ],
           "prompt": "用SVG绘制一个鹈鹕骑自行车的html网页"
