@@ -43,6 +43,7 @@ try {
       return reply({});
     });
     await page.goto(process.env.STUDIO_VISUAL_URL || "http://127.0.0.1:4174", { waitUntil: "networkidle" });
+    assert.equal(await page.getByTitle("文章列表").count(), 1, `studio did not mount: ${JSON.stringify(errors)} ${(await page.locator("body").innerText()).slice(0, 200)}`);
     await page.getByTitle("文章列表").click();
     await page.getByTitle("管理大模型竞技场").click();
     const dialog = page.getByRole("dialog", { name: "大模型竞技场管理" });
@@ -97,10 +98,11 @@ try {
   assert.equal(await site.locator("[data-arena-prompt-text]").innerText(), "绘制网页");
   await site.locator("[data-arena-provider]").click();
   await site.locator("[data-arena-model]").click();
+  assert.equal(await site.locator("[data-arena-frame]").getAttribute("src"), `https://md.vmss.cn/model-arena/submissions/${id}/index.html?render=3`);
   await site.frameLocator("[data-arena-frame]").locator("body[data-loaded=yes]").waitFor({ state: "attached" });
   assert.deepEqual(siteErrors, []);
   assert.deepEqual(requested, [
-    `https://md.vmss.cn/model-arena/submissions/${id}/index.html?render=2`,
+    `https://md.vmss.cn/model-arena/submissions/${id}/index.html?render=3`,
     `https://md.vmss.cn/model-arena/submissions/${id}/assets/app.js`,
   ]);
   await site.close();

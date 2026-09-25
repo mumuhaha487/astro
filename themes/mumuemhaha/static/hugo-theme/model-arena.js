@@ -43,9 +43,9 @@
     title.textContent = model?.dataset.name || "选择作品";
     path.textContent = [track.textContent, project?.textContent, provider?.textContent].filter(Boolean).join(" / ");
     if (url && /^\/model-arena\/submissions\/[0-9a-f-]{36}(?:\.html|\/(?:[^/?#]+\/)*[^/?#]+\.html?)$/.test(url)) {
-      const source = `https://md.vmss.cn${url}?render=2`;
+      const source = `https://md.vmss.cn${url}?render=3`;
       if (frame.dataset.source !== source) {
-        frame.contentWindow.location.replace(source);
+        frame.src = source;
         frame.dataset.source = source;
       }
       frame.title = `${model.dataset.name} 作品`;
@@ -53,7 +53,7 @@
       placeholder.hidden = true;
     } else {
       frame.hidden = true;
-      if (frame.dataset.source) frame.contentWindow.location.replace("about:blank");
+      if (frame.dataset.source) frame.src = "about:blank";
       delete frame.dataset.source;
       placeholder.hidden = false;
       placeholder.textContent = model ? "该模型暂无作品" : "选择模型查看作品";
