@@ -19,6 +19,7 @@ import type {
   WebEmbedRecord,
 } from "../shared/types";
 import type { LinkPreview } from "../shared/link-preview";
+import type { ArenaCatalog, ArenaCategoryKind, ArenaLocation } from "../shared/model-arena";
 
 export class ApiError extends Error {
   status: number;
@@ -58,6 +59,22 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
+  arena: () => request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena"),
+  createArenaCategory: (kind: ArenaCategoryKind, location: ArenaLocation, name: string, sha: string) =>
+    request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/categories", {
+      method: "POST",
+      body: JSON.stringify({ kind, ...location, name, sha }),
+    }),
+  uploadArenaSubmission: (location: ArenaLocation, file: File, sha: string) => {
+    const form = new FormData();
+    form.set("file", file);
+    form.set("sha", sha);
+    for (const [key, value] of Object.entries(location)) if (value) form.set(key, value);
+    return request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/submissions", {
+      method: "POST",
+      body: form,
+    });
+  },
   session: () => request<SessionInfo>("/api/session"),
   login: (password: string) =>
     request<SessionInfo>("/api/login", {

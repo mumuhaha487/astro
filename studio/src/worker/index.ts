@@ -36,6 +36,14 @@ import {
 } from "../shared/translation";
 import { clampWebEmbedHeight } from "../shared/web-embed";
 import {
+  arenaLocation,
+  createArenaCategory,
+  setArenaSubmission,
+  type ArenaCatalog,
+  type ArenaCategoryKind,
+  type ArenaLocation,
+} from "../shared/model-arena";
+import {
   MAX_WEB_FILE_BYTES,
   MAX_WEB_FILES,
   MAX_WEB_TOTAL_BYTES,
@@ -149,6 +157,8 @@ class HttpError extends Error {
 const SESSION_COOKIE = "astro_studio_session";
 const SESSION_MAX_AGE = 60 * 60 * 12;
 const POST_PREFIX = "content/posts/";
+const ARENA_CATALOG_PATH = "data/model_arena.json";
+const MAX_ARENA_HTML_BYTES = 20 * 1024 * 1024;
 const MAX_DOCUMENT_BYTES = 2 * 1024 * 1024;
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_MEDIA_BYTES = 25 * 1024 * 1024;
@@ -215,8 +225,9 @@ export default {
       }
       const repositoryAssetPath = repositoryPublicAssetPath(url.pathname);
       if (repositoryAssetPath && (request.method === "GET" || request.method === "HEAD")) {
-        const webEmbed = repositoryAssetPath.startsWith("public/web-pages/editor/");
-        return secureResponse(await proxyEditorAsset(request, env, repositoryAssetPath), false, webEmbed);
+        const arenaSubmission = repositoryAssetPath.startsWith("arena-submissions/");
+        const webEmbed = repositoryAssetPath.startsWith("public/web-pages/editor/") || arenaSubmission;
+        return secureResponse(await proxyEditorAsset(request, env, repositoryAssetPath), false, webEmbed, arenaSubmission);
       }
       const response = await env.ASSETS.fetch(request);
       return secureResponse(response, false);
@@ -341,6 +352,15 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/web-embeds" && request.method === "POST") {
     return json(await uploadWebEmbed(env, request));
+  }
+  if (url.pathname === "/api/model-arena" && request.method === "GET") {
+    return json(await getArenaCatalog(env));
+  }
+  if (url.pathname === "/api/model-arena/categories" && request.method === "POST") {
+    return json(await createArenaCategoryInRepository(env, await readJson(request)), 201);
+  }
+  if (url.pathname === "/api/model-arena/submissions" && request.method === "POST") {
+    return json(await uploadArenaSubmission(env, request), 201);
   }
   if (url.pathname === "/api/translate" && request.method === "POST") {
     return json({ translations: await translateArticle(env, await readJson(request)) });
@@ -1290,6 +1310,94 @@ async function uploadWebEmbed(env: Env, request: Request): Promise<WebEmbedRecor
   return webEmbedRecord({ id, root, entry, title, height, files, sourceType, reused: false });
 }
 
+async function getArenaCatalog(env: Env): Promise<{ catalog: ArenaCatalog; sha: string }> {
+  const token = await requireGitHubToken(env);
+  const file = await githubJson<{ content: string; encoding: string; sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${ARENA_CATALOG_PATH}?ref=${encodeURIComponent(env.GITHUB_BRANCH)}`,
+    { method: "GET" },
+    token,
+  );
+  if (file.encoding !== "base64") throw new HttpError(502, "竞技场目录编码无效");
+  const catalog = JSON.parse(fromBase64(file.content)) as ArenaCatalog;
+  if (!Array.isArray(catalog.tracks)) throw new HttpError(502, "竞技场目录格式无效");
+  return { catalog, sha: file.sha };
+}
+
+function arenaInput(value: unknown): { location: ArenaLocation; sha: string } {
+  const body = value as Record<string, unknown> | null;
+  if (!body || typeof body !== "object" || typeof body.sha !== "string" || !/^[0-9a-f]{40}$/.test(body.sha)) {
+    throw new HttpError(400, "请刷新竞技场目录后再试");
+  }
+  const location = {
+    trackId: body.trackId,
+    projectId: body.projectId,
+    providerId: body.providerId,
+    modelId: body.modelId,
+  } as ArenaLocation;
+  return { location, sha: body.sha };
+}
+
+async function createArenaCategoryInRepository(env: Env, body: unknown): Promise<{ catalog: ArenaCatalog; sha: string }> {
+  const input = body as Record<string, unknown>;
+  const { location, sha } = arenaInput(body);
+  const kind = input.kind as ArenaCategoryKind;
+  if (!["project", "provider", "model"].includes(kind)) throw new HttpError(400, "分类类型无效");
+  const current = await getArenaCatalog(env);
+  if (current.sha !== sha) throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  let catalog: ArenaCatalog;
+  try {
+    catalog = createArenaCategory(current.catalog, kind, location, input.name, crypto.randomUUID());
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : "分类无效");
+  }
+  const token = await requireGitHubToken(env);
+  const saved = await githubJson<{ content: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${ARENA_CATALOG_PATH}`,
+    { method: "PUT", body: JSON.stringify({
+      message: `竞技场：新增${kind} ${String(input.name).slice(0, 64)}`,
+      content: toBase64(JSON.stringify(catalog, null, 2) + "\n"),
+      sha,
+      branch: env.GITHUB_BRANCH,
+    }) },
+    token,
+  );
+  return { catalog, sha: saved.content.sha };
+}
+
+async function uploadArenaSubmission(env: Env, request: Request): Promise<{ catalog: ArenaCatalog; sha: string }> {
+  const form = await request.formData();
+  const file = form.get("file");
+  if (!(file instanceof File) || !/\.html?$/i.test(file.name)) throw new HttpError(415, "请选择单个 HTML 文件");
+  if (file.size === 0 || file.size > MAX_ARENA_HTML_BYTES) throw new HttpError(413, "HTML 文件必须在 1 B 到 20 MB 之间");
+  const { location, sha } = arenaInput(Object.fromEntries(form.entries()));
+  const current = await getArenaCatalog(env);
+  if (current.sha !== sha) throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  let modelName: string;
+  try {
+    const { model } = arenaLocation(current.catalog, location);
+    if (!model) throw new Error("请选择模型");
+    modelName = model.name;
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : "模型无效");
+  }
+  const html = new Uint8Array(await file.arrayBuffer());
+  if (!/<(?:!doctype\s+html|html)\b/i.test(new TextDecoder().decode(html.subarray(0, 4096)))) {
+    throw new HttpError(415, "文件不是完整的 HTML 文档");
+  }
+  const filename = `${crypto.randomUUID()}.html`;
+  const url = `/model-arena/submissions/${filename}`;
+  const catalog = setArenaSubmission(current.catalog, location, url, new Date().toISOString());
+  const token = await requireGitHubToken(env);
+  const catalogSha = await commitWebFiles(env, token, "arena-submissions", [{ path: filename, bytes: html }], modelName, {
+    path: ARENA_CATALOG_PATH,
+    bytes: new TextEncoder().encode(JSON.stringify(catalog, null, 2) + "\n"),
+    expectedSha: sha,
+  });
+  return { catalog, sha: catalogSha! };
+}
+
 function normalizeWebFiles(files: WebUploadFile[]): WebUploadFile[] {
   if (files.length === 0) throw new HttpError(400, "静态网页中没有可上传的文件");
   if (files.length > MAX_WEB_FILES) throw new HttpError(413, `网页文件不能超过 ${MAX_WEB_FILES} 个`);
@@ -1386,27 +1494,36 @@ async function githubPathExists(env: Env, path: string, token: string): Promise<
   }
 }
 
-async function commitWebFiles(env: Env, token: string, root: string, files: WebUploadFile[], title: string): Promise<void> {
+async function commitWebFiles(env: Env, token: string, root: string, files: WebUploadFile[], title: string, extra?: WebUploadFile & { expectedSha: string }): Promise<string | undefined> {
   const reference = await githubJson<{ object: { sha: string } }>(
     env,
     `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/ref/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
     { method: "GET" },
     token,
   );
+  if (extra) {
+    const current = await githubJson<{ sha: string }>(
+      env,
+      `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(extra.path)}?ref=${reference.object.sha}`,
+      { method: "GET" },
+      token,
+    );
+    if (current.sha !== extra.expectedSha) throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  }
   const parent = await githubJson<{ tree: { sha: string } }>(
     env,
     `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${reference.object.sha}`,
     { method: "GET" },
     token,
   );
-  const blobs = await mapConcurrent(files, 4, async (file) => {
+  const blobs = await mapConcurrent([...files.map((file) => ({ ...file, path: `${root}/${file.path}` })), ...(extra ? [extra] : [])], 4, async (file) => {
     const blob = await githubJson<{ sha: string }>(
       env,
       `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/blobs`,
       { method: "POST", body: JSON.stringify({ content: bytesToBase64(file.bytes), encoding: "base64" }) },
       token,
     );
-    return { path: `${root}/${file.path}`, mode: "100644", type: "blob", sha: blob.sha };
+    return { path: file.path, mode: "100644", type: "blob", sha: blob.sha };
   });
   const tree = await githubJson<{ sha: string }>(
     env,
@@ -1420,7 +1537,7 @@ async function commitWebFiles(env: Env, token: string, root: string, files: WebU
     {
       method: "POST",
       body: JSON.stringify({
-        message: `上传内嵌网页：${cleanCommitMessage(title, "静态网页")}`,
+        message: `${extra ? "发布竞技场作品" : "上传内嵌网页"}：${cleanCommitMessage(title, "静态网页")}`,
         tree: tree.sha,
         parents: [reference.object.sha],
       }),
@@ -1433,6 +1550,7 @@ async function commitWebFiles(env: Env, token: string, root: string, files: WebU
     { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) },
     token,
   );
+  return extra ? blobs.find((blob) => blob.path === extra.path)?.sha : undefined;
 }
 
 function webEmbedRecord(input: {
@@ -2106,8 +2224,11 @@ function repositoryPublicAssetPath(pathname: string): string | null {
     && segments[1] === "editor"
     && ["html", "zip"].includes(segments[2])
     && /^[0-9a-f]{24}$/.test(segments[3]);
-  if (!isBlogImage && !isEditorUpload && !isWebEmbed) return null;
+  const isArenaSubmission = segments.length === 3 && segments[0] === "model-arena"
+    && segments[1] === "submissions" && /^[0-9a-f-]{36}\.html$/.test(segments[2]);
+  if (!isBlogImage && !isEditorUpload && !isWebEmbed && !isArenaSubmission) return null;
   if (segments.some((segment) => segment === "." || segment === "..")) return null;
+  if (isArenaSubmission) return `arena-submissions/${segments[2]}`;
   return `public/${segments.join("/")}`;
 }
 
@@ -2129,14 +2250,14 @@ async function proxyEditorAsset(request: Request, env: Env, repositoryPath: stri
   });
   const responseHeaders = new Headers(response.headers);
   responseHeaders.delete("Set-Cookie");
-  if (repositoryPath.startsWith("public/web-pages/editor/")) {
+  if (repositoryPath.startsWith("public/web-pages/editor/") || repositoryPath.startsWith("arena-submissions/")) {
     responseHeaders.delete("Content-Disposition");
     responseHeaders.set("Content-Type", webAssetContentType(repositoryPath));
   }
   if (response.ok) {
     responseHeaders.set(
       "Cache-Control",
-      repositoryPath.startsWith("public/web-pages/editor/")
+      (repositoryPath.startsWith("public/web-pages/editor/") || repositoryPath.startsWith("arena-submissions/"))
         ? "public, max-age=31536000, immutable"
         : "public, max-age=300",
     );
@@ -2342,13 +2463,16 @@ function json(value: unknown, status = 200, extraHeaders: HeadersInit = {}): Res
   return new Response(JSON.stringify(value), { status, headers });
 }
 
-function secureResponse(response: Response, noStore: boolean, webEmbed = false): Response {
+function secureResponse(response: Response, noStore: boolean, webEmbed = false, arenaSubmission = false): Response {
   const headers = new Headers(response.headers);
   const selectedHeaders = webEmbed ? webEmbedSecurityHeaders : securityHeaders;
   for (const [name, value] of Object.entries(selectedHeaders)) headers.set(name, value);
   if (webEmbed) {
     headers.delete("X-Frame-Options");
     headers.delete("Cross-Origin-Opener-Policy");
+  }
+  if (arenaSubmission) {
+    headers.set("Content-Security-Policy", `${webEmbedSecurityHeaders["Content-Security-Policy"].replace("frame-ancestors 'self'", "frame-ancestors 'self' https://vmss.cn https://www.vmss.cn")}; sandbox allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-downloads`);
   }
   if (noStore) headers.set("Cache-Control", "no-store");
   return new Response(response.body, {

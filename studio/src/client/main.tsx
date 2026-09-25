@@ -27,6 +27,7 @@ import {
   ListTree,
   LoaderCircle,
   Medal,
+  Layers3,
   MessageSquareText,
   PanelsTopLeft,
   PencilLine,
@@ -62,6 +63,7 @@ import {
 } from "react";
 import { createRoot } from "react-dom/client";
 import { ApiError, api } from "./api";
+import { ArenaManager } from "./ArenaManager";
 import {
   buildManualTranslationPackage,
   parseManualTranslation,
@@ -224,6 +226,7 @@ function App() {
   const [advancedOpen, setAdvancedOpen] = useState(false);
   const [settingsOpen, setSettingsOpen] = useState(false);
   const [guestbookOpen, setGuestbookOpen] = useState(false);
+  const [arenaOpen, setArenaOpen] = useState(false);
   const [scheduleOpen, setScheduleOpen] = useState(false);
   const [historyOpen, setHistoryOpen] = useState(false);
   const [runnableCodeOpen, setRunnableCodeOpen] = useState(false);
@@ -1429,6 +1432,9 @@ function App() {
           </div>
 
           <div className="sidebar-footer">
+            <button onClick={() => { setArenaOpen(true); setSidebarOpen(false); }} title="管理大模型竞技场">
+              <Layers3 size={15} /> 大模型竞技场
+            </button>
             <button onClick={() => void loadPostsAndDrafts(true)} disabled={loadingPosts}>
               <RefreshCw className={loadingPosts ? "spin" : ""} size={15} />
               刷新仓库
@@ -1643,6 +1649,8 @@ function App() {
       ) : null}
 
       {guestbookOpen ? <GuestbookDialog onClose={() => setGuestbookOpen(false)} /> : null}
+
+      {arenaOpen ? <ArenaManager onClose={() => setArenaOpen(false)} /> : null}
 
       {translationOpen && translationTargets.length && fields ? (
         <TranslationDialog

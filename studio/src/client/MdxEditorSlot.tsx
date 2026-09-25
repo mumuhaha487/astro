@@ -619,7 +619,7 @@ function FormatMenu() {
         aria-haspopup="menu"
         className="csdn-toolbar-action"
         onClick={toggleMenu}
-        onMouseDown={(event) => event.preventDefault()}
+        onMouseDown={(event: React.MouseEvent) => event.preventDefault()}
         title="格式"
       >
         <b aria-hidden className="csdn-format-trigger-icon">H</b>

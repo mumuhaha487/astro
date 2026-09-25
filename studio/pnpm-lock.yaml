@@ -11,6 +11,9 @@ importers:
       '@edgeone/pages-blob':
         specifier: ^0.0.16
         version: 0.0.16
+      '@lexical/clipboard':
+        specifier: 0.35.0
+        version: 0.35.0
       '@lexical/link':
         specifier: 0.35.0
         version: 0.35.0

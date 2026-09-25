@@ -40,7 +40,7 @@ describe("link preview metadata", () => {
     "http://service.internal/",
     "ftp://example.com/file",
     "https://example.com:8443/",
-  ])("rejects unsafe destination %s", (url) => {
+  ])("rejects unsafe destination %s", (url: string) => {
     expect(() => normalizePublicHttpUrl(url)).toThrow();
   });
 });
