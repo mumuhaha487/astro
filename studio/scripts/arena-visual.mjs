@@ -100,7 +100,7 @@ try {
   await site.frameLocator("[data-arena-frame]").locator("body[data-loaded=yes]").waitFor({ state: "attached" });
   assert.deepEqual(siteErrors, []);
   assert.deepEqual(requested, [
-    `https://md.vmss.cn/model-arena/submissions/${id}/index.html`,
+    `https://md.vmss.cn/model-arena/submissions/${id}/index.html?render=2`,
     `https://md.vmss.cn/model-arena/submissions/${id}/assets/app.js`,
   ]);
   await site.close();
