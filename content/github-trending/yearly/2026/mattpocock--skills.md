@@ -7,7 +7,8 @@ description: "mattpocock/skills 是一套面向真实工程实践的 agent 技�
 repository: "mattpocock/skills"
 repository_url: "https://github.com/mattpocock/skills"
 language: "Shell"
-tags: ["Skill","AI"]
+tags:
+  - Skill
 comment: false
 ---
 

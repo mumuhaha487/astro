@@ -7,7 +7,8 @@ description: "mattpocock/skills 是 Matt Pocock 从个人 .agents 目录提炼�
 repository: "mattpocock/skills"
 repository_url: "https://github.com/mattpocock/skills"
 language: "Shell"
-tags: ["Skill","AI"]
+tags:
+  - Skill
 comment: false
 ---
 

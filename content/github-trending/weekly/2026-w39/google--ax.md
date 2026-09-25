@@ -9,7 +9,6 @@ repository_url: "https://github.com/google/ax"
 language: "Go"
 tags:
   - AI
-  - 开发工具
 comment: false
 ---
 
