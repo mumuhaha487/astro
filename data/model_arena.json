@@ -43,6 +43,37 @@
           "id": "qin-screws",
           "name": "秦始皇打螺丝",
           "providers": []
+        },
+        {
+          "id": "ab216bcf-7672-4844-931c-1e7da81d8d76",
+          "name": "批量提交验收 20260925",
+          "providers": [
+            {
+              "id": "4b85c11f-3adf-462f-af43-026bb8f2a616",
+              "name": "页面验收厂商",
+              "models": [
+                {
+                  "id": "6b659006-f7a9-4c3a-8913-1ed4880787db",
+                  "name": "HTML 验收模型",
+                  "updatedAt": "2026-09-25T11:52:23.343Z",
+                  "url": "/model-arena/submissions/b1685810-ddf4-48dd-a83d-d8264c5f48cc/index.html"
+                }
+              ]
+            },
+            {
+              "id": "2255635b-c93a-4234-a16f-ff4aeab13a44",
+              "name": "手机验收厂商",
+              "models": [
+                {
+                  "id": "6708a03f-093c-44f1-a6a4-760929a114f7",
+                  "name": "手机 HTML 验收模型",
+                  "updatedAt": "2026-09-25T11:52:23.344Z",
+                  "url": "/model-arena/submissions/4bb70152-6a23-4aae-ba23-8dead5ecc1f5/index.html"
+                }
+              ]
+            }
+          ],
+          "prompt": "用SVG绘制一个鹈鹕骑自行车的html网页"
         }
       ]
     },
