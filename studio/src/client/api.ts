@@ -17,6 +17,8 @@ import type {
   TranslationSegmentResult,
   TranslationSettingsSummary,
   WebEmbedRecord,
+  ArenaBatchRequest,
+  ArenaBatchResult,
 } from "../shared/types";
 import type { LinkPreview } from "../shared/link-preview";
 import type { ArenaCatalog, ArenaCategoryKind, ArenaLocation } from "../shared/model-arena";
@@ -60,30 +62,13 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 
 export const api = {
   arena: () => request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena"),
-  createArenaCategory: (kind: ArenaCategoryKind, location: ArenaLocation, name: string, sha: string) =>
-    request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/categories", {
-      method: "POST",
-      body: JSON.stringify({ kind, ...location, name, sha }),
-    }),
-  changeArenaCategory: (kind: ArenaCategoryKind, location: ArenaLocation, name: string | null, sha: string) =>
-    request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/categories", {
-      method: name === null ? "DELETE" : "PATCH",
-      body: JSON.stringify({ kind, ...location, name, sha }),
-    }),
-  saveArenaPrompt: (location: ArenaLocation, prompt: string, sha: string) =>
-    request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/projects/prompt", {
-      method: "PUT",
-      body: JSON.stringify({ ...location, prompt, sha }),
-    }),
-  uploadArenaSubmission: (location: ArenaLocation, files: File[], paths: string[], entry: string, html: string, sha: string) => {
+  publishArenaBatch: (batch: ArenaBatchRequest, files: File[]) => {
     const form = new FormData();
-    for (const file of files) form.append("files", file);
-    form.set("paths", JSON.stringify(paths));
-    form.set("entry", entry);
-    if (html) form.set("html", html);
-    form.set("sha", sha);
-    for (const [key, value] of Object.entries(location)) if (value) form.set(key, value);
-    return request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/submissions", {
+    for (const file of files) {
+      form.append("files", file);
+    }
+    form.set("batch", JSON.stringify(batch));
+    return request<ArenaBatchResult>("/api/model-arena/batch", {
       method: "POST",
       body: form,
     });

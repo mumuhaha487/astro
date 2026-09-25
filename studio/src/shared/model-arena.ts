@@ -127,3 +127,81 @@ export function setArenaProjectPrompt(catalog: ArenaCatalog, location: ArenaLoca
   else delete project.prompt;
   return next;
 }
+
+export function collectCatalogUrls(catalog: ArenaCatalog): Set<string> {
+  const urls = new Set<string>();
+  for (const track of catalog.tracks) {
+    for (const project of track.projects) {
+      for (const provider of project.providers) {
+        for (const model of provider.models) {
+          if (model.url) urls.add(model.url);
+        }
+      }
+    }
+  }
+  return urls;
+}
+
+export function validateArenaCatalogStructure(catalog: unknown): ArenaCatalog {
+  if (!catalog || typeof catalog !== "object") throw new Error("竞技场目录格式无效");
+  const raw = catalog as ArenaCatalog;
+  if (!Array.isArray(raw.tracks) || raw.tracks.length !== 2) throw new Error("一级分类必须包含 frontend 和 backend");
+  const expectedTracks = ["frontend", "backend"] as const;
+  for (const expectedId of expectedTracks) {
+    const track = raw.tracks.find((t) => t.id === expectedId);
+    if (!track) throw new Error(`缺少分类 ${expectedId}`);
+    if (typeof track.name !== "string" || !track.name.trim()) throw new Error(`分类 ${expectedId} 名称无效`);
+    if (!Array.isArray(track.projects)) throw new Error(`分类 ${expectedId} 测试项目列表无效`);
+    const projectNames = new Set<string>();
+    const projectIds = new Set<string>();
+    for (const project of track.projects) {
+      arenaId(project.id);
+      if (projectIds.has(project.id)) throw new Error(`测试项目 ID 重复：${project.id}`);
+      projectIds.add(project.id);
+      arenaName(project.name);
+      const nameKey = project.name.toLocaleLowerCase();
+      if (projectNames.has(nameKey)) throw new Error(`存在重名测试项目：${project.name}`);
+      projectNames.add(nameKey);
+      if (project.prompt !== undefined) {
+        if (typeof project.prompt !== "string" || project.prompt.length > 20000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(project.prompt)) {
+          throw new Error("提示词格式无效");
+        }
+      }
+      if (!Array.isArray(project.providers)) throw new Error(`项目 ${project.name} 厂商列表无效`);
+      const providerNames = new Set<string>();
+      const providerIds = new Set<string>();
+      for (const provider of project.providers) {
+        arenaId(provider.id);
+        if (providerIds.has(provider.id)) throw new Error(`模型厂商 ID 重复：${provider.id}`);
+        providerIds.add(provider.id);
+        arenaName(provider.name);
+        const provNameKey = provider.name.toLocaleLowerCase();
+        if (providerNames.has(provNameKey)) throw new Error(`项目 ${project.name} 下存在同名厂商：${provider.name}`);
+        providerNames.add(provNameKey);
+        if (!Array.isArray(provider.models)) throw new Error(`厂商 ${provider.name} 模型列表无效`);
+        const modelNames = new Set<string>();
+        const modelIds = new Set<string>();
+        for (const model of provider.models) {
+          arenaId(model.id);
+          if (modelIds.has(model.id)) throw new Error(`模型 ID 重复：${model.id}`);
+          modelIds.add(model.id);
+          arenaName(model.name);
+          const modNameKey = model.name.toLocaleLowerCase();
+          if (modelNames.has(modNameKey)) throw new Error(`厂商 ${provider.name} 下存在同名模型：${model.name}`);
+          modelNames.add(modNameKey);
+          if (model.url !== undefined) {
+            if (typeof model.url !== "string" || !/^\/model-arena\/submissions\/[0-9a-f-]{36}(?:\.html|\/(?:[^/?#]+\/)*[^/?#]+\.html?)$/.test(model.url)) {
+              throw new Error(`模型作品 URL 格式无效：${model.url}`);
+            }
+          }
+          if (model.updatedAt !== undefined) {
+            if (typeof model.updatedAt !== "string" || Number.isNaN(Date.parse(model.updatedAt))) {
+              throw new Error(`作品更新时间无效：${model.updatedAt}`);
+            }
+          }
+        }
+      }
+    }
+  }
+  return raw;
+}

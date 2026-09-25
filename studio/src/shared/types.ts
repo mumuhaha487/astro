@@ -135,3 +135,30 @@ export interface ApiErrorShape {
   error: string;
   code?: string;
 }
+
+export interface ArenaBatchSubmissionItem {
+  trackId: "frontend" | "backend";
+  projectId: string;
+  providerId: string;
+  modelId: string;
+  entry?: string;
+  paths: string[];
+  fileIndexes: number[];
+  html?: string;
+  oldUrl?: string;
+}
+
+export interface ArenaBatchRequest {
+  expectedSha: string;
+  catalog: import("./model-arena").ArenaCatalog;
+  submissions: ArenaBatchSubmissionItem[];
+  removedUrls: string[];
+  commitMessage?: string;
+}
+
+export interface ArenaBatchResult {
+  catalog: import("./model-arena").ArenaCatalog;
+  sha: string;
+  commitSha: string;
+  publishedCount: number;
+}

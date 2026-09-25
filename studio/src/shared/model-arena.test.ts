@@ -1,5 +1,15 @@
 import { describe, expect, it } from "vitest";
-import { arenaLocation, createArenaCategory, deleteArenaCategory, renameArenaCategory, setArenaProjectPrompt, setArenaSubmission, type ArenaCatalog } from "./model-arena";
+import {
+  arenaLocation,
+  collectCatalogUrls,
+  createArenaCategory,
+  deleteArenaCategory,
+  renameArenaCategory,
+  setArenaProjectPrompt,
+  setArenaSubmission,
+  validateArenaCatalogStructure,
+  type ArenaCatalog,
+} from "./model-arena";
 
 const empty = (): ArenaCatalog => ({ tracks: [{ id: "frontend", name: "前端", projects: [] }, { id: "backend", name: "后端", projects: [] }] });
 
@@ -12,8 +22,8 @@ describe("arena catalog", () => {
     expect(source.tracks[0].projects).toHaveLength(0);
     expect(arenaLocation(model, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }).model?.name).toBe("GPT-5");
     expect(() => createArenaCategory(model, "model", { trackId: "frontend", projectId: "project-1", providerId: "provider-1" }, "gpt-5", "model-2")).toThrow(/相同名称/);
-    const uploaded = setArenaSubmission(model, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }, "/model-arena/submissions/a.html", "2026-09-25T00:00:00Z");
-    expect(arenaLocation(uploaded, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }).model?.url).toBe("/model-arena/submissions/a.html");
+    const uploaded = setArenaSubmission(model, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }, "/model-arena/submissions/123e4567-e89b-42d3-a456-426614174000/index.html", "2026-09-25T00:00:00Z");
+    expect(arenaLocation(uploaded, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }).model?.url).toBe("/model-arena/submissions/123e4567-e89b-42d3-a456-426614174000/index.html");
     expect(arenaLocation(model, { trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1" }).model?.url).toBeUndefined();
   });
 
@@ -44,5 +54,55 @@ describe("arena catalog", () => {
     expect(removed.urls).toEqual(["/model-arena/submissions/123e4567-e89b-42d3-a456-426614174000/index.html"]);
     expect(removed.catalog.tracks[0].projects).toHaveLength(0);
     expect(renamed.tracks[0].projects).toHaveLength(1);
+  });
+
+  it("collects all model URLs correctly", () => {
+    const catalog: ArenaCatalog = {
+      tracks: [
+        {
+          id: "frontend",
+          name: "前端",
+          projects: [
+            {
+              id: "p1",
+              name: "P1",
+              providers: [
+                {
+                  id: "pr1",
+                  name: "PR1",
+                  models: [
+                    { id: "m1", name: "M1", url: "/model-arena/submissions/11111111-1111-1111-1111-111111111111/index.html" },
+                    { id: "m2", name: "M2" },
+                  ],
+                },
+              ],
+            },
+          ],
+        },
+        { id: "backend", name: "后端", projects: [] },
+      ],
+    };
+    const urls = collectCatalogUrls(catalog);
+    expect(urls.size).toBe(1);
+    expect(urls.has("/model-arena/submissions/11111111-1111-1111-1111-111111111111/index.html")).toBe(true);
+  });
+
+  it("validates catalog structure and catches errors", () => {
+    const valid: ArenaCatalog = {
+      tracks: [
+        { id: "frontend", name: "前端", projects: [] },
+        { id: "backend", name: "后端", projects: [] },
+      ],
+    };
+    expect(validateArenaCatalogStructure(valid)).toEqual(valid);
+
+    expect(() => validateArenaCatalogStructure(null)).toThrow(/格式无效/);
+    expect(() => validateArenaCatalogStructure({ tracks: [{ id: "frontend", name: "前端", projects: [] }] })).toThrow(/frontend 和 backend/);
+    expect(() => validateArenaCatalogStructure({
+      tracks: [
+        { id: "frontend", name: "前端", projects: [{ id: "p1", name: "Dup", providers: [] }, { id: "p2", name: "dup", providers: [] }] },
+        { id: "backend", name: "后端", projects: [] },
+      ],
+    })).toThrow(/重名测试项目/);
   });
 });

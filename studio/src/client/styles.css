@@ -8790,9 +8790,19 @@ body > [data-radix-popper-content-wrapper],
 .arena-manager-head{display:flex;align-items:center;justify-content:space-between;gap:16px;padding:16px 22px;border-bottom:1px solid var(--line)}
 .arena-manager-head small{display:flex;align-items:center;gap:7px;color:var(--green);font-size:11px}
 .arena-manager-head h2{margin:2px 0 0;font-size:19px}
-.arena-head-actions{display:flex;gap:6px}
-.arena-head-actions button,.arena-tree-heading button{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
-.arena-head-actions button:hover,.arena-tree-heading button:hover:not(:disabled){background:var(--surface-hover);color:var(--ink)}
+.arena-head-title{display:grid;gap:2px}
+.arena-head-actions{display:flex;align-items:center;flex-wrap:wrap;gap:8px}
+.arena-draft-badge{display:inline-flex;align-items:center;padding:3px 9px;border-radius:999px;background:var(--amber-soft, #fef3c7);color:var(--amber-dark, #92400e);font-size:11px;font-weight:600}
+.arena-btn-discard{display:inline-flex;align-items:center;gap:5px;width:auto;height:auto;min-height:32px;border:1px solid var(--line-strong);border-radius:6px;padding:6px 12px;background:var(--surface);color:var(--muted);font-size:12px;font-weight:500;white-space:nowrap;cursor:pointer}
+.arena-btn-discard:hover:not(:disabled){background:var(--surface-hover);color:var(--ink)}
+.arena-btn-discard:disabled{opacity:.4;cursor:not-allowed}
+.arena-btn-publish{display:inline-flex;align-items:center;gap:6px;width:auto;height:auto;min-height:32px;border:0;border-radius:6px;padding:6px 14px;background:var(--green);color:#fff;font-size:12px;font-weight:600;white-space:nowrap;cursor:pointer}
+.arena-btn-publish:hover:not(:disabled){background:var(--green-hover, #16a34a)}
+.arena-btn-publish:disabled{opacity:.45;cursor:not-allowed}
+.arena-model-tree-icons{display:flex;align-items:center;gap:4px;flex:none}
+.arena-staged-indicator{display:inline-block;width:7px;height:7px;border-radius:50%;background:var(--amber, #f59e0b)}
+.arena-head-actions .arena-btn-icon,.arena-tree-heading button{display:grid;place-items:center;width:32px;height:32px;border:0;border-radius:6px;background:transparent;color:var(--muted);cursor:pointer}
+.arena-head-actions .arena-btn-icon:hover,.arena-tree-heading button:hover:not(:disabled){background:var(--surface-hover);color:var(--ink)}
 .arena-tree-heading button:disabled{opacity:.4;cursor:not-allowed}
 .arena-manager-tabs{display:flex;gap:5px;padding:0 22px;border-bottom:1px solid var(--line)}
 .arena-manager-tabs button{border:0;border-bottom:2px solid transparent;padding:11px 18px;background:transparent;color:var(--muted);cursor:pointer}
@@ -8839,4 +8849,4 @@ body > [data-radix-popper-content-wrapper],
 .arena-editor-preview iframe{display:block;width:100%;height:400px;border:1px solid var(--line);border-radius:6px;background:#fff}
 .arena-loading{display:grid;place-items:center;padding:60px}
 @media(max-width:1000px){.arena-manager-body{grid-template-columns:repeat(3,minmax(0,1fr));grid-template-rows:minmax(120px,220px) minmax(0,1fr)}.arena-manager-detail{grid-column:1/-1;border-top:1px solid var(--line)}.arena-manager-tree{border-bottom:0}}
-@media(max-width:600px){.arena-backdrop{padding:0}.arena-manager{width:100%;height:100%;max-height:none;border:0;border-radius:0}.arena-manager-head{padding:12px 14px}.arena-manager-tabs{padding:0 14px}.arena-manager-body{grid-template-rows:minmax(126px,22vh) minmax(0,1fr)}.arena-manager-tree{padding:10px 5px}.arena-tree-heading{padding:0 3px 7px;font-size:11px}.arena-manager-tree>button{padding:7px 5px;font-size:12px}.arena-manager-detail{padding:16px}.arena-editor-preview iframe{height:360px}}
+@media(max-width:600px){.arena-backdrop{padding:0}.arena-manager{width:100%;height:100%;max-height:none;border:0;border-radius:0}.arena-manager-head{padding:12px 14px;flex-wrap:wrap;gap:10px}.arena-head-actions{gap:6px}.arena-btn-discard,.arena-btn-publish{padding:5px 8px;font-size:11px}.arena-draft-badge{font-size:10px;padding:2px 6px}.arena-manager-tabs{padding:0 14px}.arena-manager-body{grid-template-rows:minmax(126px,22vh) minmax(0,1fr)}.arena-manager-tree{padding:10px 5px}.arena-tree-heading{padding:0 3px 7px;font-size:11px}.arena-manager-tree>button{padding:7px 5px;font-size:12px}.arena-manager-detail{padding:16px}.arena-editor-preview iframe{height:360px}}

@@ -19,6 +19,9 @@ import type {
   TranslationResult,
   TranslationSettingsSummary,
   WebEmbedRecord,
+  ArenaBatchRequest,
+  ArenaBatchResult,
+  ArenaBatchSubmissionItem,
 } from "../shared/types";
 import { validateScheduleTime } from "../shared/schedule";
 import { fetchLinkPreview, LinkPreviewError } from "../shared/link-preview";
@@ -42,6 +45,7 @@ import {
   renameArenaCategory,
   setArenaProjectPrompt,
   setArenaSubmission,
+  validateArenaCatalogStructure,
   type ArenaCatalog,
   type ArenaCategoryKind,
   type ArenaLocation,
@@ -357,6 +361,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/model-arena" && request.method === "GET") {
     return json(await getArenaCatalog(env));
+  }
+  if (url.pathname === "/api/model-arena/batch" && request.method === "POST") {
+    return json(await publishArenaBatchInRepository(env, request), 200);
   }
   if (url.pathname === "/api/model-arena/categories" && request.method === "POST") {
     return json(await createArenaCategoryInRepository(env, await readJson(request)), 201);
@@ -1475,6 +1482,250 @@ async function uploadArenaSubmission(env: Env, request: Request): Promise<{ cata
     expectedSha: sha,
   }, oldUrl ? [oldUrl] : []);
   return { catalog, sha: catalogSha! };
+}
+
+async function publishArenaBatchInRepository(env: Env, request: Request): Promise<ArenaBatchResult> {
+  const form = await request.formData();
+  const batchStr = form.get("batch");
+  if (typeof batchStr !== "string" || !batchStr.trim()) {
+    throw new HttpError(400, "缺少批处理请求数据");
+  }
+  let batch: ArenaBatchRequest;
+  try {
+    batch = JSON.parse(batchStr);
+  } catch {
+    throw new HttpError(400, "批处理请求格式无效");
+  }
+  if (
+    !batch ||
+    typeof batch !== "object" ||
+    typeof batch.expectedSha !== "string" ||
+    !/^[0-9a-f]{40}$/.test(batch.expectedSha) ||
+    !Array.isArray(batch.submissions) ||
+    !Array.isArray(batch.removedUrls)
+  ) {
+    throw new HttpError(400, "批处理请求数据结构无效");
+  }
+
+  let catalog: ArenaCatalog;
+  try {
+    catalog = validateArenaCatalogStructure(batch.catalog);
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : "竞技场目录无效");
+  }
+
+  const token = await requireGitHubToken(env);
+  const current = await getArenaCatalog(env);
+  if (current.sha !== batch.expectedSha) {
+    throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  }
+
+  const allUploadFiles = form.getAll("files").filter((item): item is File => item instanceof File);
+  const webFilesToCommit: WebUploadFile[] = [];
+  const allRemovedUrls = new Set<string>(batch.removedUrls);
+
+  for (const sub of batch.submissions) {
+    if (!sub || typeof sub !== "object" || !sub.trackId || !sub.projectId || !sub.providerId || !sub.modelId) {
+      throw new HttpError(400, "作品提交项缺少分类信息");
+    }
+    const location: ArenaLocation = {
+      trackId: sub.trackId,
+      projectId: sub.projectId,
+      providerId: sub.providerId,
+      modelId: sub.modelId,
+    };
+    let modelName: string;
+    try {
+      const { model } = arenaLocation(catalog, location);
+      if (!model) throw new Error(`模型不存在：${sub.modelId}`);
+      modelName = model.name;
+    } catch (error) {
+      throw new HttpError(400, error instanceof Error ? error.message : "模型无效");
+    }
+
+    let subFiles: WebUploadFile[] = [];
+    let entry = "";
+
+    if (typeof sub.html === "string" && sub.html.trim()) {
+      if (!/<(?:!doctype\s+html|html)\b/i.test(sub.html)) {
+        throw new HttpError(415, `模型 ${modelName} 的 HTML 不是完整的 HTML 文档`);
+      }
+      subFiles = [{ path: "index.html", bytes: new TextEncoder().encode(sub.html) }];
+      entry = "index.html";
+    } else {
+      if (!Array.isArray(sub.fileIndexes) || !Array.isArray(sub.paths) || sub.fileIndexes.length !== sub.paths.length) {
+        throw new HttpError(400, `模型 ${modelName} 的上传文件与路径索引不匹配`);
+      }
+      if (sub.fileIndexes.length === 0) {
+        throw new HttpError(400, `模型 ${modelName} 没有可上传的文件`);
+      }
+      for (let i = 0; i < sub.fileIndexes.length; i++) {
+        const fileIndex = sub.fileIndexes[i];
+        const filePath = sub.paths[i];
+        if (typeof fileIndex !== "number" || fileIndex < 0 || fileIndex >= allUploadFiles.length) {
+          throw new HttpError(400, `模型 ${modelName} 的文件索引无效：${fileIndex}`);
+        }
+        const file = allUploadFiles[fileIndex];
+        subFiles.push({
+          path: filePath,
+          bytes: new Uint8Array(await file.arrayBuffer()),
+        });
+      }
+      subFiles = normalizeWebFiles(subFiles);
+      entry = selectWebEntry(subFiles, sub.entry || "") || "";
+      if (!entry) {
+        const runnable = subFiles.filter((item) => ["js", "mjs", "css"].includes(webFileExtension(item.path)));
+        if (!runnable.length) throw new HttpError(415, `模型 ${modelName} 的网页文件中缺少 HTML 或 JS 入口`);
+        subFiles = normalizeWebFiles([...subFiles, { path: "index.html", bytes: new TextEncoder().encode(generatedWebEntry(modelName, runnable)) }]);
+        entry = "index.html";
+      }
+      const htmlBytes = subFiles.find((item) => item.path === entry)!.bytes;
+      if (!/<(?:!doctype\s+html|html)\b/i.test(new TextDecoder().decode(htmlBytes.subarray(0, 4096)))) {
+        throw new HttpError(415, `模型 ${modelName} 的入口文件不是完整的 HTML 文档`);
+      }
+    }
+
+    const subId = crypto.randomUUID();
+    const url = `/model-arena/submissions/${subId}/${entry.split("/").map(encodeURIComponent).join("/")}`;
+    catalog = setArenaSubmission(catalog, location, url, new Date().toISOString());
+
+    for (const f of subFiles) {
+      webFilesToCommit.push({
+        path: `arena-submissions/${subId}/${f.path}`,
+        bytes: f.bytes,
+      });
+    }
+
+    if (sub.oldUrl) {
+      allRemovedUrls.add(sub.oldUrl);
+    }
+  }
+
+  try {
+    validateArenaCatalogStructure(catalog);
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : "最终目录结构无效");
+  }
+
+  const commitMessage = cleanCommitMessage(
+    batch.commitMessage,
+    batch.submissions.length > 0 ? `竞技场：批量发布更改（${batch.submissions.length} 项作品）` : "竞技场：更新分类目录",
+  );
+
+  const { catalogSha, commitSha } = await commitArenaBatch(
+    env,
+    token,
+    webFilesToCommit,
+    commitMessage,
+    {
+      path: ARENA_CATALOG_PATH,
+      bytes: new TextEncoder().encode(JSON.stringify(catalog, null, 2) + "\n"),
+      expectedSha: batch.expectedSha,
+    },
+    Array.from(allRemovedUrls),
+  );
+
+  return {
+    catalog,
+    sha: catalogSha,
+    commitSha,
+    publishedCount: batch.submissions.length,
+  };
+}
+
+async function commitArenaBatch(
+  env: Env,
+  token: string,
+  files: WebUploadFile[],
+  commitMessage: string,
+  catalogFile: WebUploadFile & { expectedSha: string },
+  removedUrls: string[] = [],
+): Promise<{ catalogSha: string; commitSha: string }> {
+  const reference = await githubJson<{ object: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/ref/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "GET" },
+    token,
+  );
+  const current = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${encodeGitHubPath(catalogFile.path)}?ref=${reference.object.sha}`,
+    { method: "GET" },
+    token,
+  );
+  if (current.sha !== catalogFile.expectedSha) {
+    throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  }
+  const parent = await githubJson<{ tree: { sha: string } }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits/${reference.object.sha}`,
+    { method: "GET" },
+    token,
+  );
+  const removed = new Set<string>();
+  if (removedUrls.length) {
+    const paths = removedUrls.map(arenaSubmissionRoot);
+    const tree = await githubJson<{ tree: Array<{ path: string; type: string }>; truncated: boolean }>(
+      env,
+      `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees/${parent.tree.sha}?recursive=1`,
+      { method: "GET" },
+      token,
+    );
+    if (tree.truncated) throw new HttpError(409, "仓库文件列表过大，无法安全删除旧作品");
+    for (const path of paths) {
+      for (const item of tree.tree) {
+        if (item.type === "blob" && (item.path === path || item.path.startsWith(`${path}/`))) {
+          removed.add(item.path);
+        }
+      }
+    }
+  }
+  const allBlobs = [...files, catalogFile];
+  const blobs = await mapConcurrent(allBlobs, 4, async (file) => {
+    const blob = await githubJson<{ sha: string }>(
+      env,
+      `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/blobs`,
+      { method: "POST", body: JSON.stringify({ content: bytesToBase64(file.bytes), encoding: "base64" }) },
+      token,
+    );
+    return { path: file.path, mode: "100644", type: "blob", sha: blob.sha };
+  });
+  const tree = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/trees`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        base_tree: parent.tree.sha,
+        tree: [
+          ...blobs,
+          ...[...removed].map((path) => ({ path, mode: "100644", type: "blob", sha: null })),
+        ],
+      }),
+    },
+    token,
+  );
+  const commit = await githubJson<{ sha: string }>(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/commits`,
+    {
+      method: "POST",
+      body: JSON.stringify({
+        message: commitMessage,
+        tree: tree.sha,
+        parents: [reference.object.sha],
+      }),
+    },
+    token,
+  );
+  await githubJson(
+    env,
+    `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/git/refs/heads/${encodeGitHubPath(env.GITHUB_BRANCH)}`,
+    { method: "PATCH", body: JSON.stringify({ sha: commit.sha, force: false }) },
+    token,
+  );
+  const catalogSha = blobs.find((b) => b.path === catalogFile.path)?.sha || "";
+  return { catalogSha, commitSha: commit.sha };
 }
 
 function normalizeWebFiles(files: WebUploadFile[]): WebUploadFile[] {

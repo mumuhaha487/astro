@@ -1,6 +1,6 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { TRANSLATION_CHUNK_MAX_LENGTH } from "../shared/translation";
-import type { TranslationResult } from "../shared/types";
+import type { TranslationResult, ArenaBatchResult } from "../shared/types";
 import type { ArenaCatalog } from "../shared/model-arena";
 import worker from "./index";
 
@@ -319,6 +319,325 @@ describe("model arena management", () => {
     expect(upstream).toHaveBeenCalledTimes(2);
     expect(invalid.status).not.toBe(200);
   });
+
+  it("processes atomic batch publishing with multiple staged submissions, prompt changes, and old URL removals in ONE commit", async () => {
+    const oldId = "123e4567-e89b-42d3-a456-426614174000";
+    const previous = structuredClone(catalog) as ArenaCatalog;
+    previous.tracks[0].projects[0].providers[0].models[0].url = `/model-arena/submissions/${oldId}/index.html`;
+
+    // Add a second model to the catalog
+    previous.tracks[0].projects[0].providers[0].models.push({ id: "model-2", name: "Claude-3.5" });
+
+    const trees: Array<{ tree: Array<{ path: string; sha: string | null }> }> = [];
+    const commits: Array<{ message: string; tree: string; parents: string[] }> = [];
+    const refUpdates: Array<{ sha: string }> = [];
+
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.includes("/contents/data/model_arena.json")) {
+        return Response.json({ ...githubFile(), content: Buffer.from(JSON.stringify(previous)).toString("base64") });
+      }
+      if (url.includes("/git/ref/heads/main") && method === "GET") {
+        return Response.json({ object: { sha: "c".repeat(40) } });
+      }
+      if (url.includes("/git/commits/") && method === "GET") {
+        return Response.json({ tree: { sha: "d".repeat(40) } });
+      }
+      if (url.includes("/git/trees/") && method === "GET") {
+        return Response.json({
+          tree: [
+            { path: `arena-submissions/${oldId}/index.html`, type: "blob" },
+            { path: `arena-submissions/${oldId}/assets/app.js`, type: "blob" },
+            { path: "other-file.txt", type: "blob" },
+          ],
+          truncated: false,
+        });
+      }
+      if (url.endsWith("/git/blobs")) {
+        return Response.json({ sha: "blob-sha-" + Math.random().toString(36).slice(2, 8) });
+      }
+      if (url.endsWith("/git/trees") && method === "POST") {
+        const body = JSON.parse(String(init?.body));
+        trees.push(body);
+        return Response.json({ sha: "tree-sha-1234" });
+      }
+      if (url.endsWith("/git/commits") && method === "POST") {
+        const body = JSON.parse(String(init?.body));
+        commits.push(body);
+        return Response.json({ sha: "commit-sha-5678" });
+      }
+      if (url.includes("/git/refs/heads/main") && method === "PATCH") {
+        refUpdates.push(JSON.parse(String(init?.body)));
+        return Response.json({});
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    }));
+
+    const env = testEnv();
+    const cookie = await auth(env);
+
+    // Prepare batch request:
+    // Update prompt on project-1
+    const stagedCatalog = structuredClone(previous);
+    stagedCatalog.tracks[0].projects[0].prompt = "新提示词：批量生成";
+
+    const form = new FormData();
+    // Model 1 has a zip bundle with 2 files
+    form.append("files", new File(['<!doctype html><html><script src="assets/app.js"></script></html>'], "index.html"));
+    form.append("files", new File(["console.log('model 1')"], "app.js"));
+    // Model 2 has paste HTML (0 files, html field)
+
+    const batchPayload = {
+      expectedSha: sha,
+      catalog: stagedCatalog,
+      commitMessage: "竞技场：批量发布 2 项模型作品",
+      removedUrls: [],
+      submissions: [
+        {
+          trackId: "frontend",
+          projectId: "project-1",
+          providerId: "provider-1",
+          modelId: "model-1",
+          entry: "index.html",
+          paths: ["index.html", "assets/app.js"],
+          fileIndexes: [0, 1],
+          oldUrl: `/model-arena/submissions/${oldId}/index.html`,
+        },
+        {
+          trackId: "frontend",
+          projectId: "project-1",
+          providerId: "provider-1",
+          modelId: "model-2",
+          entry: "index.html",
+          paths: ["index.html"],
+          fileIndexes: [],
+          html: "<!doctype html><html><body>Model 2 Pasted</body></html>",
+        },
+      ],
+    };
+    form.set("batch", JSON.stringify(batchPayload));
+
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/batch", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+
+    expect(response.status).toBe(200);
+    const result = (await response.json()) as ArenaBatchResult;
+    expect(result.publishedCount).toBe(2);
+    expect(result.commitSha).toBe("commit-sha-5678");
+
+    // Verify catalog in result
+    expect(result.catalog.tracks[0].projects[0].prompt).toBe("新提示词：批量生成");
+    const mod1Url = result.catalog.tracks[0].projects[0].providers[0].models[0].url;
+    const mod2Url = result.catalog.tracks[0].projects[0].providers[0].models[1].url;
+    expect(mod1Url).toMatch(/^\/model-arena\/submissions\/[0-9a-f-]{36}\/index\.html$/);
+    expect(mod2Url).toMatch(/^\/model-arena\/submissions\/[0-9a-f-]{36}\/index\.html$/);
+    expect(mod1Url).not.toBe(mod2Url);
+    expect(mod1Url).not.toContain(oldId);
+
+    // Exactly 1 git tree, 1 commit, 1 ref update
+    expect(trees).toHaveLength(1);
+    expect(commits).toHaveLength(1);
+    expect(commits[0].message).toBe("竞技场：批量发布 2 项模型作品");
+    expect(refUpdates).toHaveLength(1);
+    expect(refUpdates[0].sha).toBe("commit-sha-5678");
+
+    // Verify tree items:
+    // 2 files for model 1 + 1 file for model 2 + 1 catalog file = 4 new blobs
+    // 2 old files deleted (sha: null)
+    const treeItems = trees[0].tree;
+    const deletedPaths = treeItems.filter((item) => item.sha === null).map((item) => item.path);
+    expect(deletedPaths).toContain(`arena-submissions/${oldId}/index.html`);
+    expect(deletedPaths).toContain(`arena-submissions/${oldId}/assets/app.js`);
+    expect(deletedPaths).not.toContain("other-file.txt");
+
+    const createdPaths = treeItems.filter((item) => item.sha !== null).map((item) => item.path);
+    expect(createdPaths).toContain("data/model_arena.json");
+    expect(createdPaths.filter((p) => p.endsWith("/index.html"))).toHaveLength(2);
+    expect(createdPaths.filter((p) => p.endsWith("/assets/app.js"))).toHaveLength(1);
+  });
+
+  it("rejects batch publish on conflict (409) and leaves Git untouched", async () => {
+    let gitWrites = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.includes("/contents/data/model_arena.json")) {
+        return Response.json({ ...githubFile(), sha: "stale-remote-sha" });
+      }
+      if (method === "POST" || method === "PATCH" || method === "PUT") {
+        gitWrites++;
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    }));
+
+    const env = testEnv();
+    const cookie = await auth(env);
+    const form = new FormData();
+    form.set("batch", JSON.stringify({
+      expectedSha: sha,
+      catalog,
+      submissions: [],
+      removedUrls: [],
+    }));
+
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/batch", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+
+    expect(response.status).toBe(409);
+    expect(gitWrites).toBe(0);
+  });
+  it("prevents duplicate commits on retry or double-submit after a successful batch publish", async () => {
+    let currentCatalogSha = sha;
+    const commitHistory: string[] = [];
+
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.includes("/contents/data/model_arena.json")) {
+        return Response.json({ ...githubFile(), sha: currentCatalogSha });
+      }
+      if (url.includes("/git/ref/heads/main") && method === "GET") {
+        return Response.json({ object: { sha: "ref-sha-1111" } });
+      }
+      if (url.includes("/git/commits/") && method === "GET") {
+        return Response.json({ tree: { sha: "tree-sha-1111" } });
+      }
+      if (url.includes("/git/trees/") && method === "GET") {
+        return Response.json({ tree: [], truncated: false });
+      }
+      if (url.endsWith("/git/blobs")) {
+        currentCatalogSha = "new-catalog-sha-2222";
+        return Response.json({ sha: currentCatalogSha });
+      }
+      if (url.endsWith("/git/trees") && method === "POST") {
+        return Response.json({ sha: "new-tree-sha-2222" });
+      }
+      if (url.endsWith("/git/commits") && method === "POST") {
+        const cSha = "new-commit-sha-" + (commitHistory.length + 1);
+        commitHistory.push(cSha);
+        return Response.json({ sha: cSha });
+      }
+      if (url.includes("/git/refs/heads/main") && method === "PATCH") {
+        return Response.json({});
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    }));
+
+    const env = testEnv();
+    const cookie = await auth(env);
+
+    const form1 = new FormData();
+    form1.set("batch", JSON.stringify({
+      expectedSha: sha,
+      catalog,
+      submissions: [
+        {
+          trackId: "frontend",
+          projectId: "project-1",
+          providerId: "provider-1",
+          modelId: "model-1",
+          html: "<!doctype html><html><body>First submission</body></html>",
+          fileIndexes: [],
+          paths: ["index.html"],
+        },
+      ],
+      removedUrls: [],
+    }));
+
+    // First request succeeds
+    const firstRes = await worker.fetch(new Request("https://studio.example/api/model-arena/batch", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form1,
+    }), env);
+
+    expect(firstRes.status).toBe(200);
+    expect(commitHistory).toHaveLength(1);
+
+    // Second request (retry or accidental double-submit with same expectedSha)
+    const form2 = new FormData();
+    form2.set("batch", JSON.stringify({
+      expectedSha: sha, // original stale SHA
+      catalog,
+      submissions: [
+        {
+          trackId: "frontend",
+          projectId: "project-1",
+          providerId: "provider-1",
+          modelId: "model-1",
+          html: "<!doctype html><html><body>First submission</body></html>",
+          fileIndexes: [],
+          paths: ["index.html"],
+        },
+      ],
+      removedUrls: [],
+    }));
+
+    const secondRes = await worker.fetch(new Request("https://studio.example/api/model-arena/batch", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form2,
+    }), env);
+
+    // Rejected with 409 conflict and zero new commits
+    expect(secondRes.status).toBe(409);
+    expect(commitHistory).toHaveLength(1);
+  });
+
+
+
+  it("rejects invalid batch payload without performing any Git writes", async () => {
+    let gitWrites = 0;
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.includes("/contents/data/model_arena.json")) {
+        return Response.json(githubFile());
+      }
+      if (method === "POST" || method === "PATCH" || method === "PUT") {
+        gitWrites++;
+      }
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    }));
+
+    const env = testEnv();
+    const cookie = await auth(env);
+    const form = new FormData();
+    // Non-HTML content in paste
+    form.set("batch", JSON.stringify({
+      expectedSha: sha,
+      catalog,
+      submissions: [
+        {
+          trackId: "frontend",
+          projectId: "project-1",
+          providerId: "provider-1",
+          modelId: "model-1",
+          html: "Plain text, not valid HTML document",
+          fileIndexes: [],
+          paths: ["index.html"],
+        },
+      ],
+      removedUrls: [],
+    }));
+
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/batch", {
+      method: "POST",
+      headers: { Cookie: cookie, Origin: "https://studio.example" },
+      body: form,
+    }), env);
+
+    expect(response.status).toBe(415);
+    expect(gitWrites).toBe(0);
+  });
+
 });
 
 describe("editor asset proxy", () => {
