@@ -29,19 +29,21 @@ jobs:
         run: npm ci --ignore-scripts --omit=dev
       - name: Verify ranking and deduplication
         run: node --test scripts/update-github-trending.test.mjs scripts/update-github-trending-periods.test.mjs scripts/github-trending-ui.test.mjs
-      - name: Backfill AI categories
-        env:
-          DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
-        run: node scripts/backfill-github-trending-tags.mjs
       - name: Generate trending data with retries
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
         run: |
+          if [ -z "$GITHUB_TOKEN" ] || [ -z "$DEEPSEEK_API_KEY" ]; then
+            echo "GITHUB_TOKEN and DEEPSEEK_API_KEY are required."
+            exit 1
+          fi
           attempt=1
           while true; do
             echo "Generation attempt $attempt"
-            if node scripts/update-github-trending.mjs && node scripts/update-github-trending-periods.mjs; then
+            if node scripts/backfill-github-trending-tags.mjs &&
+               node scripts/update-github-trending.mjs &&
+               node scripts/update-github-trending-periods.mjs; then
               exit 0
             fi
             delay=$((attempt * 60))
@@ -57,5 +59,16 @@ jobs:
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git commit -m "content: update GitHub trending $(date -u +%Y-%m-%d)"
-          git pull --rebase origin main
-          git push origin HEAD:main
+          attempt=1
+          while true; do
+            echo "Publish attempt $attempt"
+            if git fetch origin main; then
+              git rebase origin/main
+              if git push origin HEAD:main; then exit 0; fi
+            fi
+            delay=$((attempt * 30))
+            if [ "$delay" -gt 300 ]; then delay=300; fi
+            echo "Publish failed; retrying in $delay seconds."
+            sleep "$delay"
+            attempt=$((attempt + 1))
+          done
