@@ -7,7 +7,13 @@
         {
           "id": "pelican-bicycle",
           "name": "鹈鹕骑自行车",
-          "providers": [],
+          "providers": [
+            {
+              "id": "806e9cda-02f6-47ce-a314-06858d4d1729",
+              "name": "GPT",
+              "models": []
+            }
+          ],
           "prompt": "用SVG绘制一个鹈鹕骑自行车的html网页"
         },
         {
