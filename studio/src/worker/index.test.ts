@@ -300,8 +300,9 @@ describe("model arena management", () => {
     expect(response.headers.get("Content-Length")).toBeNull();
     expect(response.headers.get("Content-Security-Policy")).toContain("sandbox allow-scripts");
     expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'self' https://vmss.cn");
-    expect(upstream.mock.calls[0][0]).toBe(`https://raw.githubusercontent.com/mumuhaha487/astro/main/arena-submissions/${id}.html`);
+    expect(upstream.mock.calls[0][0]).toBe(`https://api.github.com/repos/mumuhaha487/astro/contents/arena-submissions/${id}.html?ref=main`);
     expect(new Headers(upstream.mock.calls[0][1]?.headers).get("Accept-Encoding")).toBe("identity");
+    expect(new Headers(upstream.mock.calls[0][1]?.headers).get("Accept")).toBe("application/vnd.github.raw+json");
   });
 
   it("serves nested JavaScript and PNG assets but rejects traversals", async () => {
@@ -312,7 +313,7 @@ describe("model arena management", () => {
       const response = await worker.fetch(new Request(`https://studio.example/model-arena/submissions/${id}/${path}`), testEnv());
       expect(response.status).toBe(200);
       expect(response.headers.get("Content-Type")).toContain(type);
-      expect(upstream.mock.lastCall?.[0]).toBe(`https://raw.githubusercontent.com/mumuhaha487/astro/main/arena-submissions/${id}/${path}`);
+      expect(upstream.mock.lastCall?.[0]).toBe(`https://api.github.com/repos/mumuhaha487/astro/contents/arena-submissions/${id}/${path}?ref=main`);
     }
     const invalid = await worker.fetch(new Request(`https://studio.example/model-arena/submissions/${id}/%2e%2e/secret.js`), testEnv());
     expect(upstream).toHaveBeenCalledTimes(2);

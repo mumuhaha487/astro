@@ -2335,8 +2335,9 @@ function repositoryPublicAssetPath(pathname: string): string | null {
 }
 
 async function proxyEditorAsset(request: Request, env: Env, repositoryPath: string): Promise<Response> {
+  const arenaSubmission = repositoryPath.startsWith("arena-submissions/");
   const headers = new Headers({
-    Accept: request.headers.get("Accept") || "*/*",
+    Accept: arenaSubmission ? "application/vnd.github.raw+json" : request.headers.get("Accept") || "*/*",
     "Accept-Encoding": "identity",
     "User-Agent": "astro-blog-studio",
   });
@@ -2346,7 +2347,10 @@ async function proxyEditorAsset(request: Request, env: Env, repositoryPath: stri
   }
   const token = await getGitHubToken(env);
   if (token) headers.set("Authorization", `Bearer ${token}`);
-  const response = await fetch(rawGitHubUrl(env, repositoryPath), {
+  const source = arenaSubmission
+    ? `https://api.github.com/repos/${encodeURIComponent(env.GITHUB_OWNER)}/${encodeURIComponent(env.GITHUB_REPO)}/contents/${encodeGitHubPath(repositoryPath)}?ref=${encodeURIComponent(env.GITHUB_BRANCH)}`
+    : rawGitHubUrl(env, repositoryPath);
+  const response = await fetch(source, {
     method: request.method,
     headers,
     redirect: "follow",
