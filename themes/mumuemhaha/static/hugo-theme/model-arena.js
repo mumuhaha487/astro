@@ -42,7 +42,7 @@
     const url = model?.dataset.url || "";
     title.textContent = model?.dataset.name || "选择作品";
     path.textContent = [track.textContent, project?.textContent, provider?.textContent].filter(Boolean).join(" / ");
-    if (url && /^\/model-arena\/submissions\/[0-9a-f-]{36}\.html$/.test(url)) {
+    if (url && /^\/model-arena\/submissions\/[0-9a-f-]{36}(?:\.html|\/(?:[^/?#]+\/)*[^/?#]+\.html?)$/.test(url)) {
       const source = `https://md.vmss.cn${url}`;
       if (frame.dataset.source !== source) {
         frame.contentWindow.location.replace(source);

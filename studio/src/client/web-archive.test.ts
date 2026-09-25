@@ -1,7 +1,7 @@
 import { zipSync } from "fflate";
 import { describe, expect, it } from "vitest";
 
-import { extractWebArchive, preferredWebEntry } from "./web-archive";
+import { extractWebArchive, normalizeArenaArchive, preferredWebEntry } from "./web-archive";
 
 describe("web archive extraction", () => {
   it("keeps nested paths and dot-relative HTML references intact", () => {
@@ -24,6 +24,21 @@ describe("web archive extraction", () => {
 
   it("prefers a root index over nested HTML entries", () => {
     expect(preferredWebEntry(["demo/page.html", "demo/index.html", "index.html"])).toBe("index.html");
+  });
+
+  it("normalizes flat, singly wrapped and multiply wrapped archives to the same paths", () => {
+    const files = ["index.html", "assets/app.js", "assets/logo.png"];
+    for (const wrapper of ["", "example/", "example/dist/"]) {
+      const archive = zipSync(Object.fromEntries(files.map((path) => [wrapper + path, new TextEncoder().encode(path)])));
+      const normalized = normalizeArenaArchive(extractWebArchive(archive));
+      expect(normalized.map((file) => file.path)).toEqual(files.sort());
+      expect(preferredWebEntry(normalized.map((file) => file.path))).toBe("index.html");
+    }
+  });
+
+  it("does not remove directories when files have different top-level roots", () => {
+    const archive = zipSync({ "index.html": new Uint8Array([1]), "assets/a.js": new Uint8Array([2]) });
+    expect(normalizeArenaArchive(extractWebArchive(archive)).map((file) => file.path)).toEqual(["assets/a.js", "index.html"]);
   });
 
   it("rejects traversal paths before returning extracted files", () => {

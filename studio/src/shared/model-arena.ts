@@ -87,6 +87,33 @@ export function setArenaSubmission(catalog: ArenaCatalog, location: ArenaLocatio
   return next;
 }
 
+export function renameArenaCategory(catalog: ArenaCatalog, kind: ArenaCategoryKind, location: ArenaLocation, value: unknown): ArenaCatalog {
+  const name = arenaName(value);
+  const next = structuredClone(catalog);
+  const { track, project, provider, model } = arenaLocation(next, location);
+  const siblings = kind === "project" ? track.projects : kind === "provider" ? project?.providers : provider?.models;
+  const target = kind === "project" ? project : kind === "provider" ? provider : model;
+  if (!siblings || !target) throw new Error("请选择要修改的分类");
+  if (siblings.some((item) => item.id !== target.id && item.name.toLocaleLowerCase() === name.toLocaleLowerCase())) throw new Error("同级分类已有相同名称");
+  target.name = name;
+  return next;
+}
+
+export function deleteArenaCategory(catalog: ArenaCatalog, kind: ArenaCategoryKind, location: ArenaLocation): { catalog: ArenaCatalog; urls: string[] } {
+  const next = structuredClone(catalog);
+  const { track, project, provider, model } = arenaLocation(next, location);
+  const siblings = kind === "project" ? track.projects : kind === "provider" ? project?.providers : provider?.models;
+  const target = kind === "project" ? project : kind === "provider" ? provider : model;
+  if (!siblings || !target) throw new Error("请选择要删除的分类");
+  const urls = kind === "project"
+    ? project!.providers.flatMap((item) => item.models.map((entry) => entry.url).filter((url): url is string => !!url))
+    : kind === "provider"
+      ? provider!.models.map((entry) => entry.url).filter((url): url is string => !!url)
+      : model!.url ? [model!.url] : [];
+  siblings.splice(siblings.findIndex((item) => item.id === target.id), 1);
+  return { catalog: next, urls };
+}
+
 export function setArenaProjectPrompt(catalog: ArenaCatalog, location: ArenaLocation, value: unknown): ArenaCatalog {
   if (typeof value !== "string") throw new Error("提示词格式无效");
   const prompt = value.replace(/\r\n?/g, "\n").trim();

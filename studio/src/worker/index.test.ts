@@ -95,7 +95,7 @@ describe("model arena management", () => {
     expect(upstream).toHaveBeenCalledTimes(2);
   });
 
-  it("commits one HTML file and its catalog entry in the same Git tree", async () => {
+  it("commits HTML and its catalog entry in a unique folder in the same Git tree", async () => {
     const trees: Array<{ tree: Array<{ path: string }> }> = [];
     const upstream = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
       const url = String(input);
@@ -121,9 +121,123 @@ describe("model arena management", () => {
     expect(response.status).toBe(201);
     expect(trees).toHaveLength(1);
     expect(trees[0].tree.map((item) => item.path)).toEqual([
-      expect.stringMatching(/^arena-submissions\/[0-9a-f-]{36}\.html$/),
+      expect.stringMatching(/^arena-submissions\/[0-9a-f-]{36}\/index\.html$/),
       "data/model_arena.json",
     ]);
+  });
+
+  it("replaces a nested bundle by removing only the previous model's files", async () => {
+    const oldId = "123e4567-e89b-42d3-a456-426614174000";
+    const otherId = "123e4567-e89b-42d3-a456-426614174001";
+    const previous = structuredClone(catalog) as ArenaCatalog;
+    previous.tracks[0].projects[0].providers[0].models[0].url = `/model-arena/submissions/${oldId}/index.html`;
+    const trees: Array<{ tree: Array<{ path: string; sha: string | null }> }> = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      const method = init?.method || "GET";
+      if (url.includes("/contents/data/model_arena.json")) return Response.json({ ...githubFile(), content: Buffer.from(JSON.stringify(previous)).toString("base64") });
+      if (url.includes("/git/ref/heads/main")) return Response.json({ object: { sha: "c".repeat(40) } });
+      if (url.includes("/git/commits/") && method === "GET") return Response.json({ tree: { sha: "d".repeat(40) } });
+      if (url.includes("/git/trees/") && method === "GET") return Response.json({ tree: [
+        { path: `arena-submissions/${oldId}/index.html`, type: "blob" },
+        { path: `arena-submissions/${oldId}/assets/app.js`, type: "blob" },
+        { path: `arena-submissions/${otherId}/index.html`, type: "blob" },
+      ], truncated: false });
+      if (url.endsWith("/git/blobs")) return Response.json({ sha: "e".repeat(40) });
+      if (url.endsWith("/git/trees")) { trees.push(JSON.parse(String(init?.body))); return Response.json({ sha: "f".repeat(40) }); }
+      if (url.endsWith("/git/commits")) return Response.json({ sha: "1".repeat(40) });
+      if (url.includes("/git/refs/heads/main")) return Response.json({});
+      throw new Error(`Unexpected request: ${method} ${url}`);
+    }));
+    const env = testEnv();
+    const cookie = await auth(env);
+    const form = new FormData();
+    form.append("files", new File(['<!doctype html><html><script src="assets/app.js"></script></html>'], "index.html"));
+    form.append("files", new File(["document.body.dataset.ready='true'"], "app.js"));
+    form.append("files", new File([new Uint8Array([137, 80, 78, 71])], "logo.png"));
+    form.set("paths", JSON.stringify(["index.html", "assets/app.js", "assets/logo.png"]));
+    for (const [key, value] of Object.entries({ trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1", sha })) form.set(key, value);
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/submissions", {
+      method: "POST", headers: { Cookie: cookie, Origin: "https://studio.example" }, body: form,
+    }), env);
+    expect(response.status).toBe(201);
+    const result = await response.json() as { catalog: ArenaCatalog };
+    const newUrl = result.catalog.tracks[0].projects[0].providers[0].models[0].url!;
+    expect(newUrl).toMatch(/^\/model-arena\/submissions\/[0-9a-f-]{36}\/index\.html$/);
+    expect(newUrl).not.toContain(oldId);
+    expect(trees[0].tree.map((item) => item.path)).toEqual([
+      expect.stringMatching(/^arena-submissions\/[0-9a-f-]{36}\/assets\/app\.js$/),
+      expect.stringMatching(/^arena-submissions\/[0-9a-f-]{36}\/assets\/logo\.png$/),
+      expect.stringMatching(/^arena-submissions\/[0-9a-f-]{36}\/index\.html$/),
+      "data/model_arena.json",
+      `arena-submissions/${oldId}/index.html`,
+      `arena-submissions/${oldId}/assets/app.js`,
+    ]);
+    expect(trees[0].tree.slice(-2).every((item) => item.sha === null)).toBe(true);
+    expect(trees[0].tree.some((item) => item.path.includes(otherId))).toBe(false);
+  });
+
+  it("deletes a provider and its legacy submission in one commit", async () => {
+    const id = "123e4567-e89b-42d3-a456-426614174000";
+    const previous = structuredClone(catalog) as ArenaCatalog;
+    previous.tracks[0].projects[0].providers[0].models[0].url = `/model-arena/submissions/${id}.html`;
+    let treePaths: Array<{ path: string; sha: string | null }> = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("/contents/data/model_arena.json")) return Response.json({ ...githubFile(), content: Buffer.from(JSON.stringify(previous)).toString("base64") });
+      if (url.includes("/git/ref/heads/main")) return Response.json({ object: { sha: "c".repeat(40) } });
+      if (url.includes("/git/commits/") && init?.method === "GET") return Response.json({ tree: { sha: "d".repeat(40) } });
+      if (url.includes("/git/trees/") && init?.method === "GET") return Response.json({ tree: [{ path: `arena-submissions/${id}.html`, type: "blob" }], truncated: false });
+      if (url.endsWith("/git/blobs")) return Response.json({ sha: "e".repeat(40) });
+      if (url.endsWith("/git/trees")) { treePaths = JSON.parse(String(init?.body)).tree; return Response.json({ sha: "f".repeat(40) }); }
+      if (url.endsWith("/git/commits")) return Response.json({ sha: "1".repeat(40) });
+      if (url.includes("/git/refs/heads/main")) return Response.json({});
+      throw new Error(`Unexpected request: ${url}`);
+    }));
+    const env = testEnv();
+    const cookie = await auth(env);
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/categories", {
+      method: "DELETE", headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ kind: "provider", trackId: "frontend", projectId: "project-1", providerId: "provider-1", sha }),
+    }), env);
+    expect(response.status).toBe(200);
+    expect(((await response.json()) as { catalog: ArenaCatalog }).catalog.tracks[0].projects[0].providers).toHaveLength(0);
+    expect(treePaths).toEqual([
+      expect.objectContaining({ path: "data/model_arena.json", sha: "e".repeat(40) }),
+      expect.objectContaining({ path: `arena-submissions/${id}.html`, sha: null }),
+    ]);
+  });
+
+  it("accepts repeated same-named uploads in different folders and pasted HTML", async () => {
+    const urls: string[] = [];
+    vi.stubGlobal("fetch", vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (url.includes("/contents/data/model_arena.json")) return Response.json(githubFile());
+      if (url.includes("/git/ref/heads/main")) return Response.json({ object: { sha: "c".repeat(40) } });
+      if (url.includes("/git/commits/") && init?.method === "GET") return Response.json({ tree: { sha: "d".repeat(40) } });
+      if (url.endsWith("/git/blobs")) return Response.json({ sha: "e".repeat(40) });
+      if (url.endsWith("/git/trees")) { urls.push(JSON.parse(String(init?.body)).tree[0].path); return Response.json({ sha: "f".repeat(40) }); }
+      if (url.endsWith("/git/commits")) return Response.json({ sha: "1".repeat(40) });
+      if (url.includes("/git/refs/heads/main")) return Response.json({});
+      throw new Error(`Unexpected request: ${url}`);
+    }));
+    const env = testEnv();
+    const cookie = await auth(env);
+    for (let index = 0; index < 2; index++) {
+      const form = new FormData();
+      form.append("files", new File(["<!doctype html><html><body>demo</body></html>"], "index.html"));
+      form.set("paths", JSON.stringify(["index.html"]));
+      for (const [key, value] of Object.entries({ trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1", sha })) form.set(key, value);
+      const response = await worker.fetch(new Request("https://studio.example/api/model-arena/submissions", { method: "POST", headers: { Cookie: cookie, Origin: "https://studio.example" }, body: form }), env);
+      expect(response.status).toBe(201);
+    }
+    expect(urls[0]).not.toBe(urls[1]);
+    const paste = new FormData();
+    paste.set("html", "<!doctype html><html><body>pasted</body></html>");
+    for (const [key, value] of Object.entries({ trackId: "frontend", projectId: "project-1", providerId: "provider-1", modelId: "model-1", sha })) paste.set(key, value);
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/submissions", { method: "POST", headers: { Cookie: cookie, Origin: "https://studio.example" }, body: paste }), env);
+    expect(response.status).toBe(201);
+    expect(urls[2]).not.toBe(urls[1]);
   });
 
   it("rejects an upload when the catalog changes before the Git commit", async () => {
@@ -174,7 +288,7 @@ describe("model arena management", () => {
   });
 
   it("serves submitted HTML with an iframe-compatible policy", async () => {
-    const upstream = vi.fn(async (_input: string | URL | Request) => new Response("<!doctype html><html></html>", { headers: { "Content-Disposition": "attachment" } }));
+    const upstream = vi.fn(async (_input: string | URL | Request, _init?: RequestInit) => new Response("<!doctype html><html></html>", { headers: { "Content-Disposition": "attachment", "Content-Encoding": "gzip", "Content-Length": "31" } }));
     vi.stubGlobal("fetch", upstream);
     const id = "123e4567-e89b-42d3-a456-426614174000";
     const response = await worker.fetch(new Request(`https://studio.example/model-arena/submissions/${id}.html`), testEnv());
@@ -182,9 +296,27 @@ describe("model arena management", () => {
     expect(response.headers.get("Content-Type")).toBe("text/html; charset=utf-8");
     expect(response.headers.get("X-Frame-Options")).toBeNull();
     expect(response.headers.get("Content-Disposition")).toBeNull();
+    expect(response.headers.get("Content-Encoding")).toBeNull();
+    expect(response.headers.get("Content-Length")).toBeNull();
     expect(response.headers.get("Content-Security-Policy")).toContain("sandbox allow-scripts");
     expect(response.headers.get("Content-Security-Policy")).toContain("frame-ancestors 'self' https://vmss.cn");
     expect(upstream.mock.calls[0][0]).toBe(`https://raw.githubusercontent.com/mumuhaha487/astro/main/arena-submissions/${id}.html`);
+    expect(new Headers(upstream.mock.calls[0][1]?.headers).get("Accept-Encoding")).toBe("identity");
+  });
+
+  it("serves nested JavaScript and PNG assets but rejects traversals", async () => {
+    const upstream = vi.fn(async (_input: string | URL | Request) => new Response("asset"));
+    vi.stubGlobal("fetch", upstream);
+    const id = "123e4567-e89b-42d3-a456-426614174000";
+    for (const [path, type] of [["assets/app.js", "text/javascript"], ["assets/logo.png", "image/png"]]) {
+      const response = await worker.fetch(new Request(`https://studio.example/model-arena/submissions/${id}/${path}`), testEnv());
+      expect(response.status).toBe(200);
+      expect(response.headers.get("Content-Type")).toContain(type);
+      expect(upstream.mock.lastCall?.[0]).toBe(`https://raw.githubusercontent.com/mumuhaha487/astro/main/arena-submissions/${id}/${path}`);
+    }
+    const invalid = await worker.fetch(new Request(`https://studio.example/model-arena/submissions/${id}/%2e%2e/secret.js`), testEnv());
+    expect(upstream).toHaveBeenCalledTimes(2);
+    expect(invalid.status).not.toBe(200);
   });
 });
 

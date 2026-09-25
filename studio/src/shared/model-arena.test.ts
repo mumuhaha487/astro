@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { arenaLocation, createArenaCategory, setArenaProjectPrompt, setArenaSubmission, type ArenaCatalog } from "./model-arena";
+import { arenaLocation, createArenaCategory, deleteArenaCategory, renameArenaCategory, setArenaProjectPrompt, setArenaSubmission, type ArenaCatalog } from "./model-arena";
 
 const empty = (): ArenaCatalog => ({ tracks: [{ id: "frontend", name: "前端", projects: [] }, { id: "backend", name: "后端", projects: [] }] });
 
@@ -31,5 +31,18 @@ describe("arena catalog", () => {
     expect(arenaLocation(setArenaProjectPrompt(updated, location, "  "), location).project?.prompt).toBeUndefined();
     expect(() => setArenaProjectPrompt(updated, location, "a".repeat(20001))).toThrow(/20000/);
     expect(() => setArenaProjectPrompt(updated, { trackId: "frontend" }, "test")).toThrow(/选择测试项目/);
+  });
+
+  it("renames in place and cascades removal through child submissions", () => {
+    const location = { trackId: "frontend" as const, projectId: "p", providerId: "v", modelId: "m" };
+    const source: ArenaCatalog = { tracks: [{ id: "frontend", name: "前端", projects: [{ id: "p", name: "Demo", providers: [{ id: "v", name: "GPT", models: [{ id: "m", name: "GPT-6", url: "/model-arena/submissions/123e4567-e89b-42d3-a456-426614174000/index.html" }] }] }] }, { id: "backend", name: "后端", projects: [] }] };
+    const renamed = renameArenaCategory(source, "model", location, "GPT-6.1");
+    expect(arenaLocation(renamed, location).model?.name).toBe("GPT-6.1");
+    expect(arenaLocation(source, location).model?.name).toBe("GPT-6");
+    expect(() => renameArenaCategory(source, "provider", { trackId: "frontend" }, "Other")).toThrow(/选择/);
+    const removed = deleteArenaCategory(renamed, "project", location);
+    expect(removed.urls).toEqual(["/model-arena/submissions/123e4567-e89b-42d3-a456-426614174000/index.html"]);
+    expect(removed.catalog.tracks[0].projects).toHaveLength(0);
+    expect(renamed.tracks[0].projects).toHaveLength(1);
   });
 });

@@ -77,6 +77,17 @@ export function preferredWebEntry(paths: string[]): string {
   return htmlPaths.sort(comparePathDepth)[0] || "";
 }
 
+export function normalizeArenaArchive(files: ExtractedWebFile[]): ExtractedWebFile[] {
+  let result = files;
+  // Strip enclosing folders only while every file shares the same directory.
+  while (result.length && result.every((file) => file.path.includes("/"))) {
+    const prefix = result[0].path.split("/")[0] + "/";
+    if (!result.every((file) => file.path.startsWith(prefix))) break;
+    result = result.map((file) => ({ ...file, path: file.path.slice(prefix.length) }));
+  }
+  return result;
+}
+
 export function webFileContentType(path: string): string {
   const extension = webFileExtension(path);
   if (["html", "htm"].includes(extension)) return "text/html";
