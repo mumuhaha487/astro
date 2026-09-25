@@ -11,7 +11,12 @@
             {
               "id": "806e9cda-02f6-47ce-a314-06858d4d1729",
               "name": "GPT",
-              "models": []
+              "models": [
+                {
+                  "id": "86269026-ca98-4c46-82dd-f38e7401c836",
+                  "name": "GPT-5.6-SOL-xhigh"
+                }
+              ]
             },
             {
               "id": "1039dc9f-6c00-419c-ad52-52cf786e994a",
