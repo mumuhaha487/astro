@@ -6,35 +6,41 @@
     {{ range $catalog.tracks }}<button type="button" role="tab" data-arena-track="{{ .id }}" aria-selected="false">{{ .name }}</button>{{ end }}
   </div>
   <div class="arena-layout">
-    <nav class="arena-directory" aria-label="竞技场目录">
-      <div class="arena-directory-level">
-        <h2>测试项目</h2>
-        {{ range $catalog.tracks }}{{ $track := .id }}{{ range .projects }}
-          <button type="button" data-arena-project="{{ .id }}" data-track="{{ $track }}">{{ .name }}{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
-        {{ end }}{{ end }}
-        <p class="arena-empty" data-empty="projects" hidden>暂无测试项目</p>
-      </div>
-      <div class="arena-directory-level">
-        <h2>模型厂商</h2>
-        {{ range $catalog.tracks }}{{ range .projects }}{{ $project := .id }}{{ range .providers }}
-          <button type="button" data-arena-provider="{{ .id }}" data-project="{{ $project }}">{{ .name }}{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
-        {{ end }}{{ end }}{{ end }}
-        <p class="arena-empty" data-empty="providers" hidden>暂无模型厂商</p>
-      </div>
-      <div class="arena-directory-level">
-        <h2>具体模型</h2>
-        {{ range $catalog.tracks }}{{ range .projects }}{{ range .providers }}{{ $provider := .id }}{{ range .models }}
-          <button type="button" data-arena-model="{{ .id }}" data-provider="{{ $provider }}" data-url="{{ .url }}" data-name="{{ .name }}">{{ .name }}{{ if .url }}<span class="arena-ready">HTML</span>{{ end }}</button>
-        {{ end }}{{ end }}{{ end }}{{ end }}
-        <p class="arena-empty" data-empty="models" hidden>暂无具体模型</p>
-      </div>
-    </nav>
+    <div class="arena-left">
+      <nav class="arena-directory" aria-label="竞技场目录">
+        <div class="arena-directory-level">
+          <h2>测试项目</h2>
+          {{ range $catalog.tracks }}{{ $track := .id }}{{ range .projects }}
+            <button type="button" data-arena-project="{{ .id }}" data-track="{{ $track }}"{{ with .prompt }} data-prompt="{{ . }}"{{ end }}>{{ .name }}{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
+          {{ end }}{{ end }}
+          <p class="arena-empty" data-empty="projects" hidden>暂无测试项目</p>
+        </div>
+        <div class="arena-directory-level">
+          <h2>模型厂商</h2>
+          {{ range $catalog.tracks }}{{ range .projects }}{{ $project := .id }}{{ range .providers }}
+            <button type="button" data-arena-provider="{{ .id }}" data-project="{{ $project }}">{{ .name }}{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
+          {{ end }}{{ end }}{{ end }}
+          <p class="arena-empty" data-empty="providers" hidden>暂无模型厂商</p>
+        </div>
+        <div class="arena-directory-level">
+          <h2>具体模型</h2>
+          {{ range $catalog.tracks }}{{ range .projects }}{{ range .providers }}{{ $provider := .id }}{{ range .models }}
+            <button type="button" data-arena-model="{{ .id }}" data-provider="{{ $provider }}" data-url="{{ .url }}" data-name="{{ .name }}">{{ .name }}{{ if .url }}<span class="arena-ready">HTML</span>{{ end }}</button>
+          {{ end }}{{ end }}{{ end }}{{ end }}
+          <p class="arena-empty" data-empty="models" hidden>暂无具体模型</p>
+        </div>
+      </nav>
+      <section class="arena-prompt" data-arena-prompt aria-label="生成提示词" hidden>
+        <h2>生成提示词</h2>
+        <p data-arena-prompt-text></p>
+      </section>
+    </div>
     <section class="arena-viewer" aria-live="polite">
       <header class="arena-viewer-head"><div><small data-arena-path></small><h2 data-arena-title>选择作品</h2></div></header>
       <div class="arena-viewer-empty" data-arena-placeholder>选择模型查看作品</div>
-      <iframe data-arena-frame title="模型作品" loading="lazy" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-downloads" referrerpolicy="no-referrer" allow="autoplay; fullscreen; gamepad" allowfullscreen hidden></iframe>
+      <iframe data-arena-frame title="模型作品" loading="eager" sandbox="allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-downloads" referrerpolicy="no-referrer" allow="autoplay; fullscreen; gamepad" allowfullscreen hidden></iframe>
     </section>
   </div>
 </section>
 {{ end }}
-{{ define "scripts" }}<script defer src="/hugo-theme/model-arena.js?v=1"></script>{{ end }}
+{{ define "scripts" }}<script defer src="/hugo-theme/model-arena.js?v=2"></script>{{ end }}

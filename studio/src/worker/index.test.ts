@@ -69,6 +69,32 @@ describe("model arena management", () => {
     expect(upstream).toHaveBeenCalledTimes(2);
   });
 
+  it("saves the selected project's prompt with the current catalog SHA", async () => {
+    const upstream = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
+      const url = String(input);
+      if (init?.method === "GET" && url.includes("/contents/data/model_arena.json")) return Response.json(githubFile());
+      if (init?.method === "PUT" && url.includes("/contents/data/model_arena.json")) {
+        const body = JSON.parse(String(init.body));
+        const saved = JSON.parse(Buffer.from(body.content, "base64").toString("utf8"));
+        expect(body.sha).toBe(sha);
+        expect(saved.tracks[0].projects[0].prompt).toBe("生成一只鹈鹕\n骑自行车");
+        return Response.json({ content: { sha: "b".repeat(40) } });
+      }
+      throw new Error(`Unexpected request: ${url}`);
+    });
+    vi.stubGlobal("fetch", upstream);
+    const env = testEnv();
+    const cookie = await auth(env);
+    const response = await worker.fetch(new Request("https://studio.example/api/model-arena/projects/prompt", {
+      method: "PUT",
+      headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId: "frontend", projectId: "project-1", prompt: "生成一只鹈鹕\n骑自行车", sha }),
+    }), env);
+    expect(response.status).toBe(200);
+    expect(((await response.json()) as { catalog: ArenaCatalog }).catalog.tracks[0].projects[0].prompt).toContain("骑自行车");
+    expect(upstream).toHaveBeenCalledTimes(2);
+  });
+
   it("commits one HTML file and its catalog entry in the same Git tree", async () => {
     const trees: Array<{ tree: Array<{ path: string }> }> = [];
     const upstream = vi.fn(async (input: string | URL | Request, init?: RequestInit) => {
@@ -134,6 +160,11 @@ describe("model arena management", () => {
       body: JSON.stringify({ kind: "project", trackId: "frontend", name: "Another", sha: "b".repeat(40) }),
     }), env);
     expect(stale.status).toBe(409);
+    const stalePrompt = await worker.fetch(new Request("https://studio.example/api/model-arena/projects/prompt", {
+      method: "PUT", headers: { Cookie: cookie, Origin: "https://studio.example", "Content-Type": "application/json" },
+      body: JSON.stringify({ trackId: "frontend", projectId: "project-1", prompt: "旧提示词", sha: "b".repeat(40) }),
+    }), env);
+    expect(stalePrompt.status).toBe(409);
     const form = new FormData();
     form.set("file", new File(["not html"], "bad.txt"));
     const invalid = await worker.fetch(new Request("https://studio.example/api/model-arena/submissions", {

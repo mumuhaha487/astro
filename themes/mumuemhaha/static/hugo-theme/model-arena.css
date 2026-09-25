@@ -5,6 +5,7 @@ body[data-section="model-arena"] .site-wallpaper{display:none}
 .arena-track-tabs button{border:0;border-bottom:2px solid transparent;padding:10px 22px 12px;background:transparent;color:var(--muted);font:inherit;font-size:.93rem;cursor:pointer}
 .arena-track-tabs button[aria-selected="true"]{border-color:var(--accent-strong);color:var(--text)}
 .arena-layout{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,1fr);gap:26px;align-items:start}
+.arena-left{display:grid;align-content:start;gap:18px;min-width:0}
 .arena-directory{display:grid;gap:20px;min-width:0}
 .arena-directory-level{display:grid;align-content:start;gap:3px;min-width:0}
 .arena-directory-level h2{margin:0 0 5px;font-size:.77rem;font-weight:600;color:var(--faint)}
@@ -15,6 +16,10 @@ body[data-section="model-arena"] .site-wallpaper{display:none}
 .arena-directory-level [hidden],.arena-viewer [hidden],.arena-empty[hidden]{display:none}
 .arena-ready{flex:none;font-size:.67rem;color:var(--green)}
 .arena-empty{margin:5px 12px;color:var(--faint);font-size:.83rem}
+.arena-prompt{min-width:0;border-top:1px solid var(--line-soft);padding-top:16px}
+.arena-prompt[hidden]{display:none}
+.arena-prompt h2{margin:0 0 9px;color:var(--faint);font-size:.77rem;font-weight:600}
+.arena-prompt p{max-height:320px;margin:0;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);font-size:.88rem;line-height:1.65}
 .arena-viewer{min-width:0;border-top:1px solid var(--line-soft)}
 .arena-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:76px;padding:13px 0}
 .arena-viewer-head small{display:block;color:var(--faint);font-size:.74rem;overflow-wrap:anywhere}

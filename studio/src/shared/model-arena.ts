@@ -14,6 +14,7 @@ export interface ArenaProvider {
 export interface ArenaProject {
   id: string;
   name: string;
+  prompt?: string;
   providers: ArenaProvider[];
 }
 
@@ -83,5 +84,19 @@ export function setArenaSubmission(catalog: ArenaCatalog, location: ArenaLocatio
   if (!model) throw new Error("请选择要上传作品的模型");
   model.url = url;
   model.updatedAt = updatedAt;
+  return next;
+}
+
+export function setArenaProjectPrompt(catalog: ArenaCatalog, location: ArenaLocation, value: unknown): ArenaCatalog {
+  if (typeof value !== "string") throw new Error("提示词格式无效");
+  const prompt = value.replace(/\r\n?/g, "\n").trim();
+  if (prompt.length > 20000 || /[\u0000-\u0008\u000b\u000c\u000e-\u001f\u007f]/.test(prompt)) {
+    throw new Error("提示词不能超过 20000 个字符或包含控制字符");
+  }
+  const next = structuredClone(catalog);
+  const { project } = arenaLocation(next, location);
+  if (!project) throw new Error("请先选择测试项目");
+  if (prompt) project.prompt = prompt;
+  else delete project.prompt;
   return next;
 }

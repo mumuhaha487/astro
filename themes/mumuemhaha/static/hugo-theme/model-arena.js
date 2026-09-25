@@ -10,6 +10,8 @@
   const title = root.querySelector("[data-arena-title]");
   const path = root.querySelector("[data-arena-path]");
   const placeholder = root.querySelector("[data-arena-placeholder]");
+  const promptSection = root.querySelector("[data-arena-prompt]");
+  const promptText = root.querySelector("[data-arena-prompt-text]");
 
   function render(choice, updateUrl = true) {
     const track = tracks.find((node) => node.dataset.arenaTrack === choice.track) || tracks[0];
@@ -17,9 +19,9 @@
     const visibleProjects = projects.filter((node) => node.dataset.track === track.dataset.arenaTrack);
     const project = visibleProjects.find((node) => node.dataset.arenaProject === choice.project) || visibleProjects[0];
     const visibleProviders = providers.filter((node) => node.dataset.project === project?.dataset.arenaProject);
-    const provider = visibleProviders.find((node) => node.dataset.arenaProvider === choice.provider) || visibleProviders[0];
+    const provider = visibleProviders.find((node) => node.dataset.arenaProvider === choice.provider);
     const visibleModels = models.filter((node) => node.dataset.provider === provider?.dataset.arenaProvider);
-    const model = visibleModels.find((node) => node.dataset.arenaModel === choice.model) || visibleModels[0];
+    const model = visibleModels.find((node) => node.dataset.arenaModel === choice.model);
     for (const node of tracks) {
       const active = node === track;
       node.setAttribute("aria-selected", String(active));
@@ -35,6 +37,8 @@
     for (const [key, nodes] of [["projects", visibleProjects], ["providers", visibleProviders], ["models", visibleModels]]) {
       root.querySelector(`[data-empty="${key}"]`).hidden = nodes.length > 0;
     }
+    promptSection.hidden = !project;
+    promptText.textContent = project?.dataset.prompt || "尚未填写提示词";
     const url = model?.dataset.url || "";
     title.textContent = model?.dataset.name || "选择作品";
     path.textContent = [track.textContent, project?.textContent, provider?.textContent].filter(Boolean).join(" / ");

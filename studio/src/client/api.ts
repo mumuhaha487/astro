@@ -65,6 +65,11 @@ export const api = {
       method: "POST",
       body: JSON.stringify({ kind, ...location, name, sha }),
     }),
+  saveArenaPrompt: (location: ArenaLocation, prompt: string, sha: string) =>
+    request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena/projects/prompt", {
+      method: "PUT",
+      body: JSON.stringify({ ...location, prompt, sha }),
+    }),
   uploadArenaSubmission: (location: ArenaLocation, file: File, sha: string) => {
     const form = new FormData();
     form.set("file", file);

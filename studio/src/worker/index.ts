@@ -38,6 +38,7 @@ import { clampWebEmbedHeight } from "../shared/web-embed";
 import {
   arenaLocation,
   createArenaCategory,
+  setArenaProjectPrompt,
   setArenaSubmission,
   type ArenaCatalog,
   type ArenaCategoryKind,
@@ -358,6 +359,9 @@ async function routeApi(request: Request, env: Env, url: URL): Promise<Response>
   }
   if (url.pathname === "/api/model-arena/categories" && request.method === "POST") {
     return json(await createArenaCategoryInRepository(env, await readJson(request)), 201);
+  }
+  if (url.pathname === "/api/model-arena/projects/prompt" && request.method === "PUT") {
+    return json(await saveArenaProjectPrompt(env, await readJson(request)));
   }
   if (url.pathname === "/api/model-arena/submissions" && request.method === "POST") {
     return json(await uploadArenaSubmission(env, request), 201);
@@ -1351,12 +1355,30 @@ async function createArenaCategoryInRepository(env: Env, body: unknown): Promise
   } catch (error) {
     throw new HttpError(400, error instanceof Error ? error.message : "分类无效");
   }
+  return saveArenaCatalog(env, catalog, sha, `竞技场：新增${kind} ${String(input.name).slice(0, 64)}`);
+}
+
+async function saveArenaProjectPrompt(env: Env, body: unknown): Promise<{ catalog: ArenaCatalog; sha: string }> {
+  const input = body as Record<string, unknown>;
+  const { location, sha } = arenaInput(body);
+  const current = await getArenaCatalog(env);
+  if (current.sha !== sha) throw new HttpError(409, "竞技场目录已变化，请刷新后再试", "GITHUB_CONFLICT");
+  let catalog: ArenaCatalog;
+  try {
+    catalog = setArenaProjectPrompt(current.catalog, location, input.prompt);
+  } catch (error) {
+    throw new HttpError(400, error instanceof Error ? error.message : "提示词无效");
+  }
+  return saveArenaCatalog(env, catalog, sha, `竞技场：更新提示词 ${catalog.tracks.find((item) => item.id === location.trackId)?.projects.find((item) => item.id === location.projectId)?.name || "测试项目"}`);
+}
+
+async function saveArenaCatalog(env: Env, catalog: ArenaCatalog, sha: string, message: string): Promise<{ catalog: ArenaCatalog; sha: string }> {
   const token = await requireGitHubToken(env);
   const saved = await githubJson<{ content: { sha: string } }>(
     env,
     `/repos/${env.GITHUB_OWNER}/${env.GITHUB_REPO}/contents/${ARENA_CATALOG_PATH}`,
     { method: "PUT", body: JSON.stringify({
-      message: `竞技场：新增${kind} ${String(input.name).slice(0, 64)}`,
+      message,
       content: toBase64(JSON.stringify(catalog, null, 2) + "\n"),
       sha,
       branch: env.GITHUB_BRANCH,
