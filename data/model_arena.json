@@ -12,6 +12,11 @@
               "id": "806e9cda-02f6-47ce-a314-06858d4d1729",
               "name": "GPT",
               "models": []
+            },
+            {
+              "id": "1039dc9f-6c00-419c-ad52-52cf786e994a",
+              "name": "豆包",
+              "models": []
             }
           ],
           "prompt": "用SVG绘制一个鹈鹕骑自行车的html网页"
