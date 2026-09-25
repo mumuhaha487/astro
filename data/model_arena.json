@@ -4,10 +4,23 @@
       "id": "frontend",
       "name": "前端",
       "projects": [
-        { "id": "pelican-bicycle", "name": "鹈鹕骑自行车", "providers": [] },
-        { "id": "qin-screws", "name": "秦始皇打螺丝", "providers": [] }
+        {
+          "id": "pelican-bicycle",
+          "name": "鹈鹕骑自行车",
+          "providers": [],
+          "prompt": "用SVG绘制一个鹈鹕骑自行车的html网页"
+        },
+        {
+          "id": "qin-screws",
+          "name": "秦始皇打螺丝",
+          "providers": []
+        }
       ]
     },
-    { "id": "backend", "name": "后端", "projects": [] }
+    {
+      "id": "backend",
+      "name": "后端",
+      "projects": []
+    }
   ]
 }
