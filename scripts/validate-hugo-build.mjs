@@ -24,6 +24,8 @@ const requiredFiles = [
   "icons/search.svg",
   "icons/lucide-sprite.svg",
   "blog/index.html",
+  "model-arena/index.html",
+  "hugo-theme/model-arena.js",
   "github-trending/index.html",
   "github-trending/weekly/index.html",
   "github-trending/monthly/index.html",
@@ -337,6 +339,9 @@ assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
 const responseHeaders = await readFile(join(outputRoot, "_headers"), "utf8");
 assert.match(responseHeaders, /\/hugo-theme\/\*\r?\n  Access-Control-Allow-Origin: \*\r?\n  Access-Control-Allow-Methods: GET/, "Theme assets do not expose the CORS headers Giscus requires");
 const edgeOneConfiguration = JSON.parse(await readFile(join(repositoryRoot, "edgeone.json"), "utf8"));
+const submissionHeaders = edgeOneConfiguration.headers.find((rule) => rule.source === "/model-arena/submissions/*")?.headers || [];
+assert.equal(submissionHeaders.find((header) => header.key === "Access-Control-Allow-Origin")?.value, "*", "Sandboxed submission modules need CORS");
+assert.match(submissionHeaders.find((header) => header.key === "Content-Security-Policy")?.value || "", /^sandbox allow-scripts(?: |$)/, "Submission documents need origin isolation");
 const themeHeaders = edgeOneConfiguration.headers.find((rule) => rule.source === "/hugo-theme/*")?.headers || [];
 assert.equal(themeHeaders.find((header) => header.key === "Access-Control-Allow-Origin")?.value, "*", "EdgeOne does not expose theme assets cross-origin");
 const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
@@ -361,6 +366,17 @@ for (const markdownPath of contentFiles.filter((path) => extname(path).toLowerCa
 }
 for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
+}
+
+const arenaScript = await readFile(join(outputRoot, "hugo-theme", "model-arena.js"), "utf8");
+assert.match(arenaScript, /const source = url;/, "Arena submissions must load from the blog origin");
+assert.doesNotMatch(arenaScript, /md\.vmss\.cn/, "Arena iframe still loads from the editor domain");
+const submissionRoot = join(repositoryRoot, "arena-submissions");
+const submissionFiles = await listFiles(submissionRoot);
+assert.ok(submissionFiles.length > 0, "No arena submissions were published");
+for (const source of submissionFiles) {
+  const target = join(outputRoot, "model-arena", "submissions", relative(submissionRoot, source));
+  assert.deepEqual(await readFile(target), await readFile(source), `Arena submission asset changed during build: ${source}`);
 }
 
 console.log(`Validated Hugo output: ${posts.length} Chinese posts, friends, guestbook, local tool assets, English/Japanese variants, responsive pagination, feeds, and isolated web pages.`);

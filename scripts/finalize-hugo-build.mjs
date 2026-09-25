@@ -107,6 +107,13 @@ for (const htmlPath of await listHtmlFiles(outputRoot)) {
   if (changed) await writeFile(htmlPath, html);
 }
 
+// Uploaded works are published verbatim, including relative assets from ZIP archives.
+await cp(
+  join(repositoryRoot, "arena-submissions"),
+  join(outputRoot, "model-arena", "submissions"),
+  { recursive: true },
+);
+
 console.log(`Finalized Hugo output for ${defaultPosts.length} published posts.`);
 
 async function listHtmlFiles(directory) {

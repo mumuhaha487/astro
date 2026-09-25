@@ -1,6 +1,19 @@
 {
 	"headers": [
 		{
+			"source": "/model-arena/submissions/*",
+			"headers": [
+				{
+					"key": "Access-Control-Allow-Origin",
+					"value": "*"
+				},
+				{
+					"key": "Content-Security-Policy",
+					"value": "sandbox allow-scripts allow-forms allow-modals allow-pointer-lock allow-popups allow-downloads"
+				}
+			]
+		},
+		{
 			"source": "/hugo-theme/*",
 			"headers": [
 				{

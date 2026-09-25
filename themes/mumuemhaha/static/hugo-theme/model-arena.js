@@ -43,7 +43,7 @@
     title.textContent = model?.dataset.name || "选择作品";
     path.textContent = [track.textContent, project?.textContent, provider?.textContent].filter(Boolean).join(" / ");
     if (url && /^\/model-arena\/submissions\/[0-9a-f-]{36}(?:\.html|\/(?:[^/?#]+\/)*[^/?#]+\.html?)$/.test(url)) {
-      const source = `https://md.vmss.cn${url}?render=3`;
+      const source = url;
       if (frame.dataset.source !== source) {
         frame.src = source;
         frame.dataset.source = source;
