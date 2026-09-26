@@ -9,6 +9,7 @@ repository_url: "https://github.com/mattpocock/skills"
 language: "Shell"
 tags:
   - Skill
+  - AI
 comment: false
 ---
 

@@ -1,0 +1,1186 @@
+{
+  "date": "2026-09-27",
+  "capturedAt": "2026-09-26T23:15:03.070Z",
+  "tagVersion": 2,
+  "scope": "GitHub Trending daily and language pages; ranked by displayed stars today",
+  "candidates": [
+    {
+      "repo": "paperclipai/paperclip",
+      "name": "paperclip",
+      "url": "https://github.com/paperclipai/paperclip",
+      "starsToday": 2589,
+      "language": "TypeScript",
+      "description": "The open-source app everyone uses to manage agents at work",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "vectorize-io/hindsight",
+      "name": "hindsight",
+      "url": "https://github.com/vectorize-io/hindsight",
+      "starsToday": 2152,
+      "language": "Python",
+      "description": "Hindsight: Agent Memory That Learns",
+      "tags": [
+        "AI",
+        "数据"
+      ]
+    },
+    {
+      "repo": "hydra-db/hydradb",
+      "name": "hydradb",
+      "url": "https://github.com/hydra-db/hydradb",
+      "starsToday": 892,
+      "language": "Rust",
+      "description": "HydraDB - fast graph database on object storage",
+      "tags": [
+        "数据",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "dream-num/univer",
+      "name": "univer",
+      "url": "https://github.com/dream-num/univer",
+      "starsToday": 845,
+      "language": "TypeScript",
+      "description": "The Office Harness for AI Agents — Spreadsheets, Docs, Slides, Canvas, Relational Tables, and PDF in one runtime.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "rohitg00/ai-engineering-from-scratch",
+      "name": "ai-engineering-from-scratch",
+      "url": "https://github.com/rohitg00/ai-engineering-from-scratch",
+      "starsToday": 828,
+      "language": "Python",
+      "description": "Learn it. Build it. Ship it for others.",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "mattpocock/skills",
+      "name": "skills",
+      "url": "https://github.com/mattpocock/skills",
+      "starsToday": 636,
+      "language": "Shell",
+      "description": "Skills for Real Engineers. Straight from my .agents directory.",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "pbakaus/impeccable",
+      "name": "impeccable",
+      "url": "https://github.com/pbakaus/impeccable",
+      "starsToday": 505,
+      "language": "JavaScript",
+      "description": "The design language that makes your AI harness better at design.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "obra/superpowers",
+      "name": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "starsToday": 470,
+      "language": "Shell",
+      "description": "An agentic skills framework & software development methodology that works.",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "harry0703/MoneyPrinterTurbo",
+      "name": "MoneyPrinterTurbo",
+      "url": "https://github.com/harry0703/MoneyPrinterTurbo",
+      "starsToday": 418,
+      "language": "Python",
+      "description": "利用 AI 大模型和自动化工作流，根据主题或关键词一键生成高清短视频。Generate HD short videos from a topic or keyword with an automated AI workflow.",
+      "tags": [
+        "AI",
+        "音视频"
+      ],
+      "article": "/github-trending/2026-09-27/harry0703--moneyprinterturbo/",
+      "summary": "MoneyPrinterTurbo 是一个基于 Python 3.11+ 的开源 AI 短视频生成工具，用户只需提供主题或关键词，即可自动完成脚本撰写、素材匹配、配音、字幕、配乐与视频合成，支持多种大模型与素材来源。"
+    },
+    {
+      "repo": "derv82/wifit3",
+      "name": "wifit3",
+      "url": "https://github.com/derv82/wifit3",
+      "starsToday": 409,
+      "language": "Python",
+      "description": "Wifite but USB-only & cross-platform.",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "zhaoxuya520/reverse-skill",
+      "name": "reverse-skill",
+      "url": "https://github.com/zhaoxuya520/reverse-skill",
+      "starsToday": 409,
+      "language": "PowerShell",
+      "description": "Reverse Engineering / Authorized Penetration Testing / Security Research Skill Router Pack AI-powered routing + On-demand toolchain bootstrapping + Self-evolving knowledge base Supports Claude Code, Kiro, Cursor, Cline, and other AI coding clients 逆向/渗透/安全技能路由包 - AI 自动路由 + 按需自举工具链 + 自动进化经验库 | 支持 Claude Code / Kiro / Cursor / Cline 等代码 AI 客户端",
+      "tags": [
+        "安全",
+        "Skill",
+        "AI"
+      ],
+      "article": "/github-trending/2026-09-27/zhaoxuya520--reverse-skill/",
+      "summary": "该项目是一个面向逆向工程、授权渗透测试与安全研究的 AI 技能路由包，通过规则配置将 APK、二进制、前端 JS、CTF 等任务路由到对应技能模块和工具链，并支持多种代码 AI 客户端。"
+    },
+    {
+      "repo": "block/buzz",
+      "name": "buzz",
+      "url": "https://github.com/block/buzz",
+      "starsToday": 367,
+      "language": "Rust",
+      "description": "A hive mind communication platform",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "openbao/openbao",
+      "name": "openbao",
+      "url": "https://github.com/openbao/openbao",
+      "starsToday": 360,
+      "language": "Go",
+      "description": "OpenBao is a software solution to manage, store, and distribute sensitive data including secrets, certificates, and keys.",
+      "tags": [
+        "安全",
+        "数据"
+      ],
+      "article": "/github-trending/2026-09-27/openbao--openbao/",
+      "summary": "OpenBao 是一个用 Go 编写的敏感数据管理工具，可安全存储、动态生成和分发秘密、证书与密钥。它提供加密存储、租约续期和撤销机制，采用开源治理模式，并包含 CLI、服务端、Web UI 及官网文档。"
+    },
+    {
+      "repo": "NVIDIA/Model-Optimizer",
+      "name": "Model-Optimizer",
+      "url": "https://github.com/NVIDIA/Model-Optimizer",
+      "starsToday": 354,
+      "language": "Python",
+      "description": "A unified library of SOTA model optimization techniques like quantization, distillation, pruning, neural architecture search, speculative decoding, etc. It compresses deep learning models for downstream deployment frameworks like TensorRT-LLM, TensorRT, vLLM, etc. to optimize inference speed.",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "androoAGI/starnet",
+      "name": "starnet",
+      "url": "https://github.com/androoAGI/starnet",
+      "starsToday": 305,
+      "language": "JavaScript",
+      "description": "A living pixel-art station where real AI agents do real work. Local-first desktop agent harness - bring your own key, watch your crew actually run.",
+      "tags": [
+        "AI",
+        "游戏"
+      ],
+      "article": "/github-trending/2026-09-27/androoagi--starnet/",
+      "summary": "StarNet 是一个本地优先的桌面 AI 代理运行环境，用像素画空间站可视化真实运行状态。每个智能体拥有独立工作区、权限与记忆，通过本地 Node 边车执行真实模型调用与工具操作，状态落盘可查。"
+    },
+    {
+      "repo": "anthropics/claude-plugins-official",
+      "name": "claude-plugins-official",
+      "url": "https://github.com/anthropics/claude-plugins-official",
+      "starsToday": 283,
+      "language": "Python",
+      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-27/anthropics--claude-plugins-official/",
+      "summary": "这是 Anthropic 官方维护的 Claude Code 插件目录仓库，用于汇总和分发高质量插件。目录分为 Anthropic 内部插件和第三方外部插件两部分，用户可通过 Claude Code 内置插件系统直接安装，外部插件需经审核方可收录。"
+    },
+    {
+      "repo": "Leonxlnx/taste-skill",
+      "name": "taste-skill",
+      "url": "https://github.com/Leonxlnx/taste-skill",
+      "starsToday": 262,
+      "language": "JavaScript",
+      "description": "Taste-Skill - gives your AI good taste. stops the AI from generating boring, generic slop",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "666ghj/MiroFish",
+      "name": "MiroFish",
+      "url": "https://github.com/666ghj/MiroFish",
+      "starsToday": 226,
+      "language": "Python",
+      "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
+      "tags": [
+        "AI",
+        "数据"
+      ],
+      "article": "/github-trending/2026-09-27/666ghj--mirofish/",
+      "summary": "MiroFish 是一个基于多智能体技术的开源群体智能预测引擎，可从新闻、政策或金融信号中提取种子信息，构建高保真数字世界，让数千个具备独立人格与记忆的智能体自由互动演化，支持从上帝视角注入变量以推演未来轨迹，并生成预测报告。"
+    },
+    {
+      "repo": "usestrix/strix",
+      "name": "strix",
+      "url": "https://github.com/usestrix/strix",
+      "starsToday": 208,
+      "language": "Python",
+      "description": "Open-source AI penetration testing tool to find and fix your app’s vulnerabilities.",
+      "tags": [
+        "AI",
+        "安全"
+      ],
+      "article": "/github-trending/2026-09-27/usestrix--strix/",
+      "summary": "Strix 是 Python 编写的开源 AI 渗透测试工具，用自主智能体动态运行目标代码，发现并验证应用漏洞，支持 CLI、本地查看器与 CI/CD 集成。"
+    },
+    {
+      "repo": "shy3130/tick-stock-panel",
+      "name": "tick-stock-panel",
+      "url": "https://github.com/shy3130/tick-stock-panel",
+      "starsToday": 191,
+      "language": "Python",
+      "description": "TSP自托管、零运维的 A 股「选股 + 监控 + 回测」量化工作台 | LLM能力驱使策略定制+个股分析+复盘 | 自由接入第三方数据源与个性化扩展数据 | 个人开源",
+      "tags": [
+        "金融",
+        "AI",
+        "数据"
+      ],
+      "article": "/github-trending/2026-09-27/shy3130--tick-stock-panel/",
+      "summary": "TSP 是一个以个人开源方式维护的 A 股量化工作台，用 Python 编写，支持自托管与 Docker 单容器部署。它把选股、指标计算、回测、因子研究、异动监控和 AI 对话助手整合在一套本地数据链路上，数据以 Parquet 本地存储，数据源采用插件化与能力路由设计，可接入第三方数据源。"
+    },
+    {
+      "repo": "k1tbyte/Wand-Enhancer",
+      "name": "Wand-Enhancer",
+      "url": "https://github.com/k1tbyte/Wand-Enhancer",
+      "starsToday": 179,
+      "language": "C#",
+      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
+      "tags": [
+        "开发工具"
+      ],
+      "article": "/github-trending/2026-09-27/k1tbyte--wand-enhancer/",
+      "summary": "WandEnhancer 是一个用 C# 开发的本地补丁工具，用于扩展 Wand（WeMod）客户端的本地配置和界面体验，支持本地环境配置、主题定制、远程 Web 面板及自定义 JavaScript 注入，官方不发布预编译可执行文件。"
+    },
+    {
+      "repo": "lyogavin/airllm",
+      "name": "airllm",
+      "url": "https://github.com/lyogavin/airllm",
+      "starsToday": 178,
+      "language": "Jupyter Notebook",
+      "description": "AirLLM 70B inference with single 4GB GPU",
+      "tags": [
+        "AI"
+      ],
+      "article": "/github-trending/2026-09-27/lyogavin--airllm/",
+      "summary": "AirLLM 是一个开源推理库，通过逐层加载权重的方式，让 70B 乃至数百 B 参数的大模型在单张 4GB 显存显卡上运行，无需量化、蒸馏或剪枝，近期还扩展了低显存训练支持。"
+    },
+    {
+      "repo": "tokio-rs/topcoat",
+      "name": "topcoat",
+      "url": "https://github.com/tokio-rs/topcoat",
+      "starsToday": 160,
+      "language": "Rust",
+      "description": "A batteries-included framework for building web apps",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "putyy/res-downloader",
+      "name": "res-downloader",
+      "url": "https://github.com/putyy/res-downloader",
+      "starsToday": 152,
+      "language": "Go",
+      "description": "视频号、小程序、抖音、快手、小红书、直播流、m3u8、酷狗、QQ音乐等常见网络资源下载!",
+      "tags": [
+        "音视频",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "mobile-next/mobile-mcp",
+      "name": "mobile-mcp",
+      "url": "https://github.com/mobile-next/mobile-mcp",
+      "starsToday": 143,
+      "language": "TypeScript",
+      "description": "Model Context Protocol Server for Mobile Automation and Scraping (iOS, Android, Emulators, Simulators and Real Devices)",
+      "tags": [
+        "AI",
+        "移动端",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "openclaw/openclaw",
+      "name": "openclaw",
+      "url": "https://github.com/openclaw/openclaw",
+      "starsToday": 134,
+      "language": "TypeScript",
+      "description": "The AI that really does things. Any OS. Any Platform. The lobster way. 🦞",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "juspay/hyperswitch",
+      "name": "hyperswitch",
+      "url": "https://github.com/juspay/hyperswitch",
+      "starsToday": 130,
+      "language": "Rust",
+      "description": "Open source, composable payments platform | PCI compliant | SaaS and Self-host options | Enables connectivity to multiple payment, payout, fraud, vault and tokenization providers | Uplifts authorization with intelligent routing and revenue recovery | Reduce payment processing costs with cost observability | Reduces payment ops with reconciliation",
+      "tags": [
+        "金融",
+        "云服务"
+      ]
+    },
+    {
+      "repo": "lightningpixel/modly",
+      "name": "modly",
+      "url": "https://github.com/lightningpixel/modly",
+      "starsToday": 116,
+      "language": "TypeScript",
+      "description": "Desktop app to generate 3D models from images or prompt using local AI — runs entirely on your GPU",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "sherlock-project/sherlock",
+      "name": "sherlock",
+      "url": "https://github.com/sherlock-project/sherlock",
+      "starsToday": 104,
+      "language": "Python",
+      "description": "Hunt down social media accounts by username across social networks",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "vercel-labs/scriptc",
+      "name": "scriptc",
+      "url": "https://github.com/vercel-labs/scriptc",
+      "starsToday": 97,
+      "language": "TypeScript",
+      "description": "TypeScript-to-Native Compiler",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "HKUDS/CLI-Anything",
+      "name": "CLI-Anything",
+      "url": "https://github.com/HKUDS/CLI-Anything",
+      "starsToday": 96,
+      "language": "Python",
+      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "microsoft/generative-ai-for-beginners",
+      "name": "generative-ai-for-beginners",
+      "url": "https://github.com/microsoft/generative-ai-for-beginners",
+      "starsToday": 78,
+      "language": "Jupyter Notebook",
+      "description": "21 Lessons, Get Started Building with Generative AI",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "microsoft/vscode",
+      "name": "vscode",
+      "url": "https://github.com/microsoft/vscode",
+      "starsToday": 78,
+      "language": "TypeScript",
+      "description": "Visual Studio Code",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "hmjz100/LinkSwift",
+      "name": "LinkSwift",
+      "url": "https://github.com/hmjz100/LinkSwift",
+      "starsToday": 74,
+      "language": "JavaScript",
+      "description": "一个基于 JavaScript 的网盘文件下载地址获取工具。基于【网盘直链下载助手】修改 ，支持 百度网盘 / 阿里云盘 / 中国移动云盘 / 天翼云盘 / 迅雷云盘 / 夸克网盘 / UC网盘 / 123云盘 八大网盘",
+      "tags": [
+        "云服务",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "jaywcjlove/awesome-mac",
+      "name": "awesome-mac",
+      "url": "https://github.com/jaywcjlove/awesome-mac",
+      "starsToday": 74,
+      "language": "Swift",
+      "description": " This project is dedicated to collecting high-quality macOS software and organizing them systematically by different categories for easy search and use.",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "seemoo-lab/openhaystack",
+      "name": "openhaystack",
+      "url": "https://github.com/seemoo-lab/openhaystack",
+      "starsToday": 74,
+      "language": "Swift",
+      "description": "Build your own 'AirTags' 🏷 today! Framework for tracking personal Bluetooth devices via Apple's massive Find My network.",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "zeux/meshoptimizer",
+      "name": "meshoptimizer",
+      "url": "https://github.com/zeux/meshoptimizer",
+      "starsToday": 74,
+      "language": "C++",
+      "description": "Mesh optimization library that makes meshes smaller and faster to render",
+      "tags": [
+        "游戏"
+      ]
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "name": "Stirling-PDF",
+      "url": "https://github.com/Stirling-Tools/Stirling-PDF",
+      "starsToday": 73,
+      "language": "Java",
+      "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "termux/termux-app",
+      "name": "termux-app",
+      "url": "https://github.com/termux/termux-app",
+      "starsToday": 69,
+      "language": "Java",
+      "description": "Termux - a terminal emulator application for Android OS extendible by variety of packages.",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "zenbu-labs/terminal-browser",
+      "name": "terminal-browser",
+      "url": "https://github.com/zenbu-labs/terminal-browser",
+      "starsToday": 68,
+      "language": "TypeScript",
+      "description": "A browser inside your terminal",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Jakubantalik/Libraries.dev",
+      "name": "Libraries.dev",
+      "url": "https://github.com/Jakubantalik/Libraries.dev",
+      "starsToday": 66,
+      "language": "TypeScript",
+      "description": "High-crafted UI libraries for AI agents: Border beam, Orbs, Metal, Gooey, Voice, Image, Avatar bots",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "feigeCode/navop",
+      "name": "navop",
+      "url": "https://github.com/feigeCode/navop",
+      "starsToday": 65,
+      "language": "Rust",
+      "description": "A native, all-in-one workspace for databases, SSH, SFTP, terminals, remote desktop, monitoring, and AI.",
+      "tags": [
+        "开发工具",
+        "AI"
+      ]
+    },
+    {
+      "repo": "bregman-arie/devops-exercises",
+      "name": "devops-exercises",
+      "url": "https://github.com/bregman-arie/devops-exercises",
+      "starsToday": 64,
+      "language": "Python",
+      "description": "Linux, Jenkins, AWS, SRE, Prometheus, Docker, Python, Ansible, Git, Kubernetes, Terraform, OpenStack, SQL, NoSQL, Azure, GCP, DNS, Elastic, Network, Virtualization. DevOps Interview Questions",
+      "tags": [
+        "教程",
+        "云服务"
+      ]
+    },
+    {
+      "repo": "MakazhanAlpamys/Soup",
+      "name": "Soup",
+      "url": "https://github.com/MakazhanAlpamys/Soup",
+      "starsToday": 64,
+      "language": "Python",
+      "description": "Fine-tune LLMs from one YAML. Layer streaming trains an 8B model on a 4 GB laptop GPU.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "zed-industries/zed",
+      "name": "zed",
+      "url": "https://github.com/zed-industries/zed",
+      "starsToday": 64,
+      "language": "Rust",
+      "description": "Code at the speed of thought – Zed is a high-performance, multiplayer code editor from the creators of Atom and Tree-sitter.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "vivizzz007/vivi-music",
+      "name": "vivi-music",
+      "url": "https://github.com/vivizzz007/vivi-music",
+      "starsToday": 58,
+      "language": "Kotlin",
+      "description": "Vivi-Music is an expressive Material 3–based YouTube Music client for Android.",
+      "tags": [
+        "音视频",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "2dust/v2rayNG",
+      "name": "v2rayNG",
+      "url": "https://github.com/2dust/v2rayNG",
+      "starsToday": 57,
+      "language": "Kotlin",
+      "description": "A V2Ray client for Android, support Xray core and v2fly core",
+      "tags": [
+        "安全",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "rawfilejson/awesome-osint-arsenal",
+      "name": "awesome-osint-arsenal",
+      "url": "https://github.com/rawfilejson/awesome-osint-arsenal",
+      "starsToday": 57,
+      "language": "Shell",
+      "description": "OSINT & recon toolkit // 100+ tools, one-command installer, SOCMINT, GEOINT, network recon, dark web, forensics & more.",
+      "tags": [
+        "安全"
+      ]
+    },
+    {
+      "repo": "darkzOGx/youtube-automation-agent",
+      "name": "youtube-automation-agent",
+      "url": "https://github.com/darkzOGx/youtube-automation-agent",
+      "starsToday": 56,
+      "language": "JavaScript",
+      "description": "🎬 Fully automated YouTube channel management with AI agents. Creates, optimizes & publishes videos 24/7. Works with FREE Gemini API or OpenAI. No coding required!",
+      "tags": [
+        "AI",
+        "音视频"
+      ]
+    },
+    {
+      "repo": "open-saas-directory/awesome-native-macosx-apps",
+      "name": "awesome-native-macosx-apps",
+      "url": "https://github.com/open-saas-directory/awesome-native-macosx-apps",
+      "starsToday": 56,
+      "language": "Shell",
+      "description": "Best macOS Apps (2026) — Fast, Lightweight, No Electron Bloat",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "rust-lang/rust",
+      "name": "rust",
+      "url": "https://github.com/rust-lang/rust",
+      "starsToday": 54,
+      "language": "Rust",
+      "description": "Empowering everyone to build reliable and efficient software.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "wshobson/agents",
+      "name": "agents",
+      "url": "https://github.com/wshobson/agents",
+      "starsToday": 51,
+      "language": "Python",
+      "description": "Multi-harness agentic plugin marketplace for Claude Code, Codex, Cursor, OpenCode, GitHub Copilot, Google Antigravity, and Pi",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "microsoft/AI-For-Beginners",
+      "name": "AI-For-Beginners",
+      "url": "https://github.com/microsoft/AI-For-Beginners",
+      "starsToday": 50,
+      "language": "Jupyter Notebook",
+      "description": "12 Weeks, 24 Lessons, AI for All!",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "mrdoob/three.js",
+      "name": "three.js",
+      "url": "https://github.com/mrdoob/three.js",
+      "starsToday": 50,
+      "language": "JavaScript",
+      "description": "JavaScript 3D Library.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "MHSanaei/3x-ui",
+      "name": "3x-ui",
+      "url": "https://github.com/MHSanaei/3x-ui",
+      "starsToday": 48,
+      "language": "Go",
+      "description": "Supporting multi-protocol multi-user(Vmess, Vless, Trojan, ShadowSocks, Wireguard, Hysteria, Tunnel, Mixed, HTTP, Tun, MTProto، AmneziaWG)",
+      "tags": [
+        "安全",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "pydantic/monty",
+      "name": "monty",
+      "url": "https://github.com/pydantic/monty",
+      "starsToday": 48,
+      "language": "Rust",
+      "description": "A minimal, secure Python interpreter written in Rust for use by AI",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "leejet/stable-diffusion.cpp",
+      "name": "stable-diffusion.cpp",
+      "url": "https://github.com/leejet/stable-diffusion.cpp",
+      "starsToday": 47,
+      "language": "C++",
+      "description": "Diffusion model(SD,Flux,Wan,Qwen Image,Z-Image,...) inference in pure C/C++",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "golang/go",
+      "name": "go",
+      "url": "https://github.com/golang/go",
+      "starsToday": 44,
+      "language": "Go",
+      "description": "The Go programming language",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "strands-agents/harness-sdk",
+      "name": "harness-sdk",
+      "url": "https://github.com/strands-agents/harness-sdk",
+      "starsToday": 44,
+      "language": "Python",
+      "description": "Build an agent harness and control it end-to-end. Open-source SDK for production AI agents in Python & TypeScript - any model, any cloud.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "jellyfin/jellyfin",
+      "name": "jellyfin",
+      "url": "https://github.com/jellyfin/jellyfin",
+      "starsToday": 43,
+      "language": "C#",
+      "description": "The Free Software Media System - Server Backend & API",
+      "tags": [
+        "音视频"
+      ]
+    },
+    {
+      "repo": "RikkaApps/Shizuku",
+      "name": "Shizuku",
+      "url": "https://github.com/RikkaApps/Shizuku",
+      "starsToday": 43,
+      "language": "Kotlin",
+      "description": "Using system APIs directly with adb/root privileges from normal apps through a Java process started with app_process.",
+      "tags": [
+        "开发工具",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "jez500/pricebuddy",
+      "name": "pricebuddy",
+      "url": "https://github.com/jez500/pricebuddy",
+      "starsToday": 42,
+      "language": "PHP",
+      "description": "A self hostable app that tracks prices and sends you notifications when prices match your preferences",
+      "tags": [
+        "其他"
+      ]
+    },
+    {
+      "repo": "kubernetes/kubernetes",
+      "name": "kubernetes",
+      "url": "https://github.com/kubernetes/kubernetes",
+      "starsToday": 41,
+      "language": "Go",
+      "description": "Production-Grade Container Scheduling and Management",
+      "tags": [
+        "云服务",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "rohitg00/agentmemory",
+      "name": "agentmemory",
+      "url": "https://github.com/rohitg00/agentmemory",
+      "starsToday": 41,
+      "language": "TypeScript",
+      "description": "#1 Persistent memory for AI coding agents based on real-world benchmarks",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "rukamori/ArchiveTune",
+      "name": "ArchiveTune",
+      "url": "https://github.com/rukamori/ArchiveTune",
+      "starsToday": 41,
+      "language": "Kotlin",
+      "description": "🌸 The Cutest Music Player With Support Local File and Youtube Music for Android!",
+      "tags": [
+        "音视频",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "Predidit/Kazumi",
+      "name": "Kazumi",
+      "url": "https://github.com/Predidit/Kazumi",
+      "starsToday": 40,
+      "language": "Dart",
+      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
+      "tags": [
+        "音视频",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "babalae/better-genshin-impact",
+      "name": "better-genshin-impact",
+      "url": "https://github.com/babalae/better-genshin-impact",
+      "starsToday": 38,
+      "language": "C#",
+      "description": "📦BetterGI · 更好的原神 - 自动拾取 | 自动剧情 | 全自动钓鱼(AI) | 全自动七圣召唤 | 自动伐木 | 自动刷本 | 自动采集/挖矿/锄地 | 一条龙 | 全连音游 | 自动烹饪 | 桌面分身 - UI Automation Testing Tools For Genshin Impact",
+      "tags": [
+        "游戏",
+        "AI"
+      ]
+    },
+    {
+      "repo": "github/awesome-copilot",
+      "name": "awesome-copilot",
+      "url": "https://github.com/github/awesome-copilot",
+      "starsToday": 38,
+      "language": "JavaScript",
+      "description": "Community-contributed instructions, agents, skills, and configurations to help you make the most of GitHub Copilot.",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "bmad-code-org/BMAD-METHOD",
+      "name": "BMAD-METHOD",
+      "url": "https://github.com/bmad-code-org/BMAD-METHOD",
+      "starsToday": 36,
+      "language": "Python",
+      "description": "Breakthrough Method for Agile Ai Driven Development",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "Gentleman-Programming/engram",
+      "name": "engram",
+      "url": "https://github.com/Gentleman-Programming/engram",
+      "starsToday": 36,
+      "language": "Go",
+      "description": "Persistent memory system for AI coding agents. Agent-agnostic Go binary with SQLite + FTS5, MCP server, HTTP API, CLI, and TUI.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "nodejs/node",
+      "name": "node",
+      "url": "https://github.com/nodejs/node",
+      "starsToday": 35,
+      "language": "JavaScript",
+      "description": "Node.js JavaScript runtime ✨🐢🚀✨",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "bootandy/dust",
+      "name": "dust",
+      "url": "https://github.com/bootandy/dust",
+      "starsToday": 34,
+      "language": "Rust",
+      "description": "A more intuitive version of du in rust",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "coollabsio/coolify",
+      "name": "coolify",
+      "url": "https://github.com/coollabsio/coolify",
+      "starsToday": 33,
+      "language": "PHP",
+      "description": "An open-source, self-hostable PaaS alternative to Vercel, Heroku & Netlify that lets you easily deploy static sites, databases, full-stack applications and 280+ one-click services on your own servers.",
+      "tags": [
+        "云服务",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "grafana/k6",
+      "name": "k6",
+      "url": "https://github.com/grafana/k6",
+      "starsToday": 33,
+      "language": "Go",
+      "description": "A modern load testing tool, using Go and JavaScript",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "jdx/mise",
+      "name": "mise",
+      "url": "https://github.com/jdx/mise",
+      "starsToday": 33,
+      "language": "Rust",
+      "description": "dev tools, env vars, task runner",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "FxEmbed/FxEmbed",
+      "name": "FxEmbed",
+      "url": "https://github.com/FxEmbed/FxEmbed",
+      "starsToday": 32,
+      "language": "TypeScript",
+      "description": "Fix X/Twitter and Bluesky embeds! Use multiple images, videos, polls, translations and more on Discord, Telegram and others",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "vshulcz/deja-vu",
+      "name": "deja-vu",
+      "url": "https://github.com/vshulcz/deja-vu",
+      "starsToday": 32,
+      "language": "Go",
+      "description": "One memory shared by Claude Code, Codex, Cursor, Copilot CLI, OpenClaw and 29 more coding agents, built from the session history already on disk. A fix found in one agent comes back in any of them, including months of sessions from before you installed it. No LLM, no embeddings, one local Go binary.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "bggRGjQaUbCoE/PiliPlus",
+      "name": "PiliPlus",
+      "url": "https://github.com/bggRGjQaUbCoE/PiliPlus",
+      "starsToday": 31,
+      "language": "Dart",
+      "description": "PiliPlus",
+      "tags": [
+        "音视频",
+        "移动端"
+      ]
+    },
+    {
+      "repo": "Gentleman-Programming/gentle-ai",
+      "name": "gentle-ai",
+      "url": "https://github.com/Gentleman-Programming/gentle-ai",
+      "starsToday": 31,
+      "language": "Go",
+      "description": "Gentle-AI configures the AI coding agents you already use: Claude Code, Cursor, OpenCode, Codex, Pi, and more. Choose persistent memory, Organic-Driven Development, curated skills, MCP servers, personas, and optional bounded review. Open source, no agent lock-in.",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "payloadcms/payload",
+      "name": "payload",
+      "url": "https://github.com/payloadcms/payload",
+      "starsToday": 31,
+      "language": "TypeScript",
+      "description": "Payload is the open-source, fullstack Next.js framework, giving you instant backend superpowers. Get a full TypeScript backend and admin panel instantly. Use Payload as a headless CMS or for building powerful applications.",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ]
+    },
+    {
+      "repo": "tensorflow/tensorflow",
+      "name": "tensorflow",
+      "url": "https://github.com/tensorflow/tensorflow",
+      "starsToday": 31,
+      "language": "C++",
+      "description": "An Open Source Machine Learning Framework for Everyone",
+      "tags": [
+        "AI"
+      ]
+    },
+    {
+      "repo": "vercel/next.js",
+      "name": "next.js",
+      "url": "https://github.com/vercel/next.js",
+      "starsToday": 31,
+      "language": "JavaScript",
+      "description": "The React Framework",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "flutter/flutter",
+      "name": "flutter",
+      "url": "https://github.com/flutter/flutter",
+      "starsToday": 30,
+      "language": "Dart",
+      "description": "Flutter makes it easy and fast to build beautiful apps for mobile and beyond",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "gastownhall/beads",
+      "name": "beads",
+      "url": "https://github.com/gastownhall/beads",
+      "starsToday": 30,
+      "language": "Go",
+      "description": "Beads - A memory upgrade for your coding agent",
+      "tags": [
+        "AI",
+        "Skill"
+      ]
+    },
+    {
+      "repo": "openai/openai-cookbook",
+      "name": "openai-cookbook",
+      "url": "https://github.com/openai/openai-cookbook",
+      "starsToday": 30,
+      "language": "Jupyter Notebook",
+      "description": "Examples and guides for using the OpenAI API",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "llvm/llvm-project",
+      "name": "llvm-project",
+      "url": "https://github.com/llvm/llvm-project",
+      "starsToday": 29,
+      "language": "LLVM",
+      "description": "The LLVM Project is a collection of modular and reusable compiler and toolchain technologies.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "tokio-rs/toasty",
+      "name": "toasty",
+      "url": "https://github.com/tokio-rs/toasty",
+      "starsToday": 29,
+      "language": "Rust",
+      "description": "An async ORM for Rust",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "anthropics/claude-cookbooks",
+      "name": "claude-cookbooks",
+      "url": "https://github.com/anthropics/claude-cookbooks",
+      "starsToday": 28,
+      "language": "Jupyter Notebook",
+      "description": "A collection of notebooks/recipes showcasing some fun and effective ways of using Claude.",
+      "tags": [
+        "AI",
+        "教程"
+      ]
+    },
+    {
+      "repo": "p1neappleXpress/OpenFlux",
+      "name": "OpenFlux",
+      "url": "https://github.com/p1neappleXpress/OpenFlux",
+      "starsToday": 28,
+      "language": "Go",
+      "description": "Network stack research tool. TCP tunnel with pluggable transports.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "prometheus/prometheus",
+      "name": "prometheus",
+      "url": "https://github.com/prometheus/prometheus",
+      "starsToday": 28,
+      "language": "Go",
+      "description": "The Prometheus monitoring system and time series database.",
+      "tags": [
+        "数据"
+      ]
+    },
+    {
+      "repo": "withastro/astro",
+      "name": "astro",
+      "url": "https://github.com/withastro/astro",
+      "starsToday": 28,
+      "language": "TypeScript",
+      "description": "The web framework for content-driven websites. ⭐️ Star to support our work!",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "ImranR98/Obtainium",
+      "name": "Obtainium",
+      "url": "https://github.com/ImranR98/Obtainium",
+      "starsToday": 27,
+      "language": "Dart",
+      "description": "Get Android app updates straight from the source.",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "ophub/amlogic-s9xxx-armbian",
+      "name": "amlogic-s9xxx-armbian",
+      "url": "https://github.com/ophub/amlogic-s9xxx-armbian",
+      "starsToday": 27,
+      "language": "Shell",
+      "description": "Supports running Armbian on Amlogic, Allwinner, and Rockchip devices. Support a311d, s922x, s905x3, s905x2, s912, s905d, s905x, s905w, s905, s905l, rk3588, rk3568, rk3399, rk3328, h6, etc.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "PostHog/posthog",
+      "name": "posthog",
+      "url": "https://github.com/PostHog/posthog",
+      "starsToday": 27,
+      "language": "Python",
+      "description": "🦔 PostHog is the leading platform for building self-driving products. Our developer tools – AI observability, analytics, session replay, flags, experiments, error tracking, logs, and more – capture all the context agents need to diagnose problems, uncover opportunities, and ship fixes. Steer it all from Slack, web, desktop, or the MCP.",
+      "tags": [
+        "数据",
+        "开发工具",
+        "AI"
+      ]
+    },
+    {
+      "repo": "chatwoot/chatwoot",
+      "name": "chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot",
+      "starsToday": 26,
+      "language": "Ruby",
+      "description": "Open-source live-chat, email support, omni-channel desk. An alternative to Intercom, Zendesk, Salesforce Service Cloud etc. 🔥💬",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "microsoft/TypeScript",
+      "name": "TypeScript",
+      "url": "https://github.com/microsoft/TypeScript",
+      "starsToday": 26,
+      "language": "Go",
+      "description": "TypeScript is a superset of JavaScript that compiles to clean JavaScript output.",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "InlitX/streak",
+      "name": "streak",
+      "url": "https://github.com/InlitX/streak",
+      "starsToday": 25,
+      "language": "Dart",
+      "description": "Minimal, private, ad-free habit tracker built with Flutter — track habits, build streaks, all offline.",
+      "tags": [
+        "移动端"
+      ]
+    },
+    {
+      "repo": "ocornut/imgui",
+      "name": "imgui",
+      "url": "https://github.com/ocornut/imgui",
+      "starsToday": 25,
+      "language": "C++",
+      "description": "Dear ImGui: Bloat-free Graphical User interface for C++ with minimal dependencies",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "BurntSushi/ripgrep",
+      "name": "ripgrep",
+      "url": "https://github.com/BurntSushi/ripgrep",
+      "starsToday": 24,
+      "language": "Rust",
+      "description": "ripgrep recursively searches directories for a regex pattern while respecting your gitignore",
+      "tags": [
+        "开发工具"
+      ]
+    },
+    {
+      "repo": "vercel/ai",
+      "name": "ai",
+      "url": "https://github.com/vercel/ai",
+      "starsToday": 24,
+      "language": "TypeScript",
+      "description": "The AI Toolkit for TypeScript. From the creators of Next.js, the AI SDK is a free open-source library for building AI-powered applications and agents",
+      "tags": [
+        "AI",
+        "开发工具"
+      ]
+    }
+  ]
+}
