@@ -1,5 +1,5 @@
 {
-  "updatedAt": "2026-09-28",
+  "updatedAt": "2026-09-29",
   "entries": [
     {
       "repo": "vectorize-io/hindsight",
@@ -11,9 +11,9 @@
         "AI"
       ],
       "firstSeen": "2026-09-25",
-      "lastSeen": "2026-09-28",
-      "days": 4,
-      "peakStars": 4463,
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 4561,
       "dailyArticle": "/github-trending/2026-09-25/vectorize-io--hindsight/",
       "periods": {
         "weekly": "/github-trending/weekly/2026-w40/vectorize-io--hindsight/",
@@ -32,31 +32,12 @@
         "音视频"
       ],
       "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 3060,
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 3221,
       "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
       "periods": {
         "weekly": "/github-trending/weekly/2026-w40/debpalash--voicestudio/"
-      }
-    },
-    {
-      "repo": "hydra-db/hydradb",
-      "url": "https://github.com/hydra-db/hydradb",
-      "description": "HydraDB - fast graph database on object storage",
-      "summary": "HydraDB 是用 Rust 编写的对象存储原生分布式图数据库，以 S3 兼容存储为持久层，计算分为数据节点和索引器，支持 OpenCypher 查询、GraphBLAS 遍历及 Neo4j Bolt 兼容连接。",
-      "language": "Rust",
-      "tags": [
-        "数据",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-28",
-      "days": 6,
-      "peakStars": 2791,
-      "dailyArticle": "/github-trending/2026-09-23/hydra-db--hydradb/",
-      "periods": {
-        "weekly": "/github-trending/weekly/2026-w40/hydra-db--hydradb/"
       }
     },
     {
@@ -69,13 +50,30 @@
         "AI"
       ],
       "firstSeen": "2026-09-26",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 2589,
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 3197,
       "dailyArticle": "/github-trending/2026-09-26/paperclipai--paperclip/",
       "periods": {
-        "weekly": "/github-trending/weekly/2026-w39/paperclipai--paperclip/"
+        "weekly": "/github-trending/weekly/2026-w40/paperclipai--paperclip/"
       }
+    },
+    {
+      "repo": "hydra-db/hydradb",
+      "url": "https://github.com/hydra-db/hydradb",
+      "description": "HydraDB - fast graph database on object storage",
+      "summary": "HydraDB 是用 Rust 编写的对象存储原生分布式图数据库，以 S3 兼容存储为持久层，计算分为数据节点和索引器，支持 OpenCypher 查询、GraphBLAS 遍历及 Neo4j Bolt 兼容连接。",
+      "language": "Rust",
+      "tags": [
+        "数据",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 7,
+      "peakStars": 2791,
+      "dailyArticle": "/github-trending/2026-09-23/hydra-db--hydradb/",
+      "periods": {}
     },
     {
       "repo": "rohitg00/ai-engineering-from-scratch",
@@ -84,12 +82,13 @@
       "summary": "一个开源 AI 工程课程仓库，包含 20 个阶段、523 节课，覆盖从数学基础到智能体与生产的完整链路，支持 Python、TypeScript、Rust、Julia 多语言实现。",
       "language": "Python",
       "tags": [
+        "AI",
         "教程"
       ],
       "firstSeen": "2026-09-25",
-      "lastSeen": "2026-09-28",
-      "days": 4,
-      "peakStars": 1181,
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 1287,
       "dailyArticle": "/github-trending/2026-09-25/rohitg00--ai-engineering-from-scratch/",
       "periods": {}
     },
@@ -104,10 +103,1558 @@
         "开发工具"
       ],
       "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-28",
-      "days": 6,
+      "lastSeen": "2026-09-29",
+      "days": 7,
       "peakStars": 1140,
       "dailyArticle": "/github-trending/2026-09-24/dream-num--univer/",
+      "periods": {}
+    },
+    {
+      "repo": "mvschwarz/openrig",
+      "url": "https://github.com/mvschwarz/openrig",
+      "description": "Multi-agent harness that runs Claude Code and Codex together as one system",
+      "summary": "OpenRig 是一个基于 TypeScript 的本地多智能体管理工具，以 tmux 为基础，用 YAML 定义智能体团队拓扑，启动并协调 Claude Code 和 Codex 等编程智能体，提供 CLI、TUI 和 MCP 接口，将零散终端会话组织为持久化团队。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 734,
+      "dailyArticle": "/github-trending/2026-09-29/mvschwarz--openrig/",
+      "periods": {}
+    },
+    {
+      "repo": "juspay/hyperswitch",
+      "url": "https://github.com/juspay/hyperswitch",
+      "description": "Open source, composable payments platform | PCI compliant | SaaS and Self-host options | Enables connectivity to multiple payment, payout, fraud, vault and tokenization providers | Uplifts authorization with intelligent routing and revenue recovery | Reduce payment processing costs with cost observability | Reduces payment ops with reconciliation",
+      "summary": "Hyperswitch 是 Juspay 开源的可组合支付平台，使用 Rust 构建，支持连接 120+ 支付服务商，提供智能路由、收入恢复、保险库、对账等模块，兼容 SaaS 与自托管部署。",
+      "language": "Rust",
+      "tags": [
+        "金融",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 6,
+      "peakStars": 610,
+      "dailyArticle": "/github-trending/2026-09-28/juspay--hyperswitch/",
+      "periods": {}
+    },
+    {
+      "repo": "mobile-next/mobile-mcp",
+      "url": "https://github.com/mobile-next/mobile-mcp",
+      "description": "Model Context Protocol Server for Mobile Automation and Scraping (iOS, Android, Emulators, Simulators and Real Devices)",
+      "summary": "Mobile MCP 是 mobile-next 开源的 TypeScript 服务器，基于 Model Context Protocol 为智能体提供跨 iOS、Android 的统一移动自动化接口，覆盖模拟器、仿真器与真机，通过无障碍树与截图坐标操作原生应用。",
+      "language": "TypeScript",
+      "tags": [
+        "开发工具",
+        "移动端",
+        "AI"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 573,
+      "dailyArticle": "/github-trending/2026-09-28/mobile-next--mobile-mcp/",
+      "periods": {}
+    },
+    {
+      "repo": "block/buzz",
+      "url": "https://github.com/block/buzz",
+      "description": "A hive mind communication platform",
+      "summary": "Buzz 是 Block 开源的 Rust 项目，以自托管 Nostr 中继为核心，让人类与 AI 代理在同一事件日志和身份模型中协作，共享频道、搜索与审计链。",
+      "language": "Rust",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-29",
+      "days": 8,
+      "peakStars": 498,
+      "dailyArticle": "/github-trending/2026-09-17/block--buzz/",
+      "periods": {}
+    },
+    {
+      "repo": "pacifio/atlas",
+      "url": "https://github.com/pacifio/atlas",
+      "description": "Source control for agents. Use multiple coding agents, track their changes and query them in one place",
+      "summary": "Atlas 是一个用 Rust 开发的代码代理源控制工具，支持多代理并行编辑同一代码库，记录会话与提交关联的检查点，实现共享记忆与上下文注入。",
+      "language": "Rust",
+      "tags": [
+        "开发工具",
+        "AI"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 490,
+      "dailyArticle": "/github-trending/2026-09-28/pacifio--atlas/",
+      "periods": {}
+    },
+    {
+      "repo": "t8y2/dbx",
+      "url": "https://github.com/t8y2/dbx",
+      "description": "25 MB lightweight cross-platform database client for 100+ databases, including MySQL, PostgreSQL, SQLite, Redis, MongoDB, DuckDB, SQL Server, and Dameng. Built-in AI, MCP Server, CLI, desktop and Docker. | 轻量级跨平台数据库管理工具，支持 MySQL、PostgreSQL、SQLite、Redis、MongoDB、达梦等 100+ 数据库，提供桌面端、Docker、CLI、内置 AI 助手和 MCP。",
+      "summary": "DBX 是基于 Rust 构建的轻量级跨平台数据库客户端，安装包约 25 MB，宣称支持 100 多种数据库，涵盖 MySQL、PostgreSQL、SQLite、Redis、MongoDB、达梦等，同时提供桌面端、Docker、CLI、内置 AI 助手与 MCP Server 等多种形态。",
+      "language": "Rust",
+      "tags": [
+        "开发工具",
+        "数据",
+        "AI"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 460,
+      "dailyArticle": "/github-trending/2026-09-29/t8y2--dbx/",
+      "periods": {}
+    },
+    {
+      "repo": "vorssaint/vorssaint-utils",
+      "url": "https://github.com/vorssaint/vorssaint-utils",
+      "description": "Free and open-source macOS menu bar toolkit.",
+      "summary": "Vorssaint 是面向 Apple Silicon Mac 的免费开源菜单栏工具集，用 Swift 编写，需 macOS 14 及以上。它把音量混合、系统监控、窗口管理、剪贴板历史、截图录屏、应用清理等常见工具聚合到单个菜单栏图标下，功能按需安装，强调本地优先、无账号与遥测。",
+      "language": "Swift",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 422,
+      "dailyArticle": "/github-trending/2026-09-24/vorssaint--vorssaint-utils/",
+      "periods": {}
+    },
+    {
+      "repo": "ruvnet/RuView",
+      "url": "https://github.com/ruvnet/RuView",
+      "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 421,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "openbao/openbao",
+      "url": "https://github.com/openbao/openbao",
+      "description": "OpenBao is a software solution to manage, store, and distribute sensitive data including secrets, certificates, and keys.",
+      "summary": "OpenBao 是一个用 Go 编写的敏感数据管理工具，可安全存储、动态生成和分发秘密、证书与密钥。它提供加密存储、租约续期和撤销机制，采用开源治理模式，并包含 CLI、服务端、Web UI 及官网文档。",
+      "language": "Go",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 360,
+      "dailyArticle": "/github-trending/2026-09-27/openbao--openbao/",
+      "periods": {}
+    },
+    {
+      "repo": "byoungd/up",
+      "url": "https://github.com/byoungd/up",
+      "description": "An advanced guide which might benefit you a lot 🎉 . 韩先凯的人生进阶指南 人生进阶指南 离谱的人生 人生进阶 AI学习 AI指南 韩先凯的AI学习指南 英语学习指南/英语学习教程/英语学习/学英语",
+      "summary": "该仓库是韩先凯所著《人生进阶指南》的持续更新书稿与站点，主题为 AI 时代终身学习，内容从英语学习延伸到 AI 协作、项目实践、创业复盘和生活恢复，并提供电子书与模板。",
+      "language": "JavaScript",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 327,
+      "dailyArticle": "/github-trending/2026-09-20/byoungd--up/",
+      "periods": {}
+    },
+    {
+      "repo": "vercel/next.js",
+      "url": "https://github.com/vercel/next.js",
+      "description": "The React Framework",
+      "summary": "Next.js 是 Vercel 维护的 React 框架，用于构建全栈 Web 应用，扩展最新 React 特性并集成基于 Rust 的 JavaScript 工具以加快构建，被大型公司使用。",
+      "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 317,
+      "dailyArticle": "/github-trending/2026-09-28/vercel--next.js/",
+      "periods": {}
+    },
+    {
+      "repo": "vercel-labs/scriptc",
+      "url": "https://github.com/vercel-labs/scriptc",
+      "description": "TypeScript-to-Native Compiler",
+      "summary": "scriptc 是 Vercel Labs 的实验性编译器，借助 TypeScript 编译器做解析与类型检查，将 TypeScript 和 JavaScript 编译为类型化 IR、C、LLVM IR、汇编、目标文件、原生可执行文件及 WebAssembly 模块，代码需静态可编译，动态部分依赖 quickjs-ng。",
+      "language": "TypeScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 317,
+      "dailyArticle": "/github-trending/2026-09-28/vercel-labs--scriptc/",
+      "periods": {}
+    },
+    {
+      "repo": "satnaing/shadcn-admin",
+      "url": "https://github.com/satnaing/shadcn-admin",
+      "description": "Admin Dashboard UI built with Shadcn and Vite.",
+      "summary": "基于 Shadcn UI 与 Vite 构建的后台管理仪表盘界面，使用 TypeScript 开发，注重响应式与无障碍支持，包含侧边栏、全局搜索及十多个页面，并提供 RTL 支持。",
+      "language": "TypeScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 279,
+      "dailyArticle": "/github-trending/2026-09-29/satnaing--shadcn-admin/",
+      "periods": {}
+    },
+    {
+      "repo": "InfinityLoop1308/PipePipe",
+      "url": "https://github.com/InfinityLoop1308/PipePipe",
+      "description": "An open-source Android app to let you browse YouTube and other services freely.",
+      "summary": "PipePipe 是一款基于 NewPipe 硬分叉的开源 Android 应用，用于自由浏览 YouTube 及其他服务。它集成 SponsorBlock、ReturnYouTubeDislike，支持 AV1/VP9 播放、弹幕式直播聊天、播放列表批量下载和多种手势控制。",
+      "language": "Shell",
+      "tags": [
+        "移动端",
+        "音视频"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 274,
+      "dailyArticle": "/github-trending/2026-09-28/infinityloop1308--pipepipe/",
+      "periods": {}
+    },
+    {
+      "repo": "moeru-ai/airi",
+      "url": "https://github.com/moeru-ai/airi",
+      "description": "💖🧸 Self hosted, you-owned Grok Companion, a container of souls of waifu, cyber livings to bring them into our worlds, wishing to achieve Neuro-sama's altitude. Capable of realtime voice chat, Minecraft, Factorio playing. Web / macOS / Windows supported.",
+      "summary": "AIRI 是一个自托管、用户拥有的数字生命与虚拟角色项目，灵感来自 Neuro-sama。支持实时语音聊天、游玩 Minecraft 和 Factorio，覆盖 Web、macOS 与 Windows 平台，使用 TypeScript 与 Web 技术构建。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "游戏",
+        "音视频"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 274,
+      "dailyArticle": "/github-trending/2026-09-29/moeru-ai--airi/",
+      "periods": {}
+    },
+    {
+      "repo": "k1tbyte/Wand-Enhancer",
+      "url": "https://github.com/k1tbyte/Wand-Enhancer",
+      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
+      "summary": "WandEnhancer 是一个用 C# 开发的本地补丁工具，用于扩展 Wand（WeMod）客户端的本地配置和界面体验，支持本地环境配置、主题定制、远程 Web 面板及自定义 JavaScript 注入，官方不发布预编译可执行文件。",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 257,
+      "dailyArticle": "/github-trending/2026-09-27/k1tbyte--wand-enhancer/",
+      "periods": {}
+    },
+    {
+      "repo": "ExTV/Podroid",
+      "url": "https://github.com/ExTV/Podroid",
+      "description": "A rootless Android app that boots Alpine Linux: run containers (Podman/Docker/LXC) and GUI desktop apps.",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "开发工具",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 254,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "tensorflow/tensorflow",
+      "url": "https://github.com/tensorflow/tensorflow",
+      "description": "An Open Source Machine Learning Framework for Everyone",
+      "summary": "TensorFlow 是端到端开源机器学习平台，由 Google Brain 团队发起，提供稳定的 Python 和 C++ API 及多语言支持，拥有完整的工具、库和社区生态。",
+      "language": "C++",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 216,
+      "dailyArticle": "/github-trending/2026-09-28/tensorflow--tensorflow/",
+      "periods": {}
+    },
+    {
+      "repo": "openai/tart",
+      "url": "https://github.com/openai/tart",
+      "description": "macOS and Linux VMs on Apple Silicon to use in CI and other automations",
+      "summary": "Tart 是面向 Apple Silicon 的虚拟化工具集，用于构建、运行和管理 macOS 与 Linux 虚拟机，由 CI 工程师开发，支持从 OCI 容器仓库推送拉取镜像，并可集成到各类持续集成系统中。",
+      "language": "Swift",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 211,
+      "dailyArticle": "/github-trending/2026-09-29/openai--tart/",
+      "periods": {}
+    },
+    {
+      "repo": "practical-tutorials/project-based-learning",
+      "url": "https://github.com/practical-tutorials/project-based-learning",
+      "description": "Curated list of project-based tutorials",
+      "summary": "该仓库是一个按编程语言分类的项目制编程教程索引，收录大量从零构建应用的教程链接，涵盖C/C++、Java、JavaScript等二十余种语言，并包含网络、图形等专题，供开发者按语言查找实践项目。",
+      "language": "Python",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 206,
+      "dailyArticle": "/github-trending/2026-09-29/practical-tutorials--project-based-learning/",
+      "periods": {}
+    },
+    {
+      "repo": "kitao/pyxel",
+      "url": "https://github.com/kitao/pyxel",
+      "description": "A retro game engine for Python",
+      "summary": "Pyxel 是一款用 Rust 构建的 Python 复古游戏引擎，受经典游戏机启发，仅支持 16 色显示和 4 个音效通道，便于轻松制作像素风格游戏。项目开源，由个人开发维护。",
+      "language": "Rust",
+      "tags": [
+        "游戏",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 197,
+      "dailyArticle": "/github-trending/2026-09-29/kitao--pyxel/",
+      "periods": {}
+    },
+    {
+      "repo": "tokio-rs/topcoat",
+      "url": "https://github.com/tokio-rs/topcoat",
+      "description": "A batteries-included framework for building web apps",
+      "summary": "Topcoat 是 tokio-rs 下实验性的全栈 Rust Web 框架，强调模块化与开箱即用，提供 view! 模板、模块路由、服务端渲染、表达式级客户端响应性、资产打包及 Tailwind 集成。README 明确提示处于早期阶段且会有破坏性变更。",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 196,
+      "dailyArticle": "/github-trending/2026-09-29/tokio-rs--topcoat/",
+      "periods": {}
+    },
+    {
+      "repo": "cs341-illinois/coursebook",
+      "url": "https://github.com/cs341-illinois/coursebook",
+      "description": "Open Source Introductory Systems Programming Textbook for the University of Illinois",
+      "summary": "该仓库是伊利诺伊大学 CS 341 系统编程课程的开源教材，使用 TeX 编写，提供 PDF、HTML、EPUB 和 Wiki 版本，旨在标准化并改进 Angrave 的原始 wikibook 实验，内容基于 C 语言与 Linux 系统编程。",
+      "language": "TeX",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 195,
+      "dailyArticle": "/github-trending/2026-09-29/cs341-illinois--coursebook/",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/ai-agents-for-beginners",
+      "url": "https://github.com/microsoft/ai-agents-for-beginners",
+      "description": "18 Lessons to Get Started Building AI Agents",
+      "summary": "微软推出的面向初学者的 AI Agent 构建课程，包含 18 课，使用 Jupyter Notebook 与 Python 示例，结合 Microsoft Agent Framework 和 Microsoft Foundry Agent Service V2，并提供多语言翻译与视频资料。",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 6,
+      "peakStars": 179,
+      "dailyArticle": "/github-trending/2026-09-29/microsoft--ai-agents-for-beginners/",
+      "periods": {}
+    },
+    {
+      "repo": "Tianyu199509/DeskBox",
+      "url": "https://github.com/Tianyu199509/DeskBox",
+      "description": "A free, open-source Windows desktop organizer with native-feeling WinUI 3 widgets.",
+      "summary": "DeskBox 是一款免费开源的 Windows 桌面整理工具，以 WinUI 3 组件形式运行。它通过真实文件夹支持的组件管理桌面文件，并集成待办、快速捕获、搜索、天气、音乐等日常工具，同时保留原有文件结构。",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 179,
+      "dailyArticle": "/github-trending/2026-09-28/tianyu199509--deskbox/",
+      "periods": {}
+    },
+    {
+      "repo": "lyogavin/airllm",
+      "url": "https://github.com/lyogavin/airllm",
+      "description": "AirLLM 70B inference with single 4GB GPU",
+      "summary": "AirLLM 是一个开源推理库，通过逐层加载权重的方式，让 70B 乃至数百 B 参数的大模型在单张 4GB 显存显卡上运行，无需量化、蒸馏或剪枝，近期还扩展了低显存训练支持。",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 178,
+      "dailyArticle": "/github-trending/2026-09-27/lyogavin--airllm/",
+      "periods": {}
+    },
+    {
+      "repo": "we-promise/sure",
+      "url": "https://github.com/we-promise/sure",
+      "description": "The personal finance app for everyone (by everyone)",
+      "summary": "Sure 是 Maybe Finance 已停止开发后的社区维护分叉，用 Ruby 构建，支持 Docker 自托管，可经浏览器、macOS、移动端、API 和 LLM 代理访问，用于个人财务管理。",
+      "language": "Ruby",
+      "tags": [
+        "金融"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 165,
+      "dailyArticle": "/github-trending/2026-09-28/we-promise--sure/",
+      "periods": {}
+    },
+    {
+      "repo": "NawfalMotii79/PLFM_RADAR",
+      "url": "https://github.com/NawfalMotii79/PLFM_RADAR",
+      "description": "Open-source, low-cost 10.5 GHz PLFM phased array RADAR system",
+      "summary": "",
+      "language": "PLSQL",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 158,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "mg-chao/snow-apps",
+      "url": "https://github.com/mg-chao/snow-apps",
+      "description": "Snow Apps repository, providing source code for Snow Shot and Snow Image Viewer.",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 148,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "alirezarezvani/claude-skills",
+      "url": "https://github.com/alirezarezvani/claude-skills",
+      "description": "380 Claude Code skills & agent skills & plugins (30+ Agents, 70+ custom commands, 380+ skills, customizable references, scripts)for Claude Code, Codex, Gemini CLI, Cursor, and 8 more coding agents — engineering, marketing, product, compliance, C-level advisory, research, business operations, commercial & finance, and your daily productivity skills.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-25",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 145,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Stirling-Tools/Stirling-PDF",
+      "url": "https://github.com/Stirling-Tools/Stirling-PDF",
+      "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 139,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/SkillOpt",
+      "url": "https://github.com/microsoft/SkillOpt",
+      "description": "SkillOpt is a text-space optimizer that trains reusable natural-language skills for frozen LLM agents through trajectory-driven edits, validation-gated updates, and deployable best_skill.md artifacts.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 136,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ashhart/TensorFold",
+      "url": "https://github.com/ashhart/TensorFold",
+      "description": "Fast, exact LLM decoding on Apple Silicon (MLX) behind an OpenAI-compatible endpoint",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 120,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/Data-Science-For-Beginners",
+      "url": "https://github.com/microsoft/Data-Science-For-Beginners",
+      "description": "10 Weeks, 20 Lessons, Data Science for All!",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "数据",
+        "教程"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 101,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "remorses/gpuix",
+      "url": "https://github.com/remorses/gpuix",
+      "description": "Node.js & React bindings for Zed’s GPUI. Build memory efficient native apps with React and no Electron",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 100,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "topoteretes/cognee",
+      "url": "https://github.com/topoteretes/cognee",
+      "description": "Cognee is the open-source AI memory platform for agents. Give your AI agents persistent long-term memory with small models for free",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "数据"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 96,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "samugit83/redamon",
+      "url": "https://github.com/samugit83/redamon",
+      "description": "An AI-powered agentic red team framework that automates offensive security operations, from reconnaissance to exploitation to post-exploitation, with zero human intervention.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 84,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "HelpCode-ai/anythingmcp",
+      "url": "https://github.com/HelpCode-ai/anythingmcp",
+      "description": "Turn any REST, SOAP, GraphQL, OData or SQL API into MCP tools for Claude & ChatGPT. Self-hosted. 265 connectors: SAP S/4HANA & Business One, ERP, e-commerce.",
+      "summary": "",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 81,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/ML-For-Beginners",
+      "url": "https://github.com/microsoft/ML-For-Beginners",
+      "description": "12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-09-29",
+      "days": 6,
+      "peakStars": 77,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "apple/container",
+      "url": "https://github.com/apple/container",
+      "description": "A tool for creating and running Linux containers using lightweight virtual machines on a Mac. It is written in Swift, and optimized for Apple silicon.",
+      "summary": "",
+      "language": "Swift",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 76,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "termux/termux-app",
+      "url": "https://github.com/termux/termux-app",
+      "description": "Termux - a terminal emulator application for Android OS extendible by variety of packages.",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "开发工具",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-09-29",
+      "days": 3,
+      "peakStars": 69,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "AppFlowy-IO/AppFlowy",
+      "url": "https://github.com/AppFlowy-IO/AppFlowy",
+      "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 68,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "code-yeongyu/oh-my-openagent",
+      "url": "https://github.com/code-yeongyu/oh-my-openagent",
+      "description": "OmO: Just type \"mass ulw\" keyword with your prompt. Now you are the master of graph engineering.",
+      "summary": "",
+      "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 66,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "rukamori/ArchiveTune",
+      "url": "https://github.com/rukamori/ArchiveTune",
+      "description": "🌸 The Cutest Music Player With Support Local File and Youtube Music for Android!",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 64,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "smartstore/Smartstore",
+      "url": "https://github.com/smartstore/Smartstore",
+      "description": "A modular, scalable and ultra-fast open-source all-in-one eCommerce platform built on ASP.NET Core 10",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 63,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/AI-For-Beginners",
+      "url": "https://github.com/microsoft/AI-For-Beginners",
+      "description": "12 Weeks, 24 Lessons, AI for All!",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 61,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "golang/go",
+      "url": "https://github.com/golang/go",
+      "description": "The Go programming language",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 56,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "guohuiyuan/go-music-dl",
+      "url": "https://github.com/guohuiyuan/go-music-dl",
+      "description": "一个基于 Go 语言的全网音乐搜索与下载工具。支持 CLI 命令行与 Web 服务双模式，内置网易云、QQ、酷狗、Bilibili、汽水音乐等 10+ 个主流平台，支持多源并发搜索与无损音质解析。music-dl交流群：755087923",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "音视频",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 56,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Billionmail/BillionMail",
+      "url": "https://github.com/Billionmail/BillionMail",
+      "description": "BillionMail gives you open-source MailServer, NewsLetter, Email Marketing — fully self-hosted, dev-friendly, and free from monthly fees. Join the discord: https://discord.gg/asfXzBUhZr",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 55,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "bevyengine/bevy",
+      "url": "https://github.com/bevyengine/bevy",
+      "description": "A refreshingly simple data-driven game engine built in Rust",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "游戏"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 54,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Predidit/Kazumi",
+      "url": "https://github.com/Predidit/Kazumi",
+      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 6,
+      "peakStars": 53,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "0x4m4/hexstrike-ai",
+      "url": "https://github.com/0x4m4/hexstrike-ai",
+      "description": "HexStrike AI MCP Agents is an advanced MCP server that lets AI agents (Claude, GPT, Copilot, etc.) autonomously run 150+ cybersecurity tools for automated pentesting, vulnerability discovery, bug bounty automation, and security research. Seamlessly bridge LLMs with real-world offensive security capabilities.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 53,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "vercel-labs/agent-skills",
+      "url": "https://github.com/vercel-labs/agent-skills",
+      "description": "Vercel's official collection of agent skills",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "Skill",
+        "AI"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 52,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "bggRGjQaUbCoE/PiliPlus",
+      "url": "https://github.com/bggRGjQaUbCoE/PiliPlus",
+      "description": "PiliPlus",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 49,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "maxrave-dev/SimpMusic",
+      "url": "https://github.com/maxrave-dev/SimpMusic",
+      "description": "A cross-platform music app using YouTube Music for backend",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 47,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Themaister/pyrowave",
+      "url": "https://github.com/Themaister/pyrowave",
+      "description": "",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-25",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 45,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "dagucloud/dagu",
+      "url": "https://github.com/dagucloud/dagu",
+      "description": "Self-hostable workflow orchestrator for teams whose main work isn't orchestration. Declarative YAML over your scripts, SSH commands, containers, etc; keep workflows separate from business logic. One binary, no database, runs on limited H/W resources. Alternative to Airflow / Cron / Job Scheduler.",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 43,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ImranR98/Obtainium",
+      "url": "https://github.com/ImranR98/Obtainium",
+      "description": "Get Android app updates straight from the source.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "开发工具",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 6,
+      "peakStars": 41,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "nodejs/node",
+      "url": "https://github.com/nodejs/node",
+      "description": "Node.js JavaScript runtime ✨🐢🚀✨",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-09-29",
+      "days": 5,
+      "peakStars": 35,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "grafana/k6",
+      "url": "https://github.com/grafana/k6",
+      "description": "A modern load testing tool, using Go and JavaScript",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 33,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Sonarr/Sonarr",
+      "url": "https://github.com/Sonarr/Sonarr",
+      "description": "Smart PVR for newsgroup and bittorrent users.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 32,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "yairm210/Unciv",
+      "url": "https://github.com/yairm210/Unciv",
+      "description": "Open-source Android/Desktop remake of Civ V",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "游戏"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 31,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ronitsingh10/FineTune",
+      "url": "https://github.com/ronitsingh10/FineTune",
+      "description": "FineTune, a macOS menu bar app for per-app volume control, multi-device output, audio routing, and 10-band EQ. Free and open-source alternative to SoundSource.",
+      "summary": "",
+      "language": "Swift",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 30,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "hugo2046/QuantsPlaybook",
+      "url": "https://github.com/hugo2046/QuantsPlaybook",
+      "description": "量化研究-券商金工研报复现",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "金融"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 30,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "GopeedLab/gopeed",
+      "url": "https://github.com/GopeedLab/gopeed",
+      "description": "A fast, modern download manager for HTTP, BitTorrent, Magnet, and ed2k. Cross-platform, built with Golang and Flutter.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 4,
+      "peakStars": 29,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/mcp-for-beginners",
+      "url": "https://github.com/microsoft/mcp-for-beginners",
+      "description": "This open-source curriculum introduces the fundamentals of Model Context Protocol (MCP) through real-world, cross-language examples in .NET, Java, TypeScript, JavaScript, Rust and Python. Designed for developers, it focuses on practical techniques for building modular, scalable, and secure AI workflows from session setup to service orchestration.",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 29,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "memstechtips/Winhance",
+      "url": "https://github.com/memstechtips/Winhance",
+      "description": "Application designed to optimize, customize and enhance your Windows experience.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 28,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "The412Banner/winlator-contents",
+      "url": "https://github.com/The412Banner/winlator-contents",
+      "description": "Component catalog index for BannerHub / Winlator clients. Hosts contents.json (mirror of nightlies_components.json). Component binaries live on The412Banner/Nightlies releases.",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 28,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "danielmiessler/SecLists",
+      "url": "https://github.com/danielmiessler/SecLists",
+      "description": "SecLists is the security tester's companion. It's a collection of multiple types of lists used during security assessments, collected in one place. List types include usernames, passwords, URLs, sensitive data patterns, fuzzing payloads, web shells, and many more.",
+      "summary": "",
+      "language": "PHP",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 27,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "hiddify/hiddify-app",
+      "url": "https://github.com/hiddify/hiddify-app",
+      "description": "Multi-platform auto-proxy client, supporting Sing-box, X-ray, TUIC, Hysteria, Reality, Trojan, SSH etc. It’s an open-source, secure and ad-free.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 25,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "huilang-me/CF-Server-Monitor",
+      "url": "https://github.com/huilang-me/CF-Server-Monitor",
+      "description": "一个基于 Cloudflare Workers + D1 + Durable Objects 的免费多服务器监控探针系统，支持实时监控、离线告警，到期通知，历史数据查看、延迟追踪、地图展示等功能。兼容主流Linux系统，Alpine Linux，OpenWrt，macOS，群晖 DSM、飞牛 fnOS、Windows系统。",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "云服务"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 25,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "jithin-sabu/purge-app",
+      "url": "https://github.com/jithin-sabu/purge-app",
+      "description": "Free up your Mac, safely. Clears the cache and junk it piles up on its own. Open source, and everything goes to the Trash, so nothing is ever lost.",
+      "summary": "",
+      "language": "Swift",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 24,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "233boy/sing-box",
+      "url": "https://github.com/233boy/sing-box",
+      "description": "最好用的 sing-box 一键安装脚本 & 管理脚本，自动创建 REALITY 协议；支持 TUIC，Trojan，Hysteria2 等所有常见的协议",
+      "summary": "",
+      "language": "Shell",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 24,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "crimera/piko",
+      "url": "https://github.com/crimera/piko",
+      "description": "morphe patches for twitter and instagram",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "移动端"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 24,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "opf/openproject",
+      "url": "https://github.com/opf/openproject",
+      "description": "OpenProject is the leading open source project management software for product, project and portfolio management. A powerful Jira alternative with agile planning, issue tracking, roadmaps, Gantt charts, time tracking, collaboration features, and more. Available on premises or in the cloud. ⭐ Star us on GitHub",
+      "summary": "",
+      "language": "Ruby",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 24,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "karpathy/nn-zero-to-hero",
+      "url": "https://github.com/karpathy/nn-zero-to-hero",
+      "description": "Neural Networks: Zero to Hero",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 23,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Axorax/awesome-free-apps",
+      "url": "https://github.com/Axorax/awesome-free-apps",
+      "description": "Curated list of the best free apps for PC and mobile",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 23,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ShareX/ShareX",
+      "url": "https://github.com/ShareX/ShareX",
+      "description": "ShareX is a free and open-source application that enables users to capture or record any area of their screen with a single keystroke. It also supports uploading images, text, and various file types to a wide range of destinations.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 22,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "denisidoro/navi",
+      "url": "https://github.com/denisidoro/navi",
+      "description": "An interactive cheatsheet tool for the command-line",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 22,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ffuf/ffuf",
+      "url": "https://github.com/ffuf/ffuf",
+      "description": "Fast web fuzzer written in Go",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 22,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "fishjar/kiss-translator",
+      "url": "https://github.com/fishjar/kiss-translator",
+      "description": "A simple, open source bilingual translation extension & Greasemonkey script (一个简约、开源的 双语对照翻译扩展 & 油猴脚本)",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 21,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "DataTalksClub/machine-learning-zoomcamp",
+      "url": "https://github.com/DataTalksClub/machine-learning-zoomcamp",
+      "description": "Learn ML engineering for free in 4 months! Register here 👇🏼",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 21,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Rizzo-AI-Academy/rizzo-pii",
+      "url": "https://github.com/Rizzo-AI-Academy/rizzo-pii",
+      "description": "Local-first privacy guard: anonymize your documents before sharing with LLMs.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "安全"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 21,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "akiralereal/iptv",
+      "url": "https://github.com/akiralereal/iptv",
+      "description": "开箱即有 800+ 可稳定流畅播放频道的自托管 IPTV 直播源管理与分发系统，聚合了央视频、咪咕、央视、卫视、凤凰卫视、亚太、国际、地方台、体育赛事、B 站直播、斗鱼直播、虎牙直播等，以及自定义抓取源和订阅，并提供 EPG 节目单与聚合功能；另外还自带 GUI 可视化管理后台，支持 Docker Compose 或 Node.js 运行，适合 NAS 与家庭服务器。",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 20,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "gitleaks/gitleaks",
+      "url": "https://github.com/gitleaks/gitleaks",
+      "description": "Find secrets with Gitleaks 🔑",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 20,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "RayWangQvQ/BiliBiliToolPro",
+      "url": "https://github.com/RayWangQvQ/BiliBiliToolPro",
+      "description": "B 站（bilibili）自动任务工具，支持docker、青龙、k8s等多种部署方式。全面拥抱AI。敏感肌也能用。",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 18,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "firefly-iii/firefly-iii",
+      "url": "https://github.com/firefly-iii/firefly-iii",
+      "description": "Firefly III: a personal finances manager",
+      "summary": "",
+      "language": "PHP",
+      "tags": [
+        "金融"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-09-29",
+      "days": 2,
+      "peakStars": 18,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "agent0ai/agent-zero",
+      "url": "https://github.com/agent0ai/agent-zero",
+      "description": "Agent Zero AI framework",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 18,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "macro-inc/macro",
+      "url": "https://github.com/macro-inc/macro",
+      "description": "Macro is a unified workspace for teams: email, chat, docs, tasks, agents, calls, and CRM — @-linked together with shared AI memory.",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 18,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "sveltejs/svelte",
+      "url": "https://github.com/sveltejs/svelte",
+      "description": "web development for the rest of us",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 18,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Chevey339/kelivo",
+      "url": "https://github.com/Chevey339/kelivo",
+      "description": "A Flutter LLM Chat Client. Support Mobile & Desktop.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "AI",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 17,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ClickHouse/ClickHouse",
+      "url": "https://github.com/ClickHouse/ClickHouse",
+      "description": "ClickHouse® is a real-time analytics database management system",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "数据"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 17,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "mealie-recipes/mealie",
+      "url": "https://github.com/mealie-recipes/mealie",
+      "description": "Mealie is a self hosted recipe manager and meal planner with a RestAPI backend and a reactive frontend application built in Vue for a pleasant user experience for the whole family. Easily add recipes into your database by providing the url and mealie will automatically import the relevant data or add a family recipe with the UI editor",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 17,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "moonlight-stream/moonlight-qt",
+      "url": "https://github.com/moonlight-stream/moonlight-qt",
+      "description": "GameStream client for PCs (Windows, Mac, Linux, and Steam Link)",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "游戏"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-09-29",
+      "days": 1,
+      "peakStars": 17,
+      "dailyArticle": "",
       "periods": {}
     },
     {
@@ -125,72 +1672,6 @@
       "days": 2,
       "peakStars": 1064,
       "dailyArticle": "/github-trending/2026-09-18/dietrichgebert--ponytail/",
-      "periods": {}
-    },
-    {
-      "repo": "juspay/hyperswitch",
-      "url": "https://github.com/juspay/hyperswitch",
-      "description": "Open source, composable payments platform | PCI compliant | SaaS and Self-host options | Enables connectivity to multiple payment, payout, fraud, vault and tokenization providers | Uplifts authorization with intelligent routing and revenue recovery | Reduce payment processing costs with cost observability | Reduces payment ops with reconciliation",
-      "summary": "Hyperswitch 是 Juspay 开源的可组合支付平台，使用 Rust 构建，支持连接 120+ 支付服务商，提供智能路由、收入恢复、保险库、对账等模块，兼容 SaaS 与自托管部署。",
-      "language": "Rust",
-      "tags": [
-        "金融"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-28",
-      "days": 5,
-      "peakStars": 610,
-      "dailyArticle": "/github-trending/2026-09-28/juspay--hyperswitch/",
-      "periods": {}
-    },
-    {
-      "repo": "mobile-next/mobile-mcp",
-      "url": "https://github.com/mobile-next/mobile-mcp",
-      "description": "Model Context Protocol Server for Mobile Automation and Scraping (iOS, Android, Emulators, Simulators and Real Devices)",
-      "summary": "Mobile MCP 是 mobile-next 开源的 TypeScript 服务器，基于 Model Context Protocol 为智能体提供跨 iOS、Android 的统一移动自动化接口，覆盖模拟器、仿真器与真机，通过无障碍树与截图坐标操作原生应用。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 573,
-      "dailyArticle": "/github-trending/2026-09-28/mobile-next--mobile-mcp/",
-      "periods": {}
-    },
-    {
-      "repo": "block/buzz",
-      "url": "https://github.com/block/buzz",
-      "description": "A hive mind communication platform",
-      "summary": "Buzz 是 Block 开源的 Rust 项目，以自托管 Nostr 中继为核心，让人类与 AI 代理在同一事件日志和身份模型中协作，共享频道、搜索与审计链。",
-      "language": "Rust",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-28",
-      "days": 7,
-      "peakStars": 498,
-      "dailyArticle": "/github-trending/2026-09-17/block--buzz/",
-      "periods": {}
-    },
-    {
-      "repo": "pacifio/atlas",
-      "url": "https://github.com/pacifio/atlas",
-      "description": "Source control for agents. Use multiple coding agents, track their changes and query them in one place",
-      "summary": "Atlas 是一个用 Rust 开发的代码代理源控制工具，支持多代理并行编辑同一代码库，记录会话与提交关联的检查点，实现共享记忆与上下文注入。",
-      "language": "Rust",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 490,
-      "dailyArticle": "/github-trending/2026-09-28/pacifio--atlas/",
       "periods": {}
     },
     {
@@ -242,22 +1723,6 @@
       "periods": {}
     },
     {
-      "repo": "openbao/openbao",
-      "url": "https://github.com/openbao/openbao",
-      "description": "OpenBao is a software solution to manage, store, and distribute sensitive data including secrets, certificates, and keys.",
-      "summary": "OpenBao 是一个用 Go 编写的敏感数据管理工具，可安全存储、动态生成和分发秘密、证书与密钥。它提供加密存储、租约续期和撤销机制，采用开源治理模式，并包含 CLI、服务端、Web UI 及官网文档。",
-      "language": "Go",
-      "tags": [
-        "安全"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 360,
-      "dailyArticle": "/github-trending/2026-09-27/openbao--openbao/",
-      "periods": {}
-    },
-    {
       "repo": "heygen-com/hyperframes",
       "url": "https://github.com/heygen-com/hyperframes",
       "description": "Write HTML. Render video. Built for agents.",
@@ -272,22 +1737,6 @@
       "days": 2,
       "peakStars": 322,
       "dailyArticle": "/github-trending/2026-09-19/heygen-com--hyperframes/",
-      "periods": {}
-    },
-    {
-      "repo": "vercel/next.js",
-      "url": "https://github.com/vercel/next.js",
-      "description": "The React Framework",
-      "summary": "Next.js 是 Vercel 维护的 React 框架，用于构建全栈 Web 应用，扩展最新 React 特性并集成基于 Rust 的 JavaScript 工具以加快构建，被大型公司使用。",
-      "language": "JavaScript",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 317,
-      "dailyArticle": "/github-trending/2026-09-28/vercel--next.js/",
       "periods": {}
     },
     {
@@ -307,54 +1756,6 @@
       "periods": {}
     },
     {
-      "repo": "InfinityLoop1308/PipePipe",
-      "url": "https://github.com/InfinityLoop1308/PipePipe",
-      "description": "An open-source Android app to let you browse YouTube and other services freely.",
-      "summary": "PipePipe 是一款基于 NewPipe 硬分叉的开源 Android 应用，用于自由浏览 YouTube 及其他服务。它集成 SponsorBlock、ReturnYouTubeDislike，支持 AV1/VP9 播放、弹幕式直播聊天、播放列表批量下载和多种手势控制。",
-      "language": "Shell",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 274,
-      "dailyArticle": "/github-trending/2026-09-28/infinityloop1308--pipepipe/",
-      "periods": {}
-    },
-    {
-      "repo": "k1tbyte/Wand-Enhancer",
-      "url": "https://github.com/k1tbyte/Wand-Enhancer",
-      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
-      "summary": "WandEnhancer 是一个用 C# 开发的本地补丁工具，用于扩展 Wand（WeMod）客户端的本地配置和界面体验，支持本地环境配置、主题定制、远程 Web 面板及自定义 JavaScript 注入，官方不发布预编译可执行文件。",
-      "language": "C#",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 257,
-      "dailyArticle": "/github-trending/2026-09-27/k1tbyte--wand-enhancer/",
-      "periods": {}
-    },
-    {
-      "repo": "tensorflow/tensorflow",
-      "url": "https://github.com/tensorflow/tensorflow",
-      "description": "An Open Source Machine Learning Framework for Everyone",
-      "summary": "TensorFlow 是端到端开源机器学习平台，由 Google Brain 团队发起，提供稳定的 Python 和 C++ API 及多语言支持，拥有完整的工具、库和社区生态。",
-      "language": "C++",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 216,
-      "dailyArticle": "/github-trending/2026-09-28/tensorflow--tensorflow/",
-      "periods": {}
-    },
-    {
       "repo": "melgarafael/DeskcommCRM",
       "url": "https://github.com/melgarafael/DeskcommCRM",
       "description": "Open-source AI sales OS — self-hosted CRM with native AI agents + WhatsApp (WAHA). Open alternative to Kommo, Octadesk & Intercom for any business that sells by chat. MCP-ready, multi-tenant, LGPD.",
@@ -369,54 +1770,6 @@
       "days": 2,
       "peakStars": 193,
       "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "vercel-labs/scriptc",
-      "url": "https://github.com/vercel-labs/scriptc",
-      "description": "TypeScript-to-Native Compiler",
-      "summary": "scriptc 是 Vercel Labs 的实验性编译器，借助 TypeScript 编译器做解析与类型检查，将 TypeScript 和 JavaScript 编译为类型化 IR、C、LLVM IR、汇编、目标文件、原生可执行文件及 WebAssembly 模块，代码需静态可编译，动态部分依赖 quickjs-ng。",
-      "language": "TypeScript",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 186,
-      "dailyArticle": "/github-trending/2026-09-28/vercel-labs--scriptc/",
-      "periods": {}
-    },
-    {
-      "repo": "Tianyu199509/DeskBox",
-      "url": "https://github.com/Tianyu199509/DeskBox",
-      "description": "A free, open-source Windows desktop organizer with native-feeling WinUI 3 widgets.",
-      "summary": "DeskBox 是一款免费开源的 Windows 桌面整理工具，以 WinUI 3 组件形式运行。它通过真实文件夹支持的组件管理桌面文件，并集成待办、快速捕获、搜索、天气、音乐等日常工具，同时保留原有文件结构。",
-      "language": "C#",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 179,
-      "dailyArticle": "/github-trending/2026-09-28/tianyu199509--deskbox/",
-      "periods": {}
-    },
-    {
-      "repo": "lyogavin/airllm",
-      "url": "https://github.com/lyogavin/airllm",
-      "description": "AirLLM 70B inference with single 4GB GPU",
-      "summary": "AirLLM 是一个开源推理库，通过逐层加载权重的方式，让 70B 乃至数百 B 参数的大模型在单张 4GB 显存显卡上运行，无需量化、蒸馏或剪枝，近期还扩展了低显存训练支持。",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 178,
-      "dailyArticle": "/github-trending/2026-09-27/lyogavin--airllm/",
       "periods": {}
     },
     {
@@ -453,22 +1806,6 @@
       "periods": {}
     },
     {
-      "repo": "we-promise/sure",
-      "url": "https://github.com/we-promise/sure",
-      "description": "The personal finance app for everyone (by everyone)",
-      "summary": "Sure 是 Maybe Finance 已停止开发后的社区维护分叉，用 Ruby 构建，支持 Docker 自托管，可经浏览器、macOS、移动端、API 和 LLM 代理访问，用于个人财务管理。",
-      "language": "Ruby",
-      "tags": [
-        "金融"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 165,
-      "dailyArticle": "/github-trending/2026-09-28/we-promise--sure/",
-      "periods": {}
-    },
-    {
       "repo": "putyy/res-downloader",
       "url": "https://github.com/putyy/res-downloader",
       "description": "视频号、小程序、抖音、快手、小红书、直播流、m3u8、酷狗、QQ音乐等常见网络资源下载!",
@@ -502,23 +1839,6 @@
       "periods": {}
     },
     {
-      "repo": "kitao/pyxel",
-      "url": "https://github.com/kitao/pyxel",
-      "description": "A retro game engine for Python",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "游戏",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 116,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "Gimanh/taskview-community",
       "url": "https://github.com/Gimanh/taskview-community",
       "description": "TaskView is a self-hosted project and task management platform focused on clarity, ownership, and control. TaskView is built for teams that want a transparent, self-hosted alternative to SaaS task managers.",
@@ -531,23 +1851,6 @@
       "lastSeen": "2026-09-28",
       "days": 1,
       "peakStars": 115,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "mvschwarz/openrig",
-      "url": "https://github.com/mvschwarz/openrig",
-      "description": "Multi-agent harness that runs Claude Code and Codex together as one system",
-      "summary": "",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 114,
       "dailyArticle": "",
       "periods": {}
     },
@@ -619,23 +1922,6 @@
       "periods": {}
     },
     {
-      "repo": "apple/container",
-      "url": "https://github.com/apple/container",
-      "description": "A tool for creating and running Linux containers using lightweight virtual machines on a Mac. It is written in Swift, and optimized for Apple silicon.",
-      "summary": "",
-      "language": "Swift",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-28",
-      "days": 2,
-      "peakStars": 72,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "yuliskov/SmartTube",
       "url": "https://github.com/yuliskov/SmartTube",
       "description": "Browse media content with your own rules on Android TV",
@@ -669,23 +1955,6 @@
       "periods": {}
     },
     {
-      "repo": "AppFlowy-IO/AppFlowy",
-      "url": "https://github.com/AppFlowy-IO/AppFlowy",
-      "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 68,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "feigeCode/navop",
       "url": "https://github.com/feigeCode/navop",
       "description": "A native, all-in-one workspace for databases, SSH, SFTP, terminals, remote desktop, monitoring, and AI.",
@@ -698,23 +1967,6 @@
       "lastSeen": "2026-09-28",
       "days": 2,
       "peakStars": 65,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "rukamori/ArchiveTune",
-      "url": "https://github.com/rukamori/ArchiveTune",
-      "description": "🌸 The Cutest Music Player With Support Local File and Youtube Music for Android!",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-28",
-      "days": 4,
-      "peakStars": 64,
       "dailyArticle": "",
       "periods": {}
     },
@@ -800,22 +2052,6 @@
       "periods": {}
     },
     {
-      "repo": "golang/go",
-      "url": "https://github.com/golang/go",
-      "description": "The Go programming language",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-28",
-      "days": 4,
-      "peakStars": 56,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "mrdoob/three.js",
       "url": "https://github.com/mrdoob/three.js",
       "description": "JavaScript 3D Library.",
@@ -865,57 +2101,6 @@
       "periods": {}
     },
     {
-      "repo": "bevyengine/bevy",
-      "url": "https://github.com/bevyengine/bevy",
-      "description": "A refreshingly simple data-driven game engine built in Rust",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "游戏",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 54,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Predidit/Kazumi",
-      "url": "https://github.com/Predidit/Kazumi",
-      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-28",
-      "days": 5,
-      "peakStars": 53,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "maxrave-dev/SimpMusic",
-      "url": "https://github.com/maxrave-dev/SimpMusic",
-      "description": "A cross-platform music app using YouTube Music for backend",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 47,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "OtterMind/Chat2DB",
       "url": "https://github.com/OtterMind/Chat2DB",
       "description": "Chat2DB is a free, cross-platform, local-first database client and SQL workspace for developers, DBAs, analysts, and data teams. Connect to 40+ databases, manage data, edit and run SQL, and use your own AI model to generate, explain, and optimize queries. Available on desktop, web, Docker, and CLI, with MCP support.",
@@ -946,23 +2131,6 @@
       "lastSeen": "2026-09-28",
       "days": 1,
       "peakStars": 46,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "dagucloud/dagu",
-      "url": "https://github.com/dagucloud/dagu",
-      "description": "Self-hostable workflow orchestrator for teams whose main work isn't orchestration. Declarative YAML over your scripts, SSH commands, containers, etc; keep workflows separate from business logic. One binary, no database, runs on limited H/W resources. Alternative to Airflow / Cron / Job Scheduler.",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 43,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1018,39 +2186,6 @@
       "periods": {}
     },
     {
-      "repo": "bggRGjQaUbCoE/PiliPlus",
-      "url": "https://github.com/bggRGjQaUbCoE/PiliPlus",
-      "description": "PiliPlus",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-28",
-      "days": 3,
-      "peakStars": 37,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "nodejs/node",
-      "url": "https://github.com/nodejs/node",
-      "description": "Node.js JavaScript runtime ✨🐢🚀✨",
-      "summary": "",
-      "language": "JavaScript",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-28",
-      "days": 4,
-      "peakStars": 35,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "freemocap/freemocap",
       "url": "https://github.com/freemocap/freemocap",
       "description": "Free Motion Capture for Everyone 💀✨",
@@ -1097,22 +2232,6 @@
       "lastSeen": "2026-09-28",
       "days": 2,
       "peakStars": 34,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Sonarr/Sonarr",
-      "url": "https://github.com/Sonarr/Sonarr",
-      "description": "Smart PVR for newsgroup and bittorrent users.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "音视频"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 32,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1168,23 +2287,6 @@
       "periods": {}
     },
     {
-      "repo": "ronitsingh10/FineTune",
-      "url": "https://github.com/ronitsingh10/FineTune",
-      "description": "FineTune, a macOS menu bar app for per-app volume control, multi-device output, audio routing, and 10-band EQ. Free and open-source alternative to SoundSource.",
-      "summary": "",
-      "language": "Swift",
-      "tags": [
-        "音视频",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 30,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "django/django",
       "url": "https://github.com/django/django",
       "description": "The Web framework for perfectionists with deadlines.",
@@ -1230,22 +2332,6 @@
       "lastSeen": "2026-09-28",
       "days": 1,
       "peakStars": 27,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "memstechtips/Winhance",
-      "url": "https://github.com/memstechtips/Winhance",
-      "description": "Application designed to optimize, customize and enhance your Windows experience.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 26,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1369,22 +2455,6 @@
       "periods": {}
     },
     {
-      "repo": "fishjar/kiss-translator",
-      "url": "https://github.com/fishjar/kiss-translator",
-      "description": "A simple, open source bilingual translation extension & Greasemonkey script (一个简约、开源的 双语对照翻译扩展 & 油猴脚本)",
-      "summary": "",
-      "language": "JavaScript",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 21,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "Anuken/Mindustry",
       "url": "https://github.com/Anuken/Mindustry",
       "description": "The automation tower defense RTS",
@@ -1392,23 +2462,6 @@
       "language": "Java",
       "tags": [
         "游戏"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 19,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "karpathy/nn-zero-to-hero",
-      "url": "https://github.com/karpathy/nn-zero-to-hero",
-      "description": "Neural Networks: Zero to Hero",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
       ],
       "firstSeen": "2026-09-28",
       "lastSeen": "2026-09-28",
@@ -1450,38 +2503,6 @@
       "periods": {}
     },
     {
-      "repo": "Billionmail/BillionMail",
-      "url": "https://github.com/Billionmail/BillionMail",
-      "description": "BillionMail gives you open-source MailServer, NewsLetter, Email Marketing — fully self-hosted, dev-friendly, and free from monthly fees. Join the discord: https://discord.gg/asfXzBUhZr",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 18,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "RayWangQvQ/BiliBiliToolPro",
-      "url": "https://github.com/RayWangQvQ/BiliBiliToolPro",
-      "description": "B 站（bilibili）自动任务工具，支持docker、青龙、k8s等多种部署方式。全面拥抱AI。敏感肌也能用。",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 18,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "YoanWai/agent-manager",
       "url": "https://github.com/YoanWai/agent-manager",
       "description": "The fastest developer workflow for every AI coding agent. Live status, quick prompts, worktrees, and diff review from one tmux TUI.",
@@ -1495,22 +2516,6 @@
       "lastSeen": "2026-09-28",
       "days": 1,
       "peakStars": 18,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "firefly-iii/firefly-iii",
-      "url": "https://github.com/firefly-iii/firefly-iii",
-      "description": "Firefly III: a personal finances manager",
-      "summary": "",
-      "language": "PHP",
-      "tags": [
-        "金融"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 17,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1916,22 +2921,6 @@
       "periods": {}
     },
     {
-      "repo": "tokio-rs/topcoat",
-      "url": "https://github.com/tokio-rs/topcoat",
-      "description": "A batteries-included framework for building web apps",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-27",
-      "days": 2,
-      "peakStars": 160,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "openclaw/openclaw",
       "url": "https://github.com/openclaw/openclaw",
       "description": "The AI that really does things. Any OS. Any Platform. The lobster way. 🦞",
@@ -1945,22 +2934,6 @@
       "days": 2,
       "peakStars": 158,
       "dailyArticle": "/github-trending/2026-09-26/openclaw--openclaw/",
-      "periods": {}
-    },
-    {
-      "repo": "Stirling-Tools/Stirling-PDF",
-      "url": "https://github.com/Stirling-Tools/Stirling-PDF",
-      "description": "#1 PDF Application on GitHub that lets you edit PDFs on any device anywhere",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-27",
-      "days": 4,
-      "peakStars": 139,
-      "dailyArticle": "",
       "periods": {}
     },
     {
@@ -2209,23 +3182,6 @@
       "periods": {}
     },
     {
-      "repo": "termux/termux-app",
-      "url": "https://github.com/termux/termux-app",
-      "description": "Termux - a terminal emulator application for Android OS extendible by variety of packages.",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-09-27",
-      "days": 2,
-      "peakStars": 69,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "zenbu-labs/terminal-browser",
       "url": "https://github.com/zenbu-labs/terminal-browser",
       "description": "A browser inside your terminal",
@@ -2338,23 +3294,6 @@
       "lastSeen": "2026-09-27",
       "days": 1,
       "peakStars": 56,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "microsoft/AI-For-Beginners",
-      "url": "https://github.com/microsoft/AI-For-Beginners",
-      "description": "12 Weeks, 24 Lessons, AI for All!",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-27",
-      "days": 4,
-      "peakStars": 55,
       "dailyArticle": "",
       "periods": {}
     },
@@ -2525,22 +3464,6 @@
       "periods": {}
     },
     {
-      "repo": "ImranR98/Obtainium",
-      "url": "https://github.com/ImranR98/Obtainium",
-      "description": "Get Android app updates straight from the source.",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-27",
-      "days": 5,
-      "peakStars": 39,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "Gentleman-Programming/engram",
       "url": "https://github.com/Gentleman-Programming/engram",
       "description": "Persistent memory system for AI coding agents. Agent-agnostic Go binary with SQLite + FTS5, MCP server, HTTP API, CLI, and TUI.",
@@ -2587,22 +3510,6 @@
       "firstSeen": "2026-09-17",
       "lastSeen": "2026-09-27",
       "days": 2,
-      "peakStars": 33,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "grafana/k6",
-      "url": "https://github.com/grafana/k6",
-      "description": "A modern load testing tool, using Go and JavaScript",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-09-27",
-      "days": 1,
       "peakStars": 33,
       "dailyArticle": "",
       "periods": {}
@@ -2873,22 +3780,6 @@
       "periods": {}
     },
     {
-      "repo": "ruvnet/RuView",
-      "url": "https://github.com/ruvnet/RuView",
-      "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-26",
-      "days": 3,
-      "peakStars": 421,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "public-apis/public-apis",
       "url": "https://github.com/public-apis/public-apis",
       "description": "A collective list of free APIs",
@@ -3123,24 +4014,6 @@
       "periods": {}
     },
     {
-      "repo": "alirezarezvani/claude-skills",
-      "url": "https://github.com/alirezarezvani/claude-skills",
-      "description": "380 Claude Code skills & agent skills & plugins (30+ Agents, 70+ custom commands, 380+ skills, customizable references, scripts)for Claude Code, Codex, Gemini CLI, Cursor, and 8 more coding agents — engineering, marketing, product, compliance, C-level advisory, research, business operations, commercial & finance, and your daily productivity skills.",
-      "summary": "",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "Skill",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-25",
-      "lastSeen": "2026-09-26",
-      "days": 2,
-      "peakStars": 96,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "mnfst/awesome-free-llm-apis",
       "url": "https://github.com/mnfst/awesome-free-llm-apis",
       "description": "List of Permanent Free LLM API (API Keys)",
@@ -3169,23 +4042,6 @@
       "lastSeen": "2026-09-26",
       "days": 3,
       "peakStars": 89,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "microsoft/ML-For-Beginners",
-      "url": "https://github.com/microsoft/ML-For-Beginners",
-      "description": "12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-26",
-      "days": 5,
-      "peakStars": 77,
       "dailyArticle": "",
       "periods": {}
     },
@@ -3502,24 +4358,6 @@
       "periods": {}
     },
     {
-      "repo": "microsoft/mcp-for-beginners",
-      "url": "https://github.com/microsoft/mcp-for-beginners",
-      "description": "This open-source curriculum introduces the fundamentals of Model Context Protocol (MCP) through real-world, cross-language examples in .NET, Java, TypeScript, JavaScript, Rust and Python. Designed for developers, it focuses on practical techniques for building modular, scalable, and secure AI workflows from session setup to service orchestration.",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-09-26",
-      "days": 1,
-      "peakStars": 29,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "qdrant/qdrant",
       "url": "https://github.com/qdrant/qdrant",
       "description": "Qdrant - High-performance, massive-scale Vector Database and Vector Search Engine for the next generation of AI. Also available in the cloud https://cloud.qdrant.io/",
@@ -3700,22 +4538,6 @@
       "days": 7,
       "peakStars": 445,
       "dailyArticle": "/github-trending/2026-09-23/laoma2053--awesome-zhuiju-free/",
-      "periods": {}
-    },
-    {
-      "repo": "vorssaint/vorssaint-utils",
-      "url": "https://github.com/vorssaint/vorssaint-utils",
-      "description": "Free and open-source macOS menu bar toolkit.",
-      "summary": "Vorssaint 是面向 Apple Silicon Mac 的免费开源菜单栏工具集，用 Swift 编写，需 macOS 14 及以上。它把音量混合、系统监控、窗口管理、剪贴板历史、截图录屏、应用清理等常见工具聚合到单个菜单栏图标下，功能按需安装，强调本地优先、无账号与遥测。",
-      "language": "Swift",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-25",
-      "days": 2,
-      "peakStars": 422,
-      "dailyArticle": "/github-trending/2026-09-24/vorssaint--vorssaint-utils/",
       "periods": {}
     },
     {
@@ -3981,22 +4803,6 @@
       "lastSeen": "2026-09-25",
       "days": 3,
       "peakStars": 63,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "remorses/gpuix",
-      "url": "https://github.com/remorses/gpuix",
-      "description": "Node.js & React bindings for Zed’s GPUI. Build memory efficient native apps with React and no Electron",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-09-25",
-      "days": 3,
-      "peakStars": 62,
       "dailyArticle": "",
       "periods": {}
     },
@@ -4298,22 +5104,6 @@
       "periods": {}
     },
     {
-      "repo": "GopeedLab/gopeed",
-      "url": "https://github.com/GopeedLab/gopeed",
-      "description": "A fast, modern download manager for HTTP, BitTorrent, Magnet, and ed2k. Cross-platform, built with Golang and Flutter.",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-25",
-      "days": 3,
-      "peakStars": 29,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "KaringX/karing",
       "url": "https://github.com/KaringX/karing",
       "description": "Simple & Powerful proxy utility, Support routing rules for clash/sing-box",
@@ -4390,22 +5180,6 @@
       "lastSeen": "2026-09-25",
       "days": 1,
       "peakStars": 25,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Themaister/pyrowave",
-      "url": "https://github.com/Themaister/pyrowave",
-      "description": "",
-      "summary": "",
-      "language": "C++",
-      "tags": [
-        "音视频"
-      ],
-      "firstSeen": "2026-09-25",
-      "lastSeen": "2026-09-25",
-      "days": 1,
-      "peakStars": 24,
       "dailyArticle": "",
       "periods": {}
     },
@@ -4626,23 +5400,6 @@
       "periods": {}
     },
     {
-      "repo": "byoungd/up",
-      "url": "https://github.com/byoungd/up",
-      "description": "An advanced guide which might benefit you a lot 🎉 . 韩先凯的人生进阶指南 人生进阶指南 离谱的人生 人生进阶 AI学习 AI指南 韩先凯的AI学习指南 英语学习指南/英语学习教程/英语学习/学英语",
-      "summary": "该仓库是韩先凯所著《人生进阶指南》的持续更新书稿与站点，主题为 AI 时代终身学习，内容从英语学习延伸到 AI 协作、项目实践、创业复盘和生活恢复，并提供电子书与模板。",
-      "language": "JavaScript",
-      "tags": [
-        "教程",
-        "AI"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-24",
-      "days": 2,
-      "peakStars": 243,
-      "dailyArticle": "/github-trending/2026-09-20/byoungd--up/",
-      "periods": {}
-    },
-    {
       "repo": "yynxxxxx/Codex-X",
       "url": "https://github.com/yynxxxxx/Codex-X",
       "description": "OpenAI Codex 桌面端/CLI 的可视化管理工具，具有Provider/API 切换、会话同步、提示词注入、Skills/MCP 管理、TOML 配置可视化的跨平台工具。",
@@ -4689,23 +5446,6 @@
       "lastSeen": "2026-09-24",
       "days": 2,
       "peakStars": 183,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "microsoft/ai-agents-for-beginners",
-      "url": "https://github.com/microsoft/ai-agents-for-beginners",
-      "description": "18 Lessons to Get Started Building AI Agents",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-24",
-      "days": 5,
-      "peakStars": 124,
       "dailyArticle": "",
       "periods": {}
     },
@@ -4846,24 +5586,6 @@
       "periods": {}
     },
     {
-      "repo": "t8y2/dbx",
-      "url": "https://github.com/t8y2/dbx",
-      "description": "25 MB lightweight cross-platform database client for 90+ databases, including MySQL, PostgreSQL, SQLite, Redis, MongoDB, DuckDB, SQL Server, and Dameng. Built-in AI, MCP Server, CLI, desktop and Docker. | 轻量级跨平台数据库管理工具，支持 MySQL、PostgreSQL、SQLite、Redis、MongoDB、达梦等 90+ 数据库，提供桌面端、Docker、CLI、内置 AI 助手和 MCP Server。",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具",
-        "数据",
-        "AI"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-24",
-      "days": 1,
-      "peakStars": 90,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "XiaomiMiMo/MiMo-Code",
       "url": "https://github.com/XiaomiMiMo/MiMo-Code",
       "description": "MiMo Code: Where Models and Agents Co-Evolve",
@@ -4994,22 +5716,6 @@
       "lastSeen": "2026-09-24",
       "days": 1,
       "peakStars": 48,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "code-yeongyu/oh-my-openagent",
-      "url": "https://github.com/code-yeongyu/oh-my-openagent",
-      "description": "OmO: Just type \"mass ulw\" keyword with your prompt. Now you are the master of graph engineering.",
-      "summary": "",
-      "language": "TypeScript",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-09-24",
-      "days": 1,
-      "peakStars": 47,
       "dailyArticle": "",
       "periods": {}
     },
@@ -5848,22 +6554,6 @@
       "periods": {}
     },
     {
-      "repo": "jithin-sabu/purge-app",
-      "url": "https://github.com/jithin-sabu/purge-app",
-      "description": "Free up your Mac, safely. Clears the cache and junk it piles up on its own. Open source, and everything goes to the Trash, so nothing is ever lost.",
-      "summary": "",
-      "language": "Swift",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-09-23",
-      "days": 1,
-      "peakStars": 24,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "openbkn-ai/bkn-foundry",
       "url": "https://github.com/openbkn-ai/bkn-foundry",
       "description": "BKN Foundry is the Ontology back-end foundation of OpenBKN. It transforms ontology-driven business semantics into runtime services: data, logic, actions, security governance, and observability.",
@@ -6517,23 +7207,6 @@
       "periods": {}
     },
     {
-      "repo": "microsoft/Data-Science-For-Beginners",
-      "url": "https://github.com/microsoft/Data-Science-For-Beginners",
-      "description": "10 Weeks, 20 Lessons, Data Science for All!",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "数据",
-        "教程"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-20",
-      "days": 4,
-      "peakStars": 101,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "duckdb/duckdb",
       "url": "https://github.com/duckdb/duckdb",
       "description": "DuckDB is an analytical in-process SQL database management system",
@@ -7032,22 +7705,6 @@
       "periods": {}
     },
     {
-      "repo": "ShareX/ShareX",
-      "url": "https://github.com/ShareX/ShareX",
-      "description": "ShareX is a free and open-source application that enables users to capture or record any area of their screen with a single keystroke. It also supports uploading images, text, and various file types to a wide range of destinations.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-20",
-      "days": 1,
-      "peakStars": 22,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "rust-unofficial/awesome-rust",
       "url": "https://github.com/rust-unofficial/awesome-rust",
       "description": "A curated list of Rust code and resources.",
@@ -7362,23 +8019,6 @@
       "lastSeen": "2026-09-19",
       "days": 1,
       "peakStars": 261,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "ExTV/Podroid",
-      "url": "https://github.com/ExTV/Podroid",
-      "description": "A rootless Android app that boots Alpine Linux: run containers (Podman/Docker/LXC) and GUI desktop apps.",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-09-19",
-      "days": 3,
-      "peakStars": 254,
       "dailyArticle": "",
       "periods": {}
     },
