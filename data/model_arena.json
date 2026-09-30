@@ -56,14 +56,46 @@
         {
           "id": "qin-screws",
           "name": "秦始皇打螺丝",
-          "providers": []
+          "providers": [
+            {
+              "id": "7b833966-9047-4569-bde3-6bed53f3dbf3",
+              "name": "GPT",
+              "models": [
+                {
+                  "id": "63640e69-c270-4dc7-8414-5f71c5680486",
+                  "name": "GPT-6.1-SOL-xhigh",
+                  "updatedAt": "2026-09-30T04:46:05.902Z",
+                  "url": "/model-arena/submissions/a5c517ed-9b33-4c1a-8694-8a8bfb3daeaa/qin-shi-huang(2).html"
+                }
+              ]
+            },
+            {
+              "id": "134959ce-743b-4d0f-9582-11cfc46a676b",
+              "name": "DeepSeek",
+              "models": [
+                {
+                  "id": "3cb9898e-f53e-410a-9e40-4d593cc9a688",
+                  "name": "DeepSeek-V4.1-flash-thinking（web端）",
+                  "updatedAt": "2026-09-30T04:46:05.902Z",
+                  "url": "/model-arena/submissions/664c64b3-be7f-4600-b19e-5b0720c2181a/index.html"
+                }
+              ]
+            }
+          ],
+          "prompt": "画一个秦始皇打螺丝的3D动画html网页。"
         }
       ]
     },
     {
       "id": "backend",
       "name": "后端",
-      "projects": []
+      "projects": [
+        {
+          "id": "ecf80d16-365b-4466-9034-49f3cb135b57",
+          "name": "暂无，可以投稿",
+          "providers": []
+        }
+      ]
     }
   ]
 }

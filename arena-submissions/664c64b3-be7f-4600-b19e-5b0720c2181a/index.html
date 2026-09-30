@@ -1,0 +1,722 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>秦始皇 · 打螺丝</title>
+<style>
+  * { box-sizing: border-box; }
+  html, body {
+    margin: 0; height: 100%; overflow: hidden;
+    background: #06070c;
+    font-family: "Songti SC", "STSong", "SimSun", "PingFang SC", "Microsoft YaHei", serif;
+  }
+  #app { position: fixed; inset: 0; }
+
+  .hud {
+    position: fixed; pointer-events: none; user-select: none; z-index: 10;
+    color: #f3e4c4;
+  }
+  .top-left { top: 30px; left: 36px; }
+  .top-left h1 {
+    margin: 0;
+    font-size: clamp(22px, 3.2vw, 40px);
+    letter-spacing: .32em;
+    font-weight: 600;
+    background: linear-gradient(180deg, #fff6dc 0%, #e8c76a 45%, #a87c22 100%);
+    -webkit-background-clip: text;
+    background-clip: text;
+    color: transparent;
+    filter: drop-shadow(0 0 22px rgba(212,175,55,.55)) drop-shadow(0 2px 1px rgba(0,0,0,.8));
+  }
+  .top-left p {
+    margin: 10px 0 0 4px;
+    font-size: 11px;
+    letter-spacing: .38em;
+    color: #7f8aa3;
+    font-family: "Helvetica Neue", Arial, sans-serif;
+  }
+  .top-left::after {
+    content: "";
+    display: block;
+    width: 120px; height: 1px;
+    margin: 14px 0 0 4px;
+    background: linear-gradient(90deg, rgba(212,175,55,.9), rgba(212,175,55,0));
+  }
+
+  .bottom-left { left: 36px; bottom: 30px; }
+  .counter {
+    font-size: 13px; letter-spacing: .16em; color: #9fb0cc;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+  .counter span {
+    color: #ffd66b; font-weight: 700; font-size: 17px;
+    text-shadow: 0 0 14px rgba(255,200,80,.6);
+    font-variant-numeric: tabular-nums;
+  }
+  .tip {
+    margin-top: 8px; font-size: 11px; letter-spacing: .18em; color: #4d5a72;
+    font-family: "PingFang SC", "Microsoft YaHei", sans-serif;
+  }
+
+  /* 四角装饰 */
+  .corner {
+    position: fixed; width: 26px; height: 26px; z-index: 10; pointer-events: none;
+    border-color: rgba(212,175,55,.45); border-style: solid;
+  }
+  .c1 { top: 18px; left: 18px; border-width: 1px 0 0 1px; }
+  .c2 { top: 18px; right: 18px; border-width: 1px 1px 0 0; }
+  .c3 { bottom: 18px; left: 18px; border-width: 0 0 1px 1px; }
+  .c4 { bottom: 18px; right: 18px; border-width: 0 1px 1px 0; }
+
+  #loading {
+    position: fixed; inset: 0; display: flex; align-items: center; justify-content: center;
+    background: #06070c; color: #8b97ad; letter-spacing: .3em; font-size: 13px;
+    z-index: 50; transition: opacity .8s ease;
+    font-family: "PingFang SC", sans-serif;
+  }
+  #loading.hide { opacity: 0; pointer-events: none; }
+</style>
+</head>
+<body>
+<div id="app"></div>
+
+<div class="corner c1"></div>
+<div class="corner c2"></div>
+<div class="corner c3"></div>
+<div class="corner c4"></div>
+
+<div class="hud top-left">
+  <h1>秦始皇 · 打螺丝</h1>
+  <p>QIN SHI HUANG · SCREW ASSEMBLY LINE</p>
+</div>
+
+<div class="hud bottom-left">
+  <div class="counter">今日已拧螺丝 <span id="count">0</span> 颗</div>
+  <div class="tip">拖动旋转 · 滚轮缩放 · 自动巡航中</div>
+</div>
+
+<div id="loading">正在唤醒 始皇帝 ...</div>
+
+<script type="importmap">
+{
+  "imports": {
+    "three": "https://cdn.jsdelivr.net/npm/three@0.160.0/build/three.module.js",
+    "three/addons/": "https://cdn.jsdelivr.net/npm/three@0.160.0/examples/jsm/"
+  }
+}
+</script>
+
+<script type="module">
+import * as THREE from 'three';
+import { OrbitControls } from 'three/addons/controls/OrbitControls.js';
+
+/* =========================================================
+   基础环境
+   ========================================================= */
+const scene = new THREE.Scene();
+scene.background = new THREE.Color(0x06070c);
+scene.fog = new THREE.FogExp2(0x06070c, 0.032);
+
+const camera = new THREE.PerspectiveCamera(42, innerWidth / innerHeight, 0.1, 200);
+camera.position.set(4.8, 3.3, 6.2);
+
+const renderer = new THREE.WebGLRenderer({ antialias: true });
+renderer.setPixelRatio(Math.min(devicePixelRatio, 2));
+renderer.setSize(innerWidth, innerHeight);
+renderer.shadowMap.enabled = true;
+renderer.shadowMap.type = THREE.PCFSoftShadowMap;
+renderer.toneMapping = THREE.ACESFilmicToneMapping;
+renderer.toneMappingExposure = 1.15;
+document.getElementById('app').appendChild(renderer.domElement);
+
+const controls = new OrbitControls(camera, renderer.domElement);
+controls.target.set(0.1, 1.55, 0.75);
+controls.enableDamping = true;
+controls.dampingFactor = 0.06;
+controls.autoRotate = true;
+controls.autoRotateSpeed = 0.38;
+controls.minDistance = 3.2;
+controls.maxDistance = 14;
+controls.minPolarAngle = Math.PI * 0.12;
+controls.maxPolarAngle = Math.PI * 0.487;
+controls.enablePan = false;
+controls.update();
+
+/* =========================================================
+   灯光
+   ========================================================= */
+scene.add(new THREE.HemisphereLight(0x8fa5ff, 0x241608, 0.55));
+
+const keyLight = new THREE.DirectionalLight(0xffe7c2, 2.6);
+keyLight.position.set(5.5, 9, 6.5);
+keyLight.castShadow = true;
+keyLight.shadow.mapSize.set(2048, 2048);
+keyLight.shadow.camera.near = 1;
+keyLight.shadow.camera.far = 32;
+keyLight.shadow.camera.left = -9;
+keyLight.shadow.camera.right = 9;
+keyLight.shadow.camera.top = 9;
+keyLight.shadow.camera.bottom = -9;
+keyLight.shadow.bias = -0.0006;
+keyLight.shadow.normalBias = 0.02;
+scene.add(keyLight);
+
+const fillLight = new THREE.DirectionalLight(0x3a63ff, 1.1);
+fillLight.position.set(-6, 4, -5);
+scene.add(fillLight);
+
+const rimLight = new THREE.PointLight(0x2f6dff, 45, 24, 2);
+rimLight.position.set(-4.6, 4.2, -3.6);
+scene.add(rimLight);
+
+const warmLight = new THREE.PointLight(0xff7a22, 28, 16, 2);
+warmLight.position.set(3.6, 2.6, 2.6);
+scene.add(warmLight);
+
+// 火花补光
+const sparkLight = new THREE.PointLight(0xffaa33, 6, 3.5, 2);
+sparkLight.position.set(0.45, 1.05, 0.85);
+scene.add(sparkLight);
+
+/* =========================================================
+   材质库
+   ========================================================= */
+const M = {
+  skin:  new THREE.MeshStandardMaterial({ color: 0xe7b78d, roughness: 0.82 }),
+  robe:  new THREE.MeshStandardMaterial({ color: 0x15151e, roughness: 0.68, metalness: 0.12 }),
+  robe2: new THREE.MeshStandardMaterial({ color: 0x0d0d14, roughness: 0.85 }),
+  red:   new THREE.MeshStandardMaterial({ color: 0x8e1c1c, roughness: 0.55 }),
+  gold:  new THREE.MeshStandardMaterial({ color: 0xd9b348, roughness: 0.22, metalness: 1.0 }),
+  gold2: new THREE.MeshStandardMaterial({ color: 0x8f6f20, roughness: 0.34, metalness: 0.92 }),
+  steel: new THREE.MeshStandardMaterial({ color: 0xa9b0bd, roughness: 0.28, metalness: 1.0 }),
+  dark:  new THREE.MeshStandardMaterial({ color: 0x0a0a10, roughness: 0.95 }),
+  hair:  new THREE.MeshStandardMaterial({ color: 0x13131a, roughness: 0.95 }),
+  jade:  new THREE.MeshStandardMaterial({ color: 0x2fa07a, roughness: 0.25, metalness: 0.35 }),
+  desk:  new THREE.MeshStandardMaterial({ color: 0x262b36, roughness: 0.52, metalness: 0.55 }),
+};
+
+/* =========================================================
+   地面
+   ========================================================= */
+const ground = new THREE.Mesh(
+  new THREE.CircleGeometry(34, 64),
+  new THREE.MeshStandardMaterial({ color: 0x11131b, roughness: 0.86, metalness: 0.25 })
+);
+ground.rotation.x = -Math.PI / 2;
+ground.receiveShadow = true;
+scene.add(ground);
+
+const grid = new THREE.GridHelper(34, 34, 0x1c2a44, 0x141a26);
+grid.position.y = 0.002;
+grid.material.transparent = true;
+grid.material.opacity = 0.5;
+scene.add(grid);
+
+/* =========================================================
+   工具函数
+   ========================================================= */
+function makeLimb(a, b, rA, rB, material) {
+  const dir = new THREE.Vector3().subVectors(b, a);
+  const len = dir.length();
+  const geo = new THREE.CylinderGeometry(rB, rA, len, 12);
+  const mesh = new THREE.Mesh(geo, material);
+  mesh.position.copy(a).add(b).multiplyScalar(0.5);
+  mesh.quaternion.setFromUnitVectors(new THREE.Vector3(0, 1, 0), dir.clone().normalize());
+  mesh.castShadow = true;
+  return mesh;
+}
+
+/* =========================================================
+   工作台
+   ========================================================= */
+const desk = new THREE.Group();
+scene.add(desk);
+
+const deskTop = new THREE.Mesh(new THREE.BoxGeometry(2.6, 0.1, 1.1), M.desk);
+deskTop.position.set(0.1, 0.85, 0.95);
+deskTop.castShadow = true;
+deskTop.receiveShadow = true;
+desk.add(deskTop);
+
+// 台面高光边
+const deskEdge = new THREE.Mesh(new THREE.BoxGeometry(2.62, 0.015, 1.12), M.gold2);
+deskEdge.position.set(0.1, 0.902, 0.95);
+desk.add(deskEdge);
+
+// 桌腿
+for (const sx of [-1, 1]) {
+  for (const sz of [-1, 1]) {
+    const leg = new THREE.Mesh(new THREE.BoxGeometry(0.09, 0.82, 0.09), M.dark);
+    leg.position.set(0.1 + sx * 1.16, 0.41, 0.95 + sz * 0.46);
+    leg.castShadow = true;
+    desk.add(leg);
+  }
+}
+
+// 桌面上的金属工件
+const plate = new THREE.Mesh(new THREE.BoxGeometry(1.25, 0.075, 0.72), M.steel);
+plate.position.set(0.36, 0.938, 0.85);
+plate.castShadow = true;
+plate.receiveShadow = true;
+desk.add(plate);
+
+// 工件凹槽
+const groove = new THREE.Mesh(new THREE.BoxGeometry(1.05, 0.02, 0.52), M.dark);
+groove.position.set(0.36, 0.978, 0.85);
+desk.add(groove);
+
+/* =========================================================
+   秦始皇
+   ========================================================= */
+const qin = new THREE.Group();
+scene.add(qin);
+
+// —— 脚 ——
+for (const sx of [-1, 1]) {
+  const foot = new THREE.Mesh(new THREE.BoxGeometry(0.26, 0.12, 0.48), M.dark);
+  foot.position.set(sx * 0.17, 0.06, 0.07);
+  foot.castShadow = true;
+  foot.receiveShadow = true;
+  qin.add(foot);
+}
+
+// —— 小腿 ——
+for (const sx of [-1, 1]) {
+  const leg = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.10, 0.64, 12), M.robe2);
+  leg.position.set(sx * 0.17, 0.42, 0.02);
+  leg.castShadow = true;
+  qin.add(leg);
+}
+
+// —— 长袍 ——
+const robe = new THREE.Mesh(new THREE.CylinderGeometry(0.38, 0.55, 1.0, 26), M.robe);
+robe.position.y = 1.06;
+robe.castShadow = true;
+robe.receiveShadow = true;
+qin.add(robe);
+
+// 袍摆金边
+const hem = new THREE.Mesh(new THREE.CylinderGeometry(0.558, 0.568, 0.08, 26), M.gold2);
+hem.position.y = 0.60;
+hem.castShadow = true;
+qin.add(hem);
+
+// 袍身云纹（细金线）
+for (let i = 0; i < 5; i++) {
+  const a = (i / 5) * Math.PI * 2;
+  const line = new THREE.Mesh(new THREE.BoxGeometry(0.02, 0.72, 0.02), M.gold2);
+  line.position.set(Math.cos(a) * 0.47, 1.0, Math.sin(a) * 0.47);
+  line.rotation.y = -a;
+  qin.add(line);
+}
+
+// —— 腰带 ——
+const belt = new THREE.Mesh(new THREE.CylinderGeometry(0.398, 0.404, 0.14, 26), M.gold);
+belt.position.y = 1.52;
+belt.castShadow = true;
+qin.add(belt);
+
+const buckle = new THREE.Mesh(new THREE.BoxGeometry(0.22, 0.17, 0.1), M.jade);
+buckle.position.set(0, 1.52, 0.365);
+qin.add(buckle);
+
+// —— 躯干 ——
+const torso = new THREE.Mesh(new THREE.CylinderGeometry(0.35, 0.385, 0.54, 26), M.robe);
+torso.position.y = 1.83;
+torso.castShadow = true;
+qin.add(torso);
+
+// 交领
+const collar = new THREE.Mesh(new THREE.CylinderGeometry(0.19, 0.37, 0.2, 26), M.red);
+collar.position.y = 2.0;
+collar.castShadow = true;
+qin.add(collar);
+
+// —— 肩 ——
+for (const sx of [-1, 1]) {
+  const sh = new THREE.Mesh(new THREE.SphereGeometry(0.148, 16, 12), M.robe);
+  sh.position.set(sx * 0.35, 1.98, 0);
+  sh.castShadow = true;
+  qin.add(sh);
+}
+
+// —— 脖子 ——
+const neck = new THREE.Mesh(new THREE.CylinderGeometry(0.118, 0.132, 0.22, 16), M.skin);
+neck.position.y = 2.16;
+neck.castShadow = true;
+qin.add(neck);
+
+/* =========================================================
+   头部（含冕冠）
+   ========================================================= */
+const headGroup = new THREE.Group();
+headGroup.position.set(0, 2.42, 0);
+qin.add(headGroup);
+
+const skull = new THREE.Mesh(new THREE.SphereGeometry(0.28, 32, 24), M.skin);
+skull.scale.set(0.95, 1.05, 0.95);
+skull.castShadow = true;
+headGroup.add(skull);
+
+// 后脑发
+const hairBack = new THREE.Mesh(
+  new THREE.SphereGeometry(0.272, 24, 18, 0, Math.PI * 2, 0, Math.PI * 0.58),
+  M.hair
+);
+hairBack.scale.set(0.99, 1.04, 0.99);
+headGroup.add(hairBack);
+
+// 眼睛
+for (const sx of [-1, 1]) {
+  const eye = new THREE.Mesh(new THREE.SphereGeometry(0.038, 12, 10), M.dark);
+  eye.position.set(sx * 0.105, 0.03, 0.243);
+  headGroup.add(eye);
+}
+
+// 眉毛（浓重，帝王气）
+for (const sx of [-1, 1]) {
+  const brow = new THREE.Mesh(new THREE.BoxGeometry(0.135, 0.038, 0.055), M.hair);
+  brow.position.set(sx * 0.11, 0.115, 0.238);
+  brow.rotation.z = sx * 0.28;
+  brow.rotation.x = -0.15;
+  headGroup.add(brow);
+}
+
+// 鼻子
+const nose = new THREE.Mesh(new THREE.ConeGeometry(0.048, 0.13, 8), M.skin);
+nose.rotation.x = Math.PI / 2;
+nose.position.set(0, -0.02, 0.25);
+headGroup.add(nose);
+
+// 长须
+const beard = new THREE.Mesh(new THREE.CylinderGeometry(0.115, 0.03, 0.44, 12), M.hair);
+beard.position.set(0, -0.29, 0.10);
+beard.rotation.x = 0.16;
+beard.castShadow = true;
+headGroup.add(beard);
+
+// 髭
+for (const sx of [-1, 1]) {
+  const mus = new THREE.Mesh(new THREE.BoxGeometry(0.125, 0.032, 0.045), M.hair);
+  mus.position.set(sx * 0.085, -0.095, 0.235);
+  mus.rotation.z = -sx * 0.32;
+  headGroup.add(mus);
+}
+
+/* —— 冕冠 —— */
+const crownGroup = new THREE.Group();
+crownGroup.position.y = 0.28;
+headGroup.add(crownGroup);
+
+const crownBase = new THREE.Mesh(new THREE.CylinderGeometry(0.235, 0.248, 0.14, 20), M.dark);
+crownBase.position.y = 0.06;
+crownBase.castShadow = true;
+crownGroup.add(crownBase);
+
+const crownGold = new THREE.Mesh(new THREE.TorusGeometry(0.245, 0.014, 8, 24), M.gold);
+crownGold.rotation.x = Math.PI / 2;
+crownGold.position.y = 0.13;
+crownGroup.add(crownGold);
+
+// 冕板（上玄下纁）
+const boardBase = new THREE.Mesh(new THREE.BoxGeometry(0.88, 0.028, 0.58), M.red);
+boardBase.position.y = 0.165;
+boardBase.castShadow = true;
+crownGroup.add(boardBase);
+
+const boardTop = new THREE.Mesh(new THREE.BoxGeometry(0.86, 0.05, 0.56), M.dark);
+boardTop.position.y = 0.202;
+boardTop.castShadow = true;
+crownGroup.add(boardTop);
+
+const boardTrim = new THREE.Mesh(new THREE.BoxGeometry(0.89, 0.012, 0.59), M.gold);
+boardTrim.position.y = 0.148;
+crownGroup.add(boardTrim);
+
+// 冕旒（前后各九串，珠玉交错）
+const beadGeo = new THREE.SphereGeometry(0.032, 10, 8);
+for (const bz of [0.245, -0.245]) {
+  for (let i = 0; i < 9; i++) {
+    const bx = -0.34 + i * 0.085;
+    for (let j = 0; j < 7; j++) {
+      const bead = new THREE.Mesh(beadGeo, (i + j) % 2 === 0 ? M.jade : M.gold);
+      bead.position.set(bx, 0.135 - j * 0.049, bz);
+      bead.castShadow = true;
+      crownGroup.add(bead);
+    }
+  }
+}
+
+/* =========================================================
+   手臂
+   ========================================================= */
+// 右臂（持螺丝刀）
+const rShoulder = new THREE.Vector3(0.36, 1.95, 0.03);
+const rElbow    = new THREE.Vector3(0.63, 1.72, 0.30);
+const rWrist    = new THREE.Vector3(0.50, 1.63, 0.79);
+
+qin.add(makeLimb(rShoulder, rElbow, 0.118, 0.102, M.robe));
+qin.add(makeLimb(rElbow, rWrist, 0.096, 0.078, M.robe));
+
+const rHand = new THREE.Mesh(new THREE.SphereGeometry(0.105, 16, 12), M.skin);
+rHand.position.copy(rWrist);
+rHand.castShadow = true;
+qin.add(rHand);
+
+// 左臂（自然下垂微弯）
+const lShoulder = new THREE.Vector3(-0.36, 1.95, 0.03);
+const lElbow    = new THREE.Vector3(-0.62, 1.62, 0.18);
+const lWrist    = new THREE.Vector3(-0.58, 1.28, 0.44);
+
+qin.add(makeLimb(lShoulder, lElbow, 0.118, 0.102, M.robe));
+qin.add(makeLimb(lElbow, lWrist, 0.096, 0.078, M.robe));
+
+const lHand = new THREE.Mesh(new THREE.SphereGeometry(0.1, 16, 12), M.skin);
+lHand.position.copy(lWrist);
+lHand.castShadow = true;
+qin.add(lHand);
+
+/* =========================================================
+   螺丝刀
+   ========================================================= */
+const screwPivot = new THREE.Group();
+screwPivot.position.set(0.45, 1.02, 0.85);
+scene.add(screwPivot);
+
+// 批头
+const tip = new THREE.Mesh(new THREE.CylinderGeometry(0.046, 0.026, 0.05, 12), M.steel);
+tip.position.y = 0.015;
+tip.castShadow = true;
+screwPivot.add(tip);
+
+// 批杆
+const shaft = new THREE.Mesh(new THREE.CylinderGeometry(0.027, 0.027, 0.46, 12), M.steel);
+shaft.position.y = 0.27;
+shaft.castShadow = true;
+screwPivot.add(shaft);
+
+// 握柄
+const handle = new THREE.Mesh(new THREE.CylinderGeometry(0.078, 0.063, 0.30, 18), M.red);
+handle.position.y = 0.65;
+handle.castShadow = true;
+screwPivot.add(handle);
+
+// 握柄防滑环
+for (let i = 0; i < 4; i++) {
+  const ring = new THREE.Mesh(new THREE.TorusGeometry(0.070, 0.010, 8, 20), M.gold);
+  ring.rotation.x = Math.PI / 2;
+  ring.position.y = 0.545 + i * 0.072;
+  screwPivot.add(ring);
+}
+
+// 顶盖
+const cap = new THREE.Mesh(new THREE.SphereGeometry(0.062, 14, 10), M.gold);
+cap.position.y = 0.80;
+cap.scale.y = 0.7;
+cap.castShadow = true;
+screwPivot.add(cap);
+
+/* =========================================================
+   被拧的螺丝
+   ========================================================= */
+const screwHead = new THREE.Mesh(new THREE.CylinderGeometry(0.056, 0.056, 0.05, 16), M.steel);
+screwHead.position.set(0.45, 1.0, 0.85);
+screwHead.castShadow = true;
+scene.add(screwHead);
+
+// 十字槽
+const slotA = new THREE.Mesh(new THREE.BoxGeometry(0.075, 0.012, 0.012), M.dark);
+slotA.position.set(0.45, 1.027, 0.85);
+scene.add(slotA);
+
+const slotB = new THREE.Mesh(new THREE.BoxGeometry(0.012, 0.012, 0.075), M.dark);
+slotB.position.set(0.45, 1.027, 0.85);
+scene.add(slotB);
+
+/* =========================================================
+   火花粒子
+   ========================================================= */
+const SPARK_N = 180;
+const sparkPos = new Float32Array(SPARK_N * 3);
+const sparkVel = new Float32Array(SPARK_N * 3);
+const sparkLife = new Float32Array(SPARK_N);
+for (let i = 0; i < SPARK_N; i++) sparkPos[i * 3 + 1] = -999;
+
+const sparkGeo = new THREE.BufferGeometry();
+sparkGeo.setAttribute('position', new THREE.BufferAttribute(sparkPos, 3));
+
+const sparkPoints = new THREE.Points(sparkGeo, new THREE.PointsMaterial({
+  color: 0xffc14d,
+  size: 0.045,
+  sizeAttenuation: true,
+  transparent: true,
+  opacity: 0.95,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+}));
+sparkPoints.frustumCulled = false;
+scene.add(sparkPoints);
+
+const SPARK_ORIGIN = new THREE.Vector3(0.45, 1.03, 0.85);
+
+function spawnSpark() {
+  for (let i = 0; i < SPARK_N; i++) {
+    if (sparkLife[i] <= 0) {
+      sparkLife[i] = 0.32 + Math.random() * 0.5;
+      sparkPos[i * 3]     = SPARK_ORIGIN.x + (Math.random() - 0.5) * 0.06;
+      sparkPos[i * 3 + 1] = SPARK_ORIGIN.y + (Math.random() - 0.5) * 0.05;
+      sparkPos[i * 3 + 2] = SPARK_ORIGIN.z + (Math.random() - 0.5) * 0.06;
+
+      const a = Math.random() * Math.PI * 2;
+      const sp = 0.35 + Math.random() * 1.1;
+      sparkVel[i * 3]     = Math.cos(a) * sp * 0.55;
+      sparkVel[i * 3 + 1] = 0.7 + Math.random() * 1.9;
+      sparkVel[i * 3 + 2] = Math.sin(a) * sp * 0.55;
+      return;
+    }
+  }
+}
+
+function updateSparks(dt) {
+  for (let i = 0; i < SPARK_N; i++) {
+    if (sparkLife[i] > 0) {
+      sparkLife[i] -= dt;
+      if (sparkLife[i] <= 0) {
+        sparkPos[i * 3 + 1] = -999;
+        continue;
+      }
+      sparkVel[i * 3 + 1] -= 7.0 * dt;
+      sparkPos[i * 3]     += sparkVel[i * 3] * dt;
+      sparkPos[i * 3 + 1] += sparkVel[i * 3 + 1] * dt;
+      sparkPos[i * 3 + 2] += sparkVel[i * 3 + 2] * dt;
+    }
+  }
+  sparkGeo.attributes.position.needsUpdate = true;
+}
+
+/* =========================================================
+   环境装饰：吊灯 / 浮尘
+   ========================================================= */
+const lampMat = new THREE.MeshBasicMaterial({ color: 0xa9c8ff });
+
+for (const lx of [-4.2, 0, 4.2]) {
+  const wire = new THREE.Mesh(new THREE.CylinderGeometry(0.012, 0.012, 2.4, 6), M.dark);
+  wire.position.set(lx, 7.2, 1.6);
+  scene.add(wire);
+
+  const lampBody = new THREE.Mesh(new THREE.BoxGeometry(2.0, 0.07, 0.3), lampMat);
+  lampBody.position.set(lx, 6.0, 1.6);
+  scene.add(lampBody);
+
+  const lampCase = new THREE.Mesh(new THREE.BoxGeometry(2.1, 0.14, 0.4), M.dark);
+  lampCase.position.set(lx, 6.09, 1.6);
+  scene.add(lampCase);
+
+  const pl = new THREE.PointLight(0xbcd6ff, 14, 18, 2);
+  pl.position.set(lx, 5.8, 1.6);
+  scene.add(pl);
+}
+
+// 空气中漂浮的微尘
+const DUST_N = 260;
+const dustPos = new Float32Array(DUST_N * 3);
+const dustSeed = new Float32Array(DUST_N);
+for (let i = 0; i < DUST_N; i++) {
+  dustPos[i * 3]     = (Math.random() - 0.5) * 22;
+  dustPos[i * 3 + 1] = Math.random() * 9;
+  dustPos[i * 3 + 2] = (Math.random() - 0.5) * 22;
+  dustSeed[i] = Math.random() * Math.PI * 2;
+}
+const dustGeo = new THREE.BufferGeometry();
+dustGeo.setAttribute('position', new THREE.BufferAttribute(dustPos, 3));
+const dust = new THREE.Points(dustGeo, new THREE.PointsMaterial({
+  color: 0x5f7bb5,
+  size: 0.035,
+  transparent: true,
+  opacity: 0.5,
+  blending: THREE.AdditiveBlending,
+  depthWrite: false,
+}));
+dust.frustumCulled = false;
+scene.add(dust);
+
+/* =========================================================
+   动画主循环
+   ========================================================= */
+const clock = new THREE.Clock();
+let elapsed = 0;
+let screwCount = 0;
+const countEl = document.getElementById('count');
+
+function animate() {
+  requestAnimationFrame(animate);
+
+  const dt = Math.min(clock.getDelta(), 0.05);
+  elapsed += dt;
+
+  /* —— 打螺丝：螺丝刀高速自转 —— */
+  const spinSpeed = 11 + Math.sin(elapsed * 2.6) * 4.5;
+  screwPivot.rotation.y += spinSpeed * dt;
+
+  /* —— 身体随力度轻微起伏 —— */
+  qin.rotation.y = Math.sin(elapsed * 1.15) * 0.045;
+  qin.rotation.x = Math.sin(elapsed * 2.3) * 0.010;
+  qin.position.y = Math.sin(elapsed * 4.2) * 0.014;
+
+  /* —— 头部：低头注视，偶尔抬起 —— */
+  headGroup.rotation.x = 0.20 + Math.sin(elapsed * 1.9) * 0.06;
+  headGroup.rotation.y = Math.sin(elapsed * 0.85) * 0.14;
+  headGroup.rotation.z = Math.sin(elapsed * 1.4) * 0.03;
+
+  /* —— 冕旒惯性摆动 —— */
+  crownGroup.rotation.z = Math.sin(elapsed * 5.0) * 0.012;
+
+  /* —— 火花 —— */
+  if (Math.random() < 0.85) spawnSpark();
+  if (Math.random() < 0.5) spawnSpark();
+  updateSparks(dt);
+
+  // 火花灯闪烁
+  sparkLight.intensity = 4 + Math.random() * 9;
+
+  /* —— 螺丝计数 —— */
+  screwCount += spinSpeed * dt * 0.9;
+  countEl.textContent = Math.floor(screwCount).toLocaleString('en-US');
+
+  /* —— 浮尘缓慢漂移 —— */
+  const dp = dustGeo.attributes.position.array;
+  for (let i = 0; i < DUST_N; i++) {
+    dp[i * 3 + 1] += Math.sin(elapsed * 0.5 + dustSeed[i]) * 0.0022;
+    dp[i * 3]     += Math.cos(elapsed * 0.35 + dustSeed[i]) * 0.0022;
+    if (dp[i * 3 + 1] > 9.2) dp[i * 3 + 1] = -0.4;
+  }
+  dustGeo.attributes.position.needsUpdate = true;
+
+  /* —— 传送带灯带呼吸 —— */
+  lampMat.color.setHSL(0.58, 0.65, 0.55 + Math.sin(elapsed * 1.6) * 0.06);
+
+  controls.update();
+  renderer.render(scene, camera);
+}
+
+/* =========================================================
+   自适应
+   ========================================================= */
+addEventListener('resize', () => {
+  camera.aspect = innerWidth / innerHeight;
+  camera.updateProjectionMatrix();
+  renderer.setSize(innerWidth, innerHeight);
+});
+
+/* =========================================================
+   启动
+   ========================================================= */
+animate();
+
+setTimeout(() => {
+  document.getElementById('loading').classList.add('hide');
+}, 600);
+</script>
+</body>
+</html>
