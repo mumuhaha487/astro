@@ -7,7 +7,9 @@ description: "HydraDB 是 Rust 编写的对象存储原生分布式图数据库�
 repository: "hydra-db/hydradb"
 repository_url: "https://github.com/hydra-db/hydradb"
 language: "Rust"
-tags: ["数据","开发工具"]
+tags:
+  - 数据
+  - 云服务
 comment: false
 ---
 
