@@ -7,7 +7,9 @@ description: "Paperclip 是开源 AI 代理团队编排平台，用 TypeScript �
 repository: "paperclipai/paperclip"
 repository_url: "https://github.com/paperclipai/paperclip"
 language: "TypeScript"
-tags: ["AI"]
+tags:
+  - AI
+  - 开发工具
 comment: false
 ---
 

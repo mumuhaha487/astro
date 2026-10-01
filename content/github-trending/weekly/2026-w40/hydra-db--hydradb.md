@@ -9,7 +9,6 @@ repository_url: "https://github.com/hydra-db/hydradb"
 language: "Rust"
 tags:
   - 数据
-  - 云服务
 comment: false
 ---
 

@@ -8,8 +8,8 @@ repository: "mattpocock/skills"
 repository_url: "https://github.com/mattpocock/skills"
 language: "Shell"
 tags:
-  - AI
   - Skill
+  - AI
 comment: false
 ---
 
