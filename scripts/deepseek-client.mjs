@@ -69,3 +69,121 @@ export async function resolveDeepSeekModel(apiKey, {
   console.log(`Using DeepSeek model: ${model}`);
   return model;
 }
+
+export async function parseChatCompletionResponse(response) {
+  if (!response.ok) {
+    throw new Error(`AI service: HTTP ${response.status}`);
+  }
+
+  const contentType = response.headers?.get?.("content-type") || "";
+  if (contentType.includes("application/json") || (!response.body && typeof response.json === "function")) {
+    const payload = await response.json();
+    if (payload?.error) {
+      throw new Error(payload.error.message || `AI gateway error: ${JSON.stringify(payload.error)}`);
+    }
+    const text = payload?.choices?.[0]?.message?.content;
+    if (typeof text !== "string" || !text.trim()) {
+      throw new Error("Invalid AI JSON response: missing or empty content");
+    }
+    return text;
+  }
+
+  if (!response.body) {
+    throw new Error("Empty response body from AI service");
+  }
+
+  const decoder = new TextDecoder("utf-8");
+  let buffer = "";
+  let fullContent = "";
+  let sawDone = false;
+  let currentEvent = "";
+
+  const processLine = (rawLine) => {
+    const line = rawLine.replace(/\r$/, "");
+    if (!line || line.startsWith(":")) return;
+    if (line.startsWith("event:")) {
+      currentEvent = line.slice(6).trim();
+      if (currentEvent === "error") {
+        throw new Error("AI stream sent error event");
+      }
+      return;
+    }
+    if (line.startsWith("data:")) {
+      const dataStr = line.slice(5).trim();
+      if (!dataStr) return;
+      if (dataStr === "[DONE]") {
+        sawDone = true;
+        return;
+      }
+      let parsed;
+      try {
+        parsed = JSON.parse(dataStr);
+      } catch {
+        throw new Error(`Invalid SSE data JSON: ${dataStr}`);
+      }
+      if (parsed?.error) {
+        throw new Error(parsed.error.message || `AI stream error: ${JSON.stringify(parsed.error)}`);
+      }
+      if (currentEvent === "error") {
+        throw new Error(parsed.message || JSON.stringify(parsed));
+      }
+      const delta = parsed?.choices?.[0]?.delta?.content;
+      if (typeof delta === "string") {
+        fullContent += delta;
+      }
+    }
+  };
+
+  const stream = response.body;
+  if (typeof stream[Symbol.asyncIterator] === "function") {
+    for await (const chunk of stream) {
+      const text = typeof chunk === "string" ? chunk : decoder.decode(chunk, { stream: true });
+      buffer += text;
+      const lines = buffer.split("\n");
+      buffer = lines.pop() ?? "";
+      for (const line of lines) {
+        processLine(line);
+        if (sawDone) break;
+      }
+      if (sawDone) break;
+    }
+  } else if (typeof stream.getReader === "function") {
+    const reader = stream.getReader();
+    try {
+      while (true) {
+        const { done, value } = await reader.read();
+        if (done) break;
+        const text = typeof value === "string" ? value : decoder.decode(value, { stream: true });
+        buffer += text;
+        const lines = buffer.split("\n");
+        buffer = lines.pop() ?? "";
+        for (const line of lines) {
+          processLine(line);
+          if (sawDone) break;
+        }
+        if (sawDone) break;
+      }
+    } finally {
+      reader.releaseLock();
+    }
+  } else {
+    throw new Error("Unsupported stream body type");
+  }
+
+  const remaining = decoder.decode();
+  if (remaining) buffer += remaining;
+  if (buffer) {
+    const lines = buffer.split("\n");
+    for (const line of lines) {
+      processLine(line);
+    }
+  }
+
+  if (!sawDone) {
+    throw new Error("AI stream closed prematurely without [DONE]");
+  }
+  if (!fullContent || !fullContent.trim()) {
+    throw new Error("Empty AI stream completion content");
+  }
+  return fullContent;
+}

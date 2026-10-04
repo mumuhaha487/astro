@@ -49,30 +49,40 @@ test("search index finds archive entries and period articles without duplicate r
   assert.equal(result[1].repo, "owner/Beta");
 });
 
-test("period analysis calls normalized endpoint with specified model and validates section lengths", async () => {
+test("period analysis calls normalized endpoint with stream: true and parses SSE stream", async () => {
   const originalFetch = globalThis.fetch;
   let targetUrl = "";
   let body;
   const longText = "这是一段非常详尽客观的架构与实践剖析内容，全面展示了系统设计原则、组件协作以及在真实工程环境中的落地体验，能够充分满足周期深度榜单的字数与质量要求。";
+  const analysisObj = {
+    summary: "这是一个在周期内表现优异的开源项目，具备出色的工程稳定性和创新设计。",
+    position: longText,
+    core: longText,
+    architecture: longText,
+    workflow: longText,
+    differentiation: longText,
+  };
+  const jsonStr = JSON.stringify(analysisObj);
+  const part1 = jsonStr.slice(0, 100);
+  const part2 = jsonStr.slice(100);
+
   globalThis.fetch = async (url, options) => {
     targetUrl = url;
     body = JSON.parse(options.body);
+    const encoder = new TextEncoder();
+    const stream = new ReadableStream({
+      start(controller) {
+        controller.enqueue(encoder.encode(`data: {"choices":[{"delta":{"content":${JSON.stringify(part1)}}}]}\n\n`));
+        controller.enqueue(encoder.encode(`data: {"choices":[{"delta":{"content":${JSON.stringify(part2)}}}]}\n\n`));
+        controller.enqueue(encoder.encode("data: [DONE]\n\n"));
+        controller.close();
+      },
+    });
     return {
       ok: true,
-      json: async () => ({
-        choices: [{
-          message: {
-            content: JSON.stringify({
-              summary: "这是一个在周期内表现优异的开源项目，具备出色的工程稳定性和创新设计。",
-              position: longText,
-              core: longText,
-              architecture: longText,
-              workflow: longText,
-              differentiation: longText,
-            }),
-          },
-        }],
-      }),
+      status: 200,
+      headers: new Headers({ "content-type": "text/event-stream" }),
+      body: stream,
     };
   };
   try {
@@ -88,6 +98,7 @@ test("period analysis calls normalized endpoint with specified model and validat
     );
     assert.equal(targetUrl, "https://api.vmss.cn/v1/chat/completions");
     assert.equal(body.model, "auto-sh");
+    assert.equal(body.stream, true);
     assert.ok(result.summary.length >= 20);
     assert.ok(result.position.length >= 54);
   } finally {
