@@ -236,3 +236,77 @@
   translation: Related articles
 - id: random_articles
   translation: Random articles
+- id: nav_trending
+  translation: GitHub Trending
+- id: nav_arena
+  translation: Model Arena
+- id: nav_more
+  translation: More
+- id: navigate
+  translation: Navigate
+- id: toggle_theme
+  translation: Toggle light and dark theme
+- id: search
+  translation: Search
+- id: skip_to_content
+  translation: Skip to content
+- id: scroll_hint
+  translation: Scroll to explore
+- id: latest_posts
+  translation: Latest writing
+- id: latest_posts_desc
+  translation: Recent technical notes and fragments of everyday life.
+- id: view_all
+  translation: View all
+- id: explore
+  translation: Explore the corner
+- id: explore_desc
+  translation: Beyond the blog there is a daily trending digest, a model arena, and a few handy browser tools.
+- id: explore_blog
+  translation: Tinkering notes, troubleshooting logs, and thoughts on life, sorted by category.
+- id: explore_trending
+  translation: GitHub Trending captured every day, with a short write-up for each newcomer.
+- id: explore_arena
+  translation: The same prompt handed to different models, with their web pages side by side.
+- id: explore_tools
+  translation: Small utilities that run entirely in your browser. Nothing is uploaded.
+- id: explore_friends
+  translation: Friends who drop by, and a place to submit your own site.
+- id: explore_guestbook
+  translation: Passing through? Leave a line before you go.
+- id: explore_trending_top
+  translation: Stars today
+- id: explore_arena_models
+  translation: competing models
+- id: explore_tools_count
+  translation: local tools
+- id: posts_by_year
+  translation: Writing timeline
+- id: categories
+  translation: Categories
+- id: footer_tagline
+  translation: A small edge site built in the twenty-first century, about tech, tinkering, and life.
+- id: footer_built
+  translation: Built with Hugo · Served by EdgeOne
+- id: back_to_top
+  translation: Back to top
+- id: reading_progress
+  translation: Reading progress
+- id: updated_on
+  translation: Updated
+- id: written_by
+  translation: Author
+- id: search_keys_navigate
+  translation: Select
+- id: search_keys_open
+  translation: Open
+- id: search_keys_close
+  translation: Close
+- id: protected_post
+  translation: This article is password protected
+- id: posts_unit
+  translation: articles
+- id: not_found_title
+  translation: This page wandered off
+- id: not_found_desc
+  translation: The page you are looking for may have moved, or never existed. Head home, or try a search.

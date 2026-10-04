@@ -2,18 +2,24 @@
 {{- $generated := hugo.Data.generatedImages | default dict -}}{{- $imageMap := index $generated "images" | default dict -}}
 {{- $coverImage := $image -}}{{- with index $imageMap $image -}}{{- with index . "card" -}}{{- $coverImage = . -}}{{- end -}}{{- end -}}
 {{- $noscriptImage := $coverImage -}}{{- if $randomCover -}}{{- $fallbackSource := index site.Params.covers.desktop 0 -}}{{- $noscriptImage = $fallbackSource -}}{{- with index $imageMap $fallbackSource -}}{{- with index . "card" -}}{{- $noscriptImage = . -}}{{- end -}}{{- end -}}{{- end -}}
-<article class="post-card{{ if $randomCover }} random-cover{{ end }}" data-pagefind-ignore>
-  <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1"><img data-progressive-src="{{ $coverImage | safeURL }}"{{ if $randomCover }} data-random-post-cover data-post-cover-key="{{ $page.RelPermalink }}"{{ end }} alt="" loading="lazy" decoding="async"><noscript><img src="{{ $noscriptImage | safeURL }}" alt=""></noscript></a>
+{{- $encrypted := and ($page.Params.encrypted | default false) $page.Params.password -}}
+<article class="post-card{{ if $randomCover }} random-cover{{ end }}{{ if $page.Params.pinned }} is-pinned{{ end }}" data-pagefind-ignore>
+  <div class="post-media">
+    <a class="post-cover" href="{{ $page.RelPermalink }}" tabindex="-1" aria-hidden="true"><img data-progressive-src="{{ $coverImage | safeURL }}"{{ if $randomCover }} data-random-post-cover data-post-cover-key="{{ $page.RelPermalink }}"{{ end }} alt="" loading="lazy" decoding="async"><noscript><img src="{{ $noscriptImage | safeURL }}" alt=""></noscript></a>
+    {{ with $page.Params.category }}<a class="post-chip" href="{{ printf "category/%s/" (. | urlize) | relLangURL }}">{{ . }}</a>{{ end }}
+    {{ if $page.Params.pinned }}<span class="post-pin">{{ partial "icon.html" (dict "name" "pin") }}{{ i18n "pinned" }}</span>{{ end }}
+    {{ if $encrypted }}<span class="post-lock" title="{{ i18n "protected_post" }}">{{ partial "icon.html" (dict "name" "lock") }}</span>{{ end }}
+  </div>
   <div class="post-card-body">
     <div class="post-card-top">
-      <span>{{ $page.Date.Format "2006.01.02" }}</span>
-      {{ with $page.Params.category }}<a href="{{ printf "category/%s/" (. | urlize) | relLangURL }}">{{ . }}</a>{{ end }}
+      <time datetime="{{ $page.Date.Format "2006-01-02" }}">{{ $page.Date.Format "2006.01.02" }}</time>
+      <span>{{ printf (i18n "reading_time") $page.ReadingTime }}</span>
     </div>
-    <h2><a href="{{ $page.RelPermalink }}">{{ if $page.Params.pinned }}{{ partial "icon.html" (dict "name" "pin") }}{{ end }}<span>{{ $page.Title }}</span></a></h2>
-    <p>{{ with $page.Params.description }}{{ . | markdownify | plainify }}{{ else }}{{ $page.Summary | plainify | truncate 120 }}{{ end }}</p>
+    <h2><a href="{{ $page.RelPermalink }}"><span>{{ $page.Title }}</span></a></h2>
+    {{ with $page.Params.description }}<p>{{ . | markdownify | plainify }}</p>{{ else }}{{ if $encrypted }}<p class="post-locked">{{ i18n "protected_post" }}</p>{{ else }}<p>{{ $page.Summary | plainify | truncate 120 }}</p>{{ end }}{{ end }}
     <div class="post-card-foot">
       <div>{{ range first 3 ($page.Params.tags | default slice) }}<a href="{{ printf "tags/%s/" (. | urlize) | relLangURL }}">#{{ . }}</a>{{ end }}</div>
-      <a class="post-open" href="{{ $page.RelPermalink }}" aria-label="{{ printf (i18n "read_article") $page.Title }}">{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+      <a class="post-open" href="{{ $page.RelPermalink }}" aria-label="{{ printf (i18n "read_article") $page.Title }}">{{ partial "icon.html" (dict "name" "arrow-up-right") }}</a>
     </div>
   </div>
 </article>

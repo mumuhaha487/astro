@@ -1,9 +1,16 @@
 {{ define "main" }}
-{{- $pages := .Pages.ByDate.Reverse -}}
-{{- $paginator := .Paginate $pages 30 -}}
-<section class="content-page" data-responsive-post-list data-post-list-total="{{ len $pages }}" data-post-list-page="{{ $paginator.PageNumber }}">
-  <header class="page-heading"><p>{{ upper (i18n "taxonomy") }}</p><h1>{{ .Title }}</h1><span>{{ printf (i18n "article_count") (len $pages) }}</span></header>
-  <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
-  {{ partial "pagination.html" $paginator }}
+{{- $terms := .Data.Terms.ByCount -}}
+{{- $max := 1 -}}{{- range $terms -}}{{- if gt .Count $max -}}{{- $max = .Count -}}{{- end -}}{{- end -}}
+<section class="content-page taxonomy-page">
+  <header class="page-heading"><p>{{ upper (i18n "taxonomy") }}</p><h1>{{ .Title }}</h1><span>{{ len $terms }} · {{ printf (i18n "article_count") (len (where site.RegularPages "Section" "posts")) }}</span></header>
+  <div class="term-grid">
+    {{ range $index, $term := $terms }}
+    <a class="term-card" href="{{ $term.Page.RelPermalink }}" data-reveal style="--reveal-delay:{{ mul (math.Min $index 12) 30 }}ms;--weight:{{ printf "%.2f" (div (float $term.Count) (float $max)) }}">
+      <span class="term-name">{{ if eq $.Data.Plural "tags" }}#{{ end }}{{ $term.Page.Title }}</span>
+      <span class="term-count">{{ $term.Count }}</span>
+      <span class="term-bar" aria-hidden="true"></span>
+    </a>
+    {{ else }}<div class="empty-state">{{ i18n "no_posts" }}</div>{{ end }}
+  </div>
 </section>
 {{ end }}

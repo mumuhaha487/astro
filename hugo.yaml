@@ -59,6 +59,15 @@ markup:
     endLevel: 2
     ordered: false
   goldmark:
+    extensions:
+      passthrough:
+        enable: true
+        delimiters:
+          block:
+            - ['$$', '$$']
+            - ['\[', '\]']
+          inline:
+            - ['\(', '\)']
     parser:
       attribute:
         block: true

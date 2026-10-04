@@ -236,3 +236,77 @@
   translation: 関連記事
 - id: random_articles
   translation: ランダム記事
+- id: nav_trending
+  translation: GitHub トレンド
+- id: nav_arena
+  translation: モデル闘技場
+- id: nav_more
+  translation: その他
+- id: navigate
+  translation: ナビゲーション
+- id: toggle_theme
+  translation: ライト／ダークテーマを切り替える
+- id: search
+  translation: 検索
+- id: skip_to_content
+  translation: 本文へスキップ
+- id: scroll_hint
+  translation: スクロールして探索
+- id: latest_posts
+  translation: 最新の記事
+- id: latest_posts_desc
+  translation: 最近書いた技術メモと日々のかけら。
+- id: view_all
+  translation: すべて見る
+- id: explore
+  translation: 小さな居場所を探索
+- id: explore_desc
+  translation: ブログのほかに、毎日のトレンド、モデル闘技場、便利な小ツールがあります。
+- id: explore_blog
+  translation: 技術の試行錯誤、トラブル記録、日々の雑感をカテゴリ別に。
+- id: explore_trending
+  translation: GitHub Trending を毎日収集し、新顔のプロジェクトを中国語で解説。
+- id: explore_arena
+  translation: 同じお題を複数のモデルに渡し、生成された Web ページを見比べる。
+- id: explore_tools
+  translation: すべてブラウザ内で動く小ツール。データは送信されません。
+- id: explore_friends
+  translation: 遊びに来てくれる友人たち。あなたのサイトも歓迎します。
+- id: explore_guestbook
+  translation: 通りすがりなら、ひとこと残していってください。
+- id: explore_trending_top
+  translation: 本日のスター
+- id: explore_arena_models
+  translation: 参加モデル
+- id: explore_tools_count
+  translation: ローカルツール
+- id: posts_by_year
+  translation: 執筆年表
+- id: categories
+  translation: カテゴリ
+- id: footer_tagline
+  translation: 21 世紀に建てられた小さな辺境サイト。技術と試行錯誤と日々の記録。
+- id: footer_built
+  translation: Hugo で構築 · EdgeOne で配信
+- id: back_to_top
+  translation: トップへ戻る
+- id: reading_progress
+  translation: 読書の進捗
+- id: updated_on
+  translation: 更新
+- id: written_by
+  translation: 著者
+- id: search_keys_navigate
+  translation: 選択
+- id: search_keys_open
+  translation: 開く
+- id: search_keys_close
+  translation: 閉じる
+- id: protected_post
+  translation: この記事はパスワードで保護されています
+- id: posts_unit
+  translation: 本の記事
+- id: not_found_title
+  translation: このページは迷子になりました
+- id: not_found_desc
+  translation: お探しのページは移動したか、最初から存在しなかったようです。ホームに戻るか、検索してみてください。

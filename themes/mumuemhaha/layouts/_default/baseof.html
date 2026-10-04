@@ -23,11 +23,21 @@
 {{- with index $imageMap $desktopWallpaper -}}{{- with index . "desktopBackdrop" -}}{{- $desktopWallpaper = . -}}{{- end -}}{{- end -}}
 {{- with index $imageMap $mobileWallpaper -}}{{- with index . "mobileBackdrop" -}}{{- $mobileWallpaper = . -}}{{- end -}}{{- end -}}
 {{- $randomCoverPools := index $generated "randomCovers" | default site.Params.covers -}}
+{{- $navItems := slice
+  (dict "key" "home" "href" site.Home.RelPermalink "icon" "home" "label" (i18n "home"))
+  (dict "key" "blog" "href" ("blog/" | relLangURL) "icon" "book-open" "label" (i18n "blog"))
+  (dict "key" "github-trending" "href" "/github-trending/" "icon" "trending-up" "label" (i18n "nav_trending"))
+  (dict "key" "model-arena" "href" "/model-arena/" "icon" "swords" "label" (i18n "nav_arena"))
+  (dict "key" "friends" "href" ("friends/" | relLangURL) "icon" "users" "label" (i18n "friends"))
+  (dict "key" "guestbook" "href" ("guestbook/" | relLangURL) "icon" "messages" "label" (i18n "guestbook"))
+  (dict "key" "tools" "href" "/tools/" "icon" "wrench" "label" (i18n "toolbox"))
+-}}
 <head>
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
-  <meta name="theme-color" content="#101111">
-  <meta name="color-scheme" content="dark">
+  <meta name="theme-color" content="#f7f6f3">
+  <meta name="color-scheme" content="light dark">
+  <script>document.documentElement.classList.add("js");try{if(localStorage.getItem("mumu-theme")==="dark"){document.documentElement.dataset.theme="dark";document.querySelector('meta[name="theme-color"]').content="#0c0c0e"}}catch(_){}</script>
   {{ if .IsHome }}<script>try{if(sessionStorage.getItem("desktop-returned-to-classic")==="true"){sessionStorage.removeItem("desktop-returned-to-classic");document.documentElement.classList.add("from-hypr-desktop")}}catch(_){}</script>{{ end }}
   <title>{{ if .IsHome }}{{ site.Title }}{{ else }}{{ .Title }} | {{ site.Params.description }}{{ end }}</title>
   <meta name="description" content="{{ .Description | default site.Params.description }}">
@@ -40,66 +50,89 @@
   <link rel="icon" href="/favicon/favicon-light-32.png" sizes="32x32">
   <link rel="alternate" type="application/rss+xml" title="{{ site.Title }}" href="{{ "index.xml" | absURL }}">
   <link rel="dns-prefetch" href="//umami.vmss.cn">
+  <link rel="preload" as="font" type="font/woff2" href="/_astro/jetbrains-mono-latin-wght-normal.B9CIFXIH.woff2" crossorigin>
   <link rel="preload" as="image" href="{{ $mobileWallpaper }}" media="(max-width: 760px)">
   <link rel="preload" as="image" href="{{ $desktopWallpaper }}" media="(min-width: 761px)">
-  {{ if and .IsPage (eq $section "posts") }}<link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">{{ end }}
-  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20260916-account-v1">
-  {{ if eq $section "github-trending" }}<link rel="stylesheet" href="/hugo-theme/github-trending.css?v=2">{{ end }}
-  {{ if eq $section "model-arena" }}<link rel="stylesheet" href="/hugo-theme/model-arena.css?v=2">{{ end }}
+  {{ if and .IsPage (eq $section "posts") }}<link rel="stylesheet" href="/_astro/katex.Dbtwy3LY.css">{{ with .Params.image }}<link rel="expect" href="#article-cover" blocking="render">{{ end }}{{ end }}
+  <link rel="stylesheet" href="/hugo-theme/hugo.css?v=20261004-aurora-v1">
+  {{ if eq $section "github-trending" }}<link rel="stylesheet" href="/hugo-theme/github-trending.css?v=20261004-aurora-v1">{{ end }}
+  {{ if eq $section "model-arena" }}<link rel="stylesheet" href="/hugo-theme/model-arena.css?v=20261004-aurora-v1">{{ end }}
   {{ if eq $section "guestbook" }}<script async defer src="https://challenges.cloudflare.com/turnstile/v0/api.js?render=explicit" data-turnstile-script></script>{{ end }}
 </head>
 <body data-section="{{ $section }}" data-lang="{{ site.Language.Lang }}" data-random-post-covers="{{ jsonify $randomCoverPools }}" data-analytics-src="https://umami.vmss.cn/script.js" data-analytics-website-id="993c6970-8f42-4804-a055-38b6b9c01810" data-pagefind-ignore>
+  <a class="skip-link" href="#main-content">{{ i18n "skip_to_content" }}</a>
   {{- if not .IsHome }}
-    <div class="site-wallpaper" id="site-wallpaper" aria-hidden="true">
+    <div class="page-banner" aria-hidden="true">
       <picture>
         <source media="(max-width: 760px)" srcset="{{ $mobileWallpaper }}">
         <img src="{{ $desktopWallpaper }}" alt="" decoding="async" fetchpriority="high">
       </picture>
     </div>
   {{- end }}
-  <div class="site-shell">
-    <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="{{ i18n "main_navigation" }}">
-      <div class="workspace-brand">
-        <a class="workspace-brand-title" href="{{ site.Home.RelPermalink }}">{{ i18n "workspace" }}</a>
-        <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="{{ i18n "close_navigation" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
-      </div>
-      <nav class="workspace-nav">
-        <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
-        <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
-        <a href="/github-trending/" data-nav="github-trending">{{ partial "icon.html" (dict "name" "github") }}<span>{{ i18n "github_trending" }}</span></a>
-        <a href="/model-arena/" data-nav="model-arena">{{ partial "icon.html" (dict "name" "layout") }}<span>大模型竞技场</span></a>
-        <a href="{{ "friends/" | relLangURL }}" data-nav="friends">{{ partial "icon.html" (dict "name" "share") }}<span>{{ i18n "friends" }}</span></a>
-        <a href="{{ "guestbook/" | relLangURL }}" data-nav="guestbook">{{ partial "icon.html" (dict "name" "messages") }}<span>{{ i18n "guestbook" }}</span></a>
-        <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "toolbox" }}</span></a>
+
+  <header class="site-nav" data-site-nav>
+    <div class="site-nav-inner">
+      <a class="nav-brand" href="{{ site.Home.RelPermalink }}">
+        <span class="brand-mark" aria-hidden="true"></span>
+        <span class="workspace-brand-title">{{ i18n "workspace" }}</span>
+      </a>
+      <nav class="nav-links" aria-label="{{ i18n "main_navigation" }}" data-nav-links>
+        {{ range $navItems }}<a href="{{ .href }}" data-nav="{{ .key }}" title="{{ .label }}">{{ partial "icon.html" (dict "name" .icon) }}<span>{{ .label }}</span></a>
+        {{ end }}<span class="nav-indicator" aria-hidden="true" data-nav-indicator></span>
       </nav>
-      <div class="workspace-spacer"></div>
-      <p class="workspace-foot">{{ site.Params.description }}<br><span>Hugo · EdgeOne</span></p>
-    </aside>
-    <div class="sidebar-backdrop" data-sidebar-close></div>
-    <section class="workspace-main">
-      <header class="workspace-topbar">
-        <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="{{ i18n "open_navigation" }}">{{ partial "icon.html" (dict "name" "menu") }}</button>
-        <div class="topbar-title">
-          {{ partial "icon.html" (dict "name" (cond .IsHome "home" (cond (or (eq $section "posts") (eq $section "blog")) "book-open" (cond (eq $section "github-trending") "github" (cond (eq $section "model-arena") "layout" (cond (eq $section "tools") "wrench" (cond (eq $section "archive") "calendar" (cond (eq $section "friends") "share" (cond (eq $section "guestbook") "messages" "layout"))))))))) }}
-          <span>{{ if .IsHome }}{{ i18n "home" }}{{ else if eq $section "posts" }}{{ i18n "blog" }}{{ else }}{{ .Title }}{{ end }}</span>
+      <div class="nav-actions">
+        {{ if and .IsPage (eq $section "posts") }}<button class="icon-button article-toc-top-trigger" type="button" data-toc-open aria-label="{{ i18n "article_toc" }}" title="{{ i18n "article_toc" }}">{{ partial "icon.html" (dict "name" "list-tree") }}</button>{{ end }}
+        {{ partial "language-switch.html" . }}
+        <button class="icon-button theme-toggle" type="button" data-theme-toggle aria-label="{{ i18n "toggle_theme" }}" title="{{ i18n "toggle_theme" }}">{{ partial "icon.html" (dict "name" "sun" "class" "theme-icon-sun") }}{{ partial "icon.html" (dict "name" "moon" "class" "theme-icon-moon") }}</button>
+        <button class="nav-search" id="search-open" type="button" aria-label="{{ i18n "search_articles" }}" title="{{ i18n "search_articles" }}">{{ partial "icon.html" (dict "name" "search") }}<span>{{ i18n "search" }}</span><kbd data-shortcut-label>Ctrl K</kbd></button>
+        <button class="topbar-avatar" type="button" data-account-open aria-label="{{ i18n "account_open" }}" title="{{ i18n "account_open" }}"><img src="/images/demo-avatar.webp" alt="" width="34" height="34"></button>
+        <button class="icon-button sidebar-trigger" type="button" data-sidebar-open aria-label="{{ i18n "open_navigation" }}" aria-controls="workspace-sidebar">{{ partial "icon.html" (dict "name" "menu") }}</button>
+      </div>
+    </div>
+  </header>
+
+  <aside class="workspace-sidebar" id="workspace-sidebar" aria-label="{{ i18n "main_navigation" }}">
+    <div class="sheet-head">
+      <span class="sheet-title">{{ i18n "navigate" }}</span>
+      <button class="icon-button sidebar-close" type="button" data-sidebar-close aria-label="{{ i18n "close_navigation" }}">{{ partial "icon.html" (dict "name" "x") }}</button>
+    </div>
+    <nav class="workspace-nav">
+      {{ range $index, $item := $navItems }}<a href="{{ $item.href }}" data-nav="{{ $item.key }}" style="--i:{{ $index }}"><small>{{ printf "%02d" (add $index 1) }}</small>{{ partial "icon.html" (dict "name" $item.icon) }}<span>{{ $item.label }}</span>{{ partial "icon.html" (dict "name" "arrow-up-right" "class" "nav-tail") }}</a>
+      {{ end }}
+    </nav>
+    <div class="sheet-foot">
+      {{ partial "language-switch.html" . }}
+      <button class="button button-ghost theme-toggle-wide" type="button" data-theme-toggle>{{ partial "icon.html" (dict "name" "sun" "class" "theme-icon-sun") }}{{ partial "icon.html" (dict "name" "moon" "class" "theme-icon-moon") }}<span>{{ i18n "toggle_theme" }}</span></button>
+    </div>
+  </aside>
+  <div class="sidebar-backdrop" data-sidebar-close></div>
+
+  <div class="site-shell">
+    <main class="workspace-content" id="main-content">
+      {{ block "main" . }}{{ end }}
+    </main>
+    <footer class="site-footer">
+      <div class="footer-inner">
+        <div class="footer-brand">
+          <span class="brand-mark" aria-hidden="true"></span>
+          <div><strong>{{ site.Title }}</strong><p>{{ i18n "footer_tagline" }}</p></div>
         </div>
-        <div class="topbar-actions">
-          {{ if and .IsPage (eq $section "posts") }}<button class="icon-button article-toc-top-trigger" type="button" data-toc-open aria-label="打开文章目录" title="打开文章目录">{{ partial "icon.html" (dict "name" "list-tree") }}</button>{{ end }}
-          {{ partial "language-switch.html" . }}
-          <button class="icon-button" id="search-open" type="button" aria-label="{{ i18n "search_articles" }}" title="{{ i18n "search_articles" }}">{{ partial "icon.html" (dict "name" "search") }}</button>
-          <button class="topbar-avatar" type="button" data-account-open aria-label="{{ i18n "account_open" }}" title="{{ i18n "account_open" }}"><img src="/images/demo-avatar.webp" alt="" width="34" height="34"></button>
+        <nav class="footer-links" aria-label="{{ i18n "navigate" }}">
+          {{ range after 1 $navItems }}<a href="{{ .href }}">{{ .label }}</a>{{ end }}
+          <a href="{{ "index.xml" | relLangURL }}">{{ partial "icon.html" (dict "name" "rss") }}RSS</a>
+        </nav>
+        <div class="footer-meta">
+          <span>© {{ substr (string site.Params.siteStartDate) 0 4 }}–{{ now.Format "2006" }} {{ site.Params.author }}</span>
+          <span class="footer-dot" aria-hidden="true"></span>
+          <span>{{ i18n "footer_built" }}</span>
+          <span class="footer-dot" aria-hidden="true"></span>
+          <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">赣ICP备2024038464号-3</a>
         </div>
-      </header>
-      <main class="workspace-content" id="main-content">
-        {{ block "main" . }}{{ end }}
-      </main>
-      <footer class="site-footer">
-        <a href="https://beian.miit.gov.cn/" target="_blank" rel="noopener noreferrer">赣ICP备2024038464号-3</a>
-      </footer>
-    </section>
+      </div>
+    </footer>
   </div>
 
-  <dialog class="search-dialog" id="search-dialog">
+  <dialog class="search-dialog" id="search-dialog" aria-label="{{ i18n "search_articles" }}">
     <div class="search-panel">
       <form class="search-input-row" method="dialog">
         {{ partial "icon.html" (dict "name" "search") }}
@@ -113,6 +146,11 @@
         <span id="search-page-status">{{ printf (i18n "page_summary") 1 1 }}</span>
         <button class="pagination-control" type="button" data-search-next aria-label="{{ i18n "next_page" }}">{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
       </nav>
+      <footer class="search-keys" aria-hidden="true">
+        <span><kbd>↑</kbd><kbd>↓</kbd>{{ i18n "search_keys_navigate" }}</span>
+        <span><kbd>↵</kbd>{{ i18n "search_keys_open" }}</span>
+        <span><kbd>Esc</kbd>{{ i18n "search_keys_close" }}</span>
+      </footer>
     </div>
   </dialog>
 
@@ -144,9 +182,11 @@
   <nav class="mobile-dock" aria-label="{{ i18n "mobile_navigation" }}">
     <a href="{{ site.Home.RelPermalink }}" data-nav="home">{{ partial "icon.html" (dict "name" "home") }}<span>{{ i18n "home" }}</span></a>
     <a href="{{ "blog/" | relLangURL }}" data-nav="blog">{{ partial "icon.html" (dict "name" "book-open") }}<span>{{ i18n "blog" }}</span></a>
+    <a href="/github-trending/" data-nav="github-trending">{{ partial "icon.html" (dict "name" "trending-up") }}<span>{{ i18n "nav_trending" }}</span></a>
     <a href="/tools/" data-nav="tools">{{ partial "icon.html" (dict "name" "wrench") }}<span>{{ i18n "tools" }}</span></a>
+    <button type="button" data-sidebar-open aria-controls="workspace-sidebar">{{ partial "icon.html" (dict "name" "grid") }}<span>{{ i18n "nav_more" }}</span></button>
   </nav>
-  <script src="/hugo-theme/hugo.js?v=20260916-account-v2"></script>
+  <script src="/hugo-theme/hugo.js?v=20261004-aurora-v1"></script>
   {{ block "scripts" . }}{{ end }}
 </body>
 </html>

@@ -45,9 +45,10 @@
   </div>
   <p class="trending-empty" data-trending-featured-empty hidden>这个分类的项目暂未入选深度解读，可以查看下方完整榜单。</p>
   <div class="trending-heading trending-list-heading"><div><h2>累计榜单</h2><p>同一仓库在一个周期内每天最多计入一次，按已记录的涨星数累计排序。</p></div><span>{{ len $candidates }} 个仓库</span></div>
+  {{- $maxStars := (index $candidates 0).totalStars | default 1 -}}
   <ol class="trending-repositories trending-period-repositories">
     {{ range $index, $repo := $candidates }}
-    <li data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}">
+    <li data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}" style="--share:{{ printf "%.1f" (div (mul (float (.totalStars | default 0)) 100) (float $maxStars)) }}%">
       <span class="trending-rank">{{ printf "%02d" (add $index 1) }}</span>
       <div><a href="{{ .article | default .url }}"{{ if not .article }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .repo }}{{ if not .article }}{{ partial "icon.html" (dict "name" "external-link") }}{{ end }}</a><p>{{ .description | default "查看项目仓库" }}</p>{{ partial "github-trending-tags.html" .tags }} <span class="trending-days">上榜 {{ .days }} 天</span></div>
       <span class="trending-stars">+{{ .totalStars }} ★</span>

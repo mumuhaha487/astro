@@ -1,0 +1,8 @@
+:host,html{--font-family-sans:"Segoe UI",system-ui,-apple-system,"PingFang SC","Microsoft YaHei",sans-serif;--font-family-monospace:"JetBrains Mono",Consolas,monospace}
+html,body{background:transparent!important;color:#141416!important}
+main{--color-canvas-default:transparent;--color-canvas-subtle:#f3f2ef;--color-canvas-overlay:#ffffff;--color-border-default:#dddad4;--color-border-muted:#e8e6e1;--color-fg-default:#141416;--color-fg-muted:#5d5d66;--color-accent-fg:#b4552f;--color-accent-emphasis:#b4552f;--color-neutral-muted:rgba(28,22,48,.08);--color-neutral-subtle:rgba(28,22,48,.04);--color-btn-text:#141416;--color-btn-bg:#ffffff;--color-btn-border:#dddad4;--color-btn-hover-bg:#f3f2ef;--color-btn-hover-border:#c9c5bd;--color-btn-primary-text:#ffffff;--color-btn-primary-bg:#b4552f;--color-btn-primary-hover-bg:#9c4826;--color-btn-primary-selected-bg:#8a3f21;color:#141416}
+.gsc-comment-box,.gsc-comment,.gsc-reactions{border-color:#dddad4!important;background:#ffffff!important}
+.gsc-comment-box-tabs,.gsc-header,.gsc-timeline{color:#141416!important}
+.form-control,.form-control:focus{border-color:#dddad4!important;background:#faf9f7!important;color:#141416!important;box-shadow:none!important}
+.gsc-comment-content,.gsc-comment-content p,.gsc-comment-header,.gsc-comment-author{color:#141416!important}
+.text-secondary,.color-fg-muted{color:#5d5d66!important}

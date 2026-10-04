@@ -27,26 +27,32 @@
   {{ partial "github-trending-filters.html" $candidates }}
   <div class="trending-heading"><h2>今日精选</h2><span>仅介绍此前未收录的仓库</span></div>
   <div class="post-grid trending-grid">
-    {{ range $featured }}
+    {{ range $featuredIndex, $item := $featured }}
+    {{- with $item -}}
     <article class="post-card trending-card" data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}">
       <a class="trending-cover" href="{{ .article }}" aria-label="阅读 {{ .repo }} 的解读">
-        {{ partial "icon.html" (dict "name" "github") }}<span>+{{ .starsToday }} stars / day</span>
+        <span class="trending-cover-rank">#{{ printf "%02d" (add $featuredIndex 1) }}</span>
+        {{ partial "icon.html" (dict "name" "github") }}
+        <span class="trending-cover-repo"><small>{{ index (split .repo "/") 0 }} /</small><b>{{ .name | default (index (split .repo "/") 1) }}</b></span>
+        <span class="trending-cover-stars">{{ partial "icon.html" (dict "name" "star") }}+{{ .starsToday }} / day{{ with .language }}<em>{{ . }}</em>{{ end }}</span>
       </a>
       <div class="post-card-body">
         <div class="post-card-top"><span>{{ $date }}</span></div>
         <h2><a href="{{ .article }}"><span>{{ .repo }}</span></a></h2>
         <p>{{ .summary }}</p>
-        <div class="post-card-foot">{{ partial "github-trending-tags.html" .tags }}<a class="post-open" href="{{ .article }}" aria-label="阅读 {{ .repo }}">{{ partial "icon.html" (dict "name" "arrow-right") }}</a></div>
+        <div class="post-card-foot">{{ partial "github-trending-tags.html" .tags }}<a class="post-open" href="{{ .article }}" aria-label="阅读 {{ .repo }}">{{ partial "icon.html" (dict "name" "arrow-up-right") }}</a></div>
       </div>
     </article>
+    {{- end -}}
     {{ end }}
   </div>
   <p class="trending-empty" data-trending-featured-empty hidden>这个分类的项目今天没有入选精选，仍可查看下方完整榜单。</p>
 
   <div class="trending-heading trending-list-heading"><div><h2>完整榜单</h2><p>来自 GitHub Trending 每日榜及语言榜，按页面显示的当日涨星数排序；不是全站所有仓库的绝对排名。</p></div><span>{{ len $candidates }} 个仓库</span></div>
+  {{- $maxStars := (index $candidates 0).starsToday | default 1 -}}
   <ol class="trending-repositories" data-trending-repositories>
     {{ range $index, $repo := $candidates }}
-    <li data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}">
+    <li data-trending-item data-tags="{{ delimit (.tags | default (slice "其他")) "|" }}" style="--share:{{ printf "%.1f" (div (mul (float (.starsToday | default 0)) 100) (float $maxStars)) }}%">
       <span class="trending-rank">{{ printf "%02d" (add $index 1) }}</span>
       <div><a href="{{ .article | default .url }}"{{ if not .article }} target="_blank" rel="noopener noreferrer"{{ end }}>{{ .repo }}{{ if not .article }}{{ partial "icon.html" (dict "name" "external-link") }}{{ end }}</a><p>{{ .description | default "仓库暂未提供简短介绍，点击查看项目主页。" }}</p>{{ partial "github-trending-tags.html" .tags }}</div>
       <span class="trending-stars">+{{ .starsToday }} ★</span>

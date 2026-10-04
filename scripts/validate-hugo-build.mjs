@@ -161,11 +161,11 @@ assert.match(home, /一个可能特别有想法的博主。/, "Homepage status t
 assert.match(home, /我の小小窝。/, "Homepage workspace label is incorrect");
 assert.match(home, /https:\/\/github\.com\/mumuhaha487/, "Production GitHub contact is missing");
 assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bilibili contact is missing");
-assert.match(home, /lucide-sprite\.svg#bilibili/, "Bilibili brand icon is missing");
+assert.match(home, /lucide-sprite\.svg(?:\?v=\d+)?#bilibili/, "Bilibili brand icon is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three content sections");
 assert.match(home, /class="home-doc-list home-doc-list-unframed"/, "Homepage information area still uses the framed glass container");
-assert.match(home, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20260916-account-v2/, "Current script cache version is missing");
+assert.match(home, /hugo\.css\?v=20261004-aurora-v1/, "Current stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20261004-aurora-v1/, "Current script cache version is missing");
 assert.match(home, /data-site-start-date="2022-04-15"[^>]*>本站已运行 <strong data-site-uptime>/, "Homepage runtime counter is missing");
 assert.match(home, /data-account-open[^>]*aria-label="登录或注册"/, "Top-right account trigger is missing");
 assert.match(home, /目前登录的各个功能都在维护中，此时注册功能为正常,但是实际为测试功能。，后续可能会删除账号。/, "Account test warning is missing");
@@ -252,8 +252,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20260916-account-v2/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20260916-account-v1/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20261004-aurora-v1/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20261004-aurora-v1/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
@@ -314,7 +314,9 @@ const dockerTool = await readFile(join(outputRoot, "tools", "docker-accelerator"
 assert.match(dockerTool, /<iframe class="tool-service-frame" src="https:\/\/docker\.0ha\.top\/"[^>]*loading="lazy"/, "Docker accelerator iframe is not loaded on demand");
 
 const friendsPage = await readFile(join(outputRoot, "friends", "index.html"), "utf8");
-assert.equal((friendsPage.match(/class="friend-card"/g) || []).length, 4, "Friends page did not render every validated entry");
+const friendEntries = JSON.parse(await readFile(join(repositoryRoot, "data", "friends.json"), "utf8")).items || [];
+assert.ok(friendEntries.length > 0, "No validated friend entries were generated");
+assert.equal((friendsPage.match(/class="friend-card"/g) || []).length, friendEntries.length, "Friends page did not render every validated entry");
 assert.match(friendsPage, /https:\/\/github\.com\/mumuhaha487\/astro\/tree\/main\/friends/, "Friends repository link is not production-ready");
 assert.match(friendsPage, /href="https:\/\/github\.com\/mumuhaha487\/astro\/new\/main\/friends\/entries"/, "Friends contribution link is not filename-neutral");
 assert.doesNotMatch(friendsPage, /new\/main\/friends\/entries\?filename=/, "Friends contribution link still presets a conflicting filename");

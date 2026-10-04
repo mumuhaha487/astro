@@ -236,3 +236,77 @@
   translation: 相关文章
 - id: random_articles
   translation: 随机文章
+- id: nav_trending
+  translation: GitHub 热榜
+- id: nav_arena
+  translation: 模型竞技场
+- id: nav_more
+  translation: 更多
+- id: navigate
+  translation: 导航
+- id: toggle_theme
+  translation: 切换明暗主题
+- id: search
+  translation: 搜索
+- id: skip_to_content
+  translation: 跳到正文
+- id: scroll_hint
+  translation: 向下探索
+- id: latest_posts
+  translation: 最新文章
+- id: latest_posts_desc
+  translation: 最近写下的技术笔记与生活碎片。
+- id: view_all
+  translation: 查看全部
+- id: explore
+  translation: 探索妙想之地
+- id: explore_desc
+  translation: 博客之外，这里还有每日更新的热榜、模型同题对决和一些顺手的小工具。
+- id: explore_blog
+  translation: 技术折腾、踩坑记录与生活随想，按分类慢慢翻。
+- id: explore_trending
+  translation: 每天自动抓取 GitHub Trending，并为新上榜项目写一段中文解读。
+- id: explore_arena
+  translation: 同一道题交给不同大模型，直接对比它们生成的网页作品。
+- id: explore_tools
+  translation: 全部在浏览器本地运行的小工具，不上传任何数据。
+- id: explore_friends
+  translation: 互相串门的朋友们，也欢迎你提交自己的站点。
+- id: explore_guestbook
+  translation: 路过的话，留下一句想说的吧。
+- id: explore_trending_top
+  translation: 今日涨星
+- id: explore_arena_models
+  translation: 个参赛模型
+- id: explore_tools_count
+  translation: 个本地工具
+- id: posts_by_year
+  translation: 写作年表
+- id: categories
+  translation: 分类
+- id: footer_tagline
+  translation: 一个建立在 21 世纪的边缘小站，记录技术、折腾与生活。
+- id: footer_built
+  translation: 由 Hugo 构建 · EdgeOne 加速
+- id: back_to_top
+  translation: 回到顶部
+- id: reading_progress
+  translation: 阅读进度
+- id: updated_on
+  translation: 更新于
+- id: written_by
+  translation: 作者
+- id: search_keys_navigate
+  translation: 选择
+- id: search_keys_open
+  translation: 打开
+- id: search_keys_close
+  translation: 关闭
+- id: protected_post
+  translation: 这篇文章受密码保护
+- id: posts_unit
+  translation: 篇文章
+- id: not_found_title
+  translation: 这一页走丢了
+- id: not_found_desc
+  translation: 你要找的页面可能已经搬家，或者从来没有存在过。不如回到首页，或者搜搜看？

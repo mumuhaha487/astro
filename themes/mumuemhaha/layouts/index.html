@@ -3,12 +3,12 @@
 {{- $desktopHome := index site.Params.covers.desktop 0 -}}{{- $mobileHome := index site.Params.covers.mobile 0 -}}
 {{- with index $imageMap $desktopHome -}}{{- with index . "desktopBackdrop" -}}{{- $desktopHome = . -}}{{- end -}}{{- end -}}
 {{- with index $imageMap $mobileHome -}}{{- with index . "mobileBackdrop" -}}{{- $mobileHome = . -}}{{- end -}}{{- end -}}
+{{- $posts := where site.RegularPages "Section" "posts" -}}
 <section class="home-stage">
   <picture class="home-backdrop" role="img" aria-label="{{ i18n "profile_workspace" }}">
     <source media="(max-width: 760px)" srcset="{{ $mobileHome }}">
     <img src="{{ $desktopHome }}" alt="" decoding="async" fetchpriority="high">
   </picture>
-  <div class="home-rain" aria-hidden="true"></div>
   <div class="home-grid">
     <div class="home-profile">
       <div class="profile-avatar-stage" data-avatar-particles data-idle-spin-direction="counterclockwise" data-idle-spin-velocity="-180" data-hover-spin-direction="clockwise" data-hover-spin-acceleration="180" data-spin-recovery="3000">
@@ -19,14 +19,15 @@
         </a>
       </div>
       <p class="profile-overline">{{ upper (i18n "profile_workspace") }}</p>
-      <h1>木木em哈哈</h1>
+      <h1 class="profile-name"><span>木木</span><span class="profile-name-em">em</span><span>哈哈</span></h1>
       <p class="profile-bio" data-typewriter="{{ i18n "profile_quote" }}" aria-label="{{ i18n "profile_quote" }}"><span data-typewriter-output aria-hidden="true">{{ i18n "profile_quote" }}</span></p>
       <div class="profile-actions">
         <a class="button button-primary" href="{{ "blog/" | relLangURL }}">{{ i18n "read_blog" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+        <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}{{ i18n "search_articles" }}</button>
       </div>
     </div>
     <div class="home-left">
-      <p class="home-kicker">WELCOME / {{ now.Format "2006" }}</p>
+      <p class="home-kicker"><span class="kicker-dot" aria-hidden="true"></span>WELCOME / {{ now.Format "2006" }}</p>
       <div class="home-doc-list home-doc-list-unframed">
         <section class="home-doc-item visitor-strip" id="home-visitors" aria-label="{{ i18n "visitor_stats" }}">
           <div class="home-card-content visitor-values">
@@ -48,13 +49,74 @@
           <div class="home-card-content">
             <span class="panel-eyebrow">{{ i18n "contact_title" }}</span>
             <div class="contact-links">
-              <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
-              <a href="https://space.bilibili.com/334584883" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "bilibili") }}<span><strong>{{ i18n "bilibili" }}</strong><small>UID 334584883</small></span>{{ partial "icon.html" (dict "name" "external-link" "class" "contact-tail") }}</a>
+              <a href="https://github.com/mumuhaha487" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "github") }}<span><strong>GitHub</strong><small>@mumuhaha487</small></span>{{ partial "icon.html" (dict "name" "arrow-up-right" "class" "contact-tail") }}</a>
+              <a href="https://space.bilibili.com/334584883" target="_blank" rel="noopener noreferrer">{{ partial "icon.html" (dict "name" "bilibili") }}<span><strong>{{ i18n "bilibili" }}</strong><small>UID 334584883</small></span>{{ partial "icon.html" (dict "name" "arrow-up-right" "class" "contact-tail") }}</a>
             </div>
           </div>
         </section>
       </div>
     </div>
+  </div>
+  <a class="home-scroll-cue" href="#home-latest"><span>{{ i18n "scroll_hint" }}</span>{{ partial "icon.html" (dict "name" "arrow-down") }}</a>
+</section>
+
+{{- $latest := first 4 $posts.ByDate.Reverse -}}
+{{ if $latest }}
+<section class="home-section home-latest" id="home-latest">
+  <header class="section-heading" data-reveal>
+    <div><p>01 · LATEST</p><h2>{{ i18n "latest_posts" }}</h2><span>{{ i18n "latest_posts_desc" }}</span></div>
+    <a class="text-link" href="{{ "blog/" | relLangURL }}">{{ i18n "view_all" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</a>
+  </header>
+  <div class="latest-grid">
+    {{ range $index, $page := $latest }}
+    {{- $image := strings.TrimSpace ($page.Params.image | default "") -}}
+    {{- $cover := $image -}}{{- with index $imageMap $image -}}{{- with index . "card" -}}{{- $cover = . -}}{{- end -}}{{- end -}}
+    {{- $encrypted := and ($page.Params.encrypted | default false) $page.Params.password -}}
+    <article class="latest-card{{ if eq $index 0 }} is-lead{{ end }}" data-reveal style="--reveal-delay:{{ mul $index 60 }}ms">
+      <a class="latest-cover" href="{{ $page.RelPermalink }}" tabindex="-1" aria-hidden="true">
+        {{ if $image }}<img src="{{ $cover | safeURL }}" alt="" loading="lazy" decoding="async">{{ else }}<img data-random-post-cover data-post-cover-key="{{ $page.RelPermalink }}" alt="" loading="lazy" decoding="async">{{ end }}
+      </a>
+      <div class="latest-body">
+        <div class="latest-meta"><time datetime="{{ $page.Date.Format "2006-01-02" }}">{{ $page.Date.Format "2006.01.02" }}</time>{{ with $page.Params.category }}<span>{{ . }}</span>{{ end }}</div>
+        <h3><a href="{{ $page.RelPermalink }}">{{ $page.Title }}</a></h3>
+        {{ with $page.Params.description }}<p>{{ . | markdownify | plainify }}</p>{{ else }}{{ if $encrypted }}<p class="latest-locked">{{ partial "icon.html" (dict "name" "lock") }}{{ i18n "protected_post" }}</p>{{ else }}<p>{{ $page.Summary | plainify | truncate 110 }}</p>{{ end }}{{ end }}
+        <span class="latest-read">{{ printf (i18n "reading_time") $page.ReadingTime }}</span>
+      </div>
+    </article>
+    {{ end }}
+  </div>
+</section>
+{{ end }}
+
+{{- $arena := hugo.Data.model_arena | default dict -}}
+{{- $modelCount := 0 -}}
+{{- range $arena.tracks -}}{{- range .projects -}}{{- range .providers -}}{{- range .models -}}{{- $modelCount = add $modelCount 1 -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}
+{{- $trendingKeys := slice -}}
+{{- range $key, $value := hugo.Data.github_trending -}}{{- if le $key (now.Format "2006-01-02") -}}{{- $trendingKeys = $trendingKeys | append $key -}}{{- end -}}{{- end -}}
+{{- $trendingTop := dict -}}{{- $trendingCount := 0 -}}
+{{- with $trendingKeys -}}{{- $snapshot := index hugo.Data.github_trending (index (sort . "value" "desc") 0) -}}{{- $candidates := $snapshot.candidates | default slice -}}{{- $trendingCount = len $candidates -}}{{- with $candidates -}}{{- $trendingTop = index . 0 -}}{{- end -}}{{- end -}}
+{{- $friends := hugo.Data.friends.items | default slice -}}
+{{- $explore := slice
+  (dict "href" ("blog/" | relLangURL) "icon" "book-open" "title" (i18n "blog") "desc" (i18n "explore_blog") "figure" (len $posts) "unit" (i18n "posts_unit"))
+  (dict "href" "/github-trending/" "icon" "trending-up" "title" (i18n "nav_trending") "desc" (i18n "explore_trending") "figure" $trendingCount "unit" (cond (ne (len $trendingTop) 0) (printf "Top · %s" ($trendingTop.repo | default "")) "repositories"))
+  (dict "href" "/model-arena/" "icon" "swords" "title" (i18n "nav_arena") "desc" (i18n "explore_arena") "figure" $modelCount "unit" (i18n "explore_arena_models"))
+  (dict "href" "/tools/" "icon" "wrench" "title" (i18n "toolbox") "desc" (i18n "explore_tools") "figure" 7 "unit" (i18n "explore_tools_count"))
+  (dict "href" ("friends/" | relLangURL) "icon" "users" "title" (i18n "friends") "desc" (i18n "explore_friends") "figure" (len $friends) "unit" (i18n "friends"))
+  (dict "href" ("guestbook/" | relLangURL) "icon" "messages" "title" (i18n "guestbook") "desc" (i18n "explore_guestbook") "figure" "" "unit" (i18n "guestbook_submit"))
+-}}
+<section class="home-section home-explore">
+  <header class="section-heading" data-reveal>
+    <div><p>02 · EXPLORE</p><h2>{{ i18n "explore" }}</h2><span>{{ i18n "explore_desc" }}</span></div>
+  </header>
+  <div class="explore-grid">
+    {{ range $index, $item := $explore }}
+    <a class="explore-card" href="{{ $item.href }}" data-reveal style="--reveal-delay:{{ mul (mod $index 3) 60 }}ms">
+      <div class="explore-head"><span>{{ printf "%02d" (add $index 1) }}</span>{{ partial "icon.html" (dict "name" $item.icon) }}</div>
+      <h3>{{ $item.title }}</h3>
+      <p>{{ $item.desc }}</p>
+      <div class="explore-figure">{{ with $item.figure }}<strong data-count="{{ . }}">{{ . }}</strong>{{ end }}<span>{{ $item.unit }}</span>{{ partial "icon.html" (dict "name" "arrow-up-right" "class" "explore-arrow") }}</div>
+    </a>
+    {{ end }}
   </div>
 </section>
 {{ end }}

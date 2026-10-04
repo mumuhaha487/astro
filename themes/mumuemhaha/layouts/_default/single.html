@@ -6,51 +6,61 @@
 {{- $commentsEnabled := true -}}
 {{- if isset .Params "comment" -}}{{- $commentsEnabled = .Params.comment -}}{{- end -}}
 {{- $generated := hugo.Data.generatedImages | default dict -}}{{- $imageMap := index $generated "images" | default dict -}}
+<div class="reading-progress" aria-hidden="true"><span data-reading-progress></span></div>
 <article class="article-shell">
   <header class="article-header">
     <a class="back-link" href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "back_blog" }}</a>
     <div class="article-labels">
       {{ if .Params.pinned }}<span class="badge badge-accent">{{ partial "icon.html" (dict "name" "pin") }}{{ i18n "pinned" }}</span>{{ end }}
-      {{ with .Params.category }}<a class="badge" href="{{ printf "%s%s/" ("category/" | relLangURL) (. | urlize) }}">{{ . }}</a>{{ end }}
+      {{ with .Params.category }}<a class="badge" href="{{ printf "%s%s/" ("category/" | relLangURL) (. | urlize) }}">{{ partial "icon.html" (dict "name" "folder") }}{{ . }}</a>{{ end }}
     </div>
-    <h1 data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
+    <h1 class="article-title" data-pagefind-body data-pagefind-meta="title">{{ .Title }}</h1>
     <div class="article-meta">
-      <span>{{ partial "icon.html" (dict "name" "calendar") }}{{ .Date.Format "2006-01-02" }}</span>
+      <span class="article-author"><img src="/images/demo-avatar.webp" alt="" width="26" height="26">{{ .Params.author | default site.Params.author }}</span>
+      <span>{{ partial "icon.html" (dict "name" "calendar") }}<time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006-01-02" }}</time></span>
+      {{ if ne (.Date.Format "2006-01-02") (.Lastmod.Format "2006-01-02") }}<span>{{ partial "icon.html" (dict "name" "refresh-cw") }}{{ i18n "updated_on" }} <time datetime="{{ .Lastmod.Format "2006-01-02" }}">{{ .Lastmod.Format "2006-01-02" }}</time></span>{{ end }}
       <span>{{ partial "icon.html" (dict "name" "clock") }}{{ printf (i18n "reading_time") .ReadingTime }}</span>
       <span>{{ partial "icon.html" (dict "name" "file-text") }}{{ printf (i18n "word_count") .WordCount }}</span>
     </div>
-    {{ with .Params.tags }}<div class="tag-row">{{ range . }}<a href="{{ printf "%s%s/" ("tags/" | relLangURL) (. | urlize) }}"># {{ . }}</a>{{ end }}</div>{{ end }}
+    {{ with .Params.tags }}<div class="tag-row">{{ range . }}<a href="{{ printf "%s%s/" ("tags/" | relLangURL) (. | urlize) }}">#{{ . }}</a>{{ end }}</div>{{ end }}
     <span class="visually-hidden" data-pagefind-body>{{ .Params.category }} {{ delimit (.Params.tags | default slice) " " }}</span>
   </header>
-  {{ with .Params.image }}{{- $articleImage := . -}}{{- with index $imageMap . -}}{{- with index . "content" -}}{{- $articleImage = . -}}{{- end -}}{{- end -}}<figure class="article-cover"><img src="{{ $articleImage | safeURL }}" alt="{{ $.Title }}" loading="eager" decoding="async" fetchpriority="high"></figure>{{ end }}
+  {{ with .Params.image }}{{- $articleImage := . -}}{{- with index $imageMap . -}}{{- with index . "content" -}}{{- $articleImage = . -}}{{- end -}}{{- end -}}<figure class="article-cover" id="article-cover"><img src="{{ $articleImage | safeURL }}" alt="{{ $.Title }}" loading="eager" decoding="async" fetchpriority="high"></figure>{{ end }}
   <div class="article-layout">
     <div class="article-main">
       <div id="hugo-article-content" class="markdown-content" data-pagefind-body>{{ $.Content }}</div>
       <footer class="article-footer">
-        <div><strong>木木em哈哈</strong><span>{{ i18n "license_notice" }}</span></div>
+        <div class="article-signature">
+          <img src="/images/demo-avatar.webp" alt="" width="48" height="48">
+          <div><strong>{{ .Params.author | default site.Params.author }}</strong><span>{{ i18n "license_notice" }}</span></div>
+        </div>
         <button class="button button-ghost" type="button" data-hugo-share>{{ partial "icon.html" (dict "name" "share") }}{{ i18n "share" }}</button>
       </footer>
       <nav class="article-neighbors">
-        {{ with .PrevInSection }}<a href="{{ .RelPermalink }}"><small>{{ i18n "previous_article" }}</small><strong>{{ .Title }}</strong></a>{{ else }}<span></span>{{ end }}
-        {{ with .NextInSection }}<a href="{{ .RelPermalink }}"><small>{{ i18n "next_article" }}</small><strong>{{ .Title }}</strong></a>{{ end }}
+        {{ with .PrevInSection }}<a href="{{ .RelPermalink }}" class="neighbor-prev"><small>{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "previous_article" }}</small><strong>{{ .Title }}</strong></a>{{ else }}<span></span>{{ end }}
+        {{ with .NextInSection }}<a href="{{ .RelPermalink }}" class="neighbor-next"><small>{{ i18n "next_article" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</small><strong>{{ .Title }}</strong></a>{{ end }}
       </nav>
     </div>
-    <aside class="article-toc" data-article-toc><span>{{ i18n "article_toc" }}</span><div data-article-toc-nav>{{ .TableOfContents }}</div></aside>
+    <aside class="article-toc" data-article-toc>
+      <span>{{ partial "icon.html" (dict "name" "list-tree") }}{{ i18n "article_toc" }}</span>
+      <div data-article-toc-nav>{{ .TableOfContents }}</div>
+      <div class="toc-progress" aria-label="{{ i18n "reading_progress" }}"><span><i data-toc-progress-bar></i></span><b data-toc-progress>0%</b></div>
+    </aside>
   </div>
   {{- if $commentsEnabled }}
   <section class="article-comments" data-pagefind-ignore>
-    <h2>{{ i18n "comments" }}</h2>
+    <h2>{{ partial "icon.html" (dict "name" "messages") }}{{ i18n "comments" }}</h2>
     <script src="https://giscus.app/client.js" data-repo="mumuhaha487/astro" data-repo-id="R_kgDOPjTkdA" data-category="Announcements" data-category-id="DIC_kwDOPjTkdM4CuiIf" data-mapping="specific" data-term="{{ $commentTerm }}" data-strict="0" data-reactions-enabled="1" data-emit-metadata="0" data-input-position="top" data-theme="{{ "hugo-theme/giscus-theme.css?v=20260907-contrast4" | absURL }}" data-lang="{{ $giscusLanguage }}" data-loading="lazy" crossorigin="anonymous" async></script>
   </section>
   {{- end }}
 </article>
 <aside class="article-float-controls" data-article-float aria-label="文章快捷操作">
   <div class="mobile-article-actions" data-mobile-article-actions>
-    <button class="article-float-button mobile-article-action" type="button" data-toc-open aria-label="打开文章目录" title="打开文章目录">{{ partial "icon.html" (dict "name" "list-tree") }}<span>目录</span></button>
-    <button class="article-float-button mobile-article-action" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">{{ partial "icon.html" (dict "name" "arrow-up") }}<span>顶部</span></button>
+    <button class="article-float-button mobile-article-action" type="button" data-toc-open aria-label="打开文章目录" title="打开文章目录">{{ partial "icon.html" (dict "name" "list-tree") }}<span>{{ i18n "article_toc" }}</span></button>
+    <button class="article-float-button mobile-article-action" type="button" data-back-to-top aria-label="{{ i18n "back_to_top" }}" title="{{ i18n "back_to_top" }}">{{ partial "icon.html" (dict "name" "arrow-up") }}<span>{{ i18n "back_to_top" }}</span></button>
   </div>
   <button class="article-float-button article-actions-toggle" type="button" data-mobile-actions-toggle aria-expanded="false" aria-label="展开文章快捷操作" title="文章快捷操作">{{ partial "icon.html" (dict "name" "chevron-up") }}</button>
-  <button class="article-float-button desktop-back-to-top" type="button" data-back-to-top aria-label="回到顶部" title="回到顶部">{{ partial "icon.html" (dict "name" "arrow-up") }}</button>
+  <button class="article-float-button desktop-back-to-top" type="button" data-back-to-top aria-label="{{ i18n "back_to_top" }}" title="{{ i18n "back_to_top" }}"><svg class="float-ring" viewBox="0 0 48 48" aria-hidden="true"><circle cx="24" cy="24" r="22"></circle><circle cx="24" cy="24" r="22" data-float-ring></circle></svg>{{ partial "icon.html" (dict "name" "arrow-up") }}</button>
 </aside>
 <dialog class="article-toc-dialog" id="article-toc-dialog">
   <section>

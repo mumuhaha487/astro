@@ -1,33 +1,49 @@
-body[data-section="model-arena"] .site-wallpaper{display:none}
-.arena-page{max-width:var(--content-max);margin:0 auto;padding:30px 28px 48px;min-width:0}
-.arena-heading{margin-bottom:22px}
-.arena-track-tabs{display:flex;gap:4px;border-bottom:1px solid var(--line-soft);margin-bottom:20px}
-.arena-track-tabs button{border:0;border-bottom:2px solid transparent;padding:10px 22px 12px;background:transparent;color:var(--muted);font:inherit;font-size:.93rem;cursor:pointer}
-.arena-track-tabs button[aria-selected="true"]{border-color:var(--accent-strong);color:var(--text)}
-.arena-layout{display:grid;grid-template-columns:minmax(260px,390px) minmax(0,1fr);gap:26px;align-items:start}
-.arena-left{display:grid;align-content:start;gap:18px;min-width:0}
-.arena-directory{display:grid;gap:20px;min-width:0}
-.arena-directory-level{display:grid;align-content:start;gap:3px;min-width:0}
-.arena-directory-level h2{margin:0 0 5px;font-size:.77rem;font-weight:600;color:var(--faint)}
-.arena-directory-level button{display:flex;align-items:center;justify-content:space-between;gap:8px;width:100%;min-height:39px;border:0;border-radius:6px;padding:7px 12px;background:transparent;color:var(--muted);font:inherit;font-size:.9rem;text-align:left;overflow-wrap:anywhere;cursor:pointer}
-.arena-directory-level button:hover{background:var(--surface-2);color:var(--text)}
-.arena-directory-level button.active{background:var(--surface-2);color:var(--text);box-shadow:inset 2px 0 var(--accent-strong)}
-.arena-directory-level button .icon{flex:none;width:14px;height:14px}
-.arena-directory-level [hidden],.arena-viewer [hidden],.arena-empty[hidden]{display:none}
-.arena-ready{flex:none;font-size:.67rem;color:var(--green)}
-.arena-empty{margin:5px 12px;color:var(--faint);font-size:.83rem}
-.arena-prompt{min-width:0;border-top:1px solid var(--line-soft);padding-top:16px}
-.arena-prompt[hidden]{display:none}
-.arena-prompt h2{margin:0 0 9px;color:var(--faint);font-size:.77rem;font-weight:600}
-.arena-prompt p{max-height:320px;margin:0;overflow:auto;white-space:pre-wrap;overflow-wrap:anywhere;color:var(--muted);font-size:.88rem;line-height:1.65}
-.arena-viewer{min-width:0;border-top:1px solid var(--line-soft)}
-.arena-viewer-head{display:flex;align-items:center;justify-content:space-between;gap:14px;min-height:76px;padding:13px 0}
-.arena-viewer-head small{display:block;color:var(--faint);font-size:.74rem;overflow-wrap:anywhere}
-.arena-viewer-head h2{margin:3px 0 0;font-size:1.2rem;line-height:1.35;overflow-wrap:anywhere}
-.arena-viewer-head a{flex:none;display:grid;place-items:center;width:34px;height:34px;border:1px solid var(--line-soft);border-radius:6px;color:var(--text)}
-.arena-viewer-head a .icon{width:17px;height:17px}
-.arena-viewer-empty{display:grid;place-items:center;min-height:380px;border:1px solid var(--line-soft);border-radius:6px;color:var(--faint)}
-.arena-viewer iframe{display:block;width:100%;height:clamp(480px,72vh,900px);border:1px solid var(--line-soft);border-radius:6px;background:#fff}
-.arena-viewer iframe[hidden]{display:none}
-@media(max-width:850px){.arena-layout{grid-template-columns:minmax(0,1fr)}.arena-directory{grid-template-columns:repeat(3,minmax(0,1fr));gap:12px}.arena-viewer iframe{height:650px}}
-@media(max-width:560px){.arena-page{padding:20px 14px 34px}.arena-directory{grid-template-columns:minmax(0,1fr);gap:12px}.arena-directory-level{display:flex;flex-wrap:wrap;gap:6px}.arena-directory-level h2{width:100%}.arena-directory-level button{width:auto;max-width:100%;min-height:34px;border:1px solid var(--line-soft);padding:5px 10px}.arena-directory-level button.active{border-color:var(--accent-strong);box-shadow:none}.arena-viewer iframe{height:620px}.arena-viewer-empty{min-height:300px}}
+/* Model arena — Quiet theme */
+.arena-heading { margin-bottom: 32px; }
+.arena-track-tabs { display: inline-flex; flex-wrap: wrap; gap: 2px; margin-bottom: 28px; padding: 2px; border-radius: 10px; background: var(--surface-2); }
+.arena-track-tabs button { height: 32px; padding: 0 20px; border: 0; border-radius: 8px; background: transparent; color: var(--muted); font-size: .88rem; transition: color .2s, background .2s; }
+.arena-track-tabs button:hover { color: var(--text); }
+.arena-track-tabs button[aria-selected="true"] { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .2); }
+.arena-layout { display: grid; grid-template-columns: minmax(240px, 300px) minmax(0, 1fr); gap: 32px; align-items: start; }
+.arena-left { display: grid; align-content: start; gap: 28px; min-width: 0; }
+.arena-directory { display: grid; gap: 28px; min-width: 0; }
+.arena-directory-level { display: grid; align-content: start; gap: 1px; min-width: 0; }
+.arena-directory-level h2 { display: flex; align-items: baseline; gap: 10px; margin: 0 0 10px; color: var(--faint); font: 500 .7rem/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.arena-directory-level h2 span { color: var(--accent); }
+.arena-directory-level button { display: flex; align-items: center; justify-content: space-between; gap: 8px; width: 100%; min-height: 38px; padding: 7px 12px; border: 0; border-left: 1px solid var(--line); border-radius: 0; background: transparent; color: var(--muted); font-size: .9rem; text-align: left; overflow-wrap: anywhere; transition: color .2s, border-color .2s, background .2s; }
+.arena-directory-level button:hover { color: var(--text); background: var(--surface); }
+.arena-directory-level button.active { color: var(--text); border-left-color: var(--accent); background: var(--surface); }
+.arena-directory-level button .icon { flex: none; width: 13px; height: 13px; color: var(--faint); }
+.arena-directory-level [hidden], .arena-viewer [hidden], .arena-empty[hidden] { display: none; }
+.arena-ready { flex: none; color: var(--green); font: 500 .62rem/1 var(--font-mono); letter-spacing: .06em; }
+.arena-empty { margin: 4px 12px; color: var(--faint); font-size: .82rem; }
+.arena-prompt { min-width: 0; padding-top: 16px; border-top: 1px solid var(--line); }
+.arena-prompt[hidden] { display: none; }
+.arena-prompt h2 { display: flex; align-items: center; gap: 8px; margin: 0 0 10px; color: var(--faint); font: 500 .7rem/1 var(--font-mono); letter-spacing: .14em; text-transform: uppercase; }
+.arena-prompt h2 .icon { display: none; }
+.arena-prompt p { max-height: 300px; margin: 0; overflow: auto; white-space: pre-wrap; overflow-wrap: anywhere; color: var(--muted); font: .84rem/1.75 var(--font-sans); }
+.arena-viewer { min-width: 0; border: 1px solid var(--line); border-radius: var(--radius-lg); background: var(--card); overflow: hidden; }
+.arena-viewer-head { display: flex; align-items: center; gap: 12px; min-height: 58px; padding: 8px 8px 8px 18px; border-bottom: 1px solid var(--line); }
+.arena-viewer-head > div { flex: 1; min-width: 0; }
+.arena-viewer-head small { display: block; color: var(--faint); font: 500 .68rem/1.4 var(--font-mono); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arena-viewer-head h2 { margin: 1px 0 0; font-size: .96rem; font-weight: 600; line-height: 1.35; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.arena-stage { position: relative; }
+.arena-viewer-empty { display: grid; place-items: center; min-height: 460px; color: var(--faint); font-size: .9rem; }
+.arena-viewer iframe { display: block; width: 100%; height: clamp(520px, 74vh, 920px); border: 0; background: #fff; }
+.arena-viewer iframe[hidden] { display: none; }
+@media (max-width: 960px) {
+  .arena-layout { grid-template-columns: minmax(0, 1fr); }
+  .arena-directory { grid-template-columns: repeat(3, minmax(0, 1fr)); gap: 16px; }
+  .arena-viewer iframe { height: 650px; }
+}
+@media (max-width: 600px) {
+  .arena-track-tabs { display: flex; }
+  .arena-track-tabs button { flex: 1; padding: 0 12px; }
+  .arena-directory { grid-template-columns: minmax(0, 1fr); gap: 20px; }
+  .arena-directory-level { display: flex; flex-wrap: wrap; gap: 6px; }
+  .arena-directory-level h2 { width: 100%; margin-bottom: 4px; }
+  .arena-directory-level button { width: auto; max-width: 100%; min-height: 34px; padding: 5px 12px; border: 1px solid var(--line); border-radius: 8px; }
+  .arena-directory-level button.active { border-color: var(--text); }
+  .arena-viewer iframe { height: 620px; }
+  .arena-viewer-empty { min-height: 300px; }
+}

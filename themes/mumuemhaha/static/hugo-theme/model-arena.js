@@ -12,6 +12,7 @@
   const placeholder = root.querySelector("[data-arena-placeholder]");
   const promptSection = root.querySelector("[data-arena-prompt]");
   const promptText = root.querySelector("[data-arena-prompt-text]");
+  const openLink = root.querySelector("[data-arena-open]");
 
   function render(choice, updateUrl = true) {
     const track = tracks.find((node) => node.dataset.arenaTrack === choice.track) || tracks[0];
@@ -51,7 +52,9 @@
       frame.title = `${model.dataset.name} 作品`;
       frame.hidden = false;
       placeholder.hidden = true;
+      if (openLink) { openLink.href = source; openLink.hidden = false; }
     } else {
+      if (openLink) { openLink.hidden = true; openLink.removeAttribute("href"); }
       frame.hidden = true;
       if (frame.dataset.source) frame.src = "about:blank";
       delete frame.dataset.source;

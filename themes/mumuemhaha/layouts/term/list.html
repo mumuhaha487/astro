@@ -2,7 +2,10 @@
 {{- $pages := .Pages.ByDate.Reverse -}}
 {{- $paginator := .Paginate $pages 30 -}}
 <section class="content-page" data-responsive-post-list data-post-list-total="{{ len $pages }}" data-post-list-page="{{ $paginator.PageNumber }}">
-  <header class="page-heading"><p>ARCHIVE</p><h1>{{ .Title }}</h1><span>{{ printf (i18n "article_count") (len $pages) }}</span></header>
+  <header class="page-heading page-heading-row">
+    <div><p>{{ upper (.Data.Plural | default "archive") }}</p><h1>{{ if eq .Data.Plural "tags" }}<span class="heading-hash">#</span>{{ end }}{{ .Title }}</h1><span>{{ printf (i18n "article_count") (len $pages) }}</span></div>
+    {{ with .Parent }}<a class="button button-ghost" href="{{ .RelPermalink }}">{{ partial "icon.html" (dict "name" "arrow-left") }}{{ .Title }}</a>{{ end }}
+  </header>
   <div class="post-grid">{{ range $paginator.Pages }}{{ partial "post-card.html" (dict "page" .) }}{{ end }}</div>
   {{ partial "pagination.html" $paginator }}
 </section>

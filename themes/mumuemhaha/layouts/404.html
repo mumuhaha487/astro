@@ -1,0 +1,14 @@
+{{ define "main" }}
+<section class="content-page not-found">
+  <div>
+    <p class="not-found-code" aria-hidden="true">404</p>
+    <h1>{{ i18n "not_found_title" }}</h1>
+    <p>{{ i18n "not_found_desc" }}</p>
+    <div class="profile-actions">
+      <a class="button button-primary" href="{{ site.Home.RelPermalink }}">{{ partial "icon.html" (dict "name" "home") }}{{ i18n "back_home" }}</a>
+      <a class="button button-ghost" href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "book-open") }}{{ i18n "blog" }}</a>
+      <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}{{ i18n "search_articles" }}</button>
+    </div>
+  </div>
+</section>
+{{ end }}

@@ -1,14 +1,17 @@
 {{- $posts := partial "sorted-posts.html" . -}}
 {{- $paginator := .Paginate $posts 30 -}}
+{{- $years := slice -}}
+{{- range (where site.RegularPages "Section" "posts").GroupByDate "2006" -}}{{- if ge (int .Key) 2000 -}}{{- $years = $years | append (dict "Key" .Key "Count" (len .Pages)) -}}{{- end -}}{{- end -}}
+{{- $yearMax := 1 -}}{{- range $years -}}{{- if gt .Count $yearMax -}}{{- $yearMax = .Count -}}{{- end -}}{{- end -}}
 <section class="content-page blog-page" data-responsive-post-list data-post-list-total="{{ len $posts }}" data-post-list-page="{{ $paginator.PageNumber }}">
   <header class="page-heading page-heading-row">
     <div><p>{{ upper (i18n "writing_notes") }}</p><h1>{{ i18n "blog" }}</h1><span>{{ printf (i18n "blog_count") (len $posts) }}</span></div>
-    <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}{{ i18n "search_all" }}</button>
+    <button class="button button-ghost" type="button" data-search-trigger>{{ partial "icon.html" (dict "name" "search") }}{{ i18n "search_all" }}<kbd data-shortcut-label>Ctrl K</kbd></button>
   </header>
-  <div class="taxonomy-strip">
-    <a href="{{ "blog/" | relLangURL }}" class="active">{{ i18n "all" }} <span>{{ len $posts }}</span></a>
+  <nav class="taxonomy-strip" aria-label="{{ i18n "categories" }}">
+    <a href="{{ "blog/" | relLangURL }}" class="active" aria-current="page">{{ i18n "all" }} <span>{{ len $posts }}</span></a>
     {{ range site.Taxonomies.category.ByCount }}<a href="{{ .Page.RelPermalink }}">{{ .Page.Title }} <span>{{ .Count }}</span></a>{{ end }}
-  </div>
+  </nav>
   <div class="blog-layout">
     <div>
       <div class="post-grid">
@@ -17,7 +20,15 @@
       {{ partial "pagination.html" $paginator }}
     </div>
     <aside class="blog-aside">
-      <section><div class="section-title">{{ i18n "popular_tags" }}</div><div class="tag-cloud">{{ range first 24 site.Taxonomies.tags.ByCount }}<a href="{{ .Page.RelPermalink }}"># {{ .Page.Title }}<sup>{{ .Count }}</sup></a>{{ end }}</div></section>
+      {{ with $years }}
+      <section class="year-chart-panel">
+        <div class="section-title">{{ partial "icon.html" (dict "name" "activity") }}{{ i18n "posts_by_year" }}</div>
+        <ol class="year-chart">
+          {{ range sort . "Key" "asc" }}<li style="--h:{{ printf "%.1f" (div (mul (float .Count) 100) (float $yearMax)) }}%" title="{{ .Key }} · {{ .Count }}"><b>{{ .Count }}</b><span></span><small>{{ slicestr .Key 2 }}</small></li>{{ end }}
+        </ol>
+      </section>
+      {{ end }}
+      <section><div class="section-title">{{ partial "icon.html" (dict "name" "tag") }}{{ i18n "popular_tags" }}</div><div class="tag-cloud">{{ range first 24 site.Taxonomies.tags.ByCount }}<a href="{{ .Page.RelPermalink }}"># {{ .Page.Title }}<sup>{{ .Count }}</sup></a>{{ end }}</div></section>
     </aside>
   </div>
 </section>

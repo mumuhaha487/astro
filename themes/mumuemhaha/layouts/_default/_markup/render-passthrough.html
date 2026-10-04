@@ -1,0 +1,9 @@
+{{- $options := dict "output" "htmlAndMathml" "displayMode" (eq .Type "block") "throwOnError" false -}}
+{{- with try (transform.ToMath .Inner $options) -}}
+  {{- with .Err -}}
+    {{- warnf "Unable to render math in %s: %s" $.Page.RelPermalink . -}}
+    <code class="math-error">{{ $.Inner }}</code>
+  {{- else -}}
+    {{- .Value -}}
+  {{- end -}}
+{{- end -}}
