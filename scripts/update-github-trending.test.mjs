@@ -1,13 +1,74 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { resolveDeepSeekModel, selectDeepSeekModel } from "./deepseek-client.mjs";
-import { parseTrending, rankRepositories, request, selectFeatures } from "./update-github-trending.mjs";
+import {
+  DEFAULT_BASE_URL,
+  DEFAULT_MODEL,
+  getChatCompletionsUrl,
+  getModelsUrl,
+  normalizeBaseUrl,
+  resolveDeepSeekModel,
+  selectDeepSeekModel,
+} from "./deepseek-client.mjs";
+import { analyze, parseTrending, rankRepositories, request, selectFeatures } from "./update-github-trending.mjs";
 import { categories, classifyRepositories, validateClassification } from "./github-trending-tags.mjs";
+
+test("normalizes endpoint root and /v1 paths without query credentials or duplication", () => {
+  assert.equal(DEFAULT_BASE_URL, "https://api.vmss.cn/");
+  assert.equal(DEFAULT_MODEL, "auto-sh");
+  assert.equal(normalizeBaseUrl("https://api.vmss.cn"), "https://api.vmss.cn/v1");
+  assert.equal(normalizeBaseUrl("https://api.vmss.cn/"), "https://api.vmss.cn/v1");
+  assert.equal(normalizeBaseUrl("https://api.vmss.cn/v1"), "https://api.vmss.cn/v1");
+  assert.equal(normalizeBaseUrl("https://api.vmss.cn/v1/"), "https://api.vmss.cn/v1");
+  assert.equal(normalizeBaseUrl("https://custom.gateway:8443/proxy"), "https://custom.gateway:8443/proxy/v1");
+  assert.equal(normalizeBaseUrl("https://custom.gateway:8443/proxy/v1/"), "https://custom.gateway:8443/proxy/v1");
+  assert.equal(normalizeBaseUrl("https://user:pass@api.vmss.cn/v1?token=secret#frag"), "https://api.vmss.cn/v1");
+  assert.equal(getChatCompletionsUrl("https://api.vmss.cn/"), "https://api.vmss.cn/v1/chat/completions");
+  assert.equal(getModelsUrl("https://api.vmss.cn/"), "https://api.vmss.cn/v1/models");
+});
+
+test("explicit model or default bypasses /models discovery without network requests", async () => {
+  let fetchCalled = false;
+  const failingFetch = async () => {
+    fetchCalled = true;
+    throw new Error("fetch should not be called when model is configured");
+  };
+
+  const defaultModel = await resolveDeepSeekModel("test-key", { fetchImpl: failingFetch });
+  assert.equal(defaultModel, "auto-sh");
+  assert.equal(fetchCalled, false);
+
+  const customModel = await resolveDeepSeekModel("test-key", { preferred: "custom-model", fetchImpl: failingFetch });
+  assert.equal(customModel, "custom-model");
+  assert.equal(fetchCalled, false);
+
+  await assert.rejects(() => resolveDeepSeekModel("", { fetchImpl: failingFetch }), /DEEPSEEK_API_KEY is required/);
+});
+
+test("model discovery fallback when preferred model is explicitly empty", async () => {
+  assert.equal(selectDeepSeekModel(["embedding/model", "deepseek/deepseek-v4.1-flash", "deepseek/chat"]), "deepseek/deepseek-v4.1-flash");
+  assert.equal(selectDeepSeekModel(["deepseek/old", "deepseek/custom"], "deepseek/custom"), "deepseek/custom");
+  assert.throws(() => selectDeepSeekModel(["other/model"]), /No DeepSeek text model/);
+
+  let requestedUrl = "";
+  let authHeader = "";
+  const model = await resolveDeepSeekModel("test-key", {
+    preferred: "",
+    baseUrl: "https://api.vmss.cn/",
+    fetchImpl: async (url, options) => {
+      requestedUrl = url;
+      authHeader = options?.headers?.Authorization || "";
+      return { ok: true, json: async () => ({ data: [{ id: "deepseek/deepseek-v4.1-flash" }] }) };
+    },
+  });
+  assert.equal(requestedUrl, "https://api.vmss.cn/v1/models");
+  assert.equal(authHeader, "Bearer test-key");
+  assert.equal(model, "deepseek/deepseek-v4.1-flash");
+});
 
 test("AI classification uses the fixed taxonomy and preserves repository order across batches", async () => {
   const repositories = [{ repo: "a/security", description: "" }, { repo: "b/skills" }, { repo: "c/unknown" }];
   const batches = [];
-  const result = await classifyRepositories(repositories, { apiKey: "test", model: "test-model", batchSize: 2, generate: async (batch) => {
+  const result = await classifyRepositories(repositories, { apiKey: "test", model: "auto-sh", batchSize: 2, generate: async (batch) => {
     batches.push(batch.map((repo) => repo.repo));
     return batch.length === 2
       ? JSON.stringify({ items: [{ id: 1, tags: ["AI", "Skill"] }, { id: 0, tags: ["安全", "开发工具"] }] })
@@ -32,7 +93,7 @@ test("bounds AI tags and isolates incomplete classification", async () => {
   try {
     const calls = [];
     const tagged = await classifyRepositories([{ repo: "good/ai" }, { repo: "bad/response" }, { repo: "good/security" }], {
-      apiKey: "test", model: "test-model", generate: async (batch) => {
+      apiKey: "test", model: "auto-sh", generate: async (batch) => {
         calls.push(batch.map((item) => item.repo));
         if (batch.length > 1 || batch[0].repo === "bad/response") return { items: [] };
         return { items: [{ id: 0, tags: [batch[0].repo === "good/ai" ? "AI" : "安全"] }] };
@@ -44,45 +105,81 @@ test("bounds AI tags and isolates incomplete classification", async () => {
     assert.ok(warnings.some((message) => message.includes("bad/response")));
   } finally { console.warn = originalWarn; }
   await assert.rejects(() => classifyRepositories([{ repo: "owner/repo" }], {
-    apiKey: "test", model: "test-model", generate: async () => { throw new Error("AI tag service: HTTP 401"); },
+    apiKey: "test", model: "auto-sh", generate: async () => { throw new Error("AI tag service: HTTP 401"); },
   }), /HTTP 401/);
   console.warn = () => {};
   try {
     await assert.rejects(() => classifyRepositories(Array.from({ length: 5 }, (_, index) => ({ repo: `bad/${index}` })), {
-      apiKey: "test", model: "test-model", generate: async () => ({ items: [] }),
+      apiKey: "test", model: "auto-sh", generate: async () => ({ items: [] }),
     }), /refusing mostly unclassified snapshot/);
   } finally { console.warn = originalWarn; }
 });
 
-test("AI request sends the bounded taxonomy and repository evidence", async () => {
+test("AI request routes to configured endpoint and model with bounded taxonomy", async () => {
   const originalFetch = globalThis.fetch;
+  let targetUrl = "";
   let body;
   globalThis.fetch = async (url, options) => {
-    assert.equal(url, "https://deepseek.inc.re/v1/chat/completions");
-    assert.equal(options.headers.Authorization, "Bearer test");
+    targetUrl = url;
+    assert.equal(options.headers.Authorization, "Bearer test-key");
     body = JSON.parse(options.body);
     return { ok: true, json: async () => ({ choices: [{ message: { content: '{"items":[{"id":0,"tags":["教程"]}]}' } }] }) };
   };
   try {
-    const tagged = await classifyRepositories([{ repo: "owner/guide", description: "A course" }], { apiKey: "test", model: "test-model" });
+    const tagged = await classifyRepositories(
+      [{ repo: "owner/guide", description: "A course" }],
+      { apiKey: "test-key", model: "auto-sh", baseUrl: "https://api.vmss.cn/" },
+    );
+    assert.equal(targetUrl, "https://api.vmss.cn/v1/chat/completions");
     assert.deepEqual(tagged[0].tags, ["教程"]);
     assert.match(body.messages[0].content, /AI、安全/);
     assert.match(body.messages[0].content, /1 至 3/);
     assert.match(body.messages[1].content, /owner\/guide/);
-    assert.equal(body.model, "test-model");
+    assert.equal(body.model, "auto-sh");
   } finally { globalThis.fetch = originalFetch; }
 });
 
-test("discovers a currently available DeepSeek text model", async () => {
-  assert.equal(selectDeepSeekModel(["embedding/model", "deepseek/deepseek-v4.1-flash", "deepseek/chat"]), "deepseek/deepseek-v4.1-flash");
-  assert.equal(selectDeepSeekModel(["deepseek/old", "deepseek/custom"], "deepseek/custom"), "deepseek/custom");
-  assert.throws(() => selectDeepSeekModel(["other/model"]), /No DeepSeek text model/);
-  const model = await resolveDeepSeekModel("test", { fetchImpl: async (url, options) => {
-    assert.equal(url, "https://deepseek.inc.re/v1/models");
-    assert.equal(options.headers.Authorization, "Bearer test");
-    return { ok: true, json: async () => ({ data: [{ id: "deepseek/deepseek-v4.1-flash" }] }) };
-  } });
-  assert.equal(model, "deepseek/deepseek-v4.1-flash");
+test("analyze sends request to normalized endpoint with specified model and validates structure", async () => {
+  const originalFetch = globalThis.fetch;
+  let targetUrl = "";
+  let body;
+  globalThis.fetch = async (url, options) => {
+    targetUrl = url;
+    body = JSON.parse(options.body);
+    return {
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              summary: "这是一个高性能开发工具，提供便捷的代码分析与自动化构建能力，满足团队规范要求。",
+              purpose: "该项目主要用于解决多语言项目的依赖管理和自动化分析问题，统一并优化工程环境。",
+              advantages: "与同类传统脚本相比，采用原生二进制并行执行，吞吐量提升明显且整体系统资源消耗更低。",
+              innovations: "创新性地采用增量图分析与细粒度缓存机制，全面避免日常开发中无效的重复分析计算过程。",
+              scenarios: "适用于大规模微服务仓库的持续集成流水线，以及团队本地多模块跨语言协同开发调试场景。",
+              usefulness: "工程效率团队、平台架构师与后端开发人员可以借此大幅简化日常流水线配置并加速迭代。",
+              limitations: "目前对某些冷门特定语法的支持仍在持续完善中，在复杂混合语言场景需要额外的调试配置。",
+            }),
+          },
+        }],
+      }),
+    };
+  };
+  try {
+    const result = await analyze(
+      { repo: "owner/cool-tool", description: "A cool tool", language: "TypeScript" },
+      "# Cool Tool\nDetailed README documentation",
+      "test-key",
+      "auto-sh",
+      "https://api.vmss.cn/",
+    );
+    assert.equal(targetUrl, "https://api.vmss.cn/v1/chat/completions");
+    assert.equal(body.model, "auto-sh");
+    assert.ok(result.summary.length >= 20);
+    assert.ok(result.purpose.length >= 35);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
 
 test("parses daily growth and repository metadata", () => {

@@ -28,11 +28,13 @@ jobs:
       - name: Install parser
         run: npm ci --ignore-scripts --omit=dev
       - name: Verify ranking and deduplication
-        run: node --test scripts/update-github-trending.test.mjs scripts/update-github-trending-periods.test.mjs scripts/github-trending-ui.test.mjs
+        run: node --test scripts/update-github-trending.test.mjs scripts/update-github-trending-periods.test.mjs scripts/github-trending-ui.test.mjs scripts/backfill-github-trending-tags.test.mjs scripts/github-trending-workflow.test.mjs
       - name: Generate trending data with retries
         env:
           GITHUB_TOKEN: ${{ github.token }}
           DEEPSEEK_API_KEY: ${{ secrets.DEEPSEEK_API_KEY }}
+          DEEPSEEK_BASE_URL: https://api.vmss.cn/
+          DEEPSEEK_MODEL: auto-sh
         run: |
           if [ -z "$GITHUB_TOKEN" ] || [ -z "$DEEPSEEK_API_KEY" ]; then
             echo "GITHUB_TOKEN and DEEPSEEK_API_KEY are required."

@@ -100,7 +100,7 @@ translationKey: my-post    # 与 .en.md / .ja.md 译文关联
 
 ## 自动化
 
-- **GitHub 热榜**：`.github/workflows/github-trending.yml` 每天 05:00（北京时间）抓取 GitHub Trending，并用 DeepSeek 生成解读后提交到 `main`。需要在仓库 Secrets 中配置 `DEEPSEEK_API_KEY`。
+- **GitHub 热榜**：`.github/workflows/github-trending.yml` 每天 05:00（北京时间，支持手动触发 `workflow_dispatch`）抓取 GitHub Trending，调用 AI 网关（默认 `https://api.vmss.cn/`，模型 `auto-sh`）生成项目分类与深度解读后提交到 `main`。需要在仓库 Secrets 中配置 `DEEPSEEK_API_KEY`，支持通过 `DEEPSEEK_BASE_URL` 与 `DEEPSEEK_MODEL` 自定义接口与模型。工作流配置 350 分钟超时上限与指数退避重试，保障网络或接口波动时的可靠生成。
 - **友链**：在 `friends/entries/` 新建一个 JSON 文件（格式见 `friends/schema.json`）并提交 PR，合并后自动上线。
 
 ## 许可与致谢

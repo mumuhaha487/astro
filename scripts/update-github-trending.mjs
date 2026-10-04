@@ -2,7 +2,7 @@ import { readFile, readdir, mkdir, writeFile } from "node:fs/promises";
 import { join, resolve } from "node:path";
 import { fileURLToPath } from "node:url";
 import { classifyRepositories, version as tagVersion } from "./github-trending-tags.mjs";
-import { resolveDeepSeekModel } from "./deepseek-client.mjs";
+import { resolveDeepSeekModel, getChatCompletionsUrl } from "./deepseek-client.mjs";
 import { parse } from "node-html-parser";
 
 const root = resolve(fileURLToPath(new URL("..", import.meta.url)));
@@ -114,10 +114,11 @@ function validAnalysis(value) {
     && sections.every((section) => typeof value[section] === "string" && value[section].trim().length >= 35);
 }
 
-async function analyze(repo, readme, apiKey, model) {
+export async function analyze(repo, readme, apiKey, model, baseUrl) {
   const input = JSON.stringify({ repository: repo.repo, description: repo.description, language: repo.language, readme: readme.slice(0, 17000) });
-  const response = await request("https://deepseek.inc.re/v1/chat/completions", {
+  const response = await request(getChatCompletionsUrl(baseUrl), {
     method: "POST",
+    signal: AbortSignal.timeout(90000),
     headers: { "Authorization": `Bearer ${apiKey}`, "Content-Type": "application/json" },
     body: JSON.stringify({
       model,
@@ -133,7 +134,7 @@ async function analyze(repo, readme, apiKey, model) {
   const text = payload.choices?.[0]?.message?.content;
   if (typeof text !== "string") throw new Error(`AI response for ${repo.repo} has no content`);
   let value;
-  try { value = JSON.parse(text.replace(/^```(?:json)?\s*|\s*```$/g, "")); }
+  try { value = JSON.parse(text.replace(/^\`\`\`(?:json)?\s*|\s*\`\`\`$/g, "")); }
   catch { throw new Error(`AI response for ${repo.repo} is not JSON`); }
   if (!validAnalysis(value)) throw new Error(`AI response for ${repo.repo} is incomplete`);
   return Object.fromEntries(["summary", ...sections].map((key) => [key, plain(value[key])]));
@@ -159,13 +160,19 @@ function articleMarkdown(repo, analysis, date) {
   return `---\n${Object.entries(frontmatter).map(([key, value]) => `${key}: ${JSON.stringify(value)}`).join("\n")}\n---\n\n${analysis.summary}\n\n${labels.map(([key, title]) => `## ${title}\n\n${analysis[key]}`).join("\n\n")}\n\n[查看 GitHub 仓库](${repo.url})\n\n> 本文基于抓取时的项目 README 和仓库简介整理；功能、限制与文档可能随项目更新而变化。\n`;
 }
 
-export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()), githubToken = process.env.GITHUB_TOKEN, apiKey = process.env.DEEPSEEK_API_KEY } = {}) {
+export async function run({
+  date = new Intl.DateTimeFormat("en-CA", { timeZone: "Asia/Shanghai", year: "numeric", month: "2-digit", day: "2-digit" }).format(new Date()),
+  githubToken = process.env.GITHUB_TOKEN,
+  apiKey = process.env.DEEPSEEK_API_KEY,
+  model: configuredModel = process.env.DEEPSEEK_MODEL,
+  baseUrl = process.env.DEEPSEEK_BASE_URL,
+} = {}) {
   if (!githubToken || !apiKey) throw new Error("GITHUB_TOKEN and DEEPSEEK_API_KEY must be configured in Actions Secrets");
   if (!/^\d{4}-\d{2}-\d{2}$/.test(date)) throw new Error("Invalid date");
   try { await readFile(join(dataRoot, `${date}.json`)); console.log(`Snapshot ${date} exists; nothing to update.`); return; }
   catch (error) { if (error.code !== "ENOENT") throw error; }
 
-  const model = await resolveDeepSeekModel(apiKey);
+  const model = await resolveDeepSeekModel(apiKey, { preferred: configuredModel, baseUrl });
   const groups = [];
   const fetchFailures = [];
   for (const language of languages) {
@@ -178,7 +185,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
       console.warn(`Could not fetch ${url}: ${error.message}`);
     }
   }
-  const candidates = await classifyRepositories(rankRepositories(groups), { apiKey, model });
+  const candidates = await classifyRepositories(rankRepositories(groups), { apiKey, model, baseUrl });
   if (candidates.length < 50) {
     const details = fetchFailures.length ? ` Fetch failures: ${fetchFailures.join(" | ")}` : "";
     throw new Error(`Only ${candidates.length} unique repositories found; refusing incomplete daily snapshot.${details}`);
@@ -194,7 +201,7 @@ export async function run({ date = new Intl.DateTimeFormat("en-CA", { timeZone: 
     if (!readme) continue;
     let analysis;
     for (let attempt = 0; attempt < 2; attempt++) {
-      try { analysis = await analyze(repo, readme, apiKey, model); break; }
+      try { analysis = await analyze(repo, readme, apiKey, model, baseUrl); break; }
       catch (error) {
         if (/HTTP 401|HTTP 403/.test(error.message)) throw error;
         console.warn(`Analysis attempt ${attempt + 1} failed for ${repo.repo}: ${error.message}`);

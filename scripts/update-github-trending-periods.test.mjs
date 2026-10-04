@@ -1,6 +1,6 @@
 import assert from "node:assert/strict";
 import { test } from "node:test";
-import { aggregatePeriod, buildSearchIndex, periodDefinitions } from "./update-github-trending-periods.mjs";
+import { aggregatePeriod, analyzeHalf, buildSearchIndex, periodDefinitions } from "./update-github-trending-periods.mjs";
 
 const repo = (name, stars, article = "") => ({
   repo: `owner/${name}`, name, url: `https://github.com/owner/${name}`,
@@ -47,4 +47,50 @@ test("search index finds archive entries and period articles without duplicate r
   assert.equal(result[0].periods.weekly, "/weekly/alpha/");
   assert.deepEqual(result[0].tags, ["AI", "Skill"]);
   assert.equal(result[1].repo, "owner/Beta");
+});
+
+test("period analysis calls normalized endpoint with specified model and validates section lengths", async () => {
+  const originalFetch = globalThis.fetch;
+  let targetUrl = "";
+  let body;
+  const longText = "这是一段非常详尽客观的架构与实践剖析内容，全面展示了系统设计原则、组件协作以及在真实工程环境中的落地体验，能够充分满足周期深度榜单的字数与质量要求。";
+  globalThis.fetch = async (url, options) => {
+    targetUrl = url;
+    body = JSON.parse(options.body);
+    return {
+      ok: true,
+      json: async () => ({
+        choices: [{
+          message: {
+            content: JSON.stringify({
+              summary: "这是一个在周期内表现优异的开源项目，具备出色的工程稳定性和创新设计。",
+              position: longText,
+              core: longText,
+              architecture: longText,
+              workflow: longText,
+              differentiation: longText,
+            }),
+          },
+        }],
+      }),
+    };
+  };
+  try {
+    const result = await analyzeHalf(
+      { repo: "owner/cool-period", description: "Period tool", language: "Go" },
+      "# README",
+      "weekly",
+      ["position", "core", "architecture", "workflow", "differentiation"],
+      "test-key",
+      "auto-sh",
+      true,
+      "https://api.vmss.cn/",
+    );
+    assert.equal(targetUrl, "https://api.vmss.cn/v1/chat/completions");
+    assert.equal(body.model, "auto-sh");
+    assert.ok(result.summary.length >= 20);
+    assert.ok(result.position.length >= 54);
+  } finally {
+    globalThis.fetch = originalFetch;
+  }
 });
