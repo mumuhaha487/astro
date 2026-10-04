@@ -7,7 +7,10 @@ description: "ECC 是一个面向编码智能体的性能优化系统，将规�
 repository: "affaan-m/ECC"
 repository_url: "https://github.com/affaan-m/ECC"
 language: "JavaScript"
-tags: ["AI","Skill"]
+tags:
+  - AI
+  - 开发工具
+  - 安全
 comment: false
 ---
 

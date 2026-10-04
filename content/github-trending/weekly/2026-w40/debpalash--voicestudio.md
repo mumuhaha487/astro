@@ -7,7 +7,10 @@ description: "VoiceStudio 是开源、可完全本地运行的语音平台，定
 repository: "debpalash/VoiceStudio"
 repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
-tags: ["AI","音视频"]
+tags:
+  - AI
+  - 音视频
+  - 开发工具
 comment: false
 ---
 
