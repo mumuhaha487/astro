@@ -4,9 +4,9 @@
   "slug": "2026",
   "label": "2026 年",
   "start": "2026-01-01",
-  "through": "2026-10-05",
+  "through": "2026-10-06",
   "tagVersion": 2,
-  "observedDays": 16,
+  "observedDays": 17,
   "candidates": [
     {
       "repo": "debpalash/VoiceStudio",
@@ -105,11 +105,11 @@
       "tags": [
         "Skill"
       ],
-      "totalStars": 10508,
-      "days": 14,
+      "totalStars": 11536,
+      "days": 15,
       "firstPlaceDays": 0,
       "bestRank": 4,
-      "latestSeen": "2026-10-05"
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "hydra-db/hydradb",
@@ -135,13 +135,29 @@
       "tags": [
         "AI",
         "Skill",
-        "开发工具"
+        "安全"
       ],
-      "totalStars": 7388,
-      "days": 8,
+      "totalStars": 8148,
+      "days": 9,
       "firstPlaceDays": 0,
       "bestRank": 3,
-      "latestSeen": "2026-10-05"
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "DietrichGebert/ponytail",
+      "name": "ponytail",
+      "url": "https://github.com/DietrichGebert/ponytail",
+      "language": "JavaScript",
+      "description": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 7545,
+      "days": 7,
+      "firstPlaceDays": 1,
+      "bestRank": 1,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "obra/superpowers",
@@ -153,11 +169,11 @@
         "Skill",
         "开发工具"
       ],
-      "totalStars": 7079,
-      "days": 14,
+      "totalStars": 7483,
+      "days": 15,
       "firstPlaceDays": 0,
       "bestRank": 7,
-      "latestSeen": "2026-10-05"
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "dream-num/univer",
@@ -207,20 +223,36 @@
       "latestSeen": "2026-10-01"
     },
     {
-      "repo": "DietrichGebert/ponytail",
-      "name": "ponytail",
-      "url": "https://github.com/DietrichGebert/ponytail",
+      "repo": "pbakaus/impeccable",
+      "name": "impeccable",
+      "url": "https://github.com/pbakaus/impeccable",
       "language": "JavaScript",
-      "description": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+      "description": "The design language that makes your AI harness better at design.",
       "tags": [
         "AI",
-        "Skill"
+        "开发工具"
       ],
-      "totalStars": 6214,
-      "days": 6,
+      "totalStars": 5350,
+      "days": 9,
+      "firstPlaceDays": 0,
+      "bestRank": 2,
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "Panniantong/Agent-Reach",
+      "name": "Agent-Reach",
+      "url": "https://github.com/Panniantong/Agent-Reach",
+      "language": "Python",
+      "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 5266,
+      "days": 5,
       "firstPlaceDays": 1,
       "bestRank": 1,
-      "latestSeen": "2026-10-05"
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "JustVugg/colibri",
@@ -255,36 +287,35 @@
       "latestSeen": "2026-09-20"
     },
     {
-      "repo": "pbakaus/impeccable",
-      "name": "impeccable",
-      "url": "https://github.com/pbakaus/impeccable",
+      "repo": "addyosmani/agent-skills",
+      "name": "agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills",
       "language": "JavaScript",
-      "description": "The design language that makes your AI harness better at design.",
+      "description": "Production-grade engineering skills for AI coding agents.",
       "tags": [
-        "AI",
-        "开发工具"
+        "Skill"
       ],
-      "totalStars": 4403,
+      "totalStars": 3857,
       "days": 8,
       "firstPlaceDays": 0,
-      "bestRank": 2,
-      "latestSeen": "2026-10-05"
+      "bestRank": 7,
+      "latestSeen": "2026-10-06"
     },
     {
-      "repo": "Panniantong/Agent-Reach",
-      "name": "Agent-Reach",
-      "url": "https://github.com/Panniantong/Agent-Reach",
-      "language": "Python",
-      "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
+      "repo": "NationalSecurityAgency/ghidra",
+      "name": "ghidra",
+      "url": "https://github.com/NationalSecurityAgency/ghidra",
+      "language": "Java",
+      "description": "Ghidra is a software reverse engineering (SRE) framework",
       "tags": [
-        "AI",
-        "开发工具"
+        "开发工具",
+        "安全"
       ],
-      "totalStars": 4111,
-      "days": 4,
-      "firstPlaceDays": 1,
-      "bestRank": 1,
-      "latestSeen": "2026-10-05"
+      "totalStars": 3642,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 6,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "stablyai/orca",
@@ -318,21 +349,6 @@
       "latestSeen": "2026-10-05"
     },
     {
-      "repo": "addyosmani/agent-skills",
-      "name": "agent-skills",
-      "url": "https://github.com/addyosmani/agent-skills",
-      "language": "JavaScript",
-      "description": "Production-grade engineering skills for AI coding agents.",
-      "tags": [
-        "Skill"
-      ],
-      "totalStars": 3457,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-05"
-    },
-    {
       "repo": "alphaXiv/OpenResearch",
       "name": "OpenResearch",
       "url": "https://github.com/alphaXiv/OpenResearch",
@@ -347,21 +363,6 @@
       "firstPlaceDays": 0,
       "bestRank": 7,
       "latestSeen": "2026-10-01"
-    },
-    {
-      "repo": "NationalSecurityAgency/ghidra",
-      "name": "ghidra",
-      "url": "https://github.com/NationalSecurityAgency/ghidra",
-      "language": "Java",
-      "description": "Ghidra is a software reverse engineering (SRE) framework",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 3423,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 6,
-      "latestSeen": "2026-10-04"
     },
     {
       "repo": "Tencent/BrowserSkill",
@@ -397,6 +398,21 @@
       "latestSeen": "2026-10-04"
     },
     {
+      "repo": "msitarzewski/agency-agents",
+      "name": "agency-agents",
+      "url": "https://github.com/msitarzewski/agency-agents",
+      "language": "Shell",
+      "description": "A complete AI agency at your fingertips - From frontend wizards to Reddit community ninjas, from whimsy injectors to reality checkers. Each agent is a specialized expert with personality, processes, and proven deliverables.",
+      "tags": [
+        "AI"
+      ],
+      "totalStars": 2752,
+      "days": 8,
+      "firstPlaceDays": 0,
+      "bestRank": 9,
+      "latestSeen": "2026-10-06"
+    },
+    {
       "repo": "byoungd/up",
       "name": "up",
       "url": "https://github.com/byoungd/up",
@@ -413,6 +429,22 @@
       "latestSeen": "2026-10-01"
     },
     {
+      "repo": "JuliusBrussee/caveman",
+      "name": "caveman",
+      "url": "https://github.com/JuliusBrussee/caveman",
+      "language": "Go",
+      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
+      "tags": [
+        "Skill",
+        "AI"
+      ],
+      "totalStars": 2593,
+      "days": 8,
+      "firstPlaceDays": 0,
+      "bestRank": 9,
+      "latestSeen": "2026-10-06"
+    },
+    {
       "repo": "anthropics/claude-code",
       "name": "claude-code",
       "url": "https://github.com/anthropics/claude-code",
@@ -422,11 +454,11 @@
         "AI",
         "开发工具"
       ],
-      "totalStars": 2424,
-      "days": 8,
+      "totalStars": 2552,
+      "days": 9,
       "firstPlaceDays": 0,
       "bestRank": 8,
-      "latestSeen": "2026-10-05"
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "Nasiko-Labs/nasiko",
@@ -443,22 +475,6 @@
       "firstPlaceDays": 0,
       "bestRank": 4,
       "latestSeen": "2026-09-25"
-    },
-    {
-      "repo": "JuliusBrussee/caveman",
-      "name": "caveman",
-      "url": "https://github.com/JuliusBrussee/caveman",
-      "language": "Go",
-      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
-      "tags": [
-        "AI",
-        "Skill"
-      ],
-      "totalStars": 2358,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-10-05"
     },
     {
       "repo": "NVIDIA/OpenShell",
@@ -571,19 +587,19 @@
       "latestSeen": "2026-10-01"
     },
     {
-      "repo": "msitarzewski/agency-agents",
-      "name": "agency-agents",
-      "url": "https://github.com/msitarzewski/agency-agents",
-      "language": "Shell",
-      "description": "A complete AI agency at your fingertips - From frontend wizards to Reddit community ninjas, from whimsy injectors to reality checkers. Each agent is a specialized expert with personality, processes, and proven deliverables.",
+      "repo": "DuarteSantos8/openGym",
+      "name": "openGym",
+      "url": "https://github.com/DuarteSantos8/openGym",
+      "language": "JavaScript",
+      "description": "Self-hosted gym & body-weight tracker — plan routines, log workouts (supersets, warm-ups, cardio), see which muscles are trained, fatigued or detrained, import from FitNotes/Strong/Hevy, passkey login. Your data, your server.",
       "tags": [
-        "AI"
+        "其他"
       ],
-      "totalStars": 2008,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-10-05"
+      "totalStars": 2007,
+      "days": 5,
+      "firstPlaceDays": 1,
+      "bestRank": 1,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "VectifyAI/PageIndex",
@@ -600,6 +616,21 @@
       "firstPlaceDays": 0,
       "bestRank": 5,
       "latestSeen": "2026-10-01"
+    },
+    {
+      "repo": "vorssaint/vorssaint-utils",
+      "name": "vorssaint-utils",
+      "url": "https://github.com/vorssaint/vorssaint-utils",
+      "language": "Swift",
+      "description": "Free and open-source macOS menu bar toolkit.",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 1914,
+      "days": 7,
+      "firstPlaceDays": 0,
+      "bestRank": 12,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "anthropics/financial-services",
@@ -663,6 +694,21 @@
       "latestSeen": "2026-10-05"
     },
     {
+      "repo": "tester-army/e2e",
+      "name": "e2e",
+      "url": "https://github.com/tester-army/e2e",
+      "language": "TypeScript",
+      "description": "Next generation e2e testing framework for web and mobile apps.",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 1742,
+      "days": 2,
+      "firstPlaceDays": 0,
+      "bestRank": 2,
+      "latestSeen": "2026-10-06"
+    },
+    {
       "repo": "Open-Dev-Society/OpenStock",
       "name": "OpenStock",
       "url": "https://github.com/Open-Dev-Society/OpenStock",
@@ -676,6 +722,23 @@
       "firstPlaceDays": 0,
       "bestRank": 3,
       "latestSeen": "2026-09-24"
+    },
+    {
+      "repo": "calesthio/OpenMontage",
+      "name": "OpenMontage",
+      "url": "https://github.com/calesthio/OpenMontage",
+      "language": "Python",
+      "description": "World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio.",
+      "tags": [
+        "AI",
+        "音视频",
+        "Skill"
+      ],
+      "totalStars": 1668,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 10,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "juspay/hyperswitch",
@@ -694,21 +757,6 @@
       "latestSeen": "2026-09-30"
     },
     {
-      "repo": "vorssaint/vorssaint-utils",
-      "name": "vorssaint-utils",
-      "url": "https://github.com/vorssaint/vorssaint-utils",
-      "language": "Swift",
-      "description": "Free and open-source macOS menu bar toolkit.",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 1562,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 12,
-      "latestSeen": "2026-10-04"
-    },
-    {
       "repo": "superdesigndev/treg",
       "name": "treg",
       "url": "https://github.com/superdesigndev/treg",
@@ -723,6 +771,21 @@
       "firstPlaceDays": 0,
       "bestRank": 10,
       "latestSeen": "2026-09-26"
+    },
+    {
+      "repo": "OpenCut-app/OpenCut",
+      "name": "OpenCut",
+      "url": "https://github.com/OpenCut-app/OpenCut",
+      "language": "TypeScript",
+      "description": "The open-source CapCut alternative",
+      "tags": [
+        "音视频"
+      ],
+      "totalStars": 1560,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 10,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "jamiepine/voicebox",
@@ -772,6 +835,21 @@
       "firstPlaceDays": 0,
       "bestRank": 13,
       "latestSeen": "2026-09-18"
+    },
+    {
+      "repo": "666ghj/MiroFish",
+      "name": "MiroFish",
+      "url": "https://github.com/666ghj/MiroFish",
+      "language": "Python",
+      "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
+      "tags": [
+        "AI"
+      ],
+      "totalStars": 1497,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 14,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "clash-verge-rev/clash-verge-rev",
@@ -871,6 +949,38 @@
       "latestSeen": "2026-10-05"
     },
     {
+      "repo": "thedotmack/claude-mem",
+      "name": "claude-mem",
+      "url": "https://github.com/thedotmack/claude-mem",
+      "language": "TypeScript",
+      "description": "Persistent Context Across Sessions for Every Agent – Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 1336,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "ruvnet/RuView",
+      "name": "RuView",
+      "url": "https://github.com/ruvnet/RuView",
+      "language": "Rust",
+      "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
+      "tags": [
+        "AI",
+        "安全"
+      ],
+      "totalStars": 1298,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 25,
+      "latestSeen": "2026-10-06"
+    },
+    {
       "repo": "mvt-project/mvt",
       "name": "mvt",
       "url": "https://github.com/mvt-project/mvt",
@@ -965,6 +1075,21 @@
       "latestSeen": "2026-09-20"
     },
     {
+      "repo": "pingdotgg/t3code",
+      "name": "t3code",
+      "url": "https://github.com/pingdotgg/t3code",
+      "language": "TypeScript",
+      "description": "",
+      "tags": [
+        "其他"
+      ],
+      "totalStars": 1229,
+      "days": 3,
+      "firstPlaceDays": 0,
+      "bestRank": 11,
+      "latestSeen": "2026-10-06"
+    },
+    {
       "repo": "browser-use/video-use",
       "name": "video-use",
       "url": "https://github.com/browser-use/video-use",
@@ -979,6 +1104,21 @@
       "firstPlaceDays": 0,
       "bestRank": 3,
       "latestSeen": "2026-09-26"
+    },
+    {
+      "repo": "k1tbyte/Wand-Enhancer",
+      "name": "Wand-Enhancer",
+      "url": "https://github.com/k1tbyte/Wand-Enhancer",
+      "language": "C#",
+      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 1187,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 16,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "tonhowtf/omniget",
@@ -1027,34 +1167,19 @@
       "latestSeen": "2026-10-04"
     },
     {
-      "repo": "ruvnet/RuView",
-      "name": "RuView",
-      "url": "https://github.com/ruvnet/RuView",
-      "language": "Rust",
-      "description": "π RuView turns commodity WiFi signals into real-time spatial intelligence, vital sign monitoring, and presence detection — all without a single pixel of video.",
+      "repo": "coreyhaines31/marketingskills",
+      "name": "marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "language": "JavaScript",
+      "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
       "tags": [
-        "AI"
+        "Skill"
       ],
-      "totalStars": 1073,
-      "days": 5,
+      "totalStars": 1066,
+      "days": 3,
       "firstPlaceDays": 0,
-      "bestRank": 25,
-      "latestSeen": "2026-10-01"
-    },
-    {
-      "repo": "k1tbyte/Wand-Enhancer",
-      "name": "Wand-Enhancer",
-      "url": "https://github.com/k1tbyte/Wand-Enhancer",
-      "language": "C#",
-      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 1054,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 16,
-      "latestSeen": "2026-10-05"
+      "bestRank": 13,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "NVIDIA/Model-Optimizer",
@@ -1135,20 +1260,19 @@
       "latestSeen": "2026-10-01"
     },
     {
-      "repo": "666ghj/MiroFish",
-      "name": "MiroFish",
-      "url": "https://github.com/666ghj/MiroFish",
-      "language": "Python",
-      "description": "A Simple and Universal Swarm Intelligence Engine, Predicting Anything. 简洁通用的群体智能引擎，预测万物",
+      "repo": "boykopovar/AnyPS5",
+      "name": "AnyPS5",
+      "url": "https://github.com/boykopovar/AnyPS5",
+      "language": "C++",
+      "description": "Tool for automatic PS5 executables porting to Linux and Windows",
       "tags": [
-        "AI",
-        "数据"
+        "开发工具"
       ],
-      "totalStars": 1012,
-      "days": 3,
+      "totalStars": 997,
+      "days": 1,
       "firstPlaceDays": 0,
-      "bestRank": 17,
-      "latestSeen": "2026-09-27"
+      "bestRank": 6,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "danny-avila/LibreChat",
@@ -1231,21 +1355,19 @@
       "latestSeen": "2026-09-26"
     },
     {
-      "repo": "calesthio/OpenMontage",
-      "name": "OpenMontage",
-      "url": "https://github.com/calesthio/OpenMontage",
-      "language": "Python",
-      "description": "World's first open-source, agentic video production system. 12 production pipelines, 100+ tools, 700+ agent skill and production-knowledge files. Turn your AI coding assistant into a full video production studio.",
+      "repo": "localsend/localsend",
+      "name": "localsend",
+      "url": "https://github.com/localsend/localsend",
+      "language": "Dart",
+      "description": "An open-source cross-platform alternative to AirDrop",
       "tags": [
-        "AI",
-        "音视频",
-        "Skill"
+        "其他"
       ],
-      "totalStars": 926,
-      "days": 3,
+      "totalStars": 898,
+      "days": 5,
       "firstPlaceDays": 0,
-      "bestRank": 15,
-      "latestSeen": "2026-10-05"
+      "bestRank": 22,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "HKUDS/CLI-Anything",
@@ -1264,19 +1386,19 @@
       "latestSeen": "2026-09-27"
     },
     {
-      "repo": "OpenCut-app/OpenCut",
-      "name": "OpenCut",
-      "url": "https://github.com/OpenCut-app/OpenCut",
-      "language": "TypeScript",
-      "description": "The open-source CapCut alternative",
+      "repo": "chen08209/FlClash",
+      "name": "FlClash",
+      "url": "https://github.com/chen08209/FlClash",
+      "language": "Dart",
+      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
       "tags": [
-        "音视频"
+        "其他"
       ],
-      "totalStars": 890,
-      "days": 3,
+      "totalStars": 862,
+      "days": 7,
       "firstPlaceDays": 0,
-      "bestRank": 10,
-      "latestSeen": "2026-10-05"
+      "bestRank": 32,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "pacifio/atlas",
@@ -1357,35 +1479,67 @@
       "latestSeen": "2026-09-26"
     },
     {
-      "repo": "localsend/localsend",
-      "name": "localsend",
-      "url": "https://github.com/localsend/localsend",
-      "language": "Dart",
-      "description": "An open-source cross-platform alternative to AirDrop",
+      "repo": "caddyserver/caddy",
+      "name": "caddy",
+      "url": "https://github.com/caddyserver/caddy",
+      "language": "Go",
+      "description": "Fast and extensible multi-platform HTTP/1-2-3 web server with automatic HTTPS",
       "tags": [
-        "开发工具"
+        "开发工具",
+        "云服务"
       ],
-      "totalStars": 812,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 22,
-      "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "thedotmack/claude-mem",
-      "name": "claude-mem",
-      "url": "https://github.com/thedotmack/claude-mem",
-      "language": "TypeScript",
-      "description": "Persistent Context Across Sessions for Every Agent – Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 802,
+      "totalStars": 817,
       "days": 3,
       "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-05"
+      "bestRank": 13,
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "pablostanley/yoinks",
+      "name": "yoinks",
+      "url": "https://github.com/pablostanley/yoinks",
+      "language": "TypeScript",
+      "description": "yoink any video from your terminal. no shady ads.",
+      "tags": [
+        "音视频"
+      ],
+      "totalStars": 808,
+      "days": 2,
+      "firstPlaceDays": 0,
+      "bestRank": 11,
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "microsoft/ai-agents-for-beginners",
+      "name": "ai-agents-for-beginners",
+      "url": "https://github.com/microsoft/ai-agents-for-beginners",
+      "language": "Jupyter Notebook",
+      "description": "18 Lessons to Get Started Building AI Agents",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "totalStars": 807,
+      "days": 8,
+      "firstPlaceDays": 0,
+      "bestRank": 25,
+      "latestSeen": "2026-10-06"
+    },
+    {
+      "repo": "microsoft/generative-ai-for-beginners",
+      "name": "generative-ai-for-beginners",
+      "url": "https://github.com/microsoft/generative-ai-for-beginners",
+      "language": "Jupyter Notebook",
+      "description": "21 Lessons, Get Started Building with Generative AI",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "totalStars": 801,
+      "days": 10,
+      "firstPlaceDays": 0,
+      "bestRank": 32,
+      "latestSeen": "2026-10-06"
     },
     {
       "repo": "cline/cline",
@@ -1402,21 +1556,6 @@
       "firstPlaceDays": 0,
       "bestRank": 24,
       "latestSeen": "2026-09-19"
-    },
-    {
-      "repo": "chen08209/FlClash",
-      "name": "FlClash",
-      "url": "https://github.com/chen08209/FlClash",
-      "language": "Dart",
-      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 765,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 32,
-      "latestSeen": "2026-10-05"
     },
     {
       "repo": "cs341-illinois/coursebook",
@@ -1448,148 +1587,6 @@
       "firstPlaceDays": 0,
       "bestRank": 13,
       "latestSeen": "2026-09-20"
-    },
-    {
-      "repo": "microsoft/generative-ai-for-beginners",
-      "name": "generative-ai-for-beginners",
-      "url": "https://github.com/microsoft/generative-ai-for-beginners",
-      "language": "Jupyter Notebook",
-      "description": "21 Lessons, Get Started Building with Generative AI",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "totalStars": 757,
-      "days": 9,
-      "firstPlaceDays": 0,
-      "bestRank": 32,
-      "latestSeen": "2026-09-30"
-    },
-    {
-      "repo": "InfinityLoop1308/PipePipe",
-      "name": "PipePipe",
-      "url": "https://github.com/InfinityLoop1308/PipePipe",
-      "language": "Shell",
-      "description": "An open-source Android app to let you browse YouTube and other services freely.",
-      "tags": [
-        "移动端"
-      ],
-      "totalStars": 750,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 15,
-      "latestSeen": "2026-09-30"
-    },
-    {
-      "repo": "BuilderIO/agent-native",
-      "name": "agent-native",
-      "url": "https://github.com/BuilderIO/agent-native",
-      "language": "TypeScript",
-      "description": "A framework for building agentic apps",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 744,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 8,
-      "latestSeen": "2026-09-24"
-    },
-    {
-      "repo": "pingdotgg/t3code",
-      "name": "t3code",
-      "url": "https://github.com/pingdotgg/t3code",
-      "language": "TypeScript",
-      "description": "",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 744,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 11,
-      "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "router-for-me/CLIProxyAPI",
-      "name": "CLIProxyAPI",
-      "url": "https://github.com/router-for-me/CLIProxyAPI",
-      "language": "Go",
-      "description": "Wrap Antigravity, ChatGPT Codex, Claude Code, Grok Build, Muse Code, Devin as an OpenAI/Gemini/Claude/Codex compatible API service, allowing you to enjoy the free Gemini Series, GPT Series, Grok Series, Claude model through API",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 738,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 26,
-      "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "zhouxiaoka/autoclip",
-      "name": "autoclip",
-      "url": "https://github.com/zhouxiaoka/autoclip",
-      "language": "Python",
-      "description": "AutoClip : AI-powered video clipping and highlight generation · 一款智能高光提取与剪辑的二创工具",
-      "tags": [
-        "AI",
-        "音视频"
-      ],
-      "totalStars": 731,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-09-24"
-    },
-    {
-      "repo": "microsoft/ai-agents-for-beginners",
-      "name": "ai-agents-for-beginners",
-      "url": "https://github.com/microsoft/ai-agents-for-beginners",
-      "language": "Jupyter Notebook",
-      "description": "18 Lessons to Get Started Building AI Agents",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "totalStars": 728,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 25,
-      "latestSeen": "2026-09-30"
-    },
-    {
-      "repo": "TauricResearch/TradingAgents",
-      "name": "TradingAgents",
-      "url": "https://github.com/TauricResearch/TradingAgents",
-      "language": "Python",
-      "description": "TradingAgents: Multi-Agents LLM Financial Trading Framework",
-      "tags": [
-        "AI",
-        "金融"
-      ],
-      "totalStars": 727,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 10,
-      "latestSeen": "2026-09-16"
-    },
-    {
-      "repo": "dmtrKovalenko/fframes",
-      "name": "fframes",
-      "url": "https://github.com/dmtrKovalenko/fframes",
-      "language": "Rust",
-      "description": "programmatic video rendering framework that is actually fast",
-      "tags": [
-        "音视频",
-        "开发工具"
-      ],
-      "totalStars": 724,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-10-01"
     }
   ]
 }
