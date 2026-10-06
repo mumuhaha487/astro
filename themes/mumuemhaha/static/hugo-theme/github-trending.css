@@ -29,8 +29,13 @@
 .trending-period-nav a { min-width: 64px; height: 32px; display: grid; place-items: center; padding: 0 14px; border-radius: 8px; color: var(--muted); font-size: .84rem; transition: color .2s, background .2s; }
 .trending-period-nav a:hover { color: var(--text); }
 .trending-period-nav a.active { background: var(--card); color: var(--text); box-shadow: 0 1px 2px rgba(0, 0, 0, .2); }
-.trending-dates { margin-bottom: 4px; border-bottom: 0; padding-bottom: 8px; }
+.trending-date-strip { display: grid; grid-template-columns: 44px minmax(0, 1fr) 44px; align-items: center; gap: 8px; min-width: 0; max-width: 100%; margin-bottom: 4px; }
+.trending-dates { min-width: 0; width: 100%; margin: 0; border-bottom: 0; padding: 6px 3px; overscroll-behavior-x: contain; }
 .trending-dates a { font-family: var(--font-mono); font-size: .78rem; }
+.trending-dates:focus-visible, .trending-dates a:focus-visible { outline-offset: -2px; }
+.trending-date-arrow.icon-button { width: 44px; height: 44px; border: 1px solid var(--line-strong); border-radius: 8px; background: var(--surface); color: var(--text); }
+.trending-date-arrow:disabled { opacity: .35; cursor: default; }
+.trending-date-arrow:disabled:hover { background: var(--surface); }
 .trending-date-picker { display: inline-flex; align-items: center; gap: 10px; margin: 0 0 24px; color: var(--faint); font-size: .8rem; }
 .trending-date-picker select { height: 32px; padding: 0 28px 0 12px; border: 1px solid var(--line-strong); border-radius: 8px; background: transparent; color: var(--text); font-family: var(--font-mono); font-size: .78rem; cursor: pointer; }
 .trending-date-picker select option { background: var(--bg-elev); color: var(--text); }

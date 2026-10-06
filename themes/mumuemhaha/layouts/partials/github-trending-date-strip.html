@@ -1,0 +1,9 @@
+{{- $current := .page.RelPermalink -}}
+<nav class="trending-date-strip" data-trending-date-strip aria-label="{{ .label }}">
+  <button class="icon-button trending-date-arrow" type="button" data-trending-date-prev aria-controls="trending-date-viewport" aria-label="向左翻一页日期" title="向左翻一页日期" disabled>{{ partial "icon.html" (dict "name" "chevron-left") }}</button>
+  <div class="taxonomy-strip trending-dates" id="trending-date-viewport" data-trending-date-viewport tabindex="0" role="group" aria-label="{{ .label }}">
+    <a href="{{ .archive.RelPermalink }}"{{ if eq $current .archive.RelPermalink }} class="active" aria-current="page"{{ end }}>{{ .latestLabel }}</a>
+    {{ range .entries }}<a href="{{ .RelPermalink }}"{{ if eq .RelPermalink $current }} class="active" aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
+  </div>
+  <button class="icon-button trending-date-arrow" type="button" data-trending-date-next aria-controls="trending-date-viewport" aria-label="向右翻一页日期" title="向右翻一页日期" disabled>{{ partial "icon.html" (dict "name" "chevron-right") }}</button>
+</nav>

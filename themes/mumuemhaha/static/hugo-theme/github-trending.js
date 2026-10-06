@@ -6,6 +6,103 @@
   const rows = [...page.querySelectorAll(".trending-repositories li")];
   const more = page.querySelector("[data-trending-more]");
   const empty = page.querySelector("[data-trending-featured-empty]");
+  page.querySelectorAll("[data-trending-date-strip]").forEach((strip) => {
+    const viewport = strip.querySelector("[data-trending-date-viewport]");
+    const previous = strip.querySelector("[data-trending-date-prev]");
+    const next = strip.querySelector("[data-trending-date-next]");
+    if (!viewport || !previous || !next) return;
+    const reducedMotion = matchMedia("(prefers-reduced-motion: reduce)");
+    const current = viewport.querySelector('[aria-current="page"]');
+    const maximum = () => Math.max(0, viewport.scrollWidth - viewport.clientWidth);
+    const clamp = (left) => Math.max(0, Math.min(left, maximum()));
+    let pending = null;
+    let width = viewport.clientWidth;
+    let keepCurrentVisible = true;
+    const currentBounds = () => {
+      const bounds = current.getBoundingClientRect();
+      const visibleLeft = viewport.getBoundingClientRect().left + viewport.clientLeft;
+      const left = bounds.left - visibleLeft + viewport.scrollLeft;
+      return { left, right: left + bounds.width, width: bounds.width };
+    };
+    const currentVisibleAt = (left) => {
+      if (!current || viewport.clientWidth === 0) return false;
+      const bounds = currentBounds();
+      return bounds.left >= left - 1 && bounds.right <= left + viewport.clientWidth + 1;
+    };
+    const revealCurrentAt = (left) => {
+      if (!current || viewport.clientWidth === 0) return left;
+      const bounds = currentBounds();
+      if (bounds.left < left || bounds.width > viewport.clientWidth) return clamp(bounds.left);
+      if (bounds.right > left + viewport.clientWidth) return clamp(bounds.right - viewport.clientWidth);
+      return left;
+    };
+    const update = () => {
+      if (pending !== null) pending = clamp(pending);
+      const position = pending ?? clamp(viewport.scrollLeft);
+      previous.disabled = viewport.clientWidth === 0 || position <= 1;
+      next.disabled = viewport.clientWidth === 0 || position >= maximum() - 1;
+    };
+    const scrollTo = (left, behavior = reducedMotion.matches ? "instant" : "smooth") => {
+      const destination = clamp(left);
+      pending = behavior === "smooth" && Math.abs(viewport.scrollLeft - destination) > 1 ? destination : null;
+      viewport.scrollTo({ left: destination, behavior });
+      update();
+    };
+    const navigate = (left) => {
+      keepCurrentVisible = currentVisibleAt(clamp(left));
+      scrollTo(left);
+    };
+    const move = (direction) => navigate((pending ?? clamp(viewport.scrollLeft)) + direction * viewport.clientWidth);
+    const resize = () => {
+      if (width !== viewport.clientWidth) {
+        width = viewport.clientWidth;
+        const destination = clamp(pending ?? viewport.scrollLeft);
+        scrollTo(keepCurrentVisible ? revealCurrentAt(destination) : destination, "instant");
+      }
+      update();
+    };
+    const cancelPaging = () => {
+      if (pending !== null) {
+        pending = null;
+        viewport.scrollTo({ left: clamp(viewport.scrollLeft), behavior: "instant" });
+      }
+      keepCurrentVisible = currentVisibleAt(clamp(viewport.scrollLeft));
+      update();
+    };
+    previous.addEventListener("click", () => move(-1));
+    next.addEventListener("click", () => move(1));
+    viewport.addEventListener("scroll", () => {
+      // Resize can emit scroll before its observer; retain the previous visibility decision.
+      if (width !== viewport.clientWidth) { resize(); return; }
+      if (pending !== null && Math.abs(viewport.scrollLeft - pending) <= 1) pending = null;
+      if (pending === null) keepCurrentVisible = currentVisibleAt(clamp(viewport.scrollLeft));
+      update();
+    }, { passive: true });
+    viewport.addEventListener("scrollend", () => {
+      if (width !== viewport.clientWidth) resize();
+      pending = null;
+      keepCurrentVisible = currentVisibleAt(clamp(viewport.scrollLeft));
+      update();
+    });
+    for (const event of ["wheel", "touchstart", "pointerdown", "focusin"]) {
+      viewport.addEventListener(event, cancelPaging, { passive: true });
+    }
+    viewport.addEventListener("keydown", (event) => {
+      if (event.target !== viewport || event.altKey || event.ctrlKey || event.metaKey) { cancelPaging(); return; }
+      if (["ArrowLeft", "PageUp", "ArrowRight", "PageDown"].includes(event.key)) {
+        event.preventDefault();
+        move(event.key === "ArrowLeft" || event.key === "PageUp" ? -1 : 1);
+      } else if (event.key === "Home" || event.key === "End") {
+        event.preventDefault();
+        navigate(event.key === "Home" ? 0 : maximum());
+      } else cancelPaging();
+    });
+    const initial = revealCurrentAt(clamp(viewport.scrollLeft));
+    if (initial !== viewport.scrollLeft) scrollTo(initial, "instant");
+    if (typeof ResizeObserver !== "undefined") new ResizeObserver(resize).observe(viewport);
+    window.addEventListener("resize", resize);
+    update();
+  });
   page.querySelector("[data-trending-date-select]")?.addEventListener("change", (event) => {
     location.href = event.target.value;
   });

@@ -18,10 +18,7 @@
   </header>
   {{ partial "github-trending-navigation.html" (dict "active" "daily") }}
   {{ if $candidates }}
-  <nav class="taxonomy-strip trending-dates" aria-label="按日期浏览">
-    <a href="{{ $archive.RelPermalink }}"{{ if eq .RelPermalink $archive.RelPermalink }} class="active" aria-current="page"{{ end }}>最新</a>
-    {{ range first 14 $days }}<a href="{{ .RelPermalink }}"{{ if and (ne $.RelPermalink $archive.RelPermalink) (eq .RelPermalink $.RelPermalink) }} class="active" aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
-  </nav>
+  {{ partial "github-trending-date-strip.html" (dict "page" . "archive" $archive "entries" $days "label" "按日期浏览" "latestLabel" "最新") }}
   <label class="trending-date-picker">全部日期 <select data-trending-date-select aria-label="选择榜单日期">{{ range $days }}<option value="{{ .RelPermalink }}"{{ if eq .Title $date }} selected{{ end }}>{{ .Title }}</option>{{ end }}</select></label>
   <div class="trending-summary"><div><strong>{{ $date }}</strong><span>每日热门榜</span></div><div><strong>{{ len $candidates }}</strong><span>仓库链接</span></div><div><strong>{{ len $featured }}</strong><span>项目解读</span></div></div>
   {{ partial "github-trending-filters.html" $candidates }}
@@ -66,4 +63,4 @@
 </section>
 {{- end -}}
 {{ end }}
-{{ define "scripts" }}<script defer src="/hugo-theme/github-trending.js?v=4"></script>{{ end }}
+{{ define "scripts" }}<script defer src="/hugo-theme/github-trending.js?v=6"></script>{{ end }}

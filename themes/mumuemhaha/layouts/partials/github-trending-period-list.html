@@ -16,10 +16,7 @@
   </header>
   {{ partial "github-trending-navigation.html" (dict "active" $period) }}
   {{ if $candidates }}
-  <nav class="taxonomy-strip trending-dates" aria-label="切换统计周期">
-    <a href="{{ $section.RelPermalink }}"{{ if eq $.RelPermalink $section.RelPermalink }} class="active" aria-current="page"{{ end }}>当前</a>
-    {{ range first 12 $periods }}<a href="{{ .RelPermalink }}"{{ if eq .RelPermalink $.RelPermalink }} class="active" aria-current="page"{{ end }}>{{ .Title }}</a>{{ end }}
-  </nav>
+  {{ partial "github-trending-date-strip.html" (dict "page" . "archive" $section "entries" $periods "label" "切换统计周期" "latestLabel" "当前") }}
   <label class="trending-date-picker">全部周期 <select data-trending-date-select aria-label="选择统计周期">{{ range $periods }}<option value="{{ .RelPermalink }}"{{ if eq .RelPermalink $selected.RelPermalink }} selected{{ end }}>{{ .Title }}</option>{{ end }}</select></label>
   <div class="trending-period-status">
     <div><strong>{{ $snapshot.label }}</strong><span>{{ $snapshot.start }} 至 {{ $snapshot.through }}</span></div>
