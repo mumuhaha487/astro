@@ -7,7 +7,9 @@ description: "Ponytail 是一套面向多种 AI 编程代理的规则、技能�
 repository: "DietrichGebert/ponytail"
 repository_url: "https://github.com/DietrichGebert/ponytail"
 language: "JavaScript"
-tags: ["AI","Skill"]
+tags:
+  - AI
+  - 开发工具
 comment: false
 ---
 

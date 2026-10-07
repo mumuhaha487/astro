@@ -9,7 +9,7 @@ repository_url: "https://github.com/DietrichGebert/ponytail"
 language: "JavaScript"
 tags:
   - AI
-  - Skill
+  - 开发工具
 comment: false
 ---
 
