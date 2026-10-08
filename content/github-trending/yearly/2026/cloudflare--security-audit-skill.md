@@ -7,7 +7,9 @@ description: "Cloudflare 开源的安全审计代理技能，用六阶段流程�
 repository: "cloudflare/security-audit-skill"
 repository_url: "https://github.com/cloudflare/security-audit-skill"
 language: "JavaScript"
-tags: ["Skill","安全","AI"]
+tags:
+  - 安全
+  - Skill
 comment: false
 ---
 

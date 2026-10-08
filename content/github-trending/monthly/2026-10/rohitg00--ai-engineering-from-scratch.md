@@ -7,7 +7,9 @@ description: "这是一个面向从零构建 AI 工程能力的大型开源课�
 repository: "rohitg00/ai-engineering-from-scratch"
 repository_url: "https://github.com/rohitg00/ai-engineering-from-scratch"
 language: "Python"
-tags: ["教程","AI"]
+tags:
+  - AI
+  - 教程
 comment: false
 ---
 
