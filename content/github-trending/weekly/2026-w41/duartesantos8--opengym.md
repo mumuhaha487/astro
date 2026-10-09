@@ -7,7 +7,8 @@ description: "openGym 是一款可自托管的健身与体重追踪应用，覆�
 repository: "DuarteSantos8/openGym"
 repository_url: "https://github.com/DuarteSantos8/openGym"
 language: "JavaScript"
-tags: ["其他"]
+tags:
+  - 数据
 comment: false
 ---
 
