@@ -4,9 +4,9 @@
   "slug": "2026-w41",
   "label": "2026 年第 41 周",
   "start": "2026-10-05",
-  "through": "2026-10-09",
+  "through": "2026-10-10",
   "tagVersion": 2,
-  "observedDays": 5,
+  "observedDays": 6,
   "candidates": [
     {
       "repo": "morluto/rea",
@@ -16,13 +16,14 @@
       "description": "Reverse engineer anything with agents, from app behavior down to native binaries.",
       "tags": [
         "AI",
+        "安全",
         "开发工具"
       ],
-      "totalStars": 15349,
-      "days": 3,
-      "firstPlaceDays": 3,
+      "totalStars": 30276,
+      "days": 4,
+      "firstPlaceDays": 4,
       "bestRank": 1,
-      "latestSeen": "2026-10-09",
+      "latestSeen": "2026-10-10",
       "summary": "REA 是一个以 TypeScript 编写的本地逆向分析工具集，通过 MCP 与命令行把多种分析引擎接入 AI 智能体，帮助调查应用功能、查看证据与分析限制，并据此实现自有功能。",
       "article": "/github-trending/weekly/2026-w41/morluto--rea/"
     },
@@ -36,13 +37,45 @@
         "游戏",
         "开发工具"
       ],
-      "totalStars": 9331,
-      "days": 4,
+      "totalStars": 15199,
+      "days": 5,
       "firstPlaceDays": 0,
       "bestRank": 2,
-      "latestSeen": "2026-10-09",
+      "latestSeen": "2026-10-10",
       "summary": "AnyPS5 是一款以 C++ 实现的 PS5 可执行文件移植工具，目标是在 Linux 和 Windows 上运行相关程序。",
       "article": "/github-trending/weekly/2026-w41/boykopovar--anyps5/"
+    },
+    {
+      "repo": "storytold/artcraft",
+      "name": "artcraft",
+      "url": "https://github.com/storytold/artcraft",
+      "language": "Rust",
+      "description": "ArtCraft is an intentional crafting engine for artists, designers, and filmmakers",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 7844,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 3,
+      "latestSeen": "2026-10-10",
+      "summary": "ArtCraft 是面向艺术家、设计师和影视创作者的桌面创作工具，将多种生成模型与二维画布、三维场景搭建及图像视频工作流结合，强调先构图、再生成和迭代。",
+      "article": "/github-trending/weekly/2026-w41/storytold--artcraft/"
+    },
+    {
+      "repo": "mattpocock/skills",
+      "name": "skills",
+      "url": "https://github.com/mattpocock/skills",
+      "language": "Shell",
+      "description": "Skills for Real Engineers. Straight from my .agents directory.",
+      "tags": [
+        "Skill"
+      ],
+      "totalStars": 7472,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 4,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "DuarteSantos8/openGym",
@@ -53,13 +86,11 @@
       "tags": [
         "其他"
       ],
-      "totalStars": 5937,
-      "days": 5,
+      "totalStars": 6614,
+      "days": 6,
       "firstPlaceDays": 1,
       "bestRank": 1,
-      "latestSeen": "2026-10-09",
-      "summary": "openGym 是一款可自托管的健身与体重追踪应用，覆盖训练计划、引导式记录、进度分析和跨设备同步。它可通过 Docker 部署，也能作为独立手机应用使用，重点是让用户掌握自己的数据与运行环境。",
-      "article": "/github-trending/weekly/2026-w41/duartesantos8--opengym/"
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "tester-army/e2e",
@@ -74,37 +105,6 @@
       "days": 5,
       "firstPlaceDays": 0,
       "bestRank": 2,
-      "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "mattpocock/skills",
-      "name": "skills",
-      "url": "https://github.com/mattpocock/skills",
-      "language": "Shell",
-      "description": "Skills for Real Engineers. Straight from my .agents directory.",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 5785,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 4,
-      "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "storytold/artcraft",
-      "name": "artcraft",
-      "url": "https://github.com/storytold/artcraft",
-      "language": "Rust",
-      "description": "ArtCraft is an intentional crafting engine for artists, designers, and filmmakers",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 4092,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 3,
       "latestSeen": "2026-10-09"
     },
     {
@@ -124,6 +124,69 @@
       "latestSeen": "2026-10-07"
     },
     {
+      "repo": "cathrynlavery/diagram-design",
+      "name": "diagram-design",
+      "url": "https://github.com/cathrynlavery/diagram-design",
+      "language": "HTML",
+      "description": "Editorial diagram design for Claude Code, Codex, GitHub Copilot, Factory Droid, and Pi. 42 diagram types. Self-contained HTML + SVG. No shadows. No Mermaid slop.",
+      "tags": [
+        "Skill",
+        "开发工具"
+      ],
+      "totalStars": 3952,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 4,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "thedotmack/claude-mem",
+      "name": "claude-mem",
+      "url": "https://github.com/thedotmack/claude-mem",
+      "language": "TypeScript",
+      "description": "Persistent Context Across Sessions for Every Agent – Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 3671,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "Predidit/Kazumi",
+      "name": "Kazumi",
+      "url": "https://github.com/Predidit/Kazumi",
+      "language": "Dart",
+      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "totalStars": 3149,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "addyosmani/agent-skills",
+      "name": "agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills",
+      "language": "JavaScript",
+      "description": "Production-grade engineering skills for AI coding agents.",
+      "tags": [
+        "Skill"
+      ],
+      "totalStars": 3053,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 9,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "Panniantong/Agent-Reach",
       "name": "Agent-Reach",
       "url": "https://github.com/Panniantong/Agent-Reach",
@@ -138,22 +201,6 @@
       "firstPlaceDays": 0,
       "bestRank": 3,
       "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "thedotmack/claude-mem",
-      "name": "claude-mem",
-      "url": "https://github.com/thedotmack/claude-mem",
-      "language": "TypeScript",
-      "description": "Persistent Context Across Sessions for Every Agent – Captures everything your agent does during sessions, compresses it with AI, and injects relevant context back into future sessions. Works with Claude Code, OpenClaw, Codex, Gemini, Hermes, Copilot, OpenCode + More",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 2943,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-09"
     },
     {
       "repo": "msitarzewski/agency-agents",
@@ -186,22 +233,6 @@
       "firstPlaceDays": 0,
       "bestRank": 2,
       "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "addyosmani/agent-skills",
-      "name": "agent-skills",
-      "url": "https://github.com/addyosmani/agent-skills",
-      "language": "JavaScript",
-      "description": "Production-grade engineering skills for AI coding agents.",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 2617,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-10-09"
     },
     {
       "repo": "affaan-m/ECC",
@@ -237,52 +268,20 @@
       "latestSeen": "2026-10-08"
     },
     {
-      "repo": "cathrynlavery/diagram-design",
-      "name": "diagram-design",
-      "url": "https://github.com/cathrynlavery/diagram-design",
-      "language": "HTML",
-      "description": "Editorial diagram design for Claude Code, Codex, GitHub Copilot, Factory Droid, and Pi. 42 diagram types. Self-contained HTML + SVG. No shadows. No Mermaid slop.",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "totalStars": 2213,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 6,
-      "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "Predidit/Kazumi",
-      "name": "Kazumi",
-      "url": "https://github.com/Predidit/Kazumi",
-      "language": "Dart",
-      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
-      "tags": [
-        "移动端",
-        "音视频"
-      ],
-      "totalStars": 2058,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "cloudflare/security-audit-skill",
       "name": "security-audit-skill",
       "url": "https://github.com/cloudflare/security-audit-skill",
       "language": "JavaScript",
       "description": "A coding-agent skill for multi-phase security audits with independently verified, machine-readable findings",
       "tags": [
-        "Skill",
-        "安全"
+        "安全",
+        "Skill"
       ],
-      "totalStars": 1822,
-      "days": 3,
+      "totalStars": 2193,
+      "days": 4,
       "firstPlaceDays": 0,
       "bestRank": 12,
-      "latestSeen": "2026-10-09"
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "ayghri/i-have-adhd",
@@ -294,11 +293,27 @@
         "Skill",
         "AI"
       ],
-      "totalStars": 1790,
-      "days": 3,
+      "totalStars": 2179,
+      "days": 4,
       "firstPlaceDays": 0,
       "bestRank": 9,
-      "latestSeen": "2026-10-09"
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "anthropics/knowledge-work-plugins",
+      "name": "knowledge-work-plugins",
+      "url": "https://github.com/anthropics/knowledge-work-plugins",
+      "language": "Python",
+      "description": "Open source repository of plugins primarily intended for knowledge workers to use in Claude Cowork",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "totalStars": 2014,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 8,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "earthtojake/text-to-cad",
@@ -347,6 +362,22 @@
       "latestSeen": "2026-10-07"
     },
     {
+      "repo": "NationalSecurityAgency/ghidra",
+      "name": "ghidra",
+      "url": "https://github.com/NationalSecurityAgency/ghidra",
+      "language": "Java",
+      "description": "Ghidra is a software reverse engineering (SRE) framework",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
+      "totalStars": 1442,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 17,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "caddyserver/caddy",
       "name": "caddy",
       "url": "https://github.com/caddyserver/caddy",
@@ -361,6 +392,22 @@
       "firstPlaceDays": 0,
       "bestRank": 13,
       "latestSeen": "2026-10-08"
+    },
+    {
+      "repo": "tt-a1i/archify",
+      "name": "archify",
+      "url": "https://github.com/tt-a1i/archify",
+      "language": "JavaScript",
+      "description": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
+      "tags": [
+        "Skill",
+        "开发工具"
+      ],
+      "totalStars": 1358,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 6,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "M-Abozaid/esp32-c3-adblock",
@@ -378,36 +425,20 @@
       "latestSeen": "2026-10-09"
     },
     {
-      "repo": "anthropics/knowledge-work-plugins",
-      "name": "knowledge-work-plugins",
-      "url": "https://github.com/anthropics/knowledge-work-plugins",
-      "language": "Python",
-      "description": "Open source repository of plugins primarily intended for knowledge workers to use in Claude Cowork",
+      "repo": "obra/superpowers",
+      "name": "superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "language": "Shell",
+      "description": "An agentic skills framework & software development methodology that works.",
       "tags": [
-        "AI",
+        "Skill",
         "开发工具"
       ],
-      "totalStars": 1305,
+      "totalStars": 1240,
       "days": 3,
       "firstPlaceDays": 0,
-      "bestRank": 8,
-      "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "NationalSecurityAgency/ghidra",
-      "name": "ghidra",
-      "url": "https://github.com/NationalSecurityAgency/ghidra",
-      "language": "Java",
-      "description": "Ghidra is a software reverse engineering (SRE) framework",
-      "tags": [
-        "安全",
-        "开发工具"
-      ],
-      "totalStars": 1169,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 17,
-      "latestSeen": "2026-10-09"
+      "bestRank": 12,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "heygen-com/hyperframes",
@@ -424,6 +455,38 @@
       "firstPlaceDays": 0,
       "bestRank": 10,
       "latestSeen": "2026-10-07"
+    },
+    {
+      "repo": "bethington/ghidra-mcp",
+      "name": "ghidra-mcp",
+      "url": "https://github.com/bethington/ghidra-mcp",
+      "language": "Java",
+      "description": "Ghidra MCP Server — 200+ MCP tools for AI-powered reverse engineering. GUI plugin + headless server, lazy tool loading, convention enforcement, batch operations, Ghidra Server integration, and Docker deployment.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 1008,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 21,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "docker/docker-agent",
+      "name": "docker-agent",
+      "url": "https://github.com/docker/docker-agent",
+      "language": "Go",
+      "description": "AI Agent Builder and Runtime by Docker Engineering",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 910,
+      "days": 2,
+      "firstPlaceDays": 0,
+      "bestRank": 10,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "FalkorDB/FalkorDB",
@@ -474,22 +537,6 @@
       "latestSeen": "2026-10-07"
     },
     {
-      "repo": "obra/superpowers",
-      "name": "superpowers",
-      "url": "https://github.com/obra/superpowers",
-      "language": "Shell",
-      "description": "An agentic skills framework & software development methodology that works.",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "totalStars": 850,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 12,
-      "latestSeen": "2026-10-06"
-    },
-    {
       "repo": "vorssaint/vorssaint-utils",
       "name": "vorssaint-utils",
       "url": "https://github.com/vorssaint/vorssaint-utils",
@@ -522,20 +569,20 @@
       "latestSeen": "2026-10-09"
     },
     {
-      "repo": "docker/docker-agent",
-      "name": "docker-agent",
-      "url": "https://github.com/docker/docker-agent",
-      "language": "Go",
-      "description": "AI Agent Builder and Runtime by Docker Engineering",
+      "repo": "microsoft/mxc",
+      "name": "mxc",
+      "url": "https://github.com/microsoft/mxc",
+      "language": "Rust",
+      "description": "Policy-driven, layered isolation and containment",
       "tags": [
-        "AI",
+        "安全",
         "开发工具"
       ],
-      "totalStars": 766,
-      "days": 1,
+      "totalStars": 804,
+      "days": 2,
       "firstPlaceDays": 0,
-      "bestRank": 10,
-      "latestSeen": "2026-10-09"
+      "bestRank": 11,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "ifixai-ai/iFixAi",
@@ -554,20 +601,34 @@
       "latestSeen": "2026-10-05"
     },
     {
-      "repo": "bethington/ghidra-mcp",
-      "name": "ghidra-mcp",
-      "url": "https://github.com/bethington/ghidra-mcp",
-      "language": "Java",
-      "description": "Ghidra MCP Server — 200+ MCP tools for AI-powered reverse engineering. GUI plugin + headless server, lazy tool loading, convention enforcement, batch operations, Ghidra Server integration, and Docker deployment.",
+      "repo": "k1tbyte/Wand-Enhancer",
+      "name": "Wand-Enhancer",
+      "url": "https://github.com/k1tbyte/Wand-Enhancer",
+      "language": "C#",
+      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
       "tags": [
-        "AI",
         "开发工具"
       ],
-      "totalStars": 748,
+      "totalStars": 712,
       "days": 4,
       "firstPlaceDays": 0,
-      "bestRank": 28,
-      "latestSeen": "2026-10-09"
+      "bestRank": 27,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "PimpinPumpkin/Vela",
+      "name": "Vela",
+      "url": "https://github.com/PimpinPumpkin/Vela",
+      "language": "Kotlin",
+      "description": "Maps and turn-by-turn navigation for Android without Google Play Services: the best of open map data, with Google lookups by choice. Runs on degoogled phones and can avoid Flock cameras",
+      "tags": [
+        "移动端"
+      ],
+      "totalStars": 709,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 21,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "rohitg00/ai-engineering-from-scratch",
@@ -633,6 +694,38 @@
       "latestSeen": "2026-10-09"
     },
     {
+      "repo": "ollama/ollama",
+      "name": "ollama",
+      "url": "https://github.com/ollama/ollama",
+      "language": "Go",
+      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 619,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 30,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "farion1231/cc-switch",
+      "name": "cc-switch",
+      "url": "https://github.com/farion1231/cc-switch",
+      "language": "Rust",
+      "description": "A cross-platform desktop All-in-One assistant for Claude Code, Codex, OpenCode, OpenClaw, Grok Build & Hermes Agent. Only official website: ccswitch.io",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 617,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 12,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "garrytan/gstack",
       "name": "gstack",
       "url": "https://github.com/garrytan/gstack",
@@ -682,21 +775,6 @@
       "latestSeen": "2026-10-08"
     },
     {
-      "repo": "k1tbyte/Wand-Enhancer",
-      "name": "Wand-Enhancer",
-      "url": "https://github.com/k1tbyte/Wand-Enhancer",
-      "language": "C#",
-      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 538,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 27,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "superdesigndev/treg",
       "name": "treg",
       "url": "https://github.com/superdesigndev/treg",
@@ -713,19 +791,20 @@
       "latestSeen": "2026-10-09"
     },
     {
-      "repo": "PimpinPumpkin/Vela",
-      "name": "Vela",
-      "url": "https://github.com/PimpinPumpkin/Vela",
-      "language": "Kotlin",
-      "description": "Maps and turn-by-turn navigation for Android without Google Play Services: the best of open map data, with Google lookups by choice. Runs on degoogled phones and can avoid Flock cameras",
+      "repo": "chen08209/FlClash",
+      "name": "FlClash",
+      "url": "https://github.com/chen08209/FlClash",
+      "language": "Dart",
+      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
       "tags": [
-        "移动端"
+        "开发工具",
+        "云服务"
       ],
-      "totalStars": 525,
-      "days": 3,
+      "totalStars": 513,
+      "days": 4,
       "firstPlaceDays": 0,
-      "bestRank": 21,
-      "latestSeen": "2026-10-09"
+      "bestRank": 31,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "zerx-lab/FluxDown",
@@ -759,21 +838,6 @@
       "latestSeen": "2026-10-06"
     },
     {
-      "repo": "ollama/ollama",
-      "name": "ollama",
-      "url": "https://github.com/ollama/ollama",
-      "language": "Go",
-      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
-      "tags": [
-        "AI"
-      ],
-      "totalStars": 468,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 33,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "Autumn-27/ARTEX",
       "name": "ARTEX",
       "url": "https://github.com/Autumn-27/ARTEX",
@@ -803,6 +867,22 @@
       "firstPlaceDays": 0,
       "bestRank": 24,
       "latestSeen": "2026-10-08"
+    },
+    {
+      "repo": "manaflow-ai/cmux",
+      "name": "cmux",
+      "url": "https://github.com/manaflow-ai/cmux",
+      "language": "Swift",
+      "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability.",
+      "tags": [
+        "开发工具",
+        "AI"
+      ],
+      "totalStars": 461,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 23,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "cloudflare/cloudflare-os",
@@ -853,22 +933,6 @@
       "latestSeen": "2026-10-08"
     },
     {
-      "repo": "manaflow-ai/cmux",
-      "name": "cmux",
-      "url": "https://github.com/manaflow-ai/cmux",
-      "language": "Swift",
-      "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability.",
-      "tags": [
-        "开发工具",
-        "AI"
-      ],
-      "totalStars": 405,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 23,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "LaurieWired/GhidraMCP",
       "name": "GhidraMCP",
       "url": "https://github.com/LaurieWired/GhidraMCP",
@@ -883,6 +947,22 @@
       "firstPlaceDays": 0,
       "bestRank": 32,
       "latestSeen": "2026-10-09"
+    },
+    {
+      "repo": "Vincentwei1021/video-shotcraft",
+      "name": "video-shotcraft",
+      "url": "https://github.com/Vincentwei1021/video-shotcraft",
+      "language": "TypeScript",
+      "description": "AI video skill for Claude Code & Codex — cinematic product videos with Remotion: 152 shot recipe cards, 209 motion previews, a production-ready template",
+      "tags": [
+        "Skill",
+        "音视频"
+      ],
+      "totalStars": 402,
+      "days": 2,
+      "firstPlaceDays": 0,
+      "bestRank": 26,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "earendil-works/pi",
@@ -946,6 +1026,22 @@
       "latestSeen": "2026-10-06"
     },
     {
+      "repo": "hugohe3/ppt-master",
+      "name": "ppt-master",
+      "url": "https://github.com/hugohe3/ppt-master",
+      "language": "Python",
+      "description": "AI turns documents or topics into real, native PowerPoint decks—with native shapes, transitions and animations, data-backed charts and tables on demand, audio narration from speaker notes, and support for your own .pptx templates. · by Hugo He",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 372,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 16,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "AprilNEA/OpenLogi",
       "name": "OpenLogi",
       "url": "https://github.com/AprilNEA/OpenLogi",
@@ -974,21 +1070,6 @@
       "firstPlaceDays": 0,
       "bestRank": 22,
       "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "chen08209/FlClash",
-      "name": "FlClash",
-      "url": "https://github.com/chen08209/FlClash",
-      "language": "Dart",
-      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
-      "tags": [
-        "安全"
-      ],
-      "totalStars": 367,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 39,
-      "latestSeen": "2026-10-07"
     },
     {
       "repo": "CursorTouch/Windows-MCP",
@@ -1052,6 +1133,21 @@
       "latestSeen": "2026-10-08"
     },
     {
+      "repo": "scholay/rimes",
+      "name": "rimes",
+      "url": "https://github.com/scholay/rimes",
+      "language": "Swift",
+      "description": "RIMES — modern macOS IME (rime-scholay): librime + buffer workbench",
+      "tags": [
+        "其他"
+      ],
+      "totalStars": 342,
+      "days": 2,
+      "firstPlaceDays": 0,
+      "bestRank": 25,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "xerj-org/xerj",
       "name": "xerj",
       "url": "https://github.com/xerj-org/xerj",
@@ -1084,6 +1180,39 @@
       "latestSeen": "2026-10-09"
     },
     {
+      "repo": "alibaba/open-code-review",
+      "name": "open-code-review",
+      "url": "https://github.com/alibaba/open-code-review",
+      "language": "Go",
+      "description": "Secure, fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
+      "tags": [
+        "安全",
+        "开发工具",
+        "AI"
+      ],
+      "totalStars": 326,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 18,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "thesysdev/openui",
+      "name": "openui",
+      "url": "https://github.com/thesysdev/openui",
+      "language": "TypeScript",
+      "description": "The Open Standard for Generative UI",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 317,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 19,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "jamwithai/production-agentic-rag-course",
       "name": "production-agentic-rag-course",
       "url": "https://github.com/jamwithai/production-agentic-rag-course",
@@ -1113,6 +1242,22 @@
       "firstPlaceDays": 0,
       "bestRank": 33,
       "latestSeen": "2026-10-08"
+    },
+    {
+      "repo": "open-ani/animeko",
+      "name": "animeko",
+      "url": "https://github.com/open-ani/animeko",
+      "language": "Kotlin",
+      "description": "集找番、追番、看番的一站式弹幕追番平台，云收藏同步 (Bangumi)，离线缓存，BitTorrent，弹幕云过滤。100% Kotlin/Compose Multiplatform",
+      "tags": [
+        "移动端",
+        "音视频"
+      ],
+      "totalStars": 284,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 45,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "reconurge/flowsint",
@@ -1190,21 +1335,6 @@
       "latestSeen": "2026-10-05"
     },
     {
-      "repo": "scholay/rimes",
-      "name": "rimes",
-      "url": "https://github.com/scholay/rimes",
-      "language": "Swift",
-      "description": "RIMES — modern macOS IME (rime-scholay): librime + buffer workbench",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 253,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 25,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "Effect-TS/effect",
       "name": "effect",
       "url": "https://github.com/Effect-TS/effect",
@@ -1235,23 +1365,6 @@
       "latestSeen": "2026-10-09"
     },
     {
-      "repo": "Vincentwei1021/video-shotcraft",
-      "name": "video-shotcraft",
-      "url": "https://github.com/Vincentwei1021/video-shotcraft",
-      "language": "TypeScript",
-      "description": "AI video skill for Claude Code & Codex — cinematic product videos with Remotion: 152 shot recipe cards, 209 motion previews, a production-ready template",
-      "tags": [
-        "AI",
-        "Skill",
-        "音视频"
-      ],
-      "totalStars": 241,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 26,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "golang/go",
       "name": "go",
       "url": "https://github.com/golang/go",
@@ -1267,19 +1380,36 @@
       "latestSeen": "2026-10-08"
     },
     {
-      "repo": "open-ani/animeko",
-      "name": "animeko",
-      "url": "https://github.com/open-ani/animeko",
-      "language": "Kotlin",
-      "description": "集找番、追番、看番的一站式弹幕追番平台，云收藏同步 (Bangumi)，离线缓存，BitTorrent，弹幕云过滤。100% Kotlin/Compose Multiplatform",
+      "repo": "Lordog/dive-into-llms",
+      "name": "dive-into-llms",
+      "url": "https://github.com/Lordog/dive-into-llms",
+      "language": "Jupyter Notebook",
+      "description": "《动手学大模型Dive into LLMs》系列编程实践教程",
       "tags": [
-        "音视频"
+        "教程",
+        "AI"
       ],
-      "totalStars": 234,
-      "days": 4,
+      "totalStars": 236,
+      "days": 3,
       "firstPlaceDays": 0,
-      "bestRank": 45,
-      "latestSeen": "2026-10-09"
+      "bestRank": 33,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "bojieli/ai-agent-book",
+      "name": "ai-agent-book",
+      "url": "https://github.com/bojieli/ai-agent-book",
+      "language": "Python",
+      "description": "《深入理解 AI Agent：设计原理与工程实践》（李博杰 著）开源主仓库：全书正文、编译版 PDF 与按章配套代码",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "totalStars": 229,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 22,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "trycua/cua",
@@ -1296,6 +1426,22 @@
       "firstPlaceDays": 0,
       "bestRank": 25,
       "latestSeen": "2026-10-08"
+    },
+    {
+      "repo": "microsoft/generative-ai-for-beginners",
+      "name": "generative-ai-for-beginners",
+      "url": "https://github.com/microsoft/generative-ai-for-beginners",
+      "language": "Jupyter Notebook",
+      "description": "21 Lessons, Get Started Building with Generative AI",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "totalStars": 225,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 51,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "ruvnet/RuView",
@@ -1328,6 +1474,38 @@
       "firstPlaceDays": 0,
       "bestRank": 44,
       "latestSeen": "2026-10-09"
+    },
+    {
+      "repo": "Tencent/WeKnora",
+      "name": "WeKnora",
+      "url": "https://github.com/Tencent/WeKnora",
+      "language": "Go",
+      "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki.",
+      "tags": [
+        "AI",
+        "数据"
+      ],
+      "totalStars": 217,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 23,
+      "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "openai/codex",
+      "name": "codex",
+      "url": "https://github.com/openai/codex",
+      "language": "Rust",
+      "description": "Lightweight coding agent that runs in your terminal",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 213,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 24,
+      "latestSeen": "2026-10-10"
     },
     {
       "repo": "Z4nzu/hackingtool",
@@ -1375,6 +1553,22 @@
       "latestSeen": "2026-10-05"
     },
     {
+      "repo": "datawhalechina/hello-agents",
+      "name": "hello-agents",
+      "url": "https://github.com/datawhalechina/hello-agents",
+      "language": "Python",
+      "description": "📚 《从零开始构建智能体》——从零开始的智能体原理与实践教程",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "totalStars": 205,
+      "days": 1,
+      "firstPlaceDays": 0,
+      "bestRank": 25,
+      "latestSeen": "2026-10-10"
+    },
+    {
       "repo": "clash-verge-rev/clash-verge-rev",
       "name": "clash-verge-rev",
       "url": "https://github.com/clash-verge-rev/clash-verge-rev",
@@ -1388,189 +1582,6 @@
       "firstPlaceDays": 0,
       "bestRank": 34,
       "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "deepseek-ai/DeepGEMM",
-      "name": "DeepGEMM",
-      "url": "https://github.com/deepseek-ai/DeepGEMM",
-      "language": "Cuda",
-      "description": "DeepGEMM: clean and efficient BLAS kernel library on GPU",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 199,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 36,
-      "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "cjpais/Handy",
-      "name": "Handy",
-      "url": "https://github.com/cjpais/Handy",
-      "language": "Rust",
-      "description": "A free, open source, and extensible speech-to-text application that works completely offline.",
-      "tags": [
-        "音视频"
-      ],
-      "totalStars": 198,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 47,
-      "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "eolix/photosuite",
-      "name": "photosuite",
-      "url": "https://github.com/eolix/photosuite",
-      "language": "Rust",
-      "description": "A desktop image editor, faithful to classic Adobe Photoshop, with native PSD/PSB compatibility",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 195,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 46,
-      "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "mksglu/context-mode",
-      "name": "context-mode",
-      "url": "https://github.com/mksglu/context-mode",
-      "language": "TypeScript",
-      "description": "Context window optimization for AI coding agents. Sandboxes tool output (98% reduction), persists session memory, and enforces routing across 17 platforms via MCP + hooks.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 189,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 35,
-      "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "ohmyzsh/ohmyzsh",
-      "name": "ohmyzsh",
-      "url": "https://github.com/ohmyzsh/ohmyzsh",
-      "language": "Shell",
-      "description": "🙃 A delightful community-driven (with 2,500+ contributors) framework for managing your zsh configuration. Includes 300+ optional plugins (rails, git, macOS, hub, docker, homebrew, node, php, python, etc), 140+ themes to spice up your morning, and an auto-update tool that makes it easy to keep up with the latest updates from the community.",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 188,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 50,
-      "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "microsoft/markitdown",
-      "name": "markitdown",
-      "url": "https://github.com/microsoft/markitdown",
-      "language": "Python",
-      "description": "Python tool for converting files and office documents to Markdown.",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 188,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 30,
-      "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "fabio-rovai/open-ontologies",
-      "name": "open-ontologies",
-      "url": "https://github.com/fabio-rovai/open-ontologies",
-      "language": "Rust",
-      "description": "Plan, apply and roll back changes to a production ontology, with a blast radius report and a proof an auditor can re-check.",
-      "tags": [
-        "数据",
-        "开发工具"
-      ],
-      "totalStars": 184,
-      "days": 2,
-      "firstPlaceDays": 0,
-      "bestRank": 35,
-      "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "permissionlesstech/bitchat",
-      "name": "bitchat",
-      "url": "https://github.com/permissionlesstech/bitchat",
-      "language": "Swift",
-      "description": "bluetooth mesh chat, IRC vibes",
-      "tags": [
-        "移动端"
-      ],
-      "totalStars": 171,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 65,
-      "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "rui314/mold",
-      "name": "mold",
-      "url": "https://github.com/rui314/mold",
-      "language": "Rust",
-      "description": "mold 🦠: A Modern Linker in Rust 🦀",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 168,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 38,
-      "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "avelino/awesome-go",
-      "name": "awesome-go",
-      "url": "https://github.com/avelino/awesome-go",
-      "language": "Go",
-      "description": "A curated list of awesome Go frameworks, libraries and software",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 166,
-      "days": 1,
-      "firstPlaceDays": 0,
-      "bestRank": 38,
-      "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "nodejs/node",
-      "name": "node",
-      "url": "https://github.com/nodejs/node",
-      "language": "JavaScript",
-      "description": "Node.js JavaScript runtime ✨🐢🚀✨",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 164,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 58,
-      "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "microsoft/generative-ai-for-beginners",
-      "name": "generative-ai-for-beginners",
-      "url": "https://github.com/microsoft/generative-ai-for-beginners",
-      "language": "Jupyter Notebook",
-      "description": "21 Lessons, Get Started Building with Generative AI",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "totalStars": 161,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 54,
-      "latestSeen": "2026-10-09"
     }
   ]
 }

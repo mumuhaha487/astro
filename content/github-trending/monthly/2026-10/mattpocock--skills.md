@@ -7,7 +7,9 @@ description: "mattpocock/skills 是一组面向编程代理的可组合技能，
 repository: "mattpocock/skills"
 repository_url: "https://github.com/mattpocock/skills"
 language: "Shell"
-tags: ["Skill"]
+tags:
+  - Skill
+  - AI
 comment: false
 ---
 

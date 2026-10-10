@@ -8,7 +8,7 @@ repository: "DuarteSantos8/openGym"
 repository_url: "https://github.com/DuarteSantos8/openGym"
 language: "JavaScript"
 tags:
-  - 数据
+  - 其他
 comment: false
 ---
 
