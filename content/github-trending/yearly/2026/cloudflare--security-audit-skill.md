@@ -8,8 +8,8 @@ repository: "cloudflare/security-audit-skill"
 repository_url: "https://github.com/cloudflare/security-audit-skill"
 language: "JavaScript"
 tags:
-  - Skill
   - 安全
+  - Skill
 comment: false
 ---
 

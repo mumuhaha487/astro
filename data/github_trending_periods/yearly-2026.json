@@ -4,9 +4,9 @@
   "slug": "2026",
   "label": "2026 年",
   "start": "2026-01-01",
-  "through": "2026-10-10",
+  "through": "2026-10-11",
   "tagVersion": 2,
-  "observedDays": 21,
+  "observedDays": 22,
   "candidates": [
     {
       "repo": "morluto/rea",
@@ -16,16 +16,33 @@
       "description": "Reverse engineer anything with agents, from app behavior down to native binaries.",
       "tags": [
         "AI",
-        "安全",
         "开发工具"
       ],
-      "totalStars": 30276,
-      "days": 4,
-      "firstPlaceDays": 4,
+      "totalStars": 56060,
+      "days": 5,
+      "firstPlaceDays": 5,
       "bestRank": 1,
-      "latestSeen": "2026-10-10",
+      "latestSeen": "2026-10-11",
       "summary": "REA 是一个以本地 MCP 服务和命令行为入口的逆向分析项目，让智能体检查应用、二进制与运行行为，并依据返回的证据解释功能、追踪实现或协助重建。",
       "article": "/github-trending/yearly/2026/morluto--rea/"
+    },
+    {
+      "repo": "boykopovar/AnyPS5",
+      "name": "AnyPS5",
+      "url": "https://github.com/boykopovar/AnyPS5",
+      "language": "C++",
+      "description": "Tool for automatic PS5 executables porting to Linux and Windows",
+      "tags": [
+        "开发工具",
+        "游戏"
+      ],
+      "totalStars": 21030,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 2,
+      "latestSeen": "2026-10-11",
+      "summary": "AnyPS5 是一款以 C++ 开发的 PS5 可执行文件移植工具，目标是在 Linux 和 Windows 上运行程序，采用可执行文件重链接与系统 PRX 库实现，而非模拟或独立运行时进程。",
+      "article": "/github-trending/yearly/2026/boykopovar--anyps5/"
     },
     {
       "repo": "debpalash/VoiceStudio",
@@ -35,14 +52,13 @@
       "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
       "tags": [
         "AI",
-        "音视频",
-        "开发工具"
+        "音视频"
       ],
-      "totalStars": 17964,
-      "days": 6,
+      "totalStars": 19030,
+      "days": 7,
       "firstPlaceDays": 2,
       "bestRank": 1,
-      "latestSeen": "2026-10-01",
+      "latestSeen": "2026-10-11",
       "summary": "VoiceStudio 是 AGPL-3.0 的开源本地语音工作台，把声音克隆、音色设计、视频配音、听写、转写与有声书制作整合进桌面应用，项目自述支持 646 种语言，并自称为完全本地的 ElevenLabs 替代方案。",
       "article": "/github-trending/yearly/2026/debpalash--voicestudio/"
     },
@@ -55,13 +71,11 @@
       "tags": [
         "Skill"
       ],
-      "totalStars": 17289,
-      "days": 19,
+      "totalStars": 19026,
+      "days": 20,
       "firstPlaceDays": 0,
       "bestRank": 4,
-      "latestSeen": "2026-10-10",
-      "summary": "mattpocock/skills 是一套面向真实工程实践的 agent 技能集合，作者称其来自日常 .agents 目录。它以小型、可组合、可改造为设计原则，帮助使用者在与编码 agent 协作时对齐意图、保持设计质量。",
-      "article": "/github-trending/yearly/2026/mattpocock--skills/"
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "vectorize-io/hindsight",
@@ -79,20 +93,21 @@
       "latestSeen": "2026-09-30"
     },
     {
-      "repo": "boykopovar/AnyPS5",
-      "name": "AnyPS5",
-      "url": "https://github.com/boykopovar/AnyPS5",
-      "language": "C++",
-      "description": "Tool for automatic PS5 executables porting to Linux and Windows",
+      "repo": "alibaba/open-code-review",
+      "name": "open-code-review",
+      "url": "https://github.com/alibaba/open-code-review",
+      "language": "Go",
+      "description": "Secure, fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
       "tags": [
-        "游戏",
+        "AI",
+        "安全",
         "开发工具"
       ],
-      "totalStars": 15199,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 2,
-      "latestSeen": "2026-10-10"
+      "totalStars": 14360,
+      "days": 7,
+      "firstPlaceDays": 2,
+      "bestRank": 1,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "cloudflare/security-audit-skill",
@@ -111,23 +126,6 @@
       "latestSeen": "2026-10-10"
     },
     {
-      "repo": "alibaba/open-code-review",
-      "name": "open-code-review",
-      "url": "https://github.com/alibaba/open-code-review",
-      "language": "Go",
-      "description": "Secure, fast, efficient, battle-tested at Alibaba's scale. Hybrid architecture code review tool: deterministic pipelines + LLM Agent, precise line-level comments, built-in multi-language ruleset (NPE, thread-safety, XSS, SQL injection), OpenAI & Anthropic compatible.",
-      "tags": [
-        "安全",
-        "开发工具",
-        "AI"
-      ],
-      "totalStars": 13390,
-      "days": 6,
-      "firstPlaceDays": 2,
-      "bestRank": 1,
-      "latestSeen": "2026-10-10"
-    },
-    {
       "repo": "paperclipai/paperclip",
       "name": "paperclip",
       "url": "https://github.com/paperclipai/paperclip",
@@ -142,6 +140,21 @@
       "firstPlaceDays": 2,
       "bestRank": 1,
       "latestSeen": "2026-09-30"
+    },
+    {
+      "repo": "storytold/artcraft",
+      "name": "artcraft",
+      "url": "https://github.com/storytold/artcraft",
+      "language": "Rust",
+      "description": "ArtCraft is an intentional crafting engine for artists, designers, and filmmakers",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 11061,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 3,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "hydra-db/hydradb",
@@ -208,21 +221,6 @@
       "latestSeen": "2026-10-10"
     },
     {
-      "repo": "storytold/artcraft",
-      "name": "artcraft",
-      "url": "https://github.com/storytold/artcraft",
-      "language": "Rust",
-      "description": "ArtCraft is an intentional crafting engine for artists, designers, and filmmakers",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 7844,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 3,
-      "latestSeen": "2026-10-10"
-    },
-    {
       "repo": "rohitg00/ai-engineering-from-scratch",
       "name": "ai-engineering-from-scratch",
       "url": "https://github.com/rohitg00/ai-engineering-from-scratch",
@@ -255,6 +253,21 @@
       "latestSeen": "2026-09-30"
     },
     {
+      "repo": "addyosmani/agent-skills",
+      "name": "agent-skills",
+      "url": "https://github.com/addyosmani/agent-skills",
+      "language": "JavaScript",
+      "description": "Production-grade engineering skills for AI coding agents.",
+      "tags": [
+        "Skill"
+      ],
+      "totalStars": 6924,
+      "days": 13,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-11"
+    },
+    {
       "repo": "DuarteSantos8/openGym",
       "name": "openGym",
       "url": "https://github.com/DuarteSantos8/openGym",
@@ -283,21 +296,6 @@
       "firstPlaceDays": 2,
       "bestRank": 1,
       "latestSeen": "2026-09-26"
-    },
-    {
-      "repo": "addyosmani/agent-skills",
-      "name": "agent-skills",
-      "url": "https://github.com/addyosmani/agent-skills",
-      "language": "JavaScript",
-      "description": "Production-grade engineering skills for AI coding agents.",
-      "tags": [
-        "Skill"
-      ],
-      "totalStars": 6174,
-      "days": 12,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-10"
     },
     {
       "repo": "Panniantong/Agent-Reach",
@@ -353,14 +351,30 @@
       "language": "Java",
       "description": "Ghidra is a software reverse engineering (SRE) framework",
       "tags": [
-        "安全",
-        "开发工具"
+        "开发工具",
+        "安全"
       ],
-      "totalStars": 4865,
-      "days": 10,
+      "totalStars": 5453,
+      "days": 11,
       "firstPlaceDays": 0,
       "bestRank": 6,
-      "latestSeen": "2026-10-10"
+      "latestSeen": "2026-10-11"
+    },
+    {
+      "repo": "cathrynlavery/diagram-design",
+      "name": "diagram-design",
+      "url": "https://github.com/cathrynlavery/diagram-design",
+      "language": "HTML",
+      "description": "Editorial diagram design for Claude Code, Codex, GitHub Copilot, Cursor, Factory Droid, and Pi. 44 diagram types. Self-contained HTML + SVG. No shadows. No Mermaid slop.",
+      "tags": [
+        "Skill",
+        "开发工具"
+      ],
+      "totalStars": 5141,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 4,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "Tencent/WeKnora",
@@ -369,14 +383,13 @@
       "language": "Go",
       "description": "Open-source LLM knowledge platform: turn raw documents into a queryable RAG, an autonomous reasoning agent, and a self-maintaining Wiki.",
       "tags": [
-        "AI",
-        "数据"
+        "AI"
       ],
-      "totalStars": 4648,
-      "days": 6,
+      "totalStars": 4863,
+      "days": 7,
       "firstPlaceDays": 0,
       "bestRank": 4,
-      "latestSeen": "2026-10-10"
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "JustVugg/colibri",
@@ -395,6 +408,22 @@
       "latestSeen": "2026-09-18"
     },
     {
+      "repo": "Predidit/Kazumi",
+      "name": "Kazumi",
+      "url": "https://github.com/Predidit/Kazumi",
+      "language": "Dart",
+      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
+      "tags": [
+        "移动端",
+        "音视频"
+      ],
+      "totalStars": 4332,
+      "days": 14,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-11"
+    },
+    {
       "repo": "msitarzewski/agency-agents",
       "name": "agency-agents",
       "url": "https://github.com/msitarzewski/agency-agents",
@@ -411,20 +440,20 @@
       "latestSeen": "2026-10-09"
     },
     {
-      "repo": "cathrynlavery/diagram-design",
-      "name": "diagram-design",
-      "url": "https://github.com/cathrynlavery/diagram-design",
-      "language": "HTML",
-      "description": "Editorial diagram design for Claude Code, Codex, GitHub Copilot, Factory Droid, and Pi. 42 diagram types. Self-contained HTML + SVG. No shadows. No Mermaid slop.",
+      "repo": "tt-a1i/archify",
+      "name": "archify",
+      "url": "https://github.com/tt-a1i/archify",
+      "language": "JavaScript",
+      "description": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
       "tags": [
         "Skill",
         "开发工具"
       ],
-      "totalStars": 3952,
+      "totalStars": 4018,
       "days": 4,
       "firstPlaceDays": 0,
-      "bestRank": 4,
-      "latestSeen": "2026-10-10"
+      "bestRank": 5,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "thedotmack/claude-mem",
@@ -441,6 +470,22 @@
       "firstPlaceDays": 0,
       "bestRank": 7,
       "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "anthropics/knowledge-work-plugins",
+      "name": "knowledge-work-plugins",
+      "url": "https://github.com/anthropics/knowledge-work-plugins",
+      "language": "Python",
+      "description": "Open source repository of plugins primarily intended for knowledge workers to use in Claude Cowork",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 3617,
+      "days": 9,
+      "firstPlaceDays": 0,
+      "bestRank": 8,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "stablyai/orca",
@@ -472,38 +517,6 @@
       "firstPlaceDays": 0,
       "bestRank": 5,
       "latestSeen": "2026-10-05"
-    },
-    {
-      "repo": "tt-a1i/archify",
-      "name": "archify",
-      "url": "https://github.com/tt-a1i/archify",
-      "language": "JavaScript",
-      "description": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "totalStars": 3468,
-      "days": 3,
-      "firstPlaceDays": 0,
-      "bestRank": 5,
-      "latestSeen": "2026-10-10"
-    },
-    {
-      "repo": "Predidit/Kazumi",
-      "name": "Kazumi",
-      "url": "https://github.com/Predidit/Kazumi",
-      "language": "Dart",
-      "description": "基于自定义规则的番剧采集APP，支持流媒体在线观看，支持弹幕，支持实时超分辨率。",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "totalStars": 3440,
-      "days": 13,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-10"
     },
     {
       "repo": "alphaXiv/OpenResearch",
@@ -539,20 +552,20 @@
       "latestSeen": "2026-09-20"
     },
     {
-      "repo": "anthropics/knowledge-work-plugins",
-      "name": "knowledge-work-plugins",
-      "url": "https://github.com/anthropics/knowledge-work-plugins",
-      "language": "Python",
-      "description": "Open source repository of plugins primarily intended for knowledge workers to use in Claude Cowork",
+      "repo": "anthropics/claude-code",
+      "name": "claude-code",
+      "url": "https://github.com/anthropics/claude-code",
+      "language": "TypeScript",
+      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
       "tags": [
         "AI",
-        "Skill"
+        "开发工具"
       ],
-      "totalStars": 2991,
-      "days": 8,
+      "totalStars": 2910,
+      "days": 11,
       "firstPlaceDays": 0,
       "bestRank": 8,
-      "latestSeen": "2026-10-10"
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "calesthio/OpenMontage",
@@ -569,6 +582,21 @@
       "firstPlaceDays": 0,
       "bestRank": 7,
       "latestSeen": "2026-10-08"
+    },
+    {
+      "repo": "vorssaint/vorssaint-utils",
+      "name": "vorssaint-utils",
+      "url": "https://github.com/vorssaint/vorssaint-utils",
+      "language": "Swift",
+      "description": "Free and open-source macOS menu bar toolkit.",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 2870,
+      "days": 10,
+      "firstPlaceDays": 0,
+      "bestRank": 12,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "heygen-com/hyperframes",
@@ -619,22 +647,6 @@
       "latestSeen": "2026-10-07"
     },
     {
-      "repo": "anthropics/claude-code",
-      "name": "claude-code",
-      "url": "https://github.com/anthropics/claude-code",
-      "language": "TypeScript",
-      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 2715,
-      "days": 10,
-      "firstPlaceDays": 0,
-      "bestRank": 8,
-      "latestSeen": "2026-10-08"
-    },
-    {
       "repo": "byoungd/up",
       "name": "up",
       "url": "https://github.com/byoungd/up",
@@ -649,21 +661,6 @@
       "firstPlaceDays": 0,
       "bestRank": 4,
       "latestSeen": "2026-10-01"
-    },
-    {
-      "repo": "vorssaint/vorssaint-utils",
-      "name": "vorssaint-utils",
-      "url": "https://github.com/vorssaint/vorssaint-utils",
-      "language": "Swift",
-      "description": "Free and open-source macOS menu bar toolkit.",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 2402,
-      "days": 9,
-      "firstPlaceDays": 0,
-      "bestRank": 12,
-      "latestSeen": "2026-10-08"
     },
     {
       "repo": "Nasiko-Labs/nasiko",
@@ -773,6 +770,21 @@
       "firstPlaceDays": 0,
       "bestRank": 10,
       "latestSeen": "2026-10-09"
+    },
+    {
+      "repo": "Leonxlnx/taste-skill",
+      "name": "taste-skill",
+      "url": "https://github.com/Leonxlnx/taste-skill",
+      "language": "JavaScript",
+      "description": "Taste-Skill - gives your AI good taste. stops the AI from generating boring, generic slop",
+      "tags": [
+        "Skill"
+      ],
+      "totalStars": 2072,
+      "days": 7,
+      "firstPlaceDays": 0,
+      "bestRank": 16,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "t8y2/dbx",
@@ -899,22 +911,6 @@
       "latestSeen": "2026-10-05"
     },
     {
-      "repo": "Leonxlnx/taste-skill",
-      "name": "taste-skill",
-      "url": "https://github.com/Leonxlnx/taste-skill",
-      "language": "JavaScript",
-      "description": "Taste-Skill - gives your AI good taste. stops the AI from generating boring, generic slop",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 1752,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 16,
-      "latestSeen": "2026-10-09"
-    },
-    {
       "repo": "earthtojake/text-to-cad",
       "name": "text-to-cad",
       "url": "https://github.com/earthtojake/text-to-cad",
@@ -929,6 +925,21 @@
       "firstPlaceDays": 0,
       "bestRank": 13,
       "latestSeen": "2026-10-09"
+    },
+    {
+      "repo": "k1tbyte/Wand-Enhancer",
+      "name": "Wand-Enhancer",
+      "url": "https://github.com/k1tbyte/Wand-Enhancer",
+      "language": "C#",
+      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
+      "tags": [
+        "其他"
+      ],
+      "totalStars": 1728,
+      "days": 9,
+      "firstPlaceDays": 0,
+      "bestRank": 16,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "Open-Dev-Society/OpenStock",
@@ -975,21 +986,6 @@
       "days": 2,
       "firstPlaceDays": 0,
       "bestRank": 6,
-      "latestSeen": "2026-10-10"
-    },
-    {
-      "repo": "k1tbyte/Wand-Enhancer",
-      "name": "Wand-Enhancer",
-      "url": "https://github.com/k1tbyte/Wand-Enhancer",
-      "language": "C#",
-      "description": "Advanced UX and interoperability extension for Wand (WeMod) app",
-      "tags": [
-        "开发工具"
-      ],
-      "totalStars": 1548,
-      "days": 8,
-      "firstPlaceDays": 0,
-      "bestRank": 16,
       "latestSeen": "2026-10-10"
     },
     {
@@ -1295,6 +1291,23 @@
       "latestSeen": "2026-09-20"
     },
     {
+      "repo": "bethington/ghidra-mcp",
+      "name": "ghidra-mcp",
+      "url": "https://github.com/bethington/ghidra-mcp",
+      "language": "Java",
+      "description": "Ghidra MCP Server — 200+ MCP tools for AI-powered reverse engineering. GUI plugin + headless server, lazy tool loading, convention enforcement, batch operations, Ghidra Server integration, and Docker deployment.",
+      "tags": [
+        "AI",
+        "开发工具",
+        "安全"
+      ],
+      "totalStars": 1205,
+      "days": 7,
+      "firstPlaceDays": 0,
+      "bestRank": 21,
+      "latestSeen": "2026-10-11"
+    },
+    {
       "repo": "coreyhaines31/marketingskills",
       "name": "marketingskills",
       "url": "https://github.com/coreyhaines31/marketingskills",
@@ -1325,6 +1338,22 @@
       "firstPlaceDays": 0,
       "bestRank": 3,
       "latestSeen": "2026-09-26"
+    },
+    {
+      "repo": "microsoft/mxc",
+      "name": "mxc",
+      "url": "https://github.com/microsoft/mxc",
+      "language": "Rust",
+      "description": "Policy-driven, layered isolation and containment",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
+      "totalStars": 1136,
+      "days": 3,
+      "firstPlaceDays": 0,
+      "bestRank": 11,
+      "latestSeen": "2026-10-11"
     },
     {
       "repo": "tonhowtf/omniget",
@@ -1453,22 +1482,6 @@
       "latestSeen": "2026-09-17"
     },
     {
-      "repo": "bethington/ghidra-mcp",
-      "name": "ghidra-mcp",
-      "url": "https://github.com/bethington/ghidra-mcp",
-      "language": "Java",
-      "description": "Ghidra MCP Server — 200+ MCP tools for AI-powered reverse engineering. GUI plugin + headless server, lazy tool loading, convention enforcement, batch operations, Ghidra Server integration, and Docker deployment.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 1031,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 21,
-      "latestSeen": "2026-10-10"
-    },
-    {
       "repo": "FalkorDB/FalkorDB",
       "name": "FalkorDB",
       "url": "https://github.com/FalkorDB/FalkorDB",
@@ -1576,22 +1589,6 @@
       "firstPlaceDays": 0,
       "bestRank": 27,
       "latestSeen": "2026-10-08"
-    },
-    {
-      "repo": "strands-agents/harness-sdk",
-      "name": "harness-sdk",
-      "url": "https://github.com/strands-agents/harness-sdk",
-      "language": "Python",
-      "description": "Build an agent harness and control it end-to-end. Open-source SDK for production AI agents in Python & TypeScript - any model, any cloud.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 953,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 14,
-      "latestSeen": "2026-09-27"
     }
   ]
 }

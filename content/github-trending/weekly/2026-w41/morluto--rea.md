@@ -7,7 +7,10 @@ description: "REA 是一个以 TypeScript 编写的本地逆向分析工具集�
 repository: "morluto/rea"
 repository_url: "https://github.com/morluto/rea"
 language: "TypeScript"
-tags: ["AI","开发工具"]
+tags:
+  - AI
+  - 安全
+  - 开发工具
 comment: false
 ---
 

@@ -7,7 +7,10 @@ description: "REA 是面向智能体的逆向工程工具集，通过 MCP 和命
 repository: "morluto/rea"
 repository_url: "https://github.com/morluto/rea"
 language: "TypeScript"
-tags: ["AI","开发工具"]
+tags:
+  - AI
+  - 安全
+  - 开发工具
 comment: false
 ---
 
