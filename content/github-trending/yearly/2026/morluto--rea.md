@@ -7,7 +7,9 @@ description: "REA 是一个以本地 MCP 服务和命令行为入口的逆向分
 repository: "morluto/rea"
 repository_url: "https://github.com/morluto/rea"
 language: "TypeScript"
-tags: ["AI","安全","开发工具"]
+tags:
+  - AI
+  - 开发工具
 comment: false
 ---
 

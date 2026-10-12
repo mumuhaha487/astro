@@ -9,7 +9,6 @@ repository_url: "https://github.com/morluto/rea"
 language: "TypeScript"
 tags:
   - AI
-  - 安全
   - 开发工具
 comment: false
 ---

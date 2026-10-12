@@ -7,7 +7,9 @@ description: "AnyPS5 是一款以 C++ 实现的 PS5 可执行文件移植工具�
 repository: "boykopovar/AnyPS5"
 repository_url: "https://github.com/boykopovar/AnyPS5"
 language: "C++"
-tags: ["游戏","开发工具"]
+tags:
+  - 开发工具
+  - 游戏
 comment: false
 ---
 
