@@ -8,8 +8,8 @@ repository: "debpalash/VoiceStudio"
 repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
 tags:
-  - AI
   - 音视频
+  - AI
 comment: false
 ---
 
