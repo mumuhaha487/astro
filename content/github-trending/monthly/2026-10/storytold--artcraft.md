@@ -7,7 +7,8 @@ description: "ArtCraft 是面向艺术家、设计师与影视创作者的桌面
 repository: "storytold/artcraft"
 repository_url: "https://github.com/storytold/artcraft"
 language: "Rust"
-tags: ["开发工具"]
+tags:
+  - 其他
 comment: false
 ---
 
