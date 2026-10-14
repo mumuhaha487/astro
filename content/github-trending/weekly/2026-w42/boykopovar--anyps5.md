@@ -7,7 +7,9 @@ description: "AnyPS5 是一个以 C++ 开发的工具，旨在将 PS5 可执行�
 repository: "boykopovar/AnyPS5"
 repository_url: "https://github.com/boykopovar/AnyPS5"
 language: "C++"
-tags: ["开发工具","游戏"]
+tags:
+  - 游戏
+  - 开发工具
 comment: false
 ---
 

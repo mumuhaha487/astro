@@ -8,8 +8,8 @@ repository: "boykopovar/AnyPS5"
 repository_url: "https://github.com/boykopovar/AnyPS5"
 language: "C++"
 tags:
-  - 开发工具
   - 游戏
+  - 开发工具
 comment: false
 ---
 
