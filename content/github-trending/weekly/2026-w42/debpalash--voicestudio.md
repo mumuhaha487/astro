@@ -7,7 +7,9 @@ description: "VoiceStudio 是以 Electron 为桌面入口、由 Python 语音后
 repository: "debpalash/VoiceStudio"
 repository_url: "https://github.com/debpalash/VoiceStudio"
 language: "Python"
-tags: ["音视频"]
+tags:
+  - 音视频
+  - AI
 comment: false
 ---
 
