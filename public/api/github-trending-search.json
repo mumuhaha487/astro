@@ -1,6 +1,1676 @@
 {
-  "updatedAt": "2026-10-17",
+  "updatedAt": "2026-10-18",
   "entries": [
+    {
+      "repo": "debpalash/VoiceStudio",
+      "url": "https://github.com/debpalash/VoiceStudio",
+      "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
+      "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "音视频"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 14,
+      "peakStars": 4712,
+      "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
+      "periods": {
+        "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
+        "weekly": "/github-trending/weekly/2026-w42/debpalash--voicestudio/",
+        "yearly": "/github-trending/yearly/2026/debpalash--voicestudio/"
+      }
+    },
+    {
+      "repo": "google/ax",
+      "url": "https://github.com/google/ax",
+      "description": "Google's open agentic orchestration runtime",
+      "summary": "AX 是 Google 开源的声明式智能体编排运行时，基于 Agent Substrate 实现沙箱执行，用 Task、Workspace、Gateway、Model 四类原语管理集群中大规模自主智能体任务的隔离、网络与生命周期。",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 2305,
+      "dailyArticle": "/github-trending/2026-09-23/google--ax/",
+      "periods": {
+        "weekly": "/github-trending/weekly/2026-w39/google--ax/"
+      }
+    },
+    {
+      "repo": "DietrichGebert/ponytail",
+      "url": "https://github.com/DietrichGebert/ponytail",
+      "description": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
+      "summary": "Ponytail 是一个用 JavaScript 编写的 AI 编程代理插件与规则集，通过七级阶梯规则让代理先判断需求是否必要、能否复用或使用原生能力，只在最后才写最小实现，README 称其可接入多种主流编码代理。",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 9,
+      "peakStars": 1894,
+      "dailyArticle": "/github-trending/2026-09-18/dietrichgebert--ponytail/",
+      "periods": {}
+    },
+    {
+      "repo": "xerj-org/xerj",
+      "url": "https://github.com/xerj-org/xerj",
+      "description": "XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep and sed. One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. Elasticsearch compatible, so existing clients just work.",
+      "summary": "XERJ 是以 Rust 编写的本地搜索服务，可自动索引代码及多种文档和数据文件，并通过 Elasticsearch 兼容接口提供检索，面向开发者与 AI 智能体。",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "数据"
+      ],
+      "firstSeen": "2026-10-08",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 1647,
+      "dailyArticle": "/github-trending/2026-10-08/xerj-org--xerj/",
+      "periods": {}
+    },
+    {
+      "repo": "anthropics/claude-plugins-official",
+      "url": "https://github.com/anthropics/claude-plugins-official",
+      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
+      "summary": "这是 Anthropic 官方维护的 Claude Code 插件目录仓库，用于汇总和分发高质量插件。目录分为 Anthropic 内部插件和第三方外部插件两部分，用户可通过 Claude Code 内置插件系统直接安装，外部插件需经审核方可收录。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 1552,
+      "dailyArticle": "/github-trending/2026-09-27/anthropics--claude-plugins-official/",
+      "periods": {}
+    },
+    {
+      "repo": "NationalSecurityAgency/ghidra",
+      "url": "https://github.com/NationalSecurityAgency/ghidra",
+      "description": "Ghidra is a software reverse engineering (SRE) framework",
+      "summary": "Ghidra 是由美国国家安全局研究部门创建并维护的软件逆向工程框架，提供反汇编、汇编、反编译、绘图与脚本等功能，支持在 Windows、macOS 和 Linux 上分析编译代码。",
+      "language": "Java",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 18,
+      "peakStars": 1550,
+      "dailyArticle": "/github-trending/2026-09-17/nationalsecurityagency--ghidra/",
+      "periods": {}
+    },
+    {
+      "repo": "MadsLorentzen/ai-job-search",
+      "url": "https://github.com/MadsLorentzen/ai-job-search",
+      "description": "The job search that runs on your machine. AI job application framework built on Claude Code: evaluate postings, tailor CVs, write cover letters, prep interviews. Fork it and own it.",
+      "summary": "基于 Claude Code 的求职申请框架，支持职位评估、简历定制、求职信撰写与面试准备。用户需自行分叉并填写个人资料，工作流在本地运行。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-30",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 1397,
+      "dailyArticle": "/github-trending/2026-09-30/madslorentzen--ai-job-search/",
+      "periods": {}
+    },
+    {
+      "repo": "affaan-m/ECC",
+      "url": "https://github.com/affaan-m/ECC",
+      "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
+      "summary": "ECC 是面向 AI 编码代理的开源优化系统，用代理、技能、钩子与记忆把规划、测试、审查、验证和经验沉淀固化进 Claude Code 等工具的工作流。",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 14,
+      "peakStars": 1171,
+      "dailyArticle": "/github-trending/2026-09-17/affaan-m--ecc/",
+      "periods": {}
+    },
+    {
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+      "description": "Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.",
+      "summary": "Scientific Agent Skills 是面向兼容 AI 助手的科研技能集合，包含 177 个跨学科工作流指南，覆盖 Python 工具、科学数据库、分析和科研写作等任务。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-10-10",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 1158,
+      "dailyArticle": "/github-trending/2026-10-15/k-dense-ai--scientific-agent-skills/",
+      "periods": {}
+    },
+    {
+      "repo": "stablyai/orca",
+      "url": "https://github.com/stablyai/orca",
+      "description": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
+      "summary": "Orca 是一个面向并行编码智能体的 ADE，可在桌面、移动端和远程运行时中运行多种 CLI 编码智能体，并为每个智能体创建独立 git worktree 进行统一跟踪与编排。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 1089,
+      "dailyArticle": "/github-trending/2026-09-19/stablyai--orca/",
+      "periods": {}
+    },
+    {
+      "repo": "hmjz100/LinkSwift",
+      "url": "https://github.com/hmjz100/LinkSwift",
+      "description": "一个基于 JavaScript 的网盘文件下载地址获取工具。基于【网盘直链下载助手】修改 ，支持 百度网盘 / 阿里云盘 / 中国移动云盘 / 天翼云盘 / 迅雷云盘 / 夸克网盘 / UC网盘 / 123云盘 八大网盘",
+      "summary": "LinkSwift 是基于 JavaScript 的浏览器用户脚本，由网盘直链下载助手修改而来，面向多个网盘提供下载地址获取、界面调整及下载器对接等功能。",
+      "language": "JavaScript",
+      "tags": [
+        "云服务"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 1051,
+      "dailyArticle": "/github-trending/2026-10-15/hmjz100--linkswift/",
+      "periods": {}
+    },
+    {
+      "repo": "obra/superpowers",
+      "url": "https://github.com/obra/superpowers",
+      "description": "An agentic skills framework & software development methodology that works.",
+      "summary": "Superpowers 是面向编码代理的技能框架与开发方法论，用可组合技能与初始指令让代理按头脑风暴、计划、TDD、代码审查等流程推进开发，并支持多种代理工具安装。",
+      "language": "Shell",
+      "tags": [
+        "AI",
+        "Skill",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 22,
+      "peakStars": 973,
+      "dailyArticle": "/github-trending/2026-09-17/obra--superpowers/",
+      "periods": {}
+    },
+    {
+      "repo": "JuliusBrussee/caveman",
+      "url": "https://github.com/JuliusBrussee/caveman",
+      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
+      "summary": "Caveman 是一个用“原始人式”简短语体压缩 AI 编程代理输出的规则技能，并附带一个本地运行、用于压缩代理所读内容的代理层，目标是减少 token 消耗。",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 13,
+      "peakStars": 943,
+      "dailyArticle": "/github-trending/2026-09-19/juliusbrussee--caveman/",
+      "periods": {}
+    },
+    {
+      "repo": "Lakr233/vphone-cli",
+      "url": "https://github.com/Lakr233/vphone-cli",
+      "description": "Run a virtual iPhone on an Apple Silicon Mac.",
+      "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。",
+      "language": "Swift",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 907,
+      "dailyArticle": "/github-trending/2026-09-16/lakr233--vphone-cli/",
+      "periods": {}
+    },
+    {
+      "repo": "HKUDS/CLI-Anything",
+      "url": "https://github.com/HKUDS/CLI-Anything",
+      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
+      "summary": "CLI-Anything 是香港大学数据科学实验室开源的项目，通过生成命令行界面（CLI）让各类软件可被 AI Agent 调用，并提供 CLI-Hub 注册中心用于浏览、安装和分享社区构建的 CLI 工具。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 759,
+      "dailyArticle": "/github-trending/2026-09-25/hkuds--cli-anything/",
+      "periods": {}
+    },
+    {
+      "repo": "ruvnet/ruflo",
+      "url": "https://github.com/ruvnet/ruflo",
+      "description": "🌊 The original agent harness. Deploy intelligent multi-player swarms, coordinate autonomous workflows, and build conversational AI systems. Features adaptive memory, self-learning intelligence, federation, vector RAG integration, and native Claude Code / Codex / Hermes and many more Integrated",
+      "summary": "Ruflo 是面向 Claude Code、Codex 等工具的智能体编排框架，提供 CLI、MCP 服务和插件，用于协调多智能体工作流，并集成记忆、检索、学习及管理界面。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-04",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 672,
+      "dailyArticle": "/github-trending/2026-10-16/ruvnet--ruflo/",
+      "periods": {}
+    },
+    {
+      "repo": "anomalyco/opencode",
+      "url": "https://github.com/anomalyco/opencode",
+      "description": "The open source coding agent.",
+      "summary": "OpenCode 是一个用 TypeScript 编写的开源 AI 编码代理，提供终端用户界面和桌面应用测试版，支持通过多种包管理器安装，并内置 build 与 plan 两种可切换代理。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 576,
+      "dailyArticle": "/github-trending/2026-09-26/anomalyco--opencode/",
+      "periods": {}
+    },
+    {
+      "repo": "chthollyphile/folia-major",
+      "url": "https://github.com/chthollyphile/folia-major",
+      "description": "专注于绚丽的歌词动画效果的本地音乐/navidrome/第三方多平台在线音乐播放器",
+      "summary": "Folia 是一款以全屏歌词动画为核心的音乐播放器，支持本地曲库、多个在线音乐来源及 Navidrome，并提供 Web 与桌面端形态。",
+      "language": "TypeScript",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-10-06",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 559,
+      "dailyArticle": "/github-trending/2026-10-12/chthollyphile--folia-major/",
+      "periods": {}
+    },
+    {
+      "repo": "anthropics/claude-code",
+      "url": "https://github.com/anthropics/claude-code",
+      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
+      "summary": "Claude Code 是 Anthropic 推出的终端智能编码工具，可用自然语言执行例行编码任务、解释复杂代码并处理 Git 工作流，支持在终端、IDE 中使用，也可在 GitHub 上通过 @claude 调用。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 12,
+      "peakStars": 538,
+      "dailyArticle": "/github-trending/2026-09-18/anthropics--claude-code/",
+      "periods": {}
+    },
+    {
+      "repo": "akitaonrails/ai-memory",
+      "url": "https://github.com/akitaonrails/ai-memory",
+      "description": "Solution for long term memory for agent coding CLIs and to facilitate handoff between different agent vendors",
+      "summary": "ai-memory 是一个用 Rust 实现的开源项目，为 AI 编码代理提供长期记忆。它通过生命周期钩子自动捕获工作过程，将记忆以 git 支持的 Markdown 维基形式存储，并支持跨代理、跨机器和团队共享。默认零 LLM 调用，可自托管服务器。",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 520,
+      "dailyArticle": "/github-trending/2026-09-23/akitaonrails--ai-memory/",
+      "periods": {}
+    },
+    {
+      "repo": "michael-denyer/pstack-claude",
+      "url": "https://github.com/michael-denyer/pstack-claude",
+      "description": "Claude Code, Codex, Copilot, Pi, OpenCode, Gemini, and Prime Agent versions of Poteto's pstack. Rigorous agent workflows with Cursor primitives translated for other harnesses.",
+      "summary": "pstack-claude 将 pstack 工作流移植到多种 AI 编程助手环境，提供任务路由、规划、委派与验证相关技能，并支持按角色配置模型和推理设置。",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 501,
+      "dailyArticle": "/github-trending/2026-10-17/michael-denyer--pstack-claude/",
+      "periods": {}
+    },
+    {
+      "repo": "localsend/localsend",
+      "url": "https://github.com/localsend/localsend",
+      "description": "An open-source cross-platform alternative to AirDrop",
+      "summary": "LocalSend 是一款以 Dart 和 Flutter 开发的跨平台应用，面向同一局域网内的设备，支持通过 REST API 与 HTTPS 传送文件和消息，官方说明其无需互联网连接或第三方服务器。",
+      "language": "Dart",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 11,
+      "peakStars": 489,
+      "dailyArticle": "/github-trending/2026-10-13/localsend--localsend/",
+      "periods": {}
+    },
+    {
+      "repo": "Fission-AI/OpenSpec",
+      "url": "https://github.com/Fission-AI/OpenSpec",
+      "description": "Spec-driven development (SDD) for AI coding assistants.",
+      "summary": "OpenSpec 是面向 AI 编程助手的规格驱动开发框架，把提案、规格、设计与任务以 Markdown 文档存入仓库，让开发者与 AI 先对齐需求再编码。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 464,
+      "dailyArticle": "/github-trending/2026-09-20/fission-ai--openspec/",
+      "periods": {}
+    },
+    {
+      "repo": "coreyhaines31/marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
+      "summary": "marketingskills 是面向 Claude Code、Codex、Cursor 等 AI 代理的营销技能集合，以 Markdown 工作流程覆盖转化优化、文案、SEO、分析及增长等任务。",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-10-04",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 451,
+      "dailyArticle": "/github-trending/2026-10-04/coreyhaines31--marketingskills/",
+      "periods": {}
+    },
+    {
+      "repo": "tgeorgiadis/quiver-launcher",
+      "url": "https://github.com/tgeorgiadis/quiver-launcher",
+      "description": "A modern launcher for downloading, installing, and running apps from GitHub and GitLab releases. With a personal library, community catalog subscriptions, and flexible filtering.",
+      "summary": "Quiver Launcher 是一个用 C# 开发的跨平台启动器，可从 GitHub 和 GitLab 发布页下载、安装并运行应用，并支持个人库、社区目录订阅、标签过滤及模组管理。",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 450,
+      "dailyArticle": "/github-trending/2026-09-30/tgeorgiadis--quiver-launcher/",
+      "periods": {}
+    },
+    {
+      "repo": "yt-dlp/yt-dlp",
+      "url": "https://github.com/yt-dlp/yt-dlp",
+      "description": "A feature-rich command-line audio/video downloader",
+      "summary": "yt-dlp 是以 Python 编写的命令行音视频下载工具，源自 youtube-dl，并基于 youtube-dlc 分支发展。项目简介称其支持数千个站点，README 还列出格式选择、字幕、元数据、后处理、插件及多平台安装方式。",
+      "language": "Python",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 411,
+      "dailyArticle": "/github-trending/2026-10-18/yt-dlp--yt-dlp/",
+      "periods": {}
+    },
+    {
+      "repo": "cursor/plugins",
+      "url": "https://github.com/cursor/plugins",
+      "description": "Cursor plugin specification and official plugins",
+      "summary": "Cursor 官方插件与插件规范仓库，采用多插件市场结构，集中收录面向开发、办公和业务系统的独立插件，并以清单及各自的 manifest 组织。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 10,
+      "peakStars": 384,
+      "dailyArticle": "/github-trending/2026-10-08/cursor--plugins/",
+      "periods": {}
+    },
+    {
+      "repo": "cline/cline",
+      "url": "https://github.com/cline/cline",
+      "description": "Autonomous coding agent as an SDK, IDE extension, or CLI assistant.",
+      "summary": "Cline 是一个开源编码智能体，提供 SDK、IDE 插件、桌面应用与 CLI 等多种形态，可在编辑器和终端中读写代码、执行命令，并接入多家模型与 MCP 工具。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 380,
+      "dailyArticle": "/github-trending/2026-09-18/cline--cline/",
+      "periods": {}
+    },
+    {
+      "repo": "lightseekorg/tokenspeed",
+      "url": "https://github.com/lightseekorg/tokenspeed",
+      "description": "TokenSpeed is a speed-of-light LLM inference engine.",
+      "summary": "TokenSpeed 是面向智能体工作负载的 Python LLM 推理引擎，采用 C++ 调度控制层与 Python 执行层分离的架构，并将内核设计为可插拔子系统。",
+      "language": "Python",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 374,
+      "dailyArticle": "/github-trending/2026-10-17/lightseekorg--tokenspeed/",
+      "periods": {}
+    },
+    {
+      "repo": "android/skills",
+      "url": "https://github.com/android/skills",
+      "description": "",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-10-16",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 368,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "thesysdev/openui",
+      "url": "https://github.com/thesysdev/openui",
+      "description": "The Open Standard for Generative UI",
+      "summary": "OpenUI 是一个以 TypeScript 为主的生成式 UI 框架，围绕可流式传输的 OpenUI Lang 构建，提供组件定义、提示生成与渐进式渲染能力，并支持 React、Vue、Svelte 和 Angular。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 317,
+      "dailyArticle": "/github-trending/2026-10-10/thesysdev--openui/",
+      "periods": {}
+    },
+    {
+      "repo": "tensorflow/tensorflow",
+      "url": "https://github.com/tensorflow/tensorflow",
+      "description": "An Open Source Machine Learning Framework for Everyone",
+      "summary": "TensorFlow 是端到端开源机器学习平台，由 Google Brain 团队发起，提供稳定的 Python 和 C++ API 及多语言支持，拥有完整的工具、库和社区生态。",
+      "language": "C++",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-10-18",
+      "days": 10,
+      "peakStars": 302,
+      "dailyArticle": "/github-trending/2026-09-28/tensorflow--tensorflow/",
+      "periods": {}
+    },
+    {
+      "repo": "withmarbleapp/os-taxonomy",
+      "url": "https://github.com/withmarbleapp/os-taxonomy",
+      "description": "",
+      "summary": "Marble Skill Taxonomy 是面向小学阶段学习内容的结构化数据集，以微主题、先修关系和课程标准映射组织跨学科知识，并提供 JSON 数据与结构说明。",
+      "language": "JavaScript",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 248,
+      "dailyArticle": "/github-trending/2026-10-18/withmarbleapp--os-taxonomy/",
+      "periods": {}
+    },
+    {
+      "repo": "chen08209/FlClash",
+      "url": "https://github.com/chen08209/FlClash",
+      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
+      "summary": "FlClash 是基于 mihomo（Clash.Meta）的多平台代理客户端，面向 Android、Windows、macOS 和 Linux，提供配置管理、规则代理及连接状态查看等功能。",
+      "language": "Dart",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 13,
+      "peakStars": 238,
+      "dailyArticle": "/github-trending/2026-10-10/chen08209--flclash/",
+      "periods": {}
+    },
+    {
+      "repo": "rustdesk/rustdesk",
+      "url": "https://github.com/rustdesk/rustdesk",
+      "description": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer.",
+      "summary": "RustDesk 是以 Rust 编写的开源远程桌面应用，面向远程连接与自托管使用；支持使用项目提供的会合与中继服务，或自行部署相关服务。",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 230,
+      "dailyArticle": "/github-trending/2026-10-17/rustdesk--rustdesk/",
+      "periods": {}
+    },
+    {
+      "repo": "mixelpixx/Konnect",
+      "url": "https://github.com/mixelpixx/Konnect",
+      "description": "AI-assisted PCB design for KiCAD 10. Native KiCAD plugin — a single Rust binary exposing 217 schematic, layout, routing, placement, design-review, and manufacturing tools to Claude, or the LLM of your choosing",
+      "summary": "Konnect 是面向 KiCad 10 的 Rust MCP 插件，通过 AI 客户端提供原理图、PCB 编辑、检查与制造文件导出等工具。",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 228,
+      "dailyArticle": "/github-trending/2026-10-18/mixelpixx--konnect/",
+      "periods": {}
+    },
+    {
+      "repo": "krillinai/OpenCreator",
+      "url": "https://github.com/krillinai/OpenCreator",
+      "description": "Formerly KrillinAI, VideoTranslation and Dubbing Tool. Open-source AI workspace for creators, powered by Codex. Video downloading, video translation, create videos, images, voice, avatars, and edits with Agents in one place. Suitable for your Social Media like YouTube, TikTok, Instagram, etc.",
+      "summary": "OpenCreator（原 KrillinAI）是以 TypeScript 开发的开源创作者工作空间，围绕 Codex CLI 提供本地运行环境和可视化界面，涵盖视频处理、内容写作、图像与视频生成、配音及 Agent 对话。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "音视频"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 226,
+      "dailyArticle": "/github-trending/2026-10-14/krillinai--opencreator/",
+      "periods": {}
+    },
+    {
+      "repo": "google/artemis",
+      "url": "https://github.com/google/artemis",
+      "description": "ARTEMIS turns natural-language instructions into reliable Android automation. It automates end-to-end workflows, captures logs, and integrates seamlessly with AI coding assistants such as Antigravity, Codex, and Claude Code. It also achieves 99%+ success rate on AndroidWorld Benchmark.",
+      "summary": "ARTEMIS 是一个以 Python 实现的 Android 自动化项目，可将自然语言任务转化为真实设备或模拟器上的操作，并提供 CLI、网页控制台、MCP 服务和 Python SDK 等使用入口。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "移动端",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 221,
+      "dailyArticle": "/github-trending/2026-10-17/google--artemis/",
+      "periods": {}
+    },
+    {
+      "repo": "magnitudedev/magnitude",
+      "url": "https://github.com/magnitudedev/magnitude",
+      "description": "Open source inference engine that tunes its kernels on your hardware to find the fastest way to run each model. 2x faster than Ollama. Works on Apple Silicon, NVIDIA, AMD, or just a CPU.",
+      "summary": "Magnitude 是一款用 Rust 编写的开源本地推理引擎，可分析用户现有硬件并推荐适配的开源模型，再针对具体硬件完成调优，支持 Apple Silicon、NVIDIA、AMD 及纯 CPU 环境，并通过一键连接常用智能体。",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-30",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 196,
+      "dailyArticle": "/github-trending/2026-09-30/magnitudedev--magnitude/",
+      "periods": {}
+    },
+    {
+      "repo": "wuwangzhang1216/ChinaTextbookStudyFree",
+      "url": "https://github.com/wuwangzhang1216/ChinaTextbookStudyFree",
+      "description": "给所有中国小学生打造的免费学习平台，从一年级到六年级所有的课本知识点全汇总。",
+      "summary": "ChinaTextbookStudyFree 是面向中国小学一至六年级的免费学习平台，覆盖语文、数学、英语和科学，提供单元练习、课文听读、课外阅读及学习记录等功能，并支持 Web 与 iOS。",
+      "language": "Swift",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-10-13",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 193,
+      "dailyArticle": "/github-trending/2026-10-17/wuwangzhang1216--chinatextbookstudyfree/",
+      "periods": {}
+    },
+    {
+      "repo": "jasonxu114514/opencode2api",
+      "url": "https://github.com/jasonxu114514/opencode2api",
+      "description": "A Go-based OpenCode Zen / Zen Go API proxy with OpenAI & Anthropic API compatibility, key/proxy pooling, automatic routing, and WebUI.",
+      "summary": "opencode2api 是用 Go 编写的 OpenCode Zen/Zen Go 网关，将上游服务接入兼容 OpenAI 与 Anthropic 的接口，并提供密钥和代理池、模型路由及内置管理 WebUI。",
+      "language": "Go",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 186,
+      "dailyArticle": "/github-trending/2026-10-17/jasonxu114514--opencode2api/",
+      "periods": {}
+    },
+    {
+      "repo": "plugin87/ux-ui-agent-skills",
+      "url": "https://github.com/plugin87/ux-ui-agent-skills",
+      "description": "Turn Claude into a senior design architect: DTCG tokens, 52 components, WCAG 2.2 AA-AAA, 138 design systems, any-framework code, and 50 objective gates that fail the build instead of faking success.",
+      "summary": "ux-ui-agent-skills（XIAS）为 AI 编码代理提供设计系统规则、令牌、组件规范、技能和自动化检查，涵盖无障碍、界面设计及多框架代码生成。仓库将自身定位为纯指令与知识层，并附有示例和验证脚本。",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 180,
+      "dailyArticle": "/github-trending/2026-10-17/plugin87--ux-ui-agent-skills/",
+      "periods": {}
+    },
+    {
+      "repo": "kestra-io/kestra",
+      "url": "https://github.com/kestra-io/kestra",
+      "description": "Event Driven Orchestration & Scheduling Platform for Mission Critical Applications",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "开发工具",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-10-18",
+      "days": 11,
+      "peakStars": 175,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "typesense/typesense",
+      "url": "https://github.com/typesense/typesense",
+      "description": "Open Source alternative to Algolia + Pinecone and an Easier-to-Use alternative to ElasticSearch ⚡ 🔍 ✨ Fast, typo tolerant, in-memory fuzzy Search Engine for building delightful search experiences",
+      "summary": "Typesense 是以 C++ 实现的开源搜索引擎，提供容错文本检索、过滤排序、向量与语义搜索等能力，可自托管或使用托管云服务。",
+      "language": "C++",
+      "tags": [
+        "数据"
+      ],
+      "firstSeen": "2026-10-10",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 173,
+      "dailyArticle": "/github-trending/2026-10-10/typesense--typesense/",
+      "periods": {}
+    },
+    {
+      "repo": "ollama/ollama",
+      "url": "https://github.com/ollama/ollama",
+      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
+      "summary": "Ollama 是用 Go 编写的开放模型运行与管理项目，提供 macOS、Windows、Linux 安装方式和 Docker 镜像，并通过命令行、REST API 及 Python、JavaScript 客户端供用户和应用调用。",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 11,
+      "peakStars": 166,
+      "dailyArticle": "/github-trending/2026-10-08/ollama--ollama/",
+      "periods": {}
+    },
+    {
+      "repo": "decolua/9router",
+      "url": "https://github.com/decolua/9router",
+      "description": "Unlimited FREE AI coding. Connect Claude Code, Codex, Cursor, Cline, Copilot, Antigravity to FREE Claude/GPT/Gemini via 40+ providers. Auto-fallback, RTK -40% tokens, never hit limits.",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 164,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ggml-org/llama.cpp",
+      "url": "https://github.com/ggml-org/llama.cpp",
+      "description": "LLM inference in C/C++",
+      "summary": "llama.cpp 是基于 ggml、以 C/C++ 实现的本地及云端大语言模型和视觉语言模型推理项目，提供命令行、服务端接口，并支持多种硬件后端与量化方式。",
+      "language": "C++",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 163,
+      "dailyArticle": "/github-trending/2026-10-15/ggml-org--llama.cpp/",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/vscode",
+      "url": "https://github.com/microsoft/vscode",
+      "description": "Visual Studio Code",
+      "summary": "Visual Studio Code 的开源代码仓库 Code-OSS，使用 TypeScript，供微软与社区共同开发编辑器产品。项目围绕代码编辑、导航、理解、轻量调试及扩展能力构建，并公开路线图、开发计划和贡献流程。",
+      "language": "TypeScript",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 158,
+      "dailyArticle": "/github-trending/2026-10-15/microsoft--vscode/",
+      "periods": {}
+    },
+    {
+      "repo": "GCWing/OpenBitFun",
+      "url": "https://github.com/GCWing/OpenBitFun",
+      "description": "OpenBitFun combines a high-performance agent runtime written in Rust with a polished desktop application. It pairs the depth of a Code Agent with open, general-purpose capabilities for work beyond software development.",
+      "summary": "OpenBitFun 是一款开源智能体工作空间，结合 Rust 智能体运行时与桌面应用，提供多种任务模式、跨设备控制和可扩展的 Mini Apps。",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 151,
+      "dailyArticle": "/github-trending/2026-10-18/gcwing--openbitfun/",
+      "periods": {}
+    },
+    {
+      "repo": "elie222/rakazo",
+      "url": "https://github.com/elie222/rakazo",
+      "description": "Open-source Grok Bot alternative. Choose your own model and sandbox.",
+      "summary": "Rakazo 是一款以 TypeScript 构建的开源、自托管 AI 智能体，支持持久化机器人、用户自选模型与计算机运行环境，并提供网页、桌面及移动端客户端。",
+      "language": "TypeScript",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 146,
+      "dailyArticle": "/github-trending/2026-10-18/elie222--rakazo/",
+      "periods": {}
+    },
+    {
+      "repo": "ScrapeCreators/social-media-research-skills",
+      "url": "https://github.com/ScrapeCreators/social-media-research-skills",
+      "description": "AI agent skills for social media research. Outlier posts, comment mining, competitor teardowns, ad libraries & trends across TikTok, Instagram, YouTube, Reddit, X, LinkedIn & more. Powered by ScrapeCreators. Works with Claude Code, Cursor, Codex, Gemini CLI.",
+      "summary": "该仓库提供一组面向 AI 代理的社交媒体研究技能，依托 ScrapeCreators 获取公开社交数据，并将数据整理为分析报告、内容建议或潜在客户列表。",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 140,
+      "dailyArticle": "/github-trending/2026-10-18/scrapecreators--social-media-research-skills/",
+      "periods": {}
+    },
+    {
+      "repo": "getlantern/lantern",
+      "url": "https://github.com/getlantern/lantern",
+      "description": "Open-source VPN for speed, privacy, and censorship circumvention. Free to download on Android, iOS, Windows, macOS, and Linux.",
+      "summary": "Lantern 是面向多平台的开源 VPN 与网络审查规避项目，README 主要提供稳定版和测试版下载入口、系统版本要求及社区支持渠道。",
+      "language": "Dart",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-10-16",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 136,
+      "dailyArticle": "/github-trending/2026-10-16/getlantern--lantern/",
+      "periods": {}
+    },
+    {
+      "repo": "HandsOnLLM/Hands-On-Large-Language-Models",
+      "url": "https://github.com/HandsOnLLM/Hands-On-Large-Language-Models",
+      "description": "Official code repo for the O'Reilly Book - \"Hands-On Large Language Models\"",
+      "summary": "这是《Hands-On Large Language Models》一书的配套代码仓库，以按章节组织的 Jupyter Notebook 演示大语言模型相关概念与实践，并提供 Colab 入口、本地环境配置提示及补充阅读资源。",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-30",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 128,
+      "dailyArticle": "/github-trending/2026-10-18/handsonllm--hands-on-large-language-models/",
+      "periods": {}
+    },
+    {
+      "repo": "CYQawa/YunX",
+      "url": "https://github.com/CYQawa/YunX",
+      "description": "✨一个安卓网盘解析下载app✨",
+      "summary": "YunX 是一款以 Kotlin 和 Jetpack Compose 构建的 Android 网盘解析下载应用，支持多个网盘的分享链接解析、账号登录及下载任务管理。",
+      "language": "Kotlin",
+      "tags": [
+        "移动端",
+        "云服务"
+      ],
+      "firstSeen": "2026-10-07",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 126,
+      "dailyArticle": "/github-trending/2026-10-18/cyqawa--yunx/",
+      "periods": {}
+    },
+    {
+      "repo": "freeok/so-novel",
+      "url": "https://github.com/freeok/so-novel",
+      "description": "小说下载｜网文下载 | 网络小说",
+      "summary": "So Novel 是一款以 Java 开发的小说及网页内容处理工具，提供 TUI、CLI 和 WebUI 启动模式，可将提取的内容导出为 EPUB、TXT、PDF 等格式，并支持多种操作系统与 Docker 部署。",
+      "language": "Java",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 125,
+      "dailyArticle": "/github-trending/2026-10-17/freeok--so-novel/",
+      "periods": {}
+    },
+    {
+      "repo": "Wei-Shaw/sub2api",
+      "url": "https://github.com/Wei-Shaw/sub2api",
+      "description": "Sub2API 一站式开源中转服务，让 Claude、Openai 、Gemini、Grok订阅统一接入，支持拼车共享，更高效分摊成本，原生工具无缝使用。",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "云服务"
+      ],
+      "firstSeen": "2026-09-19",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 118,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ashishps1/awesome-system-design-resources",
+      "url": "https://github.com/ashishps1/awesome-system-design-resources",
+      "description": "Learn System Design concepts and prepare for interviews using free resources.",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-09-23",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 112,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "AppFlowy-IO/AppFlowy",
+      "url": "https://github.com/AppFlowy-IO/AppFlowy",
+      "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-16",
+      "lastSeen": "2026-10-18",
+      "days": 9,
+      "peakStars": 107,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "kushagrasinghx/BitChord",
+      "url": "https://github.com/kushagrasinghx/BitChord",
+      "description": "BitChord - A modern YouTube music client with clean aesthetics inspired from Apple Music",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-10-13",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 106,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "orailnoor/DroidDesk",
+      "url": "https://github.com/orailnoor/DroidDesk",
+      "description": "DroidDesk turns your Android phone into a real Linux desktop using Termux, Termux X11, TUR, and Proot. Run VS Code, Firefox, LibreOffice, Blender, and more with X11 or VNC support for monitor setup.",
+      "summary": "DroidDesk 是面向 ARM64 安卓手机的 Linux 桌面方案，提供 Termux 脚本安装和独立应用两种路径，并支持通过 X11 或 VNC 使用桌面环境与 Linux 应用。",
+      "language": "Kotlin",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 106,
+      "dailyArticle": "/github-trending/2026-10-18/orailnoor--droiddesk/",
+      "periods": {}
+    },
+    {
+      "repo": "Gentleman-Programming/engram",
+      "url": "https://github.com/Gentleman-Programming/engram",
+      "description": "Persistent memory system for AI coding agents. Agent-agnostic Go binary with SQLite + FTS5, MCP server, HTTP API, CLI, and TUI.",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 104,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Automattic/harper",
+      "url": "https://github.com/Automattic/harper",
+      "description": "Offline, privacy-first grammar checker. Fast, open-source, Rust-powered",
+      "summary": "Harper 是一个以 Rust 编写的英语语法检查器，主打离线使用和隐私保护，并提供 WebAssembly 版本及多种编辑器集成。项目称其检查速度快、内存占用较低，但这些性能数据在此无法独立验证。",
+      "language": "Rust",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 103,
+      "dailyArticle": "/github-trending/2026-10-18/automattic--harper/",
+      "periods": {}
+    },
+    {
+      "repo": "memstechtips/Winhance",
+      "url": "https://github.com/memstechtips/Winhance",
+      "description": "Application designed to optimize, customize and enhance your Windows experience.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 97,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "termux/termux-app",
+      "url": "https://github.com/termux/termux-app",
+      "description": "Termux - a terminal emulator application for Android OS extendible by variety of packages.",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-10-18",
+      "days": 10,
+      "peakStars": 90,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "nautechsystems/nautilus_trader",
+      "url": "https://github.com/nautechsystems/nautilus_trader",
+      "description": "Production-grade Rust-native trading engine with deterministic event-driven architecture",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "金融",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-13",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 87,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "voidzero-dev/vite-plus",
+      "url": "https://github.com/voidzero-dev/vite-plus",
+      "description": "The unified toolchain and entry point for web development.",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 87,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "zed-industries/zed",
+      "url": "https://github.com/zed-industries/zed",
+      "description": "Code at the speed of thought – Zed is a high-performance, multiplayer code editor from the creators of Atom and Tree-sitter.",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 79,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "gastownhall/beads",
+      "url": "https://github.com/gastownhall/beads",
+      "description": "Beads - A memory upgrade for your coding agent",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 78,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/ML-For-Beginners",
+      "url": "https://github.com/microsoft/ML-For-Beginners",
+      "description": "12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "教程",
+        "AI"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 10,
+      "peakStars": 77,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "coollabsio/coolify",
+      "url": "https://github.com/coollabsio/coolify",
+      "description": "An open-source, self-hostable PaaS alternative to Vercel, Heroku & Netlify that lets you easily deploy static sites, databases, full-stack applications and 280+ one-click services on your own servers.",
+      "summary": "",
+      "language": "PHP",
+      "tags": [
+        "云服务"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 15,
+      "peakStars": 75,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "chiphuyen/aie-book",
+      "url": "https://github.com/chiphuyen/aie-book",
+      "description": "[WIP] Resources for AI engineers. Also contains supporting materials for the book AI Engineering (Chip Huyen, 2025)",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-30",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 75,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "jackfrued/Python-100-Days",
+      "url": "https://github.com/jackfrued/Python-100-Days",
+      "description": "Python - 100天从新手到大师",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-10-18",
+      "days": 13,
+      "peakStars": 71,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "tristenlammi/Arrmada",
+      "url": "https://github.com/tristenlammi/Arrmada",
+      "description": "arrrrrrrr",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 71,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "krahets/hello-algo",
+      "url": "https://github.com/krahets/hello-algo",
+      "description": "《Hello 算法》：动画图解、一键运行的数据结构与算法教程。支持简中、繁中、English、日本語，提供 Python, Java, C++, C, C#, JS, Go, Swift, Rust, Ruby, Kotlin, TS, Dart 等代码实现",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "教程"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 9,
+      "peakStars": 68,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "RikkaApps/Shizuku",
+      "url": "https://github.com/RikkaApps/Shizuku",
+      "description": "Using system APIs directly with adb/root privileges from normal apps through a Java process started with app_process.",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-26",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 66,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "microsoft/AI-For-Beginners",
+      "url": "https://github.com/microsoft/AI-For-Beginners",
+      "description": "12 Weeks, 24 Lessons, AI for All!",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 9,
+      "peakStars": 63,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "maddada/Ghostex",
+      "url": "https://github.com/maddada/Ghostex",
+      "description": "The Best & Most Powerful Native Agents Workspace. Fully Rust & GPUI based. Mobile apps. 20+ agents. Ghostty.",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "AI",
+        "开发工具",
+        "移动端"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 63,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "gitleaks/gitleaks",
+      "url": "https://github.com/gitleaks/gitleaks",
+      "description": "Find secrets with Gitleaks 🔑",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "安全",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-29",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 62,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "OpenBMB/PilotDeck",
+      "url": "https://github.com/OpenBMB/PilotDeck",
+      "description": "Task-oriented AI Agent productivity platform",
+      "summary": "",
+      "language": "TypeScript",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 60,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "mozilla-ai/llamafile",
+      "url": "https://github.com/mozilla-ai/llamafile",
+      "description": "Distribute and run LLMs with a single file.",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 59,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "chatwoot/chatwoot",
+      "url": "https://github.com/chatwoot/chatwoot",
+      "description": "Open-source live-chat, email support, omni-channel desk. An alternative to Intercom, Zendesk, Salesforce Service Cloud etc. 🔥💬",
+      "summary": "",
+      "language": "Ruby",
+      "tags": [
+        "云服务"
+      ],
+      "firstSeen": "2026-09-17",
+      "lastSeen": "2026-10-18",
+      "days": 17,
+      "peakStars": 56,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "skylot/jadx",
+      "url": "https://github.com/skylot/jadx",
+      "description": "Dex to Java decompiler",
+      "summary": "",
+      "language": "Java",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-11",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 56,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "jdx/mise",
+      "url": "https://github.com/jdx/mise",
+      "description": "dev tools, env vars, task runner",
+      "summary": "",
+      "language": "Rust",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-27",
+      "lastSeen": "2026-10-18",
+      "days": 4,
+      "peakStars": 55,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "tiann/KernelSU",
+      "url": "https://github.com/tiann/KernelSU",
+      "description": "A Kernel based root solution for Android",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "移动端",
+        "安全"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 11,
+      "peakStars": 55,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "LiveContainer/LiveContainer",
+      "url": "https://github.com/LiveContainer/LiveContainer",
+      "description": "Run iOS apps without actually installing them!",
+      "summary": "",
+      "language": "Swift",
+      "tags": [
+        "移动端"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 54,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "bmad-code-org/BMAD-METHOD",
+      "url": "https://github.com/bmad-code-org/BMAD-METHOD",
+      "description": "Breakthrough Method for Agile Ai Driven Development",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-18",
+      "lastSeen": "2026-10-18",
+      "days": 5,
+      "peakStars": 51,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "maxrave-dev/SimpMusic",
+      "url": "https://github.com/maxrave-dev/SimpMusic",
+      "description": "A cross-platform music app using YouTube Music for backend",
+      "summary": "",
+      "language": "Kotlin",
+      "tags": [
+        "音视频",
+        "移动端"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 49,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Sonarr/Sonarr",
+      "url": "https://github.com/Sonarr/Sonarr",
+      "description": "Smart PVR for newsgroup and bittorrent users.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "音视频"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 6,
+      "peakStars": 49,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "GoogleCloudPlatform/scion",
+      "url": "https://github.com/GoogleCloudPlatform/scion",
+      "description": "",
+      "summary": "",
+      "language": "Go",
+      "tags": [
+        "其他"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 49,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "github/awesome-copilot",
+      "url": "https://github.com/github/awesome-copilot",
+      "description": "Community-contributed instructions, agents, skills, and configurations to help you make the most of GitHub Copilot.",
+      "summary": "",
+      "language": "JavaScript",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "firstSeen": "2026-09-24",
+      "lastSeen": "2026-10-18",
+      "days": 7,
+      "peakStars": 44,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "calcom/cal.diy",
+      "url": "https://github.com/calcom/cal.diy",
+      "description": "Scheduling infrastructure for absolutely everyone.",
+      "summary": "",
+      "language": "TypeScript",
+      "tags": [
+        "云服务"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 44,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "CoplayDev/unity-mcp",
+      "url": "https://github.com/CoplayDev/unity-mcp",
+      "description": "Unity MCP acts as a bridge between AI assistants and your Unity Editor. Give your LLM tools to manage assets, control scenes, edit scripts, and automate tasks within Unity.",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "firstSeen": "2026-09-28",
+      "lastSeen": "2026-10-18",
+      "days": 11,
+      "peakStars": 43,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ImranR98/Obtainium",
+      "url": "https://github.com/ImranR98/Obtainium",
+      "description": "Get Android app updates straight from the source.",
+      "summary": "",
+      "language": "Dart",
+      "tags": [
+        "移动端"
+      ],
+      "firstSeen": "2026-09-20",
+      "lastSeen": "2026-10-18",
+      "days": 8,
+      "peakStars": 41,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "ggml-org/Llama-Windows",
+      "url": "https://github.com/ggml-org/Llama-Windows",
+      "description": "Windows Llama App Companion",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "AI"
+      ],
+      "firstSeen": "2026-10-16",
+      "lastSeen": "2026-10-18",
+      "days": 3,
+      "peakStars": 41,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Liquid4All/cookbook",
+      "url": "https://github.com/Liquid4All/cookbook",
+      "description": "Examples, end-2-end tutorials and apps built using Liquid AI Foundational Models (LFM) and the LEAP SDK",
+      "summary": "",
+      "language": "Jupyter Notebook",
+      "tags": [
+        "AI",
+        "教程"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 40,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "PowerShell/PowerShell",
+      "url": "https://github.com/PowerShell/PowerShell",
+      "description": "PowerShell for every system!",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-17",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 36,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "geode-sdk/geode",
+      "url": "https://github.com/geode-sdk/geode",
+      "description": "The ultimate Geometry Dash modding framework",
+      "summary": "",
+      "language": "C++",
+      "tags": [
+        "游戏",
+        "开发工具"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 36,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "Steam-Headless/docker-steam-headless",
+      "url": "https://github.com/Steam-Headless/docker-steam-headless",
+      "description": "A Headless Steam Docker image supporting NVIDIA GPU and accessible via Web UI",
+      "summary": "",
+      "language": "Shell",
+      "tags": [
+        "游戏",
+        "云服务"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 34,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "bitwarden/server",
+      "url": "https://github.com/bitwarden/server",
+      "description": "Bitwarden infrastructure/backend (API, database, Docker, etc).",
+      "summary": "",
+      "language": "C#",
+      "tags": [
+        "安全"
+      ],
+      "firstSeen": "2026-10-12",
+      "lastSeen": "2026-10-18",
+      "days": 2,
+      "peakStars": 31,
+      "dailyArticle": "",
+      "periods": {}
+    },
+    {
+      "repo": "The-Swarm-Corporation/AutoHedge",
+      "url": "https://github.com/The-Swarm-Corporation/AutoHedge",
+      "description": "Build your autonomous hedge fund in minutes. AutoHedge harnesses the power of swarm intelligence and AI agents to automate market analysis, risk management, and trade execution.",
+      "summary": "",
+      "language": "Python",
+      "tags": [
+        "AI",
+        "金融"
+      ],
+      "firstSeen": "2026-10-18",
+      "lastSeen": "2026-10-18",
+      "days": 1,
+      "peakStars": 30,
+      "dailyArticle": "",
+      "periods": {}
+    },
     {
       "repo": "morluto/rea",
       "url": "https://github.com/morluto/rea",
@@ -20,27 +1690,6 @@
         "weekly": "/github-trending/weekly/2026-w42/morluto--rea/",
         "monthly": "/github-trending/monthly/2026-10/morluto--rea/",
         "yearly": "/github-trending/yearly/2026/morluto--rea/"
-      }
-    },
-    {
-      "repo": "debpalash/VoiceStudio",
-      "url": "https://github.com/debpalash/VoiceStudio",
-      "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
-      "summary": "VoiceStudio 是 Python 编写的开源本地语音工具，提供语音克隆、视频配音、听写、转录和有声书制作，附 Electron 桌面端，采用 AGPL-3.0 许可证。",
-      "language": "Python",
-      "tags": [
-        "音视频",
-        "AI"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 13,
-      "peakStars": 4712,
-      "dailyArticle": "/github-trending/2026-09-16/debpalash--voicestudio/",
-      "periods": {
-        "monthly": "/github-trending/monthly/2026-09/debpalash--voicestudio/",
-        "weekly": "/github-trending/weekly/2026-w42/debpalash--voicestudio/",
-        "yearly": "/github-trending/yearly/2026/debpalash--voicestudio/"
       }
     },
     {
@@ -96,57 +1745,6 @@
       "periods": {}
     },
     {
-      "repo": "xerj-org/xerj",
-      "url": "https://github.com/xerj-org/xerj",
-      "description": "XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep and sed. One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. Elasticsearch compatible, so existing clients just work.",
-      "summary": "XERJ 是以 Rust 编写的本地搜索服务，可自动索引代码及多种文档和数据文件，并通过 Elasticsearch 兼容接口提供检索，面向开发者与 AI 智能体。",
-      "language": "Rust",
-      "tags": [
-        "数据",
-        "AI"
-      ],
-      "firstSeen": "2026-10-08",
-      "lastSeen": "2026-10-17",
-      "days": 3,
-      "peakStars": 1647,
-      "dailyArticle": "/github-trending/2026-10-08/xerj-org--xerj/",
-      "periods": {}
-    },
-    {
-      "repo": "anthropics/claude-plugins-official",
-      "url": "https://github.com/anthropics/claude-plugins-official",
-      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
-      "summary": "这是 Anthropic 官方维护的 Claude Code 插件目录仓库，用于汇总和分发高质量插件。目录分为 Anthropic 内部插件和第三方外部插件两部分，用户可通过 Claude Code 内置插件系统直接安装，外部插件需经审核方可收录。",
-      "language": "Python",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 1552,
-      "dailyArticle": "/github-trending/2026-09-27/anthropics--claude-plugins-official/",
-      "periods": {}
-    },
-    {
-      "repo": "NationalSecurityAgency/ghidra",
-      "url": "https://github.com/NationalSecurityAgency/ghidra",
-      "description": "Ghidra is a software reverse engineering (SRE) framework",
-      "summary": "Ghidra 是由美国国家安全局研究部门创建并维护的软件逆向工程框架，提供反汇编、汇编、反编译、绘图与脚本等功能，支持在 Windows、macOS 和 Linux 上分析编译代码。",
-      "language": "Java",
-      "tags": [
-        "开发工具",
-        "安全"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 17,
-      "peakStars": 1550,
-      "dailyArticle": "/github-trending/2026-09-17/nationalsecurityagency--ghidra/",
-      "periods": {}
-    },
-    {
       "repo": "xtool-org/xtool",
       "url": "https://github.com/xtool-org/xtool",
       "description": "Cross-platform Xcode replacement. Build and deploy iOS apps with SwiftPM on Linux, Windows, macOS.",
@@ -198,58 +1796,6 @@
       "periods": {}
     },
     {
-      "repo": "affaan-m/ECC",
-      "url": "https://github.com/affaan-m/ECC",
-      "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
-      "summary": "ECC 是面向 AI 编码代理的开源优化系统，用代理、技能、钩子与记忆把规划、测试、审查、验证和经验沉淀固化进 Claude Code 等工具的工作流。",
-      "language": "JavaScript",
-      "tags": [
-        "Skill",
-        "AI",
-        "安全"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-17",
-      "days": 13,
-      "peakStars": 1171,
-      "dailyArticle": "/github-trending/2026-09-17/affaan-m--ecc/",
-      "periods": {}
-    },
-    {
-      "repo": "K-Dense-AI/scientific-agent-skills",
-      "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
-      "description": "Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.",
-      "summary": "Scientific Agent Skills 是面向兼容 AI 助手的科研技能集合，包含 177 个跨学科工作流指南，覆盖 Python 工具、科学数据库、分析和科研写作等任务。",
-      "language": "Python",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "firstSeen": "2026-10-10",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 1158,
-      "dailyArticle": "/github-trending/2026-10-15/k-dense-ai--scientific-agent-skills/",
-      "periods": {}
-    },
-    {
-      "repo": "stablyai/orca",
-      "url": "https://github.com/stablyai/orca",
-      "description": "Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
-      "summary": "Orca 是一个面向并行编码智能体的 ADE，可在桌面、移动端和远程运行时中运行多种 CLI 编码智能体，并为每个智能体创建独立 git worktree 进行统一跟踪与编排。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-10-17",
-      "days": 7,
-      "peakStars": 1089,
-      "dailyArticle": "/github-trending/2026-09-19/stablyai--orca/",
-      "periods": {}
-    },
-    {
       "repo": "heygen-com/hyperframes",
       "url": "https://github.com/heygen-com/hyperframes",
       "description": "Write HTML. Render video. Built for agents.",
@@ -264,23 +1810,6 @@
       "days": 11,
       "peakStars": 1059,
       "dailyArticle": "/github-trending/2026-09-19/heygen-com--hyperframes/",
-      "periods": {}
-    },
-    {
-      "repo": "obra/superpowers",
-      "url": "https://github.com/obra/superpowers",
-      "description": "An agentic skills framework & software development methodology that works.",
-      "summary": "Superpowers 是面向编码代理的技能框架与开发方法论，用可组合技能与初始指令让代理按头脑风暴、计划、TDD、代码审查等流程推进开发，并支持多种代理工具安装。",
-      "language": "Shell",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 21,
-      "peakStars": 973,
-      "dailyArticle": "/github-trending/2026-09-17/obra--superpowers/",
       "periods": {}
     },
     {
@@ -301,40 +1830,6 @@
       "periods": {}
     },
     {
-      "repo": "JuliusBrussee/caveman",
-      "url": "https://github.com/JuliusBrussee/caveman",
-      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
-      "summary": "Caveman 是一个用“原始人式”简短语体压缩 AI 编程代理输出的规则技能，并附带一个本地运行、用于压缩代理所读内容的代理层，目标是减少 token 消耗。",
-      "language": "Go",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-17",
-      "days": 12,
-      "peakStars": 943,
-      "dailyArticle": "/github-trending/2026-09-19/juliusbrussee--caveman/",
-      "periods": {}
-    },
-    {
-      "repo": "MadsLorentzen/ai-job-search",
-      "url": "https://github.com/MadsLorentzen/ai-job-search",
-      "description": "The job search that runs on your machine. AI job application framework built on Claude Code: evaluate postings, tailor CVs, write cover letters, prep interviews. Fork it and own it.",
-      "summary": "基于 Claude Code 的求职申请框架，支持职位评估、简历定制、求职信撰写与面试准备。用户需自行分叉并填写个人资料，工作流在本地运行。",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-30",
-      "lastSeen": "2026-10-17",
-      "days": 5,
-      "peakStars": 879,
-      "dailyArticle": "/github-trending/2026-09-30/madslorentzen--ai-job-search/",
-      "periods": {}
-    },
-    {
       "repo": "LibreSpark/LibreTV",
       "url": "https://github.com/LibreSpark/LibreTV",
       "description": "一分钟搭建影视站，支持Docker等部署方式",
@@ -352,23 +1847,6 @@
       "periods": {}
     },
     {
-      "repo": "HKUDS/CLI-Anything",
-      "url": "https://github.com/HKUDS/CLI-Anything",
-      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
-      "summary": "CLI-Anything 是香港大学数据科学实验室开源的项目，通过生成命令行界面（CLI）让各类软件可被 AI Agent 调用，并提供 CLI-Hub 注册中心用于浏览、安装和分享社区构建的 CLI 工具。",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-10-17",
-      "days": 7,
-      "peakStars": 759,
-      "dailyArticle": "/github-trending/2026-09-25/hkuds--cli-anything/",
-      "periods": {}
-    },
-    {
       "repo": "harry0703/MoneyPrinterTurbo",
       "url": "https://github.com/harry0703/MoneyPrinterTurbo",
       "description": "利用 AI 大模型和自动化工作流，根据主题或关键词一键生成高清短视频。Generate HD short videos from a topic or keyword with an automated AI workflow.",
@@ -383,40 +1861,6 @@
       "days": 7,
       "peakStars": 723,
       "dailyArticle": "/github-trending/2026-09-27/harry0703--moneyprinterturbo/",
-      "periods": {}
-    },
-    {
-      "repo": "hmjz100/LinkSwift",
-      "url": "https://github.com/hmjz100/LinkSwift",
-      "description": "一个基于 JavaScript 的网盘文件下载地址获取工具。基于【网盘直链下载助手】修改 ，支持 百度网盘 / 阿里云盘 / 中国移动云盘 / 天翼云盘 / 迅雷云盘 / 夸克网盘 / UC网盘 / 123云盘 八大网盘",
-      "summary": "LinkSwift 是基于 JavaScript 的浏览器用户脚本，由网盘直链下载助手修改而来，面向多个网盘提供下载地址获取、界面调整及下载器对接等功能。",
-      "language": "JavaScript",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 702,
-      "dailyArticle": "/github-trending/2026-10-15/hmjz100--linkswift/",
-      "periods": {}
-    },
-    {
-      "repo": "ruvnet/ruflo",
-      "url": "https://github.com/ruvnet/ruflo",
-      "description": "🌊 The original agent harness. Deploy intelligent multi-player swarms, coordinate autonomous workflows, and build conversational AI systems. Features adaptive memory, self-learning intelligence, federation, vector RAG integration, and native Claude Code / Codex / Hermes and many more Integrated",
-      "summary": "Ruflo 是面向 Claude Code、Codex 等工具的智能体编排框架，提供 CLI、MCP 服务和插件，用于协调多智能体工作流，并集成记忆、检索、学习及管理界面。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-04",
-      "lastSeen": "2026-10-17",
-      "days": 5,
-      "peakStars": 672,
-      "dailyArticle": "/github-trending/2026-10-16/ruvnet--ruflo/",
       "periods": {}
     },
     {
@@ -467,73 +1911,6 @@
       "days": 3,
       "peakStars": 609,
       "dailyArticle": "/github-trending/2026-09-23/builderio--agent-native/",
-      "periods": {}
-    },
-    {
-      "repo": "akitaonrails/ai-memory",
-      "url": "https://github.com/akitaonrails/ai-memory",
-      "description": "Solution for long term memory for agent coding CLIs and to facilitate handoff between different agent vendors",
-      "summary": "ai-memory 是一个用 Rust 实现的开源项目，为 AI 编码代理提供长期记忆。它通过生命周期钩子自动捕获工作过程，将记忆以 git 支持的 Markdown 维基形式存储，并支持跨代理、跨机器和团队共享。默认零 LLM 调用，可自托管服务器。",
-      "language": "Rust",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 520,
-      "dailyArticle": "/github-trending/2026-09-23/akitaonrails--ai-memory/",
-      "periods": {}
-    },
-    {
-      "repo": "michael-denyer/pstack-claude",
-      "url": "https://github.com/michael-denyer/pstack-claude",
-      "description": "Claude Code, Codex, Copilot, Pi, OpenCode, Gemini, and Prime Agent versions of Poteto's pstack. Rigorous agent workflows with Cursor primitives translated for other harnesses.",
-      "summary": "pstack-claude 将 pstack 工作流移植到多种 AI 编程助手环境，提供任务路由、规划、委派与验证相关技能，并支持按角色配置模型和推理设置。",
-      "language": "JavaScript",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 501,
-      "dailyArticle": "/github-trending/2026-10-17/michael-denyer--pstack-claude/",
-      "periods": {}
-    },
-    {
-      "repo": "anomalyco/opencode",
-      "url": "https://github.com/anomalyco/opencode",
-      "description": "The open source coding agent.",
-      "summary": "OpenCode 是一个用 TypeScript 编写的开源 AI 编码代理，提供终端用户界面和桌面应用测试版，支持通过多种包管理器安装，并内置 build 与 plan 两种可切换代理。",
-      "language": "TypeScript",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 485,
-      "dailyArticle": "/github-trending/2026-09-26/anomalyco--opencode/",
-      "periods": {}
-    },
-    {
-      "repo": "Fission-AI/OpenSpec",
-      "url": "https://github.com/Fission-AI/OpenSpec",
-      "description": "Spec-driven development (SDD) for AI coding assistants.",
-      "summary": "OpenSpec 是面向 AI 编程助手的规格驱动开发框架，把提案、规格、设计与任务以 Markdown 文档存入仓库，让开发者与 AI 先对齐需求再编码。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-10-17",
-      "days": 3,
-      "peakStars": 464,
-      "dailyArticle": "/github-trending/2026-09-20/fission-ai--openspec/",
       "periods": {}
     },
     {
@@ -601,23 +1978,6 @@
       "periods": {}
     },
     {
-      "repo": "lightseekorg/tokenspeed",
-      "url": "https://github.com/lightseekorg/tokenspeed",
-      "description": "TokenSpeed is a speed-of-light LLM inference engine.",
-      "summary": "TokenSpeed 是面向智能体工作负载的 Python LLM 推理引擎，采用 C++ 调度控制层与 Python 执行层分离的架构，并将内核设计为可插拔子系统。",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 374,
-      "dailyArticle": "/github-trending/2026-10-17/lightseekorg--tokenspeed/",
-      "periods": {}
-    },
-    {
       "repo": "laoma528/awesome-zhuiju-free",
       "url": "https://github.com/laoma528/awesome-zhuiju-free",
       "description": "免费无广告的追剧资源指南，人工精选资源、每天检测资源有效性。收录在线影视、影视APP、网盘搜索、磁力BT、字幕、TVBox / 影视仓空壳软件/配置地址、IPTV直播源、会员拼团、影视相关开源项目。开源，社区共同维护。",
@@ -631,23 +1991,6 @@
       "days": 3,
       "peakStars": 339,
       "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "cursor/plugins",
-      "url": "https://github.com/cursor/plugins",
-      "description": "Cursor plugin specification and official plugins",
-      "summary": "Cursor 官方插件与插件规范仓库，采用多插件市场结构，集中收录面向开发、办公和业务系统的独立插件，并以清单及各自的 manifest 组织。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 9,
-      "peakStars": 282,
-      "dailyArticle": "/github-trending/2026-10-08/cursor--plugins/",
       "periods": {}
     },
     {
@@ -684,73 +2027,6 @@
       "periods": {}
     },
     {
-      "repo": "chen08209/FlClash",
-      "url": "https://github.com/chen08209/FlClash",
-      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
-      "summary": "FlClash 是基于 mihomo（Clash.Meta）的多平台代理客户端，面向 Android、Windows、macOS 和 Linux，提供配置管理、规则代理及连接状态查看等功能。",
-      "language": "Dart",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 12,
-      "peakStars": 238,
-      "dailyArticle": "/github-trending/2026-10-10/chen08209--flclash/",
-      "periods": {}
-    },
-    {
-      "repo": "rustdesk/rustdesk",
-      "url": "https://github.com/rustdesk/rustdesk",
-      "description": "An open-source remote desktop application designed for self-hosting, as an alternative to TeamViewer.",
-      "summary": "RustDesk 是以 Rust 编写的开源远程桌面应用，面向远程连接与自托管使用；支持使用项目提供的会合与中继服务，或自行部署相关服务。",
-      "language": "Rust",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 5,
-      "peakStars": 230,
-      "dailyArticle": "/github-trending/2026-10-17/rustdesk--rustdesk/",
-      "periods": {}
-    },
-    {
-      "repo": "krillinai/OpenCreator",
-      "url": "https://github.com/krillinai/OpenCreator",
-      "description": "Formerly KrillinAI, VideoTranslation and Dubbing Tool. Open-source AI workspace for creators, powered by Codex. Video downloading, video translation, create videos, images, voice, avatars, and edits with Agents in one place. Suitable for your Social Media like YouTube, TikTok, Instagram, etc.",
-      "summary": "OpenCreator（原 KrillinAI）是以 TypeScript 开发的开源创作者工作空间，围绕 Codex CLI 提供本地运行环境和可视化界面，涵盖视频处理、内容写作、图像与视频生成、配音及 Agent 对话。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "音视频"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 226,
-      "dailyArticle": "/github-trending/2026-10-14/krillinai--opencreator/",
-      "periods": {}
-    },
-    {
-      "repo": "google/artemis",
-      "url": "https://github.com/google/artemis",
-      "description": "ARTEMIS turns natural-language instructions into reliable Android automation. It automates end-to-end workflows, captures logs, and integrates seamlessly with AI coding assistants such as Antigravity, Codex, and Claude Code. It also achieves 99%+ success rate on AndroidWorld Benchmark.",
-      "summary": "ARTEMIS 是一个以 Python 实现的 Android 自动化项目，可将自然语言任务转化为真实设备或模拟器上的操作，并提供 CLI、网页控制台、MCP 服务和 Python SDK 等使用入口。",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 221,
-      "dailyArticle": "/github-trending/2026-10-17/google--artemis/",
-      "periods": {}
-    },
-    {
       "repo": "tw93/Mole",
       "url": "https://github.com/tw93/Mole",
       "description": "🐹 Keep your Mac and PC clean, light, and running like new. Fast open-source CLI, plus native Mac and Windows apps.",
@@ -783,39 +2059,6 @@
       "periods": {}
     },
     {
-      "repo": "magnitudedev/magnitude",
-      "url": "https://github.com/magnitudedev/magnitude",
-      "description": "Open source inference engine that tunes its kernels on your hardware to find the fastest way to run each model. 2x faster than Ollama. Works on Apple Silicon, NVIDIA, AMD, or just a CPU.",
-      "summary": "Magnitude 是一款用 Rust 编写的开源本地推理引擎，可分析用户现有硬件并推荐适配的开源模型，再针对具体硬件完成调优，支持 Apple Silicon、NVIDIA、AMD 及纯 CPU 环境，并通过一键连接常用智能体。",
-      "language": "Rust",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-30",
-      "lastSeen": "2026-10-17",
-      "days": 2,
-      "peakStars": 196,
-      "dailyArticle": "/github-trending/2026-09-30/magnitudedev--magnitude/",
-      "periods": {}
-    },
-    {
-      "repo": "wuwangzhang1216/ChinaTextbookStudyFree",
-      "url": "https://github.com/wuwangzhang1216/ChinaTextbookStudyFree",
-      "description": "给所有中国小学生打造的免费学习平台，从一年级到六年级所有的课本知识点全汇总。",
-      "summary": "ChinaTextbookStudyFree 是面向中国小学一至六年级的免费学习平台，覆盖语文、数学、英语和科学，提供单元练习、课文听读、课外阅读及学习记录等功能，并支持 Web 与 iOS。",
-      "language": "Swift",
-      "tags": [
-        "教程"
-      ],
-      "firstSeen": "2026-10-13",
-      "lastSeen": "2026-10-17",
-      "days": 5,
-      "peakStars": 193,
-      "dailyArticle": "/github-trending/2026-10-17/wuwangzhang1216--chinatextbookstudyfree/",
-      "periods": {}
-    },
-    {
       "repo": "rtk-ai/rtk",
       "url": "https://github.com/rtk-ai/rtk",
       "description": "CLI proxy that reduces LLM token consumption by 60-90% on common dev commands. Single Rust binary, zero dependencies",
@@ -830,23 +2073,6 @@
       "days": 5,
       "peakStars": 190,
       "dailyArticle": "/github-trending/2026-10-16/rtk-ai--rtk/",
-      "periods": {}
-    },
-    {
-      "repo": "jasonxu114514/opencode2api",
-      "url": "https://github.com/jasonxu114514/opencode2api",
-      "description": "A Go-based OpenCode Zen / Zen Go API proxy with OpenAI & Anthropic API compatibility, key/proxy pooling, automatic routing, and WebUI.",
-      "summary": "opencode2api 是用 Go 编写的 OpenCode Zen/Zen Go 网关，将上游服务接入兼容 OpenAI 与 Anthropic 的接口，并提供密钥和代理池、模型路由及内置管理 WebUI。",
-      "language": "Go",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 186,
-      "dailyArticle": "/github-trending/2026-10-17/jasonxu114514--opencode2api/",
       "periods": {}
     },
     {
@@ -865,23 +2091,6 @@
       "days": 13,
       "peakStars": 184,
       "dailyArticle": "/github-trending/2026-10-15/donchitos--claude-code-game-studios/",
-      "periods": {}
-    },
-    {
-      "repo": "plugin87/ux-ui-agent-skills",
-      "url": "https://github.com/plugin87/ux-ui-agent-skills",
-      "description": "Turn Claude into a senior design architect: DTCG tokens, 52 components, WCAG 2.2 AA-AAA, 138 design systems, any-framework code, and 50 objective gates that fail the build instead of faking success.",
-      "summary": "ux-ui-agent-skills（XIAS）为 AI 编码代理提供设计系统规则、令牌、组件规范、技能和自动化检查，涵盖无障碍、界面设计及多框架代码生成。仓库将自身定位为纯指令与知识层，并附有示例和验证脚本。",
-      "language": "JavaScript",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 3,
-      "peakStars": 180,
-      "dailyArticle": "/github-trending/2026-10-17/plugin87--ux-ui-agent-skills/",
       "periods": {}
     },
     {
@@ -920,23 +2129,6 @@
       "periods": {}
     },
     {
-      "repo": "kestra-io/kestra",
-      "url": "https://github.com/kestra-io/kestra",
-      "description": "Event Driven Orchestration & Scheduling Platform for Mission Critical Applications",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-10-17",
-      "days": 10,
-      "peakStars": 175,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "78/xiaozhi-esp32",
       "url": "https://github.com/78/xiaozhi-esp32",
       "description": "An MCP-based chatbot | 一个基于MCP的聊天机器人",
@@ -950,88 +2142,6 @@
       "days": 7,
       "peakStars": 166,
       "dailyArticle": "/github-trending/2026-10-14/78--xiaozhi-esp32/",
-      "periods": {}
-    },
-    {
-      "repo": "android/skills",
-      "url": "https://github.com/android/skills",
-      "description": "",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-10-16",
-      "lastSeen": "2026-10-17",
-      "days": 2,
-      "peakStars": 163,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "getlantern/lantern",
-      "url": "https://github.com/getlantern/lantern",
-      "description": "Open-source VPN for speed, privacy, and censorship circumvention. Free to download on Android, iOS, Windows, macOS, and Linux.",
-      "summary": "Lantern 是面向多平台的开源 VPN 与网络审查规避项目，README 主要提供稳定版和测试版下载入口、系统版本要求及社区支持渠道。",
-      "language": "Dart",
-      "tags": [
-        "安全",
-        "云服务"
-      ],
-      "firstSeen": "2026-10-16",
-      "lastSeen": "2026-10-17",
-      "days": 2,
-      "peakStars": 136,
-      "dailyArticle": "/github-trending/2026-10-16/getlantern--lantern/",
-      "periods": {}
-    },
-    {
-      "repo": "freeok/so-novel",
-      "url": "https://github.com/freeok/so-novel",
-      "description": "小说下载｜网文下载 | 网络小说",
-      "summary": "So Novel 是一款以 Java 开发的小说及网页内容处理工具，提供 TUI、CLI 和 WebUI 启动模式，可将提取的内容导出为 EPUB、TXT、PDF 等格式，并支持多种操作系统与 Docker 部署。",
-      "language": "Java",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 125,
-      "dailyArticle": "/github-trending/2026-10-17/freeok--so-novel/",
-      "periods": {}
-    },
-    {
-      "repo": "Wei-Shaw/sub2api",
-      "url": "https://github.com/Wei-Shaw/sub2api",
-      "description": "Sub2API 一站式开源中转服务，让 Claude、Openai 、Gemini、Grok订阅统一接入，支持拼车共享，更高效分摊成本，原生工具无缝使用。",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "AI",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 118,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "ashishps1/awesome-system-design-resources",
-      "url": "https://github.com/ashishps1/awesome-system-design-resources",
-      "description": "Learn System Design concepts and prepare for interviews using free resources.",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "教程"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 112,
-      "dailyArticle": "",
       "periods": {}
     },
     {
@@ -1069,138 +2179,6 @@
       "periods": {}
     },
     {
-      "repo": "AppFlowy-IO/AppFlowy",
-      "url": "https://github.com/AppFlowy-IO/AppFlowy",
-      "description": "Bring projects, wikis, and teams together with AI. AppFlowy is the AI collaborative workspace where you achieve more without losing control of your data. The leading open source Notion alternative.",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "AI",
-        "数据"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-17",
-      "days": 8,
-      "peakStars": 107,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "kushagrasinghx/BitChord",
-      "url": "https://github.com/kushagrasinghx/BitChord",
-      "description": "BitChord - A modern YouTube music client with clean aesthetics inspired from Apple Music",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "音视频"
-      ],
-      "firstSeen": "2026-10-13",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 106,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "orailnoor/DroidDesk",
-      "url": "https://github.com/orailnoor/DroidDesk",
-      "description": "DroidDesk turns your Android phone into a real Linux desktop using Termux, Termux X11, TUR, and Proot. Run VS Code, Firefox, LibreOffice, Blender, and more with X11 or VNC support for monitor setup.",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 106,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Gentleman-Programming/engram",
-      "url": "https://github.com/Gentleman-Programming/engram",
-      "description": "Persistent memory system for AI coding agents. Agent-agnostic Go binary with SQLite + FTS5, MCP server, HTTP API, CLI, and TUI.",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "AI",
-        "数据",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 104,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Automattic/harper",
-      "url": "https://github.com/Automattic/harper",
-      "description": "Offline, privacy-first grammar checker. Fast, open-source, Rust-powered",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-10-17",
-      "days": 3,
-      "peakStars": 97,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "memstechtips/Winhance",
-      "url": "https://github.com/memstechtips/Winhance",
-      "description": "Application designed to optimize, customize and enhance your Windows experience.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-10-17",
-      "days": 7,
-      "peakStars": 97,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "CYQawa/YunX",
-      "url": "https://github.com/CYQawa/YunX",
-      "description": "✨一个安卓网盘解析下载app✨",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-10-07",
-      "lastSeen": "2026-10-17",
-      "days": 4,
-      "peakStars": 97,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "voidzero-dev/vite-plus",
-      "url": "https://github.com/voidzero-dev/vite-plus",
-      "description": "The unified toolchain and entry point for web development.",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 87,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "steipete/CodexBar",
       "url": "https://github.com/steipete/CodexBar",
       "description": "Show usage stats for OpenAI Codex and Claude Code, without having to login.",
@@ -1218,39 +2196,6 @@
       "periods": {}
     },
     {
-      "repo": "coollabsio/coolify",
-      "url": "https://github.com/coollabsio/coolify",
-      "description": "An open-source, self-hostable PaaS alternative to Vercel, Heroku & Netlify that lets you easily deploy static sites, databases, full-stack applications and 280+ one-click services on your own servers.",
-      "summary": "",
-      "language": "PHP",
-      "tags": [
-        "云服务",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-17",
-      "days": 14,
-      "peakStars": 75,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "jackfrued/Python-100-Days",
-      "url": "https://github.com/jackfrued/Python-100-Days",
-      "description": "Python - 100天从新手到大师",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "教程"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-10-17",
-      "days": 12,
-      "peakStars": 71,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "AI4Finance-Foundation/FinRL",
       "url": "https://github.com/AI4Finance-Foundation/FinRL",
       "description": "FinRL®: Financial Reinforcement Learning. 🔥",
@@ -1264,23 +2209,6 @@
       "lastSeen": "2026-10-17",
       "days": 2,
       "peakStars": 67,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "microsoft/AI-For-Beginners",
-      "url": "https://github.com/microsoft/AI-For-Beginners",
-      "description": "12 Weeks, 24 Lessons, AI for All!",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-10-17",
-      "days": 8,
-      "peakStars": 63,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1318,55 +2246,6 @@
       "periods": {}
     },
     {
-      "repo": "chatwoot/chatwoot",
-      "url": "https://github.com/chatwoot/chatwoot",
-      "description": "Open-source live-chat, email support, omni-channel desk. An alternative to Intercom, Zendesk, Salesforce Service Cloud etc. 🔥💬",
-      "summary": "",
-      "language": "Ruby",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-17",
-      "days": 16,
-      "peakStars": 56,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "mozilla-ai/llamafile",
-      "url": "https://github.com/mozilla-ai/llamafile",
-      "description": "Distribute and run LLMs with a single file.",
-      "summary": "",
-      "language": "C++",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 56,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "gitleaks/gitleaks",
-      "url": "https://github.com/gitleaks/gitleaks",
-      "description": "Find secrets with Gitleaks 🔑",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "安全"
-      ],
-      "firstSeen": "2026-09-29",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 54,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "gkd-kit/gkd",
       "url": "https://github.com/gkd-kit/gkd",
       "description": "基于无障碍，高级选择器，订阅规则的自定义屏幕点击安卓应用 | An Android APP with custom screen tapping based on Accessibility, Advanced Selectors, and Subscription Rules",
@@ -1378,22 +2257,6 @@
       "firstSeen": "2026-09-17",
       "lastSeen": "2026-10-17",
       "days": 6,
-      "peakStars": 53,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "LiveContainer/LiveContainer",
-      "url": "https://github.com/LiveContainer/LiveContainer",
-      "description": "Run iOS apps without actually installing them!",
-      "summary": "",
-      "language": "Swift",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-10-17",
-      "days": 5,
       "peakStars": 53,
       "dailyArticle": "",
       "periods": {}
@@ -1412,22 +2275,6 @@
       "lastSeen": "2026-10-17",
       "days": 1,
       "peakStars": 53,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "GoogleCloudPlatform/scion",
-      "url": "https://github.com/GoogleCloudPlatform/scion",
-      "description": "",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 49,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1465,23 +2312,6 @@
       "periods": {}
     },
     {
-      "repo": "github/awesome-copilot",
-      "url": "https://github.com/github/awesome-copilot",
-      "description": "Community-contributed instructions, agents, skills, and configurations to help you make the most of GitHub Copilot.",
-      "summary": "",
-      "language": "JavaScript",
-      "tags": [
-        "AI",
-        "Skill"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-10-17",
-      "days": 6,
-      "peakStars": 44,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "ran-j/PS2Recomp",
       "url": "https://github.com/ran-j/PS2Recomp",
       "description": "Playstation 2 Static Recompiler & Runtime Tool to make native PC ports",
@@ -1495,23 +2325,6 @@
       "lastSeen": "2026-10-17",
       "days": 3,
       "peakStars": 44,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "CoplayDev/unity-mcp",
-      "url": "https://github.com/CoplayDev/unity-mcp",
-      "description": "Unity MCP acts as a bridge between AI assistants and your Unity Editor. Give your LLM tools to manage assets, control scenes, edit scripts, and automate tasks within Unity.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-10-17",
-      "days": 10,
-      "peakStars": 43,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1544,22 +2357,6 @@
       "lastSeen": "2026-10-17",
       "days": 1,
       "peakStars": 42,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "ggml-org/Llama-Windows",
-      "url": "https://github.com/ggml-org/Llama-Windows",
-      "description": "Windows Llama App Companion",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-10-16",
-      "lastSeen": "2026-10-17",
-      "days": 2,
-      "peakStars": 41,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1610,22 +2407,6 @@
       "lastSeen": "2026-10-17",
       "days": 2,
       "peakStars": 38,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "PowerShell/PowerShell",
-      "url": "https://github.com/PowerShell/PowerShell",
-      "description": "PowerShell for every system!",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-17",
-      "lastSeen": "2026-10-17",
-      "days": 1,
-      "peakStars": 36,
       "dailyArticle": "",
       "periods": {}
     },
@@ -1697,25 +2478,6 @@
       "dailyArticle": "/github-trending/2026-09-26/paperclipai--paperclip/",
       "periods": {
         "weekly": "/github-trending/weekly/2026-w40/paperclipai--paperclip/"
-      }
-    },
-    {
-      "repo": "google/ax",
-      "url": "https://github.com/google/ax",
-      "description": "Google's open agentic orchestration runtime",
-      "summary": "AX 是 Google 开源的声明式智能体编排运行时，基于 Agent Substrate 实现沙箱执行，用 Task、Workspace、Gateway、Model 四类原语管理集群中大规模自主智能体任务的隔离、网络与生命周期。",
-      "language": "Go",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-23",
-      "lastSeen": "2026-10-16",
-      "days": 5,
-      "peakStars": 2305,
-      "dailyArticle": "/github-trending/2026-09-23/google--ax/",
-      "periods": {
-        "weekly": "/github-trending/weekly/2026-w39/google--ax/"
       }
     },
     {
@@ -1848,39 +2610,6 @@
       "days": 5,
       "peakStars": 523,
       "dailyArticle": "/github-trending/2026-09-17/homebrew--brewui/",
-      "periods": {}
-    },
-    {
-      "repo": "localsend/localsend",
-      "url": "https://github.com/localsend/localsend",
-      "description": "An open-source cross-platform alternative to AirDrop",
-      "summary": "LocalSend 是一款以 Dart 和 Flutter 开发的跨平台应用，面向同一局域网内的设备，支持通过 REST API 与 HTTPS 传送文件和消息，官方说明其无需互联网连接或第三方服务器。",
-      "language": "Dart",
-      "tags": [
-        "其他"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-16",
-      "days": 10,
-      "peakStars": 489,
-      "dailyArticle": "/github-trending/2026-10-13/localsend--localsend/",
-      "periods": {}
-    },
-    {
-      "repo": "coreyhaines31/marketingskills",
-      "url": "https://github.com/coreyhaines31/marketingskills",
-      "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
-      "summary": "marketingskills 是面向 Claude Code、Codex、Cursor 等 AI 代理的营销技能集合，以 Markdown 工作流程覆盖转化优化、文案、SEO、分析及增长等任务。",
-      "language": "JavaScript",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "firstSeen": "2026-10-04",
-      "lastSeen": "2026-10-16",
-      "days": 6,
-      "peakStars": 451,
-      "dailyArticle": "/github-trending/2026-10-04/coreyhaines31--marketingskills/",
       "periods": {}
     },
     {
@@ -2152,23 +2881,6 @@
       "periods": {}
     },
     {
-      "repo": "termux/termux-app",
-      "url": "https://github.com/termux/termux-app",
-      "description": "Termux - a terminal emulator application for Android OS extendible by variety of packages.",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-10-16",
-      "days": 9,
-      "peakStars": 87,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "tailscale/tailscale",
       "url": "https://github.com/tailscale/tailscale",
       "description": "The easiest, most secure way to use WireGuard and 2FA.",
@@ -2230,22 +2942,6 @@
       "lastSeen": "2026-10-16",
       "days": 5,
       "peakStars": 69,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "krahets/hello-algo",
-      "url": "https://github.com/krahets/hello-algo",
-      "description": "《Hello 算法》：动画图解、一键运行的数据结构与算法教程。支持简中、繁中、English、日本語，提供 Python, Java, C++, C, C#, JS, Go, Swift, Rust, Ruby, Kotlin, TS, Dart 等代码实现",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "教程"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-16",
-      "days": 8,
-      "peakStars": 68,
       "dailyArticle": "",
       "periods": {}
     },
@@ -2312,39 +3008,6 @@
       "lastSeen": "2026-10-16",
       "days": 8,
       "peakStars": 57,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "skylot/jadx",
-      "url": "https://github.com/skylot/jadx",
-      "description": "Dex to Java decompiler",
-      "summary": "",
-      "language": "Java",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-11",
-      "lastSeen": "2026-10-16",
-      "days": 4,
-      "peakStars": 56,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "tiann/KernelSU",
-      "url": "https://github.com/tiann/KernelSU",
-      "description": "A Kernel based root solution for Android",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "安全",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-10-16",
-      "days": 10,
-      "peakStars": 55,
       "dailyArticle": "",
       "periods": {}
     },
@@ -2669,22 +3332,6 @@
       "periods": {}
     },
     {
-      "repo": "tensorflow/tensorflow",
-      "url": "https://github.com/tensorflow/tensorflow",
-      "description": "An Open Source Machine Learning Framework for Everyone",
-      "summary": "TensorFlow 是端到端开源机器学习平台，由 Google Brain 团队发起，提供稳定的 Python 和 C++ API 及多语言支持，拥有完整的工具、库和社区生态。",
-      "language": "C++",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-10-15",
-      "days": 9,
-      "peakStars": 302,
-      "dailyArticle": "/github-trending/2026-09-28/tensorflow--tensorflow/",
-      "periods": {}
-    },
-    {
       "repo": "PimpinPumpkin/Vela",
       "url": "https://github.com/PimpinPumpkin/Vela",
       "description": "Maps and turn-by-turn navigation for Android without Google Play Services: the best of open map data, with Google lookups by choice. Runs on degoogled phones and can avoid Flock cameras",
@@ -2763,38 +3410,6 @@
       "days": 6,
       "peakStars": 205,
       "dailyArticle": "/github-trending/2026-10-15/rust-lang--rust/",
-      "periods": {}
-    },
-    {
-      "repo": "ggml-org/llama.cpp",
-      "url": "https://github.com/ggml-org/llama.cpp",
-      "description": "LLM inference in C/C++",
-      "summary": "llama.cpp 是基于 ggml、以 C/C++ 实现的本地及云端大语言模型和视觉语言模型推理项目，提供命令行、服务端接口，并支持多种硬件后端与量化方式。",
-      "language": "C++",
-      "tags": [
-        "AI"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-15",
-      "days": 7,
-      "peakStars": 163,
-      "dailyArticle": "/github-trending/2026-10-15/ggml-org--llama.cpp/",
-      "periods": {}
-    },
-    {
-      "repo": "microsoft/vscode",
-      "url": "https://github.com/microsoft/vscode",
-      "description": "Visual Studio Code",
-      "summary": "Visual Studio Code 的开源代码仓库 Code-OSS，使用 TypeScript，供微软与社区共同开发编辑器产品。项目围绕代码编辑、导航、理解、轻量调试及扩展能力构建，并公开路线图、开发计划和贡献流程。",
-      "language": "TypeScript",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-10-15",
-      "days": 3,
-      "peakStars": 158,
-      "dailyArticle": "/github-trending/2026-10-15/microsoft--vscode/",
       "periods": {}
     },
     {
@@ -3119,23 +3734,6 @@
       "lastSeen": "2026-10-15",
       "days": 3,
       "peakStars": 52,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "Sonarr/Sonarr",
-      "url": "https://github.com/Sonarr/Sonarr",
-      "description": "Smart PVR for newsgroup and bittorrent users.",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "音视频",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-10-15",
-      "days": 5,
-      "peakStars": 49,
       "dailyArticle": "",
       "periods": {}
     },
@@ -3737,23 +4335,6 @@
       "periods": {}
     },
     {
-      "repo": "maxrave-dev/SimpMusic",
-      "url": "https://github.com/maxrave-dev/SimpMusic",
-      "description": "A cross-platform music app using YouTube Music for backend",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "音视频",
-        "移动端"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-10-14",
-      "days": 5,
-      "peakStars": 49,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "amir1376/ab-download-manager",
       "url": "https://github.com/amir1376/ab-download-manager",
       "description": "A Download Manager that speeds up your downloads",
@@ -4122,22 +4703,6 @@
       "periods": {}
     },
     {
-      "repo": "chthollyphile/folia-major",
-      "url": "https://github.com/chthollyphile/folia-major",
-      "description": "专注于绚丽的歌词动画效果的本地音乐/navidrome/第三方多平台在线音乐播放器",
-      "summary": "Folia 是一款以全屏歌词动画为核心的音乐播放器，支持本地曲库、多个在线音乐来源及 Navidrome，并提供 Web 与桌面端形态。",
-      "language": "TypeScript",
-      "tags": [
-        "音视频"
-      ],
-      "firstSeen": "2026-10-06",
-      "lastSeen": "2026-10-13",
-      "days": 3,
-      "peakStars": 556,
-      "dailyArticle": "/github-trending/2026-10-12/chthollyphile--folia-major/",
-      "periods": {}
-    },
-    {
       "repo": "pytorch/pytorch",
       "url": "https://github.com/pytorch/pytorch",
       "description": "Tensors and Dynamic neural networks in Python with strong GPU acceleration",
@@ -4169,22 +4734,6 @@
       "days": 3,
       "peakStars": 501,
       "dailyArticle": "/github-trending/2026-10-12/huggingface--transformers/",
-      "periods": {}
-    },
-    {
-      "repo": "tgeorgiadis/quiver-launcher",
-      "url": "https://github.com/tgeorgiadis/quiver-launcher",
-      "description": "A modern launcher for downloading, installing, and running apps from GitHub and GitLab releases. With a personal library, community catalog subscriptions, and flexible filtering.",
-      "summary": "Quiver Launcher 是一个用 C# 开发的跨平台启动器，可从 GitHub 和 GitLab 发布页下载、安装并运行应用，并支持个人库、社区目录订阅、标签过滤及模组管理。",
-      "language": "C#",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-24",
-      "lastSeen": "2026-10-13",
-      "days": 6,
-      "peakStars": 450,
-      "dailyArticle": "/github-trending/2026-09-30/tgeorgiadis--quiver-launcher/",
       "periods": {}
     },
     {
@@ -4332,23 +4881,6 @@
       "days": 2,
       "peakStars": 158,
       "dailyArticle": "/github-trending/2026-10-12/agalwood--motrix/",
-      "periods": {}
-    },
-    {
-      "repo": "ollama/ollama",
-      "url": "https://github.com/ollama/ollama",
-      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
-      "summary": "Ollama 是用 Go 编写的开放模型运行与管理项目，提供 macOS、Windows、Linux 安装方式和 Docker 镜像，并通过命令行、REST API 及 Python、JavaScript 客户端供用户和应用调用。",
-      "language": "Go",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-13",
-      "days": 10,
-      "peakStars": 151,
-      "dailyArticle": "/github-trending/2026-10-08/ollama--ollama/",
       "periods": {}
     },
     {
@@ -4748,23 +5280,6 @@
       "periods": {}
     },
     {
-      "repo": "nautechsystems/nautilus_trader",
-      "url": "https://github.com/nautechsystems/nautilus_trader",
-      "description": "Production-grade Rust-native trading engine with deterministic event-driven architecture",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "金融",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-13",
-      "lastSeen": "2026-10-13",
-      "days": 1,
-      "peakStars": 36,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "karatektus/pl_mail",
       "url": "https://github.com/karatektus/pl_mail",
       "description": "Self-hosted, Gmail-style mail client. Multi-account IMAP, threaded conversations, real-time push via IMAP IDLE + Mercure. Built with Symfony, FrankenPHP, Hotwire Turbo. Clone and docker compose up.",
@@ -4859,22 +5374,6 @@
       "days": 3,
       "peakStars": 957,
       "dailyArticle": "/github-trending/2026-09-25/farion1231--cc-switch/",
-      "periods": {}
-    },
-    {
-      "repo": "Lakr233/vphone-cli",
-      "url": "https://github.com/Lakr233/vphone-cli",
-      "description": "Run a virtual iPhone on an Apple Silicon Mac.",
-      "summary": "vphone-cli 是 Swift 命令行工具，基于苹果虚拟化框架与 PCC 研究设施，在 Apple Silicon Mac 上创建并启动虚拟 iPhone。",
-      "language": "Swift",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-12",
-      "days": 7,
-      "peakStars": 907,
-      "dailyArticle": "/github-trending/2026-09-16/lakr233--vphone-cli/",
       "periods": {}
     },
     {
@@ -5442,23 +5941,6 @@
       "periods": {}
     },
     {
-      "repo": "bitwarden/server",
-      "url": "https://github.com/bitwarden/server",
-      "description": "Bitwarden infrastructure/backend (API, database, Docker, etc).",
-      "summary": "",
-      "language": "C#",
-      "tags": [
-        "安全",
-        "云服务"
-      ],
-      "firstSeen": "2026-10-12",
-      "lastSeen": "2026-10-12",
-      "days": 1,
-      "peakStars": 19,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "tt-a1i/archify",
       "url": "https://github.com/tt-a1i/archify",
       "description": "Turn any idea, plan, or codebase into a beautiful interactive diagram. An agent skill for Claude Code, Codex, and more.",
@@ -5506,23 +5988,6 @@
       "days": 3,
       "peakStars": 669,
       "dailyArticle": "/github-trending/2026-10-10/microsoft--mxc/",
-      "periods": {}
-    },
-    {
-      "repo": "anthropics/claude-code",
-      "url": "https://github.com/anthropics/claude-code",
-      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
-      "summary": "Claude Code 是 Anthropic 推出的终端智能编码工具，可用自然语言执行例行编码任务、解释复杂代码并处理 Git 工作流，支持在终端、IDE 中使用，也可在 GitHub 上通过 @claude 调用。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-10-11",
-      "days": 11,
-      "peakStars": 538,
-      "dailyArticle": "/github-trending/2026-09-18/anthropics--claude-code/",
       "periods": {}
     },
     {
@@ -5689,23 +6154,6 @@
       "days": 3,
       "peakStars": 241,
       "dailyArticle": "/github-trending/2026-10-09/vincentwei1021--video-shotcraft/",
-      "periods": {}
-    },
-    {
-      "repo": "typesense/typesense",
-      "url": "https://github.com/typesense/typesense",
-      "description": "Open Source alternative to Algolia + Pinecone and an Easier-to-Use alternative to ElasticSearch ⚡ 🔍 ✨ Fast, typo tolerant, in-memory fuzzy Search Engine for building delightful search experiences",
-      "summary": "Typesense 是以 C++ 实现的开源搜索引擎，提供容错文本检索、过滤排序、向量与语义搜索等能力，可自托管或使用托管云服务。",
-      "language": "C++",
-      "tags": [
-        "数据",
-        "开发工具"
-      ],
-      "firstSeen": "2026-10-10",
-      "lastSeen": "2026-10-11",
-      "days": 2,
-      "peakStars": 173,
-      "dailyArticle": "/github-trending/2026-10-10/typesense--typesense/",
       "periods": {}
     },
     {
@@ -6284,23 +6732,6 @@
       "periods": {}
     },
     {
-      "repo": "thesysdev/openui",
-      "url": "https://github.com/thesysdev/openui",
-      "description": "The Open Standard for Generative UI",
-      "summary": "OpenUI 是一个以 TypeScript 为主的生成式 UI 框架，围绕可流式传输的 OpenUI Lang 构建，提供组件定义、提示生成与渐进式渲染能力，并支持 React、Vue、Svelte 和 Angular。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-16",
-      "lastSeen": "2026-10-10",
-      "days": 2,
-      "peakStars": 317,
-      "dailyArticle": "/github-trending/2026-10-10/thesysdev--openui/",
-      "periods": {}
-    },
-    {
       "repo": "manaflow-ai/cmux",
       "url": "https://github.com/manaflow-ai/cmux",
       "description": "Open source Ghostty-based macOS terminal with vertical tabs and notifications for AI coding agents. Built for multitasking, organization, and programmability.",
@@ -6433,23 +6864,6 @@
       "periods": {}
     },
     {
-      "repo": "microsoft/ML-For-Beginners",
-      "url": "https://github.com/microsoft/ML-For-Beginners",
-      "description": "12 weeks, 26 lessons, 52 quizzes, classic Machine Learning for all",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-10-10",
-      "days": 9,
-      "peakStars": 77,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "open-ani/animeko",
       "url": "https://github.com/open-ani/animeko",
       "description": "集找番、追番、看番的一站式弹幕追番平台，云收藏同步 (Bangumi)，离线缓存，BitTorrent，弹幕云过滤。100% Kotlin/Compose Multiplatform",
@@ -6545,22 +6959,6 @@
       "lastSeen": "2026-10-10",
       "days": 3,
       "peakStars": 59,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "jdx/mise",
-      "url": "https://github.com/jdx/mise",
-      "description": "dev tools, env vars, task runner",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-27",
-      "lastSeen": "2026-10-10",
-      "days": 3,
-      "peakStars": 55,
       "dailyArticle": "",
       "periods": {}
     },
@@ -7181,23 +7579,6 @@
       "lastSeen": "2026-10-09",
       "days": 1,
       "peakStars": 60,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "bmad-code-org/BMAD-METHOD",
-      "url": "https://github.com/bmad-code-org/BMAD-METHOD",
-      "description": "Breakthrough Method for Agile Ai Driven Development",
-      "summary": "",
-      "language": "Python",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-10-09",
-      "days": 4,
-      "peakStars": 51,
       "dailyArticle": "",
       "periods": {}
     },
@@ -8071,23 +8452,6 @@
       "periods": {}
     },
     {
-      "repo": "DietrichGebert/ponytail",
-      "url": "https://github.com/DietrichGebert/ponytail",
-      "description": "Makes your AI agent think like the laziest senior dev in the room. The best code is the code you never wrote.",
-      "summary": "Ponytail 是一个用 JavaScript 编写的 AI 编程代理插件与规则集，通过七级阶梯规则让代理先判断需求是否必要、能否复用或使用原生能力，只在最后才写最小实现，README 称其可接入多种主流编码代理。",
-      "language": "JavaScript",
-      "tags": [
-        "AI",
-        "Skill"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-10-07",
-      "days": 8,
-      "peakStars": 1894,
-      "dailyArticle": "/github-trending/2026-09-18/dietrichgebert--ponytail/",
-      "periods": {}
-    },
-    {
       "repo": "Panniantong/Agent-Reach",
       "url": "https://github.com/Panniantong/Agent-Reach",
       "description": "Give your AI agent eyes to see the entire internet. Read & search Twitter, Reddit, YouTube, GitHub, Bilibili, XiaoHongShu — one CLI, zero API fees.",
@@ -8234,23 +8598,6 @@
       "lastSeen": "2026-10-07",
       "days": 2,
       "peakStars": 96,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "HandsOnLLM/Hands-On-Large-Language-Models",
-      "url": "https://github.com/HandsOnLLM/Hands-On-Large-Language-Models",
-      "description": "Official code repo for the O'Reilly Book - \"Hands-On Large Language Models\"",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "教程",
-        "AI"
-      ],
-      "firstSeen": "2026-09-30",
-      "lastSeen": "2026-10-07",
-      "days": 2,
-      "peakStars": 74,
       "dailyArticle": "",
       "periods": {}
     },
@@ -9410,23 +9757,6 @@
       "periods": {}
     },
     {
-      "repo": "RikkaApps/Shizuku",
-      "url": "https://github.com/RikkaApps/Shizuku",
-      "description": "Using system APIs directly with adb/root privileges from normal apps through a Java process started with app_process.",
-      "summary": "",
-      "language": "Kotlin",
-      "tags": [
-        "移动端",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-26",
-      "lastSeen": "2026-10-05",
-      "days": 4,
-      "peakStars": 57,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "imputnet/helium",
       "url": "https://github.com/imputnet/helium",
       "description": "Private, fast, and honest web browser",
@@ -9686,22 +10016,6 @@
       "lastSeen": "2026-10-04",
       "days": 1,
       "peakStars": 50,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "ImranR98/Obtainium",
-      "url": "https://github.com/ImranR98/Obtainium",
-      "description": "Get Android app updates straight from the source.",
-      "summary": "",
-      "language": "Dart",
-      "tags": [
-        "移动端"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-10-04",
-      "days": 7,
-      "peakStars": 41,
       "dailyArticle": "",
       "periods": {}
     },
@@ -10038,23 +10352,6 @@
       "periods": {}
     },
     {
-      "repo": "decolua/9router",
-      "url": "https://github.com/decolua/9router",
-      "description": "Unlimited FREE AI coding. Connect Claude Code, Codex, Cursor, Cline, Copilot, Antigravity to FREE Claude/GPT/Gemini via 40+ providers. Auto-fallback, RTK -40% tokens, never hit limits.",
-      "summary": "",
-      "language": "JavaScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-19",
-      "lastSeen": "2026-10-01",
-      "days": 2,
-      "peakStars": 164,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "Pumpkin-MC/Pumpkin",
       "url": "https://github.com/Pumpkin-MC/Pumpkin",
       "description": "Empowering everyone to host fast and efficient Minecraft servers",
@@ -10252,23 +10549,6 @@
       "lastSeen": "2026-10-01",
       "days": 1,
       "peakStars": 79,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "gastownhall/beads",
-      "url": "https://github.com/gastownhall/beads",
-      "description": "Beads - A memory upgrade for your coding agent",
-      "summary": "",
-      "language": "Go",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-10-01",
-      "days": 4,
-      "peakStars": 78,
       "dailyArticle": "",
       "periods": {}
     },
@@ -10916,23 +11196,6 @@
       "lastSeen": "2026-09-30",
       "days": 4,
       "peakStars": 76,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "chiphuyen/aie-book",
-      "url": "https://github.com/chiphuyen/aie-book",
-      "description": "[WIP] Resources for AI engineers. Also contains supporting materials for the book AI Engineering (Chip Huyen, 2025)",
-      "summary": "",
-      "language": "Jupyter Notebook",
-      "tags": [
-        "AI",
-        "教程"
-      ],
-      "firstSeen": "2026-09-30",
-      "lastSeen": "2026-09-30",
-      "days": 1,
-      "peakStars": 75,
       "dailyArticle": "",
       "periods": {}
     },
@@ -12022,23 +12285,6 @@
       "periods": {}
     },
     {
-      "repo": "calcom/cal.diy",
-      "url": "https://github.com/calcom/cal.diy",
-      "description": "Scheduling infrastructure for absolutely everyone.",
-      "summary": "",
-      "language": "TypeScript",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "firstSeen": "2026-09-28",
-      "lastSeen": "2026-09-28",
-      "days": 1,
-      "peakStars": 31,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
       "repo": "django/django",
       "url": "https://github.com/django/django",
       "description": "The Web framework for perfectionists with deadlines.",
@@ -12429,22 +12675,6 @@
       "lastSeen": "2026-09-27",
       "days": 2,
       "peakStars": 80,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "zed-industries/zed",
-      "url": "https://github.com/zed-industries/zed",
-      "description": "Code at the speed of thought – Zed is a high-performance, multiplayer code editor from the creators of Atom and Tree-sitter.",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-20",
-      "lastSeen": "2026-09-27",
-      "days": 2,
-      "peakStars": 79,
       "dailyArticle": "",
       "periods": {}
     },
@@ -15027,23 +15257,6 @@
       "periods": {}
     },
     {
-      "repo": "cline/cline",
-      "url": "https://github.com/cline/cline",
-      "description": "Autonomous coding agent as an SDK, IDE extension, or CLI assistant.",
-      "summary": "Cline 是一个开源编码智能体，提供 SDK、IDE 插件、桌面应用与 CLI 等多种形态，可在编辑器和终端中读写代码、执行命令，并接入多家模型与 MCP 工具。",
-      "language": "TypeScript",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-17",
-      "lastSeen": "2026-09-19",
-      "days": 3,
-      "peakStars": 380,
-      "dailyArticle": "/github-trending/2026-09-18/cline--cline/",
-      "periods": {}
-    },
-    {
       "repo": "roboflow/supervision",
       "url": "https://github.com/roboflow/supervision",
       "description": "We write your reusable computer vision tools. 💜",
@@ -15681,23 +15894,6 @@
       "lastSeen": "2026-09-18",
       "days": 1,
       "peakStars": 48,
-      "dailyArticle": "",
-      "periods": {}
-    },
-    {
-      "repo": "GCWing/OpenBitFun",
-      "url": "https://github.com/GCWing/OpenBitFun",
-      "description": "OpenBitFun combines a high-performance agent runtime written in Rust with a polished desktop application. It pairs the depth of a Code Agent with open, general-purpose capabilities for work beyond software development.",
-      "summary": "",
-      "language": "Rust",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "firstSeen": "2026-09-18",
-      "lastSeen": "2026-09-18",
-      "days": 1,
-      "peakStars": 47,
       "dailyArticle": "",
       "periods": {}
     },

@@ -4,9 +4,9 @@
   "slug": "2026",
   "label": "2026 年",
   "start": "2026-01-01",
-  "through": "2026-10-17",
+  "through": "2026-10-18",
   "tagVersion": 2,
-  "observedDays": 28,
+  "observedDays": 29,
   "candidates": [
     {
       "repo": "morluto/rea",
@@ -33,14 +33,14 @@
       "language": "Python",
       "description": "VoiceStudio is the open-source, fully-local ElevenLabs alternative — voice cloning, voice design, video dubbing, dictation, transcription & audiobook creation in 646 languages.",
       "tags": [
-        "音视频",
-        "AI"
+        "AI",
+        "音视频"
       ],
-      "totalStars": 32569,
-      "days": 13,
-      "firstPlaceDays": 2,
+      "totalStars": 34704,
+      "days": 14,
+      "firstPlaceDays": 3,
       "bestRank": 1,
-      "latestSeen": "2026-10-17",
+      "latestSeen": "2026-10-18",
       "summary": "VoiceStudio 是 AGPL-3.0 的开源本地语音工作台，把声音克隆、音色设计、视频配音、听写、转写与有声书制作整合进桌面应用，项目自述支持 646 种语言，并自称为完全本地的 ElevenLabs 替代方案。",
       "article": "/github-trending/yearly/2026/debpalash--voicestudio/"
     },
@@ -163,14 +163,13 @@
       "language": "Java",
       "description": "Ghidra is a software reverse engineering (SRE) framework",
       "tags": [
-        "开发工具",
-        "安全"
+        "开发工具"
       ],
-      "totalStars": 12469,
-      "days": 17,
+      "totalStars": 13145,
+      "days": 18,
       "firstPlaceDays": 0,
       "bestRank": 6,
-      "latestSeen": "2026-10-17"
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "affaan-m/ECC",
@@ -179,15 +178,15 @@
       "language": "JavaScript",
       "description": "The agent harness performance optimization system. Skills, instincts, memory, security, and research-first development for Claude Code, Codex, Opencode, Cursor and beyond.",
       "tags": [
-        "Skill",
         "AI",
-        "安全"
+        "Skill",
+        "开发工具"
       ],
-      "totalStars": 11731,
-      "days": 13,
+      "totalStars": 12876,
+      "days": 14,
       "firstPlaceDays": 0,
       "bestRank": 3,
-      "latestSeen": "2026-10-17"
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "obra/superpowers",
@@ -196,14 +195,15 @@
       "language": "Shell",
       "description": "An agentic skills framework & software development methodology that works.",
       "tags": [
+        "AI",
         "Skill",
         "开发工具"
       ],
-      "totalStars": 11162,
-      "days": 21,
+      "totalStars": 11825,
+      "days": 22,
       "firstPlaceDays": 0,
       "bestRank": 7,
-      "latestSeen": "2026-10-17"
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "cathrynlavery/diagram-design",
@@ -246,11 +246,11 @@
         "AI",
         "Skill"
       ],
-      "totalStars": 8405,
-      "days": 8,
+      "totalStars": 9109,
+      "days": 9,
       "firstPlaceDays": 1,
       "bestRank": 1,
-      "latestSeen": "2026-10-07"
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "rohitg00/ai-engineering-from-scratch",
@@ -267,6 +267,22 @@
       "firstPlaceDays": 0,
       "bestRank": 3,
       "latestSeen": "2026-10-17"
+    },
+    {
+      "repo": "stablyai/orca",
+      "name": "orca",
+      "url": "https://github.com/stablyai/orca",
+      "language": "TypeScript",
+      "description": "Orca is the place for working with a fleet of agents (e.g. Grok Bot, Claude Code). Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 7388,
+      "days": 8,
+      "firstPlaceDays": 0,
+      "bestRank": 2,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "dream-num/univer",
@@ -315,6 +331,22 @@
       "latestSeen": "2026-10-11"
     },
     {
+      "repo": "google/ax",
+      "name": "ax",
+      "url": "https://github.com/google/ax",
+      "language": "Go",
+      "description": "Google's open agentic orchestration runtime",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 6882,
+      "days": 6,
+      "firstPlaceDays": 2,
+      "bestRank": 1,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "DuarteSantos8/openGym",
       "name": "openGym",
       "url": "https://github.com/DuarteSantos8/openGym",
@@ -328,38 +360,6 @@
       "firstPlaceDays": 1,
       "bestRank": 1,
       "latestSeen": "2026-10-10"
-    },
-    {
-      "repo": "google/ax",
-      "name": "ax",
-      "url": "https://github.com/google/ax",
-      "language": "Go",
-      "description": "Google's open agentic orchestration runtime",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 6728,
-      "days": 5,
-      "firstPlaceDays": 2,
-      "bestRank": 1,
-      "latestSeen": "2026-10-16"
-    },
-    {
-      "repo": "stablyai/orca",
-      "name": "orca",
-      "url": "https://github.com/stablyai/orca",
-      "language": "TypeScript",
-      "description": "Orca is the ADE for working with a fleet of parallel agents. Run any coding agent with your own subscription. Available on desktop, mobile and remote runtime.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 6559,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 2,
-      "latestSeen": "2026-10-17"
     },
     {
       "repo": "heygen-com/hyperframes",
@@ -520,6 +520,22 @@
       "latestSeen": "2026-10-15"
     },
     {
+      "repo": "JuliusBrussee/caveman",
+      "name": "caveman",
+      "url": "https://github.com/JuliusBrussee/caveman",
+      "language": "Go",
+      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "totalStars": 4812,
+      "days": 13,
+      "firstPlaceDays": 0,
+      "bestRank": 9,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "mksglu/context-mode",
       "name": "context-mode",
       "url": "https://github.com/mksglu/context-mode",
@@ -533,22 +549,6 @@
       "days": 10,
       "firstPlaceDays": 0,
       "bestRank": 11,
-      "latestSeen": "2026-10-17"
-    },
-    {
-      "repo": "JuliusBrussee/caveman",
-      "name": "caveman",
-      "url": "https://github.com/JuliusBrussee/caveman",
-      "language": "Go",
-      "description": "🪨 why use many token when few token do trick. Viral skill + proxy for coding agents that cuts 65% of tokens by talking like a caveman.",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 4603,
-      "days": 12,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
       "latestSeen": "2026-10-17"
     },
     {
@@ -584,6 +584,22 @@
       "latestSeen": "2026-10-12"
     },
     {
+      "repo": "anthropics/claude-plugins-official",
+      "name": "claude-plugins-official",
+      "url": "https://github.com/anthropics/claude-plugins-official",
+      "language": "Python",
+      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 4019,
+      "days": 7,
+      "firstPlaceDays": 0,
+      "bestRank": 3,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "tt-a1i/archify",
       "name": "archify",
       "url": "https://github.com/tt-a1i/archify",
@@ -614,6 +630,22 @@
       "firstPlaceDays": 0,
       "bestRank": 7,
       "latestSeen": "2026-10-10"
+    },
+    {
+      "repo": "xerj-org/xerj",
+      "name": "xerj",
+      "url": "https://github.com/xerj-org/xerj",
+      "language": "Rust",
+      "description": "XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep and sed. One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. Elasticsearch compatible, so existing clients just work.",
+      "tags": [
+        "AI",
+        "数据"
+      ],
+      "totalStars": 3813,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 3,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "lyogavin/airllm",
@@ -679,6 +711,38 @@
       "latestSeen": "2026-10-13"
     },
     {
+      "repo": "MadsLorentzen/ai-job-search",
+      "name": "ai-job-search",
+      "url": "https://github.com/MadsLorentzen/ai-job-search",
+      "language": "Python",
+      "description": "The job search that runs on your machine. AI job application framework built on Claude Code: evaluate postings, tailor CVs, write cover letters, prep interviews. Fork it and own it.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 3422,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 2,
+      "latestSeen": "2026-10-18"
+    },
+    {
+      "repo": "K-Dense-AI/scientific-agent-skills",
+      "name": "scientific-agent-skills",
+      "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
+      "language": "Python",
+      "description": "Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.",
+      "tags": [
+        "AI",
+        "Skill"
+      ],
+      "totalStars": 3404,
+      "days": 5,
+      "firstPlaceDays": 0,
+      "bestRank": 7,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "hugohe3/ppt-master",
       "name": "ppt-master",
       "url": "https://github.com/hugohe3/ppt-master",
@@ -727,6 +791,37 @@
       "latestSeen": "2026-10-15"
     },
     {
+      "repo": "anthropics/claude-code",
+      "name": "claude-code",
+      "url": "https://github.com/anthropics/claude-code",
+      "language": "TypeScript",
+      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 3078,
+      "days": 12,
+      "firstPlaceDays": 0,
+      "bestRank": 8,
+      "latestSeen": "2026-10-18"
+    },
+    {
+      "repo": "hmjz100/LinkSwift",
+      "name": "LinkSwift",
+      "url": "https://github.com/hmjz100/LinkSwift",
+      "language": "JavaScript",
+      "description": "一个基于 JavaScript 的网盘文件下载地址获取工具。基于【网盘直链下载助手】修改 ，支持 百度网盘 / 阿里云盘 / 中国移动云盘 / 天翼云盘 / 迅雷云盘 / 夸克网盘 / UC网盘 / 123云盘 八大网盘",
+      "tags": [
+        "云服务"
+      ],
+      "totalStars": 3038,
+      "days": 7,
+      "firstPlaceDays": 0,
+      "bestRank": 6,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "tashfeenahmed/freellmapi",
       "name": "freellmapi",
       "url": "https://github.com/tashfeenahmed/freellmapi",
@@ -741,22 +836,6 @@
       "firstPlaceDays": 0,
       "bestRank": 14,
       "latestSeen": "2026-10-16"
-    },
-    {
-      "repo": "anthropics/claude-code",
-      "name": "claude-code",
-      "url": "https://github.com/anthropics/claude-code",
-      "language": "TypeScript",
-      "description": "Claude Code is an agentic coding tool that lives in your terminal, understands your codebase, and helps you code faster by executing routine tasks, explaining complex code, and handling git workflows - all through natural language commands.",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 2910,
-      "days": 11,
-      "firstPlaceDays": 0,
-      "bestRank": 8,
-      "latestSeen": "2026-10-11"
     },
     {
       "repo": "harry0703/MoneyPrinterTurbo",
@@ -821,20 +900,20 @@
       "latestSeen": "2026-10-04"
     },
     {
-      "repo": "xerj-org/xerj",
-      "name": "xerj",
-      "url": "https://github.com/xerj-org/xerj",
-      "language": "Rust",
-      "description": "XERJ is the new way for AI to search data. Its autoindex capability activates agents to know your data without the token waste of grep and sed. One command indexes code, docs, logs and PDFs for search, RAG, security audits and agent memory, using 40x fewer tokens than grep. Elasticsearch compatible, so existing clients just work.",
+      "repo": "HKUDS/CLI-Anything",
+      "name": "CLI-Anything",
+      "url": "https://github.com/HKUDS/CLI-Anything",
+      "language": "Python",
+      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
       "tags": [
-        "数据",
-        "AI"
+        "AI",
+        "开发工具"
       ],
-      "totalStars": 2711,
-      "days": 3,
+      "totalStars": 2648,
+      "days": 8,
       "firstPlaceDays": 0,
-      "bestRank": 3,
-      "latestSeen": "2026-10-17"
+      "bestRank": 12,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "byoungd/up",
@@ -851,38 +930,6 @@
       "firstPlaceDays": 0,
       "bestRank": 4,
       "latestSeen": "2026-10-01"
-    },
-    {
-      "repo": "anthropics/claude-plugins-official",
-      "name": "claude-plugins-official",
-      "url": "https://github.com/anthropics/claude-plugins-official",
-      "language": "Python",
-      "description": "Official, Anthropic-managed directory of high quality Claude Code Plugins.",
-      "tags": [
-        "Skill",
-        "开发工具"
-      ],
-      "totalStars": 2636,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 4,
-      "latestSeen": "2026-10-17"
-    },
-    {
-      "repo": "K-Dense-AI/scientific-agent-skills",
-      "name": "scientific-agent-skills",
-      "url": "https://github.com/K-Dense-AI/scientific-agent-skills",
-      "language": "Python",
-      "description": "Turn any AI agent into an AI Scientist. The #1 Agent Skills library for science, used by 250,000+ scientists worldwide. 177 ready-to-use validated skills plus 100+ scientific databases covering biology, chemistry, medicine, and drug discovery. Compatible with Cursor, Claude Code, Codex, Pi, Antigravity, and the open Agent Skills standard.",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 2525,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 7,
-      "latestSeen": "2026-10-17"
     },
     {
       "repo": "t8y2/dbx",
@@ -934,6 +981,22 @@
       "latestSeen": "2026-10-01"
     },
     {
+      "repo": "Lakr233/vphone-cli",
+      "name": "vphone-cli",
+      "url": "https://github.com/Lakr233/vphone-cli",
+      "language": "Swift",
+      "description": "Run a virtual iPhone on an Apple Silicon Mac.",
+      "tags": [
+        "移动端",
+        "开发工具"
+      ],
+      "totalStars": 2296,
+      "days": 8,
+      "firstPlaceDays": 0,
+      "bestRank": 8,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "block/buzz",
       "name": "buzz",
       "url": "https://github.com/block/buzz",
@@ -947,21 +1010,6 @@
       "firstPlaceDays": 0,
       "bestRank": 12,
       "latestSeen": "2026-10-07"
-    },
-    {
-      "repo": "Lakr233/vphone-cli",
-      "name": "vphone-cli",
-      "url": "https://github.com/Lakr233/vphone-cli",
-      "language": "Swift",
-      "description": "Run a virtual iPhone on an Apple Silicon Mac.",
-      "tags": [
-        "移动端"
-      ],
-      "totalStars": 2226,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 8,
-      "latestSeen": "2026-10-12"
     },
     {
       "repo": "TencentCloud/Octop",
@@ -1041,22 +1089,6 @@
       "latestSeen": "2026-10-11"
     },
     {
-      "repo": "HKUDS/CLI-Anything",
-      "name": "CLI-Anything",
-      "url": "https://github.com/HKUDS/CLI-Anything",
-      "language": "Python",
-      "description": "\"CLI-Anything: Making ALL Software Agent-Native\" -- CLI-Hub: https://clianything.cc/",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 2068,
-      "days": 7,
-      "firstPlaceDays": 0,
-      "bestRank": 13,
-      "latestSeen": "2026-10-17"
-    },
-    {
       "repo": "earthtojake/text-to-cad",
       "name": "text-to-cad",
       "url": "https://github.com/earthtojake/text-to-cad",
@@ -1073,36 +1105,20 @@
       "latestSeen": "2026-10-17"
     },
     {
-      "repo": "MadsLorentzen/ai-job-search",
-      "name": "ai-job-search",
-      "url": "https://github.com/MadsLorentzen/ai-job-search",
-      "language": "Python",
-      "description": "The job search that runs on your machine. AI job application framework built on Claude Code: evaluate postings, tailor CVs, write cover letters, prep interviews. Fork it and own it.",
+      "repo": "anomalyco/opencode",
+      "name": "opencode",
+      "url": "https://github.com/anomalyco/opencode",
+      "language": "TypeScript",
+      "description": "The open source coding agent.",
       "tags": [
         "AI",
         "开发工具"
       ],
-      "totalStars": 2025,
+      "totalStars": 1975,
       "days": 5,
       "firstPlaceDays": 0,
-      "bestRank": 12,
-      "latestSeen": "2026-10-17"
-    },
-    {
-      "repo": "hmjz100/LinkSwift",
-      "name": "LinkSwift",
-      "url": "https://github.com/hmjz100/LinkSwift",
-      "language": "JavaScript",
-      "description": "一个基于 JavaScript 的网盘文件下载地址获取工具。基于【网盘直链下载助手】修改 ，支持 百度网盘 / 阿里云盘 / 中国移动云盘 / 天翼云盘 / 迅雷云盘 / 夸克网盘 / UC网盘 / 123云盘 八大网盘",
-      "tags": [
-        "开发工具",
-        "云服务"
-      ],
-      "totalStars": 1987,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 16,
-      "latestSeen": "2026-10-17"
+      "bestRank": 13,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "farion1231/cc-switch",
@@ -1135,6 +1151,21 @@
       "firstPlaceDays": 0,
       "bestRank": 5,
       "latestSeen": "2026-10-01"
+    },
+    {
+      "repo": "chen08209/FlClash",
+      "name": "FlClash",
+      "url": "https://github.com/chen08209/FlClash",
+      "language": "Dart",
+      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 1918,
+      "days": 13,
+      "firstPlaceDays": 0,
+      "bestRank": 23,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "anthropics/financial-services",
@@ -1182,6 +1213,37 @@
       "latestSeen": "2026-10-08"
     },
     {
+      "repo": "cursor/plugins",
+      "name": "plugins",
+      "url": "https://github.com/cursor/plugins",
+      "language": "TypeScript",
+      "description": "Cursor plugin specification and official plugins",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 1822,
+      "days": 10,
+      "firstPlaceDays": 0,
+      "bestRank": 17,
+      "latestSeen": "2026-10-18"
+    },
+    {
+      "repo": "chthollyphile/folia-major",
+      "name": "folia-major",
+      "url": "https://github.com/chthollyphile/folia-major",
+      "language": "TypeScript",
+      "description": "专注于绚丽的歌词动画效果的本地音乐/navidrome/第三方多平台在线音乐播放器",
+      "tags": [
+        "音视频"
+      ],
+      "totalStars": 1804,
+      "days": 4,
+      "firstPlaceDays": 0,
+      "bestRank": 11,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "laoma2053/awesome-zhuiju-free",
       "name": "awesome-zhuiju-free",
       "url": "https://github.com/laoma2053/awesome-zhuiju-free",
@@ -1197,19 +1259,20 @@
       "latestSeen": "2026-10-05"
     },
     {
-      "repo": "chen08209/FlClash",
-      "name": "FlClash",
-      "url": "https://github.com/chen08209/FlClash",
-      "language": "Dart",
-      "description": "A multi-platform proxy client based on ClashMeta,simple and easy to use, open-source and ad-free.",
+      "repo": "coreyhaines31/marketingskills",
+      "name": "marketingskills",
+      "url": "https://github.com/coreyhaines31/marketingskills",
+      "language": "JavaScript",
+      "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
       "tags": [
-        "开发工具"
+        "AI",
+        "Skill"
       ],
-      "totalStars": 1715,
-      "days": 12,
+      "totalStars": 1748,
+      "days": 7,
       "firstPlaceDays": 0,
-      "bestRank": 28,
-      "latestSeen": "2026-10-17"
+      "bestRank": 13,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "ruvnet/RuView",
@@ -1274,6 +1337,37 @@
       "latestSeen": "2026-10-16"
     },
     {
+      "repo": "localsend/localsend",
+      "name": "localsend",
+      "url": "https://github.com/localsend/localsend",
+      "language": "Dart",
+      "description": "An open-source cross-platform alternative to AirDrop",
+      "tags": [
+        "开发工具"
+      ],
+      "totalStars": 1639,
+      "days": 11,
+      "firstPlaceDays": 0,
+      "bestRank": 22,
+      "latestSeen": "2026-10-18"
+    },
+    {
+      "repo": "ruvnet/ruflo",
+      "name": "ruflo",
+      "url": "https://github.com/ruvnet/ruflo",
+      "language": "TypeScript",
+      "description": "🌊 The original agent harness. Deploy intelligent multi-player swarms, coordinate autonomous workflows, and build conversational AI systems. Features adaptive memory, self-learning intelligence, federation, vector RAG integration, and native Claude Code / Codex / Hermes and many more Integrated",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 1623,
+      "days": 6,
+      "firstPlaceDays": 0,
+      "bestRank": 16,
+      "latestSeen": "2026-10-18"
+    },
+    {
       "repo": "juspay/hyperswitch",
       "name": "hyperswitch",
       "url": "https://github.com/juspay/hyperswitch",
@@ -1288,37 +1382,6 @@
       "firstPlaceDays": 0,
       "bestRank": 7,
       "latestSeen": "2026-09-30"
-    },
-    {
-      "repo": "coreyhaines31/marketingskills",
-      "name": "marketingskills",
-      "url": "https://github.com/coreyhaines31/marketingskills",
-      "language": "JavaScript",
-      "description": "Marketing skills for Claude Code and AI agents. CRO, copywriting, SEO, analytics, and growth engineering.",
-      "tags": [
-        "Skill",
-        "AI"
-      ],
-      "totalStars": 1566,
-      "days": 6,
-      "firstPlaceDays": 0,
-      "bestRank": 13,
-      "latestSeen": "2026-10-16"
-    },
-    {
-      "repo": "localsend/localsend",
-      "name": "localsend",
-      "url": "https://github.com/localsend/localsend",
-      "language": "Dart",
-      "description": "An open-source cross-platform alternative to AirDrop",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 1529,
-      "days": 10,
-      "firstPlaceDays": 0,
-      "bestRank": 22,
-      "latestSeen": "2026-10-16"
     },
     {
       "repo": "rustfs/rustfs",
@@ -1400,22 +1463,6 @@
       "latestSeen": "2026-10-16"
     },
     {
-      "repo": "cursor/plugins",
-      "name": "plugins",
-      "url": "https://github.com/cursor/plugins",
-      "language": "TypeScript",
-      "description": "Cursor plugin specification and official plugins",
-      "tags": [
-        "AI",
-        "开发工具"
-      ],
-      "totalStars": 1438,
-      "days": 9,
-      "firstPlaceDays": 0,
-      "bestRank": 27,
-      "latestSeen": "2026-10-17"
-    },
-    {
       "repo": "clash-verge-rev/clash-verge-rev",
       "name": "clash-verge-rev",
       "url": "https://github.com/clash-verge-rev/clash-verge-rev",
@@ -1462,21 +1509,6 @@
       "latestSeen": "2026-09-23"
     },
     {
-      "repo": "anomalyco/opencode",
-      "name": "opencode",
-      "url": "https://github.com/anomalyco/opencode",
-      "language": "TypeScript",
-      "description": "The open source coding agent.",
-      "tags": [
-        "AI"
-      ],
-      "totalStars": 1399,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 19,
-      "latestSeen": "2026-10-17"
-    },
-    {
       "repo": "mobile-next/mobile-mcp",
       "name": "mobile-mcp",
       "url": "https://github.com/mobile-next/mobile-mcp",
@@ -1492,6 +1524,22 @@
       "firstPlaceDays": 0,
       "bestRank": 8,
       "latestSeen": "2026-09-30"
+    },
+    {
+      "repo": "ollama/ollama",
+      "name": "ollama",
+      "url": "https://github.com/ollama/ollama",
+      "language": "Go",
+      "description": "Get up and running with Kimi, GLM, MiniMax, DeepSeek, gpt-oss, Qwen, Gemma and other models.",
+      "tags": [
+        "AI",
+        "开发工具"
+      ],
+      "totalStars": 1353,
+      "days": 11,
+      "firstPlaceDays": 0,
+      "bestRank": 28,
+      "latestSeen": "2026-10-18"
     },
     {
       "repo": "trycua/cua",
@@ -1540,53 +1588,6 @@
       "firstPlaceDays": 0,
       "bestRank": 14,
       "latestSeen": "2026-10-09"
-    },
-    {
-      "repo": "browser-use/video-use",
-      "name": "video-use",
-      "url": "https://github.com/browser-use/video-use",
-      "language": "Python",
-      "description": "Edit videos with coding agents",
-      "tags": [
-        "音视频",
-        "AI"
-      ],
-      "totalStars": 1288,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 3,
-      "latestSeen": "2026-10-14"
-    },
-    {
-      "repo": "mvt-project/mvt",
-      "name": "mvt",
-      "url": "https://github.com/mvt-project/mvt",
-      "language": "Python",
-      "description": "MVT (Mobile Verification Toolkit) helps with conducting forensics of mobile devices in order to find signs of a potential compromise.",
-      "tags": [
-        "安全",
-        "移动端"
-      ],
-      "totalStars": 1285,
-      "days": 4,
-      "firstPlaceDays": 0,
-      "bestRank": 9,
-      "latestSeen": "2026-10-04"
-    },
-    {
-      "repo": "fleetbase/fleetbase",
-      "name": "fleetbase",
-      "url": "https://github.com/fleetbase/fleetbase",
-      "language": "JavaScript",
-      "description": "Modular logistics and supply chain operating system (LSOS)",
-      "tags": [
-        "其他"
-      ],
-      "totalStars": 1283,
-      "days": 5,
-      "firstPlaceDays": 0,
-      "bestRank": 20,
-      "latestSeen": "2026-10-01"
     }
   ]
 }

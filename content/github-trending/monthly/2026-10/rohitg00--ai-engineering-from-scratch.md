@@ -8,8 +8,8 @@ repository: "rohitg00/ai-engineering-from-scratch"
 repository_url: "https://github.com/rohitg00/ai-engineering-from-scratch"
 language: "Python"
 tags:
-  - AI
   - 教程
+  - AI
 comment: false
 ---
 

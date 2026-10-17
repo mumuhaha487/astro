@@ -8,9 +8,9 @@ repository: "affaan-m/ECC"
 repository_url: "https://github.com/affaan-m/ECC"
 language: "JavaScript"
 tags:
-  - AI
   - Skill
-  - 开发工具
+  - AI
+  - 安全
 comment: false
 ---
 
