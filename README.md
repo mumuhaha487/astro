@@ -1,10 +1,10 @@
 # 木哈文轩 · 妙想之地
 
-木木em哈哈的个人站点：技术折腾、踩坑记录与生活随想，外加每日 GitHub 热榜、大模型竞技场和一些浏览器本地小工具。
+木木em哈哈的个人站点：技术折腾、踩坑记录与生活随想，外加一些浏览器本地小工具。
 
 - 线上地址：<https://vmss.cn>
 - 站点由 [Hugo](https://gohugo.io/) 构建，主题位于 `themes/mumuemhaha`，部署在 EdgeOne Pages。
-- 写作与资源管理通过仓库内的私有编辑器 [`studio/`](studio/README.md) 完成。
+- 写作与资源管理通过仓库内的私有编辑器 [`studio/`](studio/README.md) 完成（部署在 Cloudflare Workers + R2，`https://md.vmss.cn`）。
 
 > 仓库早期基于 Astro 模板 Mizuki，目前线上站点已完全迁移到 Hugo。`src/`、`astro.config.mjs` 等 Astro 文件仅作历史保留（`pnpm legacy:dev`），不参与线上构建。
 
@@ -15,10 +15,8 @@
 | 首页 | `/` | 头像粒子组装与旋转、打字机签名、访客统计（Umami）、站点运行天数、最新文章、栏目导航 |
 | 博客 | `/blog/` | 置顶优先排序、分类筛选、写作年表、热门标签；桌面每页 30 篇、移动端每页 10 篇并渐进加载 |
 | 文章 | `/posts/<文件名>/` | 目录与阅读进度、代码高亮与复制、图片灯箱、KaTeX 公式、Giscus 评论、密码保护文章 |
-| GitHub 热榜 | `/github-trending/` | 每日 / 每周 / 每月 / 每年榜单、分类筛选、全站项目搜索、项目解读 |
-| 大模型竞技场 | `/model-arena/` | 同一测试项目下不同模型生成的网页作品，沙箱 iframe 展示 |
-| 友情链接 | `/friends/` | 通过 PR 提交 JSON 申请，支持搜索 |
-| 留言板 | `/guestbook/` | Cloudflare Turnstile 验证，数据存储在编辑器后端 |
+| 友情链接 | `/friends/` | 通过 PR 提交 JSON 申请，GitHub 机器人自动校验安全范围、格式与 `/friends` 互链后自动合并 |
+| 留言板 | `/guestbook/` | Cloudflare Turnstile 验证，数据存储在 Cloudflare Workers + R2 编辑器后端 |
 | 工具箱 | `/tools/` | JSON 格式化、Base64、文本统计、时间戳、UUID、Docker 加速、兽音译者，全部在浏览器本地运行 |
 | 桌面模式 | `/desktop/` | 仿 Arch Linux + Hyprland 的桌面风格，通过首页头像旁的“切换另外一种风格”进入 |
 
@@ -27,16 +25,15 @@
 ## 目录结构
 
 ```text
-content/              文章（content/posts）、各栏目索引与 GitHub 热榜解读
-data/                 热榜快照、竞技场目录 model_arena.json、友链 friends.json 等数据
+content/              文章（content/posts）与各栏目索引
+data/                 友链 friends.json 等构建数据
 friends/entries/      友链申请 JSON（构建时汇总到 data/friends.json）
-arena-submissions/    竞技场作品原样发布到 /model-arena/submissions/
 public/               静态资源（图片、图标精灵、桌面模式、编辑器上传的文件）
 themes/mumuemhaha/    Hugo 主题：layouts 模板、i18n 文案、static/hugo-theme 下的 CSS / JS
-scripts/              构建、数据更新与校验脚本
+scripts/              构建、数据更新、友链自动审核与校验脚本
 edge-functions/       EdgeOne 边缘函数（账号接口）
 cloud-functions/      EdgeOne 云函数（访客统计）
-studio/               私有写作编辑器（独立部署）
+studio/               私有写作编辑器与留言板后端（部署在 Cloudflare Workers + R2）
 ```
 
 ## 本地开发
@@ -63,7 +60,7 @@ pnpm serve        # 在 http://localhost:4321 预览 dist/
 
 ## 写作
 
-推荐使用 [`studio/`](studio/README.md) 编辑器：它通过 GitHub API 把文章提交到 `content/posts/`，图片、视频、资源和内嵌网页分别上传到 `public/image/editor/`、`public/video/editor/`、`public/resource/editor/`、`public/web-pages/editor/`，竞技场作品写入 `arena-submissions/` 与 `data/model_arena.json`。提交到 `main` 后由 EdgeOne Pages 自动构建上线。
+推荐使用 [`studio/`](studio/README.md) 编辑器（部署在 Cloudflare Workers，`https://md.vmss.cn`）：它通过 GitHub API 把文章提交到 `content/posts/`，图片、视频、资源和内嵌网页分别上传到 `public/image/editor/`、`public/video/editor/`、`public/resource/editor/`、`public/web-pages/editor/`。提交到 `main` 后由 EdgeOne Pages 自动构建上线。
 
 也可以直接编辑 Markdown，常用 Front Matter：
 
@@ -100,8 +97,10 @@ translationKey: my-post    # 与 .en.md / .ja.md 译文关联
 
 ## 自动化
 
-- **GitHub 热榜**：`.github/workflows/github-trending.yml` 每天 05:00（北京时间，支持手动触发 `workflow_dispatch`）抓取 GitHub Trending，调用 AI 网关（默认 `https://api.vmss.cn/`，模型 `auto-sh`）生成项目分类与深度解读后提交到 `main`。需要在仓库 Secrets 中配置 `DEEPSEEK_API_KEY`，支持通过 `DEEPSEEK_BASE_URL` 与 `DEEPSEEK_MODEL` 自定义接口与模型。工作流配置 350 分钟超时上限与指数退避重试，保障网络或接口波动时的可靠生成。
-- **友链**：在 `friends/entries/` 新建一个 JSON 文件（格式见 `friends/schema.json`）并提交 PR，合并后自动上线。
+- **友链自动审核与同步**：在自己站点的 `/friends` 页面添加 `https://vmss.cn` 后，在 `friends/entries/` 新建一个不重复的 `.json` 文件（格式见 `friends/schema.json`）并提交 PR。`.github/workflows/friends-review.yml`（`scripts/review-friend-pr.mjs`）会自动执行安全隔离校验（仅允许新增 `friends/entries/*.json`）、JSON 格式与重复项校验以及 `/friends` 互链校验；全部通过则自动合并到 `main` 触发 EdgeOne Pages 自动构建上线，未通过则自动关闭并说明原因。
+- **SEO 与搜索引擎收录优化**：
+  - 构建自动生成 `robots.txt`、多语言索引 `sitemap.xml`、扁平化 `sitemap-urls.xml` 与纯文本 `urls.txt`，过滤历史无效路由与单篇薄标签页，并输出完整 `canonical`、Schema.org JSON-LD（`WebSite` / `BlogPosting` / `WebApplication` / `BreadcrumbList`）、百度移动适配防转码标签、文章单 `<h1>` 语义层级与相关文章内链。
+  - 可在 `hugo.yaml` 的 `params.seo` 中填写 `baiduSiteVerification` / `googleSiteVerification` / `bingSiteVerification` 输出站长验证 `<meta>` 标签。
 
 ## 许可与致谢
 

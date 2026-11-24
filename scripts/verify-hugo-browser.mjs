@@ -267,13 +267,6 @@ try {
     await page.route("https://umami.vmss.cn/api/websites/993c6970-8f42-4804-a055-38b6b9c01810/stats?**", (route) => delayedFulfill(route, {
       pageviews: 61756, visitors: 24388, visits: 19853,
     }));
-    await page.route("https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify", async (route) => {
-      assert.deepEqual(route.request().postDataJSON(), { turnstileToken: "test-turnstile-token" }, "browser sent the wrong Turnstile token to the verifier");
-      await route.fulfill({
-        contentType: "application/json",
-        body: JSON.stringify({ success: true, ticket: "v1.test-payload.test-signature" }),
-      });
-    });
     let guestbookMessages = [{ id: "message-1", name: "访客", content: "这是一条公开留言", createdAt: "2026-09-06T08:00:00.000Z" }];
     await page.route("https://md.vmss.cn/api/guestbook/**", async (route) => {
       const request = route.request();
@@ -486,8 +479,7 @@ try {
     await page.locator('textarea[name="content"]').fill("公开留言提交正常");
     await page.locator("[data-guestbook-form]").evaluate((form) => form.requestSubmit());
     await page.waitForFunction(() => document.querySelectorAll(".guestbook-message").length === 2, undefined, { timeout: 5_000 });
-    assert.equal(submittedGuestbookBody?.turnstileTicket, "v1.test-payload.test-signature", "signed Turnstile ticket was not sent to EdgeOne");
-    assert.equal("turnstileToken" in submittedGuestbookBody, false, "raw Turnstile token leaked to EdgeOne");
+    assert.equal(submittedGuestbookBody?.turnstileToken, "test-turnstile-token", "Turnstile token was not sent directly to Cloudflare Worker guestbook API");
     assert.match(await page.locator("[data-guestbook-status]").innerText(), /留言/);
   } else {
     await page.waitForFunction(() => document.querySelector("[data-guestbook-list]")?.dataset.guestbookReady === "true", undefined, { timeout: 10_000 });

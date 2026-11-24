@@ -17,11 +17,8 @@ import type {
   TranslationSegmentResult,
   TranslationSettingsSummary,
   WebEmbedRecord,
-  ArenaBatchRequest,
-  ArenaBatchResult,
 } from "../shared/types";
 import type { LinkPreview } from "../shared/link-preview";
-import type { ArenaCatalog, ArenaCategoryKind, ArenaLocation } from "../shared/model-arena";
 
 export class ApiError extends Error {
   status: number;
@@ -61,18 +58,6 @@ async function request<T>(path: string, init: RequestInit = {}): Promise<T> {
 }
 
 export const api = {
-  arena: () => request<{ catalog: ArenaCatalog; sha: string }>("/api/model-arena"),
-  publishArenaBatch: (batch: ArenaBatchRequest, files: File[]) => {
-    const form = new FormData();
-    for (const file of files) {
-      form.append("files", file);
-    }
-    form.set("batch", JSON.stringify(batch));
-    return request<ArenaBatchResult>("/api/model-arena/batch", {
-      method: "POST",
-      body: form,
-    });
-  },
   session: () => request<SessionInfo>("/api/session"),
   login: (password: string) =>
     request<SessionInfo>("/api/login", {

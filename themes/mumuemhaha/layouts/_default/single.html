@@ -9,7 +9,13 @@
 <div class="reading-progress" aria-hidden="true"><span data-reading-progress></span></div>
 <article class="article-shell">
   <header class="article-header">
-    <a class="back-link" href="{{ "blog/" | relLangURL }}">{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "back_blog" }}</a>
+    <nav class="article-breadcrumb" aria-label="Breadcrumb">
+      <ol>
+        <li><a href="{{ site.Home.RelPermalink }}">{{ i18n "home" }}</a></li>
+        <li><a href="{{ "blog/" | relLangURL }}">{{ i18n "blog" }}</a></li>
+        {{- with .Params.category }}<li><a href="{{ printf "%s%s/" ("category/" | relLangURL) (. | urlize) }}">{{ . }}</a></li>{{ end -}}
+      </ol>
+    </nav>
     <div class="article-labels">
       {{ if .Params.pinned }}<span class="badge badge-accent">{{ partial "icon.html" (dict "name" "pin") }}{{ i18n "pinned" }}</span>{{ end }}
       {{ with .Params.category }}<a class="badge" href="{{ printf "%s%s/" ("category/" | relLangURL) (. | urlize) }}">{{ partial "icon.html" (dict "name" "folder") }}{{ . }}</a>{{ end }}
@@ -40,6 +46,28 @@
         {{ with .PrevInSection }}<a href="{{ .RelPermalink }}" class="neighbor-prev"><small>{{ partial "icon.html" (dict "name" "arrow-left") }}{{ i18n "previous_article" }}</small><strong>{{ .Title }}</strong></a>{{ else }}<span></span>{{ end }}
         {{ with .NextInSection }}<a href="{{ .RelPermalink }}" class="neighbor-next"><small>{{ i18n "next_article" }}{{ partial "icon.html" (dict "name" "arrow-right") }}</small><strong>{{ .Title }}</strong></a>{{ end }}
       </nav>
+      {{- $related := where (site.RegularPages.Related .) "Section" "posts" -}}
+      {{- if lt (len $related) 4 -}}
+        {{- $sameCategory := where (where (where site.RegularPages "Section" "posts") "Permalink" "ne" .Permalink) ".Params.category" "eq" .Params.category -}}
+        {{- range $sameCategory.ByDate.Reverse -}}
+          {{- if and (lt (len $related) 4) (not (in $related .)) -}}
+            {{- $related = $related | append . -}}
+          {{- end -}}
+        {{- end -}}
+      {{- end -}}
+      {{- with first 4 $related }}
+      <section class="article-related" aria-label="{{ i18n "related_articles" }}" data-pagefind-ignore>
+        <h2>{{ i18n "related_articles" }}</h2>
+        <div class="article-related-grid">
+          {{- range . }}
+          <a href="{{ .RelPermalink }}">
+            <strong>{{ .Title }}</strong>
+            <span><time datetime="{{ .Date.Format "2006-01-02" }}">{{ .Date.Format "2006.01.02" }}</time>{{ with .Params.category }} · {{ . }}{{ end }}</span>
+          </a>
+          {{- end }}
+        </div>
+      </section>
+      {{- end }}
     </div>
     <aside class="article-toc" data-article-toc>
       <span>{{ partial "icon.html" (dict "name" "list-tree") }}{{ i18n "article_toc" }}</span>

@@ -88,18 +88,9 @@
 </section>
 {{ end }}
 
-{{- $arena := hugo.Data.model_arena | default dict -}}
-{{- $modelCount := 0 -}}
-{{- range $arena.tracks -}}{{- range .projects -}}{{- range .providers -}}{{- range .models -}}{{- $modelCount = add $modelCount 1 -}}{{- end -}}{{- end -}}{{- end -}}{{- end -}}
-{{- $trendingKeys := slice -}}
-{{- range $key, $value := hugo.Data.github_trending -}}{{- if le $key (now.Format "2006-01-02") -}}{{- $trendingKeys = $trendingKeys | append $key -}}{{- end -}}{{- end -}}
-{{- $trendingTop := dict -}}{{- $trendingCount := 0 -}}
-{{- with $trendingKeys -}}{{- $snapshot := index hugo.Data.github_trending (index (sort . "value" "desc") 0) -}}{{- $candidates := $snapshot.candidates | default slice -}}{{- $trendingCount = len $candidates -}}{{- with $candidates -}}{{- $trendingTop = index . 0 -}}{{- end -}}{{- end -}}
 {{- $friends := hugo.Data.friends.items | default slice -}}
 {{- $explore := slice
   (dict "href" ("blog/" | relLangURL) "icon" "book-open" "title" (i18n "blog") "desc" (i18n "explore_blog") "figure" (len $posts) "unit" (i18n "posts_unit"))
-  (dict "href" "/github-trending/" "icon" "trending-up" "title" (i18n "nav_trending") "desc" (i18n "explore_trending") "figure" $trendingCount "unit" (cond (ne (len $trendingTop) 0) (printf "Top · %s" ($trendingTop.repo | default "")) "repositories"))
-  (dict "href" "/model-arena/" "icon" "swords" "title" (i18n "nav_arena") "desc" (i18n "explore_arena") "figure" $modelCount "unit" (i18n "explore_arena_models"))
   (dict "href" "/tools/" "icon" "wrench" "title" (i18n "toolbox") "desc" (i18n "explore_tools") "figure" 7 "unit" (i18n "explore_tools_count"))
   (dict "href" ("friends/" | relLangURL) "icon" "users" "title" (i18n "friends") "desc" (i18n "explore_friends") "figure" (len $friends) "unit" (i18n "friends"))
   (dict "href" ("guestbook/" | relLangURL) "icon" "messages" "title" (i18n "guestbook") "desc" (i18n "explore_guestbook") "figure" "" "unit" (i18n "guestbook_submit"))
@@ -110,7 +101,7 @@
   </header>
   <div class="explore-grid">
     {{ range $index, $item := $explore }}
-    <a class="explore-card" href="{{ $item.href }}" data-reveal style="--reveal-delay:{{ mul (mod $index 3) 60 }}ms">
+    <a class="explore-card" href="{{ $item.href }}" data-reveal style="--reveal-delay:{{ mul (mod $index 2) 60 }}ms">
       <div class="explore-head"><span>{{ printf "%02d" (add $index 1) }}</span>{{ partial "icon.html" (dict "name" $item.icon) }}</div>
       <h3>{{ $item.title }}</h3>
       <p>{{ $item.desc }}</p>

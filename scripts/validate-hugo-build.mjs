@@ -11,6 +11,10 @@ const requiredFiles = [
   "404.html",
   "robots.txt",
   "sitemap.xml",
+  "sitemap-index.xml",
+  "sitemap-urls.xml",
+  "sitemap-0.xml",
+  "urls.txt",
   "rss.xml",
   "atom.xml",
   "api/allPostMeta.json",
@@ -24,15 +28,6 @@ const requiredFiles = [
   "icons/search.svg",
   "icons/lucide-sprite.svg",
   "blog/index.html",
-  "model-arena/index.html",
-  "hugo-theme/model-arena.js",
-  "github-trending/index.html",
-  "github-trending/weekly/index.html",
-  "github-trending/monthly/index.html",
-  "github-trending/yearly/index.html",
-  "api/github-trending-search.json",
-  "hugo-theme/github-trending.css",
-  "hugo-theme/github-trending.js",
   "friends/index.html",
   "guestbook/index.html",
   "en/friends/index.html",
@@ -79,6 +74,13 @@ const forbiddenFiles = [
   "forum-editor/forum.html",
   "forum-editor/assets/forum-editor.js",
   "hugo-theme/forum.js",
+  "github-trending/index.html",
+  "model-arena/index.html",
+  "api/github-trending-search.json",
+  "hugo-theme/github-trending.css",
+  "hugo-theme/github-trending.js",
+  "hugo-theme/model-arena.css",
+  "hugo-theme/model-arena.js",
 ];
 
 for (const relative of requiredFiles) {
@@ -154,7 +156,7 @@ assert.match(home, /workspace-brand-title[^>]*>妙想之地<\//, "Workspace bran
 assert.doesNotMatch(home, /workspace-brand[\s\S]{0,500}木木em哈哈/, "Removed sidebar identity remains");
 assert.doesNotMatch(home, /href="\/archive\/" data-nav="archive"/, "Removed archive sidebar link remains");
 assert.match(home, /href="\/friends\/" data-nav="friends"/, "Friends sidebar link is missing");
-assert.match(home, /href="\/github-trending\/" data-nav="github-trending"/, "GitHub trending sidebar link is missing");
+assert.doesNotMatch(home, /href="\/github-trending\/"|href="\/model-arena\/"/, "Removed trending or arena link remains on the home page");
 assert.match(home, /href="\/guestbook\/" data-nav="guestbook"/, "Guestbook sidebar link is missing");
 assert.match(home, /这是一个建立在21世纪的边缘小站。/, "Homepage status description is incorrect");
 assert.match(home, /一个可能特别有想法的博主。/, "Homepage status title is incorrect");
@@ -164,8 +166,8 @@ assert.match(home, /https:\/\/space\.bilibili\.com\/334584883/, "Production Bili
 assert.match(home, /lucide-sprite\.svg(?:\?v=\d+)?#bilibili/, "Bilibili brand icon is missing");
 assert.equal((home.match(/class="home-doc-item/g) || []).length, 3, "Homepage document list must contain three content sections");
 assert.match(home, /class="home-doc-list home-doc-list-unframed"/, "Homepage information area still uses the framed glass container");
-assert.match(home, /hugo\.css\?v=20261004-aurora-v1/, "Current stylesheet cache version is missing");
-assert.match(home, /hugo\.js\?v=20261004-aurora-v1/, "Current script cache version is missing");
+assert.match(home, /hugo\.css\?v=20261124-v2/, "Current stylesheet cache version is missing");
+assert.match(home, /hugo\.js\?v=20261124-v1/, "Current script cache version is missing");
 assert.match(home, /data-site-start-date="2022-04-15"[^>]*>本站已运行 <strong data-site-uptime>/, "Homepage runtime counter is missing");
 assert.match(home, /data-account-open[^>]*aria-label="登录或注册"/, "Top-right account trigger is missing");
 assert.match(home, /目前登录的各个功能都在维护中，此时注册功能为正常,但是实际为测试功能。，后续可能会删除账号。/, "Account test warning is missing");
@@ -252,8 +254,8 @@ assert.match(blog, /rel="next" aria-label="下一页"/, "Blog first page is miss
 assert.match(blog, /data-random-post-cover/, "Posts without artwork do not receive a random local cover");
 assert.doesNotMatch(blog, /post-cover-placeholder/, "Legacy empty cover placeholder remains");
 assert.match(blog, /data-progressive-src="\/optimized\/images\/[a-f0-9]+-card\.webp"/, "Article cards do not use generated cover thumbnails");
-assert.match(blog, /hugo\.js\?v=20261004-aurora-v1/, "Current interactive asset version is missing");
-assert.match(blog, /hugo\.css\?v=20261004-aurora-v1/, "Current stylesheet asset version is missing");
+assert.match(blog, /hugo\.js\?v=20261124-v1/, "Current interactive asset version is missing");
+assert.match(blog, /hugo\.css\?v=20261124-v2/, "Current stylesheet asset version is missing");
 assert.match(blog, /data-responsive-post-list/, "Progressive post list metadata is missing");
 const linuxTagPath = join(outputRoot, "tags", "linux", "index.html");
 assert.ok(existsSync(linuxTagPath), "Linux tag page is missing");
@@ -329,7 +331,7 @@ const guestbookPage = await readFile(join(outputRoot, "guestbook", "index.html")
 assert.match(guestbookPage, /data-guestbook-api="https:\/\/md\.vmss\.cn"/, "Guestbook production API is missing");
 assert.match(guestbookPage, /data-guestbook-form/, "Guestbook public form is missing");
 assert.match(guestbookPage, /data-turnstile-site-key="0x4AAAAAAEqYCxmwdT2EkFet"/, "Guestbook Turnstile site key is missing");
-assert.match(guestbookPage, /data-turnstile-verifier="https:\/\/astro-blog-studio\.vrhjio4405\.workers\.dev\/api\/guestbook\/turnstile\/verify"/, "Guestbook Turnstile ticket verifier is missing");
+assert.doesNotMatch(guestbookPage, /workers\.dev/, "Guestbook should submit directly to md.vmss.cn instead of workers.dev");
 assert.match(guestbookPage, /challenges\.cloudflare\.com\/turnstile\/v0\/api\.js\?render=explicit/, "Guestbook Turnstile client is missing");
 assert.match(guestbookPage, /data-guestbook-turnstile/, "Guestbook Turnstile mount is missing");
 assert.doesNotMatch(guestbookPage, /captchaAnswer|data-guestbook-captcha|算术验证码/, "Legacy arithmetic captcha remains");
@@ -341,9 +343,6 @@ assert.match(giscusTheme, /cursor:url/, "Giscus cursor styling is missing");
 const responseHeaders = await readFile(join(outputRoot, "_headers"), "utf8");
 assert.match(responseHeaders, /\/hugo-theme\/\*\r?\n  Access-Control-Allow-Origin: \*\r?\n  Access-Control-Allow-Methods: GET/, "Theme assets do not expose the CORS headers Giscus requires");
 const edgeOneConfiguration = JSON.parse(await readFile(join(repositoryRoot, "edgeone.json"), "utf8"));
-const submissionHeaders = edgeOneConfiguration.headers.find((rule) => rule.source === "/model-arena/submissions/*")?.headers || [];
-assert.equal(submissionHeaders.find((header) => header.key === "Access-Control-Allow-Origin")?.value, "*", "Sandboxed submission modules need CORS");
-assert.match(submissionHeaders.find((header) => header.key === "Content-Security-Policy")?.value || "", /^sandbox allow-scripts(?: |$)/, "Submission documents need origin isolation");
 const themeHeaders = edgeOneConfiguration.headers.find((rule) => rule.source === "/hugo-theme/*")?.headers || [];
 assert.equal(themeHeaders.find((header) => header.key === "Access-Control-Allow-Origin")?.value, "*", "EdgeOne does not expose theme assets cross-origin");
 const legacyCommentArticle = await readFile(join(outputRoot, "posts", "20250825", "index.html"), "utf8");
@@ -370,18 +369,88 @@ for (const directory of ["html", "zip"]) {
   assert.ok(existsSync(join(repositoryRoot, "public", "web-pages", "editor", directory)), `Missing isolated web page directory: ${directory}`);
 }
 
-const arenaScript = await readFile(join(outputRoot, "hugo-theme", "model-arena.js"), "utf8");
-assert.match(arenaScript, /const source = url;/, "Arena submissions must load from the blog origin");
-assert.doesNotMatch(arenaScript, /md\.vmss\.cn/, "Arena iframe still loads from the editor domain");
-const submissionRoot = join(repositoryRoot, "arena-submissions");
-const submissionFiles = await listFiles(submissionRoot);
-assert.ok(submissionFiles.length > 0, "No arena submissions were published");
-for (const source of submissionFiles) {
-  const target = join(outputRoot, "model-arena", "submissions", relative(submissionRoot, source));
-  assert.deepEqual(await readFile(target), await readFile(source), `Arena submission asset changed during build: ${source}`);
+// SEO validation for Baidu & Google discoverability
+const robotsTxt = await readFile(join(outputRoot, "robots.txt"), "utf8");
+assert.match(robotsTxt, /User-agent:\s*Baiduspider/, "robots.txt is missing Baiduspider directive");
+assert.match(robotsTxt, /User-agent:\s*Googlebot/, "robots.txt is missing Googlebot directive");
+assert.match(robotsTxt, /Sitemap:\s*https:\/\/vmss\.cn\/sitemap\.xml/, "robots.txt is missing primary sitemap URL");
+assert.match(robotsTxt, /Sitemap:\s*https:\/\/vmss\.cn\/sitemap-urls\.xml/, "robots.txt is missing flat sitemap URL");
+assert.match(robotsTxt, /Disallow:\s*\/api\//, "robots.txt does not disallow internal API paths");
+
+const flatSitemap = await readFile(join(outputRoot, "sitemap-urls.xml"), "utf8");
+const flatUrlsTxt = (await readFile(join(outputRoot, "urls.txt"), "utf8")).trim().split(/\r?\n/);
+assert.match(flatSitemap, /<urlset /, "sitemap-urls.xml must be a flat urlset");
+assert.doesNotMatch(flatSitemap, /<sitemapindex/, "sitemap-urls.xml must not be a sitemapindex");
+assert.doesNotMatch(flatSitemap, /https:\/\/vmss\.cn\/spec\//, "Legacy /spec/ pages leaked into sitemap");
+assert.doesNotMatch(flatSitemap, /<loc>https:\/\/vmss\.cn\/posts\/<\/loc>/, "Duplicate /posts/ index leaked into sitemap");
+assert.ok(flatUrlsTxt.length >= posts.length, `urls.txt has too few URLs (${flatUrlsTxt.length})`);
+assert.equal(flatUrlsTxt[0], "https://vmss.cn/", "Homepage should be prioritized first in urls.txt");
+
+const samplePostHtml = await readFile(join(outputRoot, "posts", "20260326", "index.html"), "utf8");
+const notFoundHtml = await readFile(join(outputRoot, "404.html"), "utf8");
+const blogPage2Html = await readFile(join(outputRoot, "blog", "page", "2", "index.html"), "utf8");
+
+assert.match(home, /<link rel="canonical" href="https:\/\/vmss\.cn\/">/, "Homepage canonical link is missing");
+assert.match(home, /<meta name="applicable-device" content="pc,mobile">/, "Baidu applicable-device meta is missing");
+assert.match(home, /<meta http-equiv="Cache-Control" content="no-transform">/, "Baidu no-transform meta is missing");
+assert.match(home, /<meta name="keywords" content="[^"]+">/, "Homepage keywords meta is missing");
+assert.match(home, /<link rel="alternate" hreflang="x-default" href="https:\/\/vmss\.cn\/">/, "Homepage hreflang x-default is missing");
+assert.match(home, /<meta property="og:image" content="https:\/\/vmss\.cn\//, "Homepage og:image is missing");
+assert.match(home, /<meta name="twitter:card" content="summary_large_image">/, "Homepage Twitter card is missing");
+assert.doesNotMatch(home, /<meta name="description" content="木哈文轩">/, "Homepage description still duplicates the 4-char site title");
+
+assert.match(samplePostHtml, /<link rel="canonical" href="https:\/\/vmss\.cn\/posts\/20260326\/">/, "Post canonical link is missing");
+assert.doesNotMatch(samplePostHtml, /<meta name="description" content="[^"]*\*\*[^"]*">/, "Post description leaks raw Markdown asterisks");
+assert.match(samplePostHtml, /<meta property="article:published_time" content="/, "Post article:published_time is missing");
+assert.match(samplePostHtml, /<meta name="robots" content="index, follow, max-image-preview:large/, "Post robots rich-preview directive is missing");
+
+const legacyPostHtml = await readFile(join(outputRoot, "posts", "armbian的换源", "index.html"), "utf8");
+assert.match(legacyPostHtml, /<meta name="description" content="[^"]*armbian[^"]*">/, "Legacy post with leading <!--more--> did not fall back to article body for description");
+
+// Strictly one <h1> per rendered article page, plus visible breadcrumbs and related articles
+const multiH1PostHtml = await readFile(join(outputRoot, "posts", "2022蓝桥杯题目山", "index.html"), "utf8");
+assert.equal((multiH1PostHtml.match(/<h1\b/gi) || []).length, 1, "Article body <h1> was not demoted to <h2>");
+assert.match(samplePostHtml, /class="article-breadcrumb"/, "Article visible breadcrumb navigation is missing");
+assert.match(samplePostHtml, /class="article-related"/, "Article related posts internal linking block is missing");
+assert.match(home, /class="footer-links"[\s\S]*href="\/archive\/"[\s\S]*href="https:\/\/vmss\.cn\/sitemap\.xml"/, "Footer is missing archive or sitemap crawl links");
+
+// Pagination <head> rel=prev / rel=next
+assert.match(blog, /<link rel="next" href="https:\/\/vmss\.cn\/blog\/page\/2\/">/, "Blog page 1 is missing head rel=next link");
+assert.match(blogPage2Html, /<link rel="prev" href="https:\/\/vmss\.cn\/blog\/">/, "Blog page 2 is missing head rel=prev link");
+assert.match(blogPage2Html, /<link rel="next" href="https:\/\/vmss\.cn\/blog\/page\/3\/">/, "Blog page 2 is missing head rel=next link");
+
+// Tool page SEO (keywords, static guide, WebApplication JSON-LD)
+const jsonToolHtml = await readFile(join(outputRoot, "tools", "json-formatter", "index.html"), "utf8");
+assert.match(jsonToolHtml, /<meta name="keywords" content="[^"]*JSON格式化[^"]*">/, "Tool page is missing tool-specific keywords");
+assert.match(jsonToolHtml, /class="tool-seo-guide"/, "Tool page is missing static SEO usage copy");
+
+// HTTP X-Robots-Tag isolation for API & internal assets
+assert.match(responseHeaders, /\/api\/\*\r?\n  X-Robots-Tag: noindex, nofollow/, "_headers is missing X-Robots-Tag for /api/*");
+const apiEdgeHeaders = edgeOneConfiguration.headers.find((rule) => rule.source === "/api/*")?.headers || [];
+assert.equal(apiEdgeHeaders.find((h) => h.key === "X-Robots-Tag")?.value, "noindex, nofollow", "edgeone.json is missing X-Robots-Tag for /api/*");
+
+assert.match(notFoundHtml, /<meta name="robots" content="noindex, nofollow">/, "404 page must be marked noindex, nofollow");
+assert.match(desktopPage, /<meta name="robots" content="noindex, follow">/, "Desktop JS shell should be marked noindex, follow");
+assert.match(blogPage2Html, /<link rel="canonical" href="https:\/\/vmss\.cn\/blog\/page\/2\/">/, "Paginated blog page 2 must self-canonicalize");
+assert.match(blogPage2Html, /<title>博客 - 第 2 页 \| 木哈文轩<\/title>/, "Paginated blog page 2 title must include page number");
+
+for (const [htmlSource, label, expectedType] of [
+  [home, "home", "WebSite"],
+  [samplePostHtml, "post 20260326", "BlogPosting"],
+  [blog, "blog", "CollectionPage"],
+  [jsonToolHtml, "tool json-formatter", "WebApplication"],
+]) {
+  const ldMatch = htmlSource.match(/<script type="application\/ld\+json">([\s\S]*?)<\/script>/);
+  assert.ok(ldMatch, `JSON-LD structured data is missing on ${label}`);
+  const parsedLd = JSON.parse(ldMatch[1]);
+  assert.equal(parsedLd["@context"], "https://schema.org", `Invalid JSON-LD @context on ${label}`);
+  assert.ok(
+    Array.isArray(parsedLd["@graph"]) && parsedLd["@graph"].some((node) => node["@type"] === expectedType),
+    `JSON-LD on ${label} is missing @type ${expectedType}`,
+  );
 }
 
-console.log(`Validated Hugo output: ${posts.length} Chinese posts, friends, guestbook, local tool assets, English/Japanese variants, responsive pagination, feeds, and isolated web pages.`);
+console.log(`Validated Hugo output: ${posts.length} Chinese posts, ${flatUrlsTxt.length} sitemap URLs, SEO metadata/JSON-LD, friends, guestbook, local tool assets, English/Japanese variants, responsive pagination, feeds, and isolated web pages.`);
 
 async function listFiles(directory) {
   const files = [];

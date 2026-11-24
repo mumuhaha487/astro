@@ -1,0 +1,214 @@
+{{- $is404 := eq .Kind "404" -}}
+{{- $isSpec := eq .Section "spec" -}}
+{{- $isPost := and .IsPage (eq .Section "posts") -}}
+{{- $isTool := and .IsPage (eq .Section "tools") -}}
+{{- $encrypted := and (.Params.encrypted | default false) .Params.password -}}
+{{- $isThinTag := and (eq .Kind "term") (eq .Data.Singular "tag") (lt (len .Pages) 2) -}}
+{{- $noindex := or $is404 $isSpec (.Params.noindex | default false) -}}
+{{- $robots := "index, follow, max-image-preview:large, max-snippet:-1, max-video-preview:-1" -}}
+{{- if $noindex -}}
+  {{- $robots = "noindex, nofollow" -}}
+{{- else if $isThinTag -}}
+  {{- $robots = "noindex, follow" -}}
+{{- end -}}
+{{- $siteSeoDesc := (i18n "site_seo_description") | default site.Params.description -}}
+{{- $rawDesc := "" -}}
+{{- if .IsHome -}}
+  {{- $rawDesc = $siteSeoDesc -}}
+{{- else if .Description -}}
+  {{- $rawDesc = .Description -}}
+{{- else if and $isPost (not $encrypted) -}}
+  {{- $summaryPlain := .Summary | plainify | htmlUnescape | replaceRE "\\s+" " " | strings.TrimSpace -}}
+  {{- if $summaryPlain -}}
+    {{- $rawDesc = $summaryPlain -}}
+  {{- else -}}
+    {{- $rawDesc = .Plain -}}
+  {{- end -}}
+{{- else -}}
+  {{- $rawDesc = $siteSeoDesc -}}
+{{- end -}}
+{{- $desc := $rawDesc | markdownify | plainify | htmlUnescape | replaceRE "\\s+" " " | strings.TrimSpace | truncate 155 -}}
+{{- if not $desc -}}{{- $desc = $siteSeoDesc -}}{{- end -}}
+{{- $canonical := .Permalink -}}
+{{- $ogImagePath := strings.TrimSpace (.Params.image | default "") -}}
+{{- if not $ogImagePath -}}
+  {{- $ogImagePath = site.Params.seo.defaultImage | default "/images/demo-avatar.webp" -}}
+{{- end -}}
+{{- $ogImage := $ogImagePath | absURL -}}
+{{- $ogLocale := replace (site.Language.Locale | default "zh-CN") "-" "_" -}}
+{{- $keywordsList := slice -}}
+{{- if $isPost -}}
+  {{- with .Params.category -}}{{- $keywordsList = $keywordsList | append . -}}{{- end -}}
+  {{- range (.Params.tags | default slice) -}}{{- $keywordsList = $keywordsList | append . -}}{{- end -}}
+  {{- $keywordsList = $keywordsList | append site.Title -}}
+{{- else if .Params.keywords -}}
+  {{- if reflect.IsSlice .Params.keywords -}}
+    {{- $keywordsList = .Params.keywords -}}
+  {{- else -}}
+    {{- $keywordsList = split (string .Params.keywords) "," -}}
+  {{- end -}}
+{{- else if eq .Kind "term" -}}
+  {{- $keywordsList = slice .Title site.Title (i18n "blog") -}}
+{{- else -}}
+  {{- range (split (i18n "site_seo_keywords") ",") -}}
+    {{- $trimmed := strings.TrimSpace . -}}
+    {{- if $trimmed -}}{{- $keywordsList = $keywordsList | append $trimmed -}}{{- end -}}
+  {{- end -}}
+{{- end -}}
+{{- $keywords := delimit ($keywordsList | uniq) "," -}}
+{{- $seoTitle := cond .IsHome site.Title (printf "%s | %s" .Title site.Params.description) -}}
+{{- $ogTitle := cond .IsHome site.Title .Title -}}
+  <title>{{ $seoTitle }}</title>
+  <meta name="description" content="{{ $desc }}">
+  {{- with $keywords }}
+  <meta name="keywords" content="{{ . }}">
+  {{- end }}
+  <meta name="author" content="{{ .Params.author | default site.Params.author }}">
+  <meta name="robots" content="{{ $robots }}">
+  <meta name="applicable-device" content="pc,mobile">
+  <meta http-equiv="Cache-Control" content="no-transform">
+  <meta http-equiv="Cache-Control" content="no-siteapp">
+  {{- if not $is404 }}
+  <link rel="canonical" href="{{ $canonical }}">
+  {{- end }}
+  {{- with site.Params.seo.baiduSiteVerification }}
+  <meta name="baidu-site-verification" content="{{ . }}">
+  {{- end }}
+  {{- with site.Params.seo.googleSiteVerification }}
+  <meta name="google-site-verification" content="{{ . }}">
+  {{- end }}
+  {{- with site.Params.seo.bingSiteVerification }}
+  <meta name="msvalidate.01" content="{{ . }}">
+  {{- end }}
+  <meta property="og:site_name" content="{{ site.Title }}">
+  <meta property="og:locale" content="{{ $ogLocale }}">
+  <meta property="og:title" content="{{ $ogTitle }}">
+  <meta property="og:description" content="{{ $desc }}">
+  <meta property="og:url" content="{{ $canonical }}">
+  <meta property="og:type" content="{{ if $isPost }}article{{ else }}website{{ end }}">
+  <meta property="og:image" content="{{ $ogImage }}">
+  {{- if $isPost }}
+  <meta property="article:published_time" content="{{ .Date.Format "2006-01-02T15:04:05Z07:00" }}">
+  <meta property="article:modified_time" content="{{ .Lastmod.Format "2006-01-02T15:04:05Z07:00" }}">
+  <meta property="article:author" content="{{ .Params.author | default site.Params.author }}">
+  {{- with .Params.category }}
+  <meta property="article:section" content="{{ . }}">
+  {{- end }}
+  {{- range (.Params.tags | default slice) }}
+  <meta property="article:tag" content="{{ . }}">
+  {{- end }}
+  {{- end }}
+  <meta name="twitter:card" content="summary_large_image">
+  <meta name="twitter:title" content="{{ $ogTitle }}">
+  <meta name="twitter:description" content="{{ $desc }}">
+  <meta name="twitter:image" content="{{ $ogImage }}">
+  {{- $xDefault := "" -}}
+  {{- range .AllTranslations }}
+    {{- if eq .Language.Lang "zh" -}}{{- $xDefault = .Permalink -}}{{- end }}
+  <link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}">
+  {{- end }}
+  {{- if and (gt (len .AllTranslations) 1) $xDefault }}
+  <link rel="alternate" hreflang="x-default" href="{{ $xDefault }}">
+  {{- end }}
+  {{- if and (not $noindex) (not $isThinTag) }}
+  {{- $authorId := printf "%s#author" site.BaseURL -}}
+  {{- $websiteId := printf "%s#website" site.BaseURL -}}
+  {{- $author := dict
+    "@type" "Person"
+    "@id" $authorId
+    "name" (.Params.author | default site.Params.author)
+    "url" site.BaseURL
+    "image" ("/images/demo-avatar.webp" | absURL)
+    "sameAs" (slice "https://github.com/mumuhaha487" "https://space.bilibili.com/334584883")
+  -}}
+  {{- $website := dict
+    "@type" "WebSite"
+    "@id" $websiteId
+    "url" site.BaseURL
+    "name" site.Title
+    "description" $siteSeoDesc
+    "inLanguage" (site.Language.Locale | default "zh-CN")
+    "publisher" (dict "@id" $authorId)
+  -}}
+  {{- $graph := slice -}}
+  {{- if .IsHome -}}
+    {{- $graph = slice $website $author -}}
+  {{- else if $isPost -}}
+    {{- $article := dict
+      "@type" "BlogPosting"
+      "@id" (printf "%s#article" $canonical)
+      "headline" .Title
+      "description" $desc
+      "url" $canonical
+      "mainEntityOfPage" (dict "@type" "WebPage" "@id" $canonical)
+      "image" (slice $ogImage)
+      "datePublished" (.Date.Format "2006-01-02T15:04:05Z07:00")
+      "dateModified" (.Lastmod.Format "2006-01-02T15:04:05Z07:00")
+      "inLanguage" (site.Language.Locale | default "zh-CN")
+      "author" $author
+      "publisher" $author
+      "isPartOf" (dict "@id" $websiteId)
+    -}}
+    {{- if and (not $encrypted) (gt .WordCount 0) -}}
+      {{- $article = merge $article (dict "wordCount" .WordCount) -}}
+    {{- end -}}
+    {{- with .Params.category -}}
+      {{- $article = merge $article (dict "articleSection" .) -}}
+    {{- end -}}
+    {{- with .Params.tags -}}
+      {{- $article = merge $article (dict "keywords" .) -}}
+    {{- end -}}
+    {{- $crumbs := slice
+      (dict "@type" "ListItem" "position" 1 "name" site.Title "item" site.Home.Permalink)
+      (dict "@type" "ListItem" "position" 2 "name" (i18n "blog") "item" ("blog/" | absLangURL))
+    -}}
+    {{- $pos := 3 -}}
+    {{- with .Params.category -}}
+      {{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" $pos "name" . "item" (printf "%s%s/" ("category/" | absLangURL) (. | urlize))) -}}
+      {{- $pos = add $pos 1 -}}
+    {{- end -}}
+    {{- $crumbs = $crumbs | append (dict "@type" "ListItem" "position" $pos "name" .Title "item" $canonical) -}}
+    {{- $breadcrumb := dict "@type" "BreadcrumbList" "itemListElement" $crumbs -}}
+    {{- $graph = slice $article $breadcrumb -}}
+  {{- else if $isTool -}}
+    {{- $app := dict
+      "@type" "WebApplication"
+      "@id" (printf "%s#app" $canonical)
+      "name" .Title
+      "description" $desc
+      "url" $canonical
+      "applicationCategory" "UtilitiesApplication"
+      "operatingSystem" "Any"
+      "browserRequirements" "Requires JavaScript"
+      "inLanguage" (site.Language.Locale | default "zh-CN")
+      "offers" (dict "@type" "Offer" "price" "0" "priceCurrency" "CNY")
+      "author" $author
+      "isPartOf" (dict "@id" $websiteId)
+    -}}
+    {{- $crumbs := slice
+      (dict "@type" "ListItem" "position" 1 "name" site.Title "item" site.Home.Permalink)
+      (dict "@type" "ListItem" "position" 2 "name" (i18n "toolbox") "item" ("tools/" | absURL))
+      (dict "@type" "ListItem" "position" 3 "name" .Title "item" $canonical)
+    -}}
+    {{- $breadcrumb := dict "@type" "BreadcrumbList" "itemListElement" $crumbs -}}
+    {{- $graph = slice $app $breadcrumb -}}
+  {{- else -}}
+    {{- $pageNode := dict
+      "@type" (cond .IsNode "CollectionPage" "WebPage")
+      "@id" $canonical
+      "url" $canonical
+      "name" .Title
+      "description" $desc
+      "inLanguage" (site.Language.Locale | default "zh-CN")
+      "isPartOf" (dict "@id" $websiteId)
+    -}}
+    {{- $crumbs := slice
+      (dict "@type" "ListItem" "position" 1 "name" site.Title "item" site.Home.Permalink)
+      (dict "@type" "ListItem" "position" 2 "name" .Title "item" $canonical)
+    -}}
+    {{- $breadcrumb := dict "@type" "BreadcrumbList" "itemListElement" $crumbs -}}
+    {{- $graph = slice $pageNode $breadcrumb -}}
+  {{- end -}}
+  {{- $ld := dict "@context" "https://schema.org" "@graph" $graph }}
+  <script type="application/ld+json">{{ $ld | jsonify | safeJS }}</script>
+  {{- end }}

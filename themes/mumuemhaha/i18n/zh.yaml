@@ -6,8 +6,6 @@
   translation: 首页
 - id: blog
   translation: 博客
-- id: github_trending
-  translation: 热门 GitHub 项目
 - id: toolbox
   translation: 工具箱
 - id: tools
@@ -129,13 +127,13 @@
 - id: friends_repository
   translation: 查看数据目录
 - id: friends_step_fork
-  translation: Fork 本仓库
+  translation: 在你的 /friends 加入 https://vmss.cn
 - id: friends_step_json
-  translation: 新建友链 JSON
+  translation: 在 friends/entries/ 新建 JSON
 - id: friends_step_pr
   translation: 提交 Pull Request
 - id: friends_step_build
-  translation: 审核后自动上线
+  translation: 机器人校验通过后自动上线
 - id: friends_visit
   translation: 访问站点
 - id: friends_empty
@@ -147,7 +145,7 @@
 - id: friends_dialog_title
   translation: 复制 JSON 后前往 GitHub
 - id: friends_dialog_description
-  translation: 复制下面的模板，在 GitHub 新建一个不重复的 .json 文件，填写后提交 Pull Request。
+  translation: 请先在你的站点 /friends 页面添加 https://vmss.cn，再复制模板在 friends/entries/ 新建不重复的 .json 文件并提交 PR；机器人自动校验格式与互链，通过后自动合并上线。
 - id: friends_copy
   translation: 复制模板
 - id: friends_copied
@@ -236,10 +234,6 @@
   translation: 相关文章
 - id: random_articles
   translation: 随机文章
-- id: nav_trending
-  translation: GitHub 热榜
-- id: nav_arena
-  translation: 模型竞技场
 - id: nav_more
   translation: 更多
 - id: navigate
@@ -261,23 +255,15 @@
 - id: explore
   translation: 探索妙想之地
 - id: explore_desc
-  translation: 博客之外，这里还有每日更新的热榜、模型同题对决和一些顺手的小工具。
+  translation: 博客之外，这里还有浏览器本地小工具、友情链接和公开留言板。
 - id: explore_blog
   translation: 技术折腾、踩坑记录与生活随想，按分类慢慢翻。
-- id: explore_trending
-  translation: 每天自动抓取 GitHub Trending，并为新上榜项目写一段中文解读。
-- id: explore_arena
-  translation: 同一道题交给不同大模型，直接对比它们生成的网页作品。
 - id: explore_tools
   translation: 全部在浏览器本地运行的小工具，不上传任何数据。
 - id: explore_friends
   translation: 互相串门的朋友们，也欢迎你提交自己的站点。
 - id: explore_guestbook
   translation: 路过的话，留下一句想说的吧。
-- id: explore_trending_top
-  translation: 今日涨星
-- id: explore_arena_models
-  translation: 个参赛模型
 - id: explore_tools_count
   translation: 个本地工具
 - id: posts_by_year
@@ -310,3 +296,7 @@
   translation: 这一页走丢了
 - id: not_found_desc
   translation: 你要找的页面可能已经搬家，或者从来没有存在过。不如回到首页，或者搜搜看？
+- id: site_seo_description
+  translation: 木哈文轩是木木em哈哈的个人技术博客，分享 Linux、Docker、服务器运维、Cloudflare、前端开发、踩坑记录、生活随想与实用浏览器本地小工具。
+- id: site_seo_keywords
+  translation: 木哈文轩,木木em哈哈,技术博客,Linux,Docker,服务器,Cloudflare,VPS,前端开发,在线工具,个人网站

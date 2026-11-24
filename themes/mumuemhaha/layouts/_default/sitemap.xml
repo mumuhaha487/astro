@@ -1,0 +1,41 @@
+{{ printf "<?xml version=\"1.0\" encoding=\"utf-8\" standalone=\"yes\"?>" | safeHTML }}
+<urlset xmlns="http://www.sitemaps.org/schemas/sitemap/0.9"
+  xmlns:xhtml="http://www.w3.org/1999/xhtml">
+{{- range .Data.Pages -}}
+  {{- $isSpec := eq .Section "spec" -}}
+  {{- $isDuplicatePostsIndex := and .IsSection (eq .Section "posts") -}}
+  {{- $isThinTag := and (eq .Kind "term") (eq .Data.Singular "tag") (lt (len .Pages) 2) -}}
+  {{- $isNoindex := or (eq .Kind "404") $isSpec $isDuplicatePostsIndex $isThinTag (.Params.noindex | default false) -}}
+  {{- if and .Permalink (not $isNoindex) -}}
+    {{- $priority := "0.5" -}}
+    {{- $changefreq := "weekly" -}}
+    {{- if .IsHome -}}
+      {{- $priority = "1.0" -}}{{- $changefreq = "daily" -}}
+    {{- else if and .IsPage (eq .Section "posts") -}}
+      {{- $priority = "0.8" -}}{{- $changefreq = "monthly" -}}
+    {{- else if or (eq .Section "blog") (eq .Section "tools") (eq .Section "friends") -}}
+      {{- $priority = "0.7" -}}{{- $changefreq = "weekly" -}}
+    {{- else if or (eq .Kind "taxonomy") (eq .Kind "term") -}}
+      {{- $priority = "0.4" -}}{{- $changefreq = "weekly" -}}
+    {{- end }}
+  <url>
+    <loc>{{ .Permalink }}</loc>
+    {{- if not .Lastmod.IsZero }}
+    <lastmod>{{ safeHTML (.Lastmod.Format "2006-01-02T15:04:05-07:00") }}</lastmod>
+    {{- end }}
+    <changefreq>{{ $changefreq }}</changefreq>
+    <priority>{{ $priority }}</priority>
+    {{- if .IsTranslated -}}
+      {{- $xDefault := "" -}}
+      {{- range .AllTranslations -}}
+        {{- if eq .Language.Lang "zh" -}}{{- $xDefault = .Permalink -}}{{- end }}
+    <xhtml:link rel="alternate" hreflang="{{ .Language.Locale }}" href="{{ .Permalink }}" />
+      {{- end -}}
+      {{- if $xDefault }}
+    <xhtml:link rel="alternate" hreflang="x-default" href="{{ $xDefault }}" />
+      {{- end -}}
+    {{- end }}
+  </url>
+  {{- end -}}
+{{- end }}
+</urlset>

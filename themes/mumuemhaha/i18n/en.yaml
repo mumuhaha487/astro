@@ -6,8 +6,6 @@
   translation: Home
 - id: blog
   translation: Blog
-- id: github_trending
-  translation: Trending GitHub Projects
 - id: toolbox
   translation: Toolbox
 - id: tools
@@ -129,13 +127,13 @@
 - id: friends_repository
   translation: View data directory
 - id: friends_step_fork
-  translation: Fork this repository
+  translation: Add https://vmss.cn on your /friends page
 - id: friends_step_json
-  translation: Add one JSON file
+  translation: Add one JSON in friends/entries/
 - id: friends_step_pr
   translation: Open a pull request
 - id: friends_step_build
-  translation: Review and publish
+  translation: Auto-reviewed & merged
 - id: friends_visit
   translation: Visit site
 - id: friends_empty
@@ -147,7 +145,7 @@
 - id: friends_dialog_title
   translation: Copy the JSON, then open GitHub
 - id: friends_dialog_description
-  translation: Copy this template, create a uniquely named .json file on GitHub, complete it, and open a pull request.
+  translation: First add https://vmss.cn to your site's /friends page, then create a uniquely named .json file under friends/entries/ and open a PR. A bot automatically verifies the format and backlink before merging.
 - id: friends_copy
   translation: Copy template
 - id: friends_copied
@@ -236,10 +234,6 @@
   translation: Related articles
 - id: random_articles
   translation: Random articles
-- id: nav_trending
-  translation: GitHub Trending
-- id: nav_arena
-  translation: Model Arena
 - id: nav_more
   translation: More
 - id: navigate
@@ -261,23 +255,15 @@
 - id: explore
   translation: Explore the corner
 - id: explore_desc
-  translation: Beyond the blog there is a daily trending digest, a model arena, and a few handy browser tools.
+  translation: Beyond the blog there are handy local browser tools, friends' sites, and an open guestbook.
 - id: explore_blog
   translation: Tinkering notes, troubleshooting logs, and thoughts on life, sorted by category.
-- id: explore_trending
-  translation: GitHub Trending captured every day, with a short write-up for each newcomer.
-- id: explore_arena
-  translation: The same prompt handed to different models, with their web pages side by side.
 - id: explore_tools
   translation: Small utilities that run entirely in your browser. Nothing is uploaded.
 - id: explore_friends
   translation: Friends who drop by, and a place to submit your own site.
 - id: explore_guestbook
   translation: Passing through? Leave a line before you go.
-- id: explore_trending_top
-  translation: Stars today
-- id: explore_arena_models
-  translation: competing models
 - id: explore_tools_count
   translation: local tools
 - id: posts_by_year
@@ -310,3 +296,7 @@
   translation: This page wandered off
 - id: not_found_desc
   translation: The page you are looking for may have moved, or never existed. Head home, or try a search.
+- id: site_seo_description
+  translation: Mumuemhaha's personal technical blog covering Linux, Docker, server operations, Cloudflare, web development, troubleshooting notes, and local browser utilities.
+- id: site_seo_keywords
+  translation: Mumuemhaha,Tech Blog,Linux,Docker,Cloudflare,VPS,Web Development,Hugo,Browser Tools

@@ -5,19 +5,21 @@
   <channel>
     <title>{{ site.Title }}</title>
     <link>{{ site.BaseURL }}</link>
-    <description>{{ site.Params.description }}</description>
+    <description>{{ (i18n "site_seo_description") | default site.Params.description }}</description>
     <language>{{ site.Language.Locale | default site.Language.Lang }}</language>
     <lastBuildDate>{{ now.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</lastBuildDate>
     {{- with .OutputFormats.Get "RSS" }}
     <atom:link href="{{ .Permalink }}" rel="self" type="application/rss+xml" />
     {{- end }}
     {{- range first 50 $pages.ByDate.Reverse }}
+    {{- $rawRss := .Params.description | default (.Summary | plainify | strings.TrimSpace) | default .Plain }}
+    {{- $rssDesc := $rawRss | markdownify | plainify | htmlUnescape | replaceRE "\\s+" " " | strings.TrimSpace | truncate 280 }}
     <item>
       <title>{{ .Title }}</title>
       <link>{{ .Permalink }}</link>
       <pubDate>{{ .Date.Format "Mon, 02 Jan 2006 15:04:05 -0700" }}</pubDate>
       <guid>{{ .Permalink }}</guid>
-      <description>{{ (.Params.description | default .Summary) | transform.XMLEscape | safeHTML }}</description>
+      <description>{{ $rssDesc | transform.XMLEscape | safeHTML }}</description>
     </item>
     {{- end }}
   </channel>

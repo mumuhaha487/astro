@@ -1,0 +1,26 @@
+User-agent: *
+Allow: /
+Disallow: /api/
+Disallow: /pagefind/
+Disallow: /web-pages/editor/
+Disallow: /resource/editor/
+Disallow: /spec/
+
+User-agent: Baiduspider
+Allow: /
+Disallow: /api/
+Disallow: /pagefind/
+Disallow: /web-pages/editor/
+Disallow: /resource/editor/
+Disallow: /spec/
+
+User-agent: Googlebot
+Allow: /
+Disallow: /api/
+Disallow: /pagefind/
+Disallow: /web-pages/editor/
+Disallow: /resource/editor/
+Disallow: /spec/
+
+Sitemap: {{ "sitemap.xml" | absURL }}
+Sitemap: {{ "sitemap-urls.xml" | absURL }}

@@ -1,0 +1,41 @@
+name: Friends Auto Review
+
+on:
+  pull_request_target:
+    branches:
+      - main
+    types:
+      - opened
+      - synchronize
+      - reopened
+
+concurrency:
+  group: friends-review-${{ github.event.pull_request.number }}
+  cancel-in-progress: true
+
+permissions:
+  contents: write
+  pull-requests: write
+
+jobs:
+  review-friend-pr:
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      # Security isolation: ALWAYS check out trusted base branch (main), NEVER untrusted PR code.
+      - name: Checkout trusted base branch
+        uses: actions/checkout@v4
+        with:
+          ref: main
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Review friend link PR
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          GITHUB_REPOSITORY: ${{ github.repository }}
+          PR_NUMBER: ${{ github.event.pull_request.number }}
+        run: node scripts/review-friend-pr.mjs

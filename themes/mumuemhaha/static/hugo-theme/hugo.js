@@ -1612,11 +1612,13 @@
       submit.disabled = true;
       if (status) { status.textContent = ""; status.className = ""; }
       try {
-        const turnstileTicket = await exchangeTurnstileToken(verificationToken);
+        const verificationPayload = verifier
+          ? { turnstileTicket: await exchangeTurnstileToken(verificationToken) }
+          : { turnstileToken: verificationToken };
         const created = await request("/api/guestbook/messages", {
           method: "POST",
           headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), turnstileTicket }),
+          body: JSON.stringify({ name: values.get("name"), content: values.get("content"), ...verificationPayload }),
         });
         messages = [created, ...messages.filter((message) => message.id !== created.id)].slice(0, 60);
         renderMessages();

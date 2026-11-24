@@ -14,6 +14,18 @@ taxonomies:
   tag: tags
   category: category
 
+related:
+  includeNewer: true
+  threshold: 20
+  toLower: true
+  indices:
+    - name: tags
+      weight: 100
+    - name: category
+      weight: 80
+    - name: date
+      weight: 10
+
 languages:
   zh:
     locale: zh-CN
@@ -101,9 +113,14 @@ outputFormats:
 params:
   description: 木哈文轩
   author: 木木em哈哈
+  seo:
+    defaultImage: /images/demo-avatar.webp
+    # 在百度搜索资源平台 / Google Search Console / Bing 站长平台获取验证码后填入对应字段即可自动输出 meta 验证标签
+    baiduSiteVerification: ""
+    googleSiteVerification: ""
+    bingSiteVerification: ""
   guestbookApi: https://md.vmss.cn
   guestbookTurnstileSiteKey: 0x4AAAAAAEqYCxmwdT2EkFet
-  guestbookTurnstileVerifier: https://astro-blog-studio.vrhjio4405.workers.dev/api/guestbook/turnstile/verify
   siteStartDate: 2022-04-15
   wallpapers:
     desktop:

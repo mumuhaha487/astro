@@ -31,5 +31,8 @@
       <iframe class="tool-service-frame" src="https://docker.0ha.top/" title="GitHub 与 Docker 加速" loading="lazy" referrerpolicy="no-referrer"></iframe>
     {{- end }}
   </section>
+  {{- with .Content }}
+  <section class="tool-seo-guide">{{ . }}</section>
+  {{- end }}
 </section>
 {{ end }}

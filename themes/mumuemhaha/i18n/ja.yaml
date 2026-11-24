@@ -6,8 +6,6 @@
   translation: ホーム
 - id: blog
   translation: ブログ
-- id: github_trending
-  translation: 注目の GitHub プロジェクト
 - id: toolbox
   translation: ツールボックス
 - id: tools
@@ -129,13 +127,13 @@
 - id: friends_repository
   translation: データディレクトリを見る
 - id: friends_step_fork
-  translation: リポジトリを Fork
+  translation: 自サイトの /friends に https://vmss.cn を追加
 - id: friends_step_json
-  translation: JSON を一つ追加
+  translation: friends/entries/ に JSON を追加
 - id: friends_step_pr
   translation: Pull Request を送信
 - id: friends_step_build
-  translation: 確認後に自動公開
+  translation: Bot が自動審査して公開
 - id: friends_visit
   translation: サイトを見る
 - id: friends_empty
@@ -147,7 +145,7 @@
 - id: friends_dialog_title
   translation: JSON をコピーして GitHub へ
 - id: friends_dialog_description
-  translation: テンプレートをコピーし、GitHub で重複しない名前の .json ファイルを作成して、Pull Request を送信してください。
+  translation: 先に自サイトの /friends ページへ https://vmss.cn を追加した上で、friends/entries/ に重複しない .json ファイルを作成して PR を送信してください。形式と相互リンクを確認後、自動でマージされます。
 - id: friends_copy
   translation: テンプレートをコピー
 - id: friends_copied
@@ -236,10 +234,6 @@
   translation: 関連記事
 - id: random_articles
   translation: ランダム記事
-- id: nav_trending
-  translation: GitHub トレンド
-- id: nav_arena
-  translation: モデル闘技場
 - id: nav_more
   translation: その他
 - id: navigate
@@ -261,23 +255,15 @@
 - id: explore
   translation: 小さな居場所を探索
 - id: explore_desc
-  translation: ブログのほかに、毎日のトレンド、モデル闘技場、便利な小ツールがあります。
+  translation: ブログのほかに、ブラウザで動く小ツール、リンク集、ゲストブックがあります。
 - id: explore_blog
   translation: 技術の試行錯誤、トラブル記録、日々の雑感をカテゴリ別に。
-- id: explore_trending
-  translation: GitHub Trending を毎日収集し、新顔のプロジェクトを中国語で解説。
-- id: explore_arena
-  translation: 同じお題を複数のモデルに渡し、生成された Web ページを見比べる。
 - id: explore_tools
   translation: すべてブラウザ内で動く小ツール。データは送信されません。
 - id: explore_friends
   translation: 遊びに来てくれる友人たち。あなたのサイトも歓迎します。
 - id: explore_guestbook
   translation: 通りすがりなら、ひとこと残していってください。
-- id: explore_trending_top
-  translation: 本日のスター
-- id: explore_arena_models
-  translation: 参加モデル
 - id: explore_tools_count
   translation: ローカルツール
 - id: posts_by_year
@@ -310,3 +296,7 @@
   translation: このページは迷子になりました
 - id: not_found_desc
   translation: お探しのページは移動したか、最初から存在しなかったようです。ホームに戻るか、検索してみてください。
+- id: site_seo_description
+  translation: 木木em哈哈の個人技術ブログ。Linux・Docker・サーバー運用・Cloudflare・Web開発の備忘録やブラウザで動く便利なローカルツールを公開しています。
+- id: site_seo_keywords
+  translation: 木哈文轩,木木em哈哈,技術ブログ,Linux,Docker,Cloudflare,サーバー運用,Web開発,オンラインツール
