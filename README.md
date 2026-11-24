@@ -4,7 +4,7 @@
 
 - 线上地址：<https://vmss.cn>
 - 站点由 [Hugo](https://gohugo.io/) 构建，主题位于 `themes/mumuemhaha`，部署在 EdgeOne Pages。
-- 写作与资源管理通过仓库内的私有编辑器 [`studio/`](studio/README.md) 完成（部署在 Cloudflare Workers + R2，`https://md.vmss.cn`）。
+- 写作与资源管理通过仓库内的私有编辑器 [`studio/`](studio/README.md) 完成（部署在 Cloudflare Workers + R2，`https://markdown.inc.re`）。
 
 > 仓库早期基于 Astro 模板 Mizuki，目前线上站点已完全迁移到 Hugo。`src/`、`astro.config.mjs` 等 Astro 文件仅作历史保留（`pnpm legacy:dev`），不参与线上构建。
 
@@ -60,7 +60,7 @@ pnpm serve        # 在 http://localhost:4321 预览 dist/
 
 ## 写作
 
-推荐使用 [`studio/`](studio/README.md) 编辑器（部署在 Cloudflare Workers，`https://md.vmss.cn`）：它通过 GitHub API 把文章提交到 `content/posts/`，图片、视频、资源和内嵌网页分别上传到 `public/image/editor/`、`public/video/editor/`、`public/resource/editor/`、`public/web-pages/editor/`。提交到 `main` 后由 EdgeOne Pages 自动构建上线。
+推荐使用 [`studio/`](studio/README.md) 编辑器（部署在 Cloudflare Workers，`https://markdown.inc.re`）：它通过 GitHub API 把文章提交到 `content/posts/`，图片、视频、资源和内嵌网页分别上传到 `public/image/editor/`、`public/video/editor/`、`public/resource/editor/`、`public/web-pages/editor/`。提交到 `main` 后由 EdgeOne Pages 自动构建上线。
 
 也可以直接编辑 Markdown，常用 Front Matter：
 
